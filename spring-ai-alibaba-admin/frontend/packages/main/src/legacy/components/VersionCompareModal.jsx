@@ -25,8 +25,8 @@ import {
 const { Title, Text } = Typography;
 
 const VersionCompareModal = ({ prompt, version1, version2, onClose }) => {
-  // 确保version1是较早的版本，version2是较新的版本
-  // 使用 createTime 或 version 来判断新旧，createTime 更准确
+  // Ensure version1 is the earlier version, version2 is the newer version
+  // Use createTime or version to determine old/new, createTime is more accurate
   const [olderVersion, newerVersion] = (() => {
     const time1 = version1.createTime || 0;
     const time2 = version2.createTime || 0;
@@ -34,18 +34,18 @@ const VersionCompareModal = ({ prompt, version1, version2, onClose }) => {
   })();
 
   const renderDiffLines = (oldText, newText) => {
-    // 安全地处理可能为空的文本内容
+    // Safely handle potentially empty text content
     const safeOldText = oldText || '';
     const safeNewText = newText || '';
     const oldLines = safeOldText.split('\n');
     const newLines = safeNewText.split('\n');
     const maxLines = Math.max(oldLines.length, newLines.length);
-    
+
     const result = [];
     for (let i = 0; i < maxLines; i++) {
       const oldLine = oldLines[i] || '';
       const newLine = newLines[i] || '';
-      
+
       if (oldLine === newLine) {
         result.push({
           type: 'unchanged',
@@ -91,7 +91,7 @@ const VersionCompareModal = ({ prompt, version1, version2, onClose }) => {
       title={
         <div>
           <Title level={4} style={{ margin: 0 }}>
-            版本对比 - {prompt.promptKey || prompt.name || '未知Prompt'}
+            Version Comparison - {prompt.promptKey || prompt.name || 'Unknown Prompt'}
           </Title>
           <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginTop: 16, fontSize: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -102,7 +102,7 @@ const VersionCompareModal = ({ prompt, version1, version2, onClose }) => {
                 borderLeft: '4px solid #ff7875',
                 borderRadius: 2
               }}></div>
-              <Text type="secondary">删除的内容</Text>
+              <Text type="secondary">Deleted Content</Text>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{
@@ -112,7 +112,7 @@ const VersionCompareModal = ({ prompt, version1, version2, onClose }) => {
                 borderLeft: '4px solid #73d13d',
                 borderRadius: 2
               }}></div>
-              <Text type="secondary">新增的内容</Text>
+              <Text type="secondary">Added Content</Text>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{
@@ -122,7 +122,7 @@ const VersionCompareModal = ({ prompt, version1, version2, onClose }) => {
                 borderLeft: '4px solid #fadb14',
                 borderRadius: 2
               }}></div>
-              <Text type="secondary">修改的内容</Text>
+              <Text type="secondary">Modified Content</Text>
             </div>
           </div>
         </div>
@@ -141,65 +141,65 @@ const VersionCompareModal = ({ prompt, version1, version2, onClose }) => {
       }}
       footer={[
         <Button key="close" type="primary" onClick={onClose}>
-          关闭对比
+          Close Comparison
         </Button>
       ]}
       closeIcon={<CloseOutlined />}
     >
       <Space direction="vertical" size={24} style={{ width: '100%' }}>
-        {/* 版本信息对比 */}
+        {/* Version info comparison */}
         <Row gutter={24}>
           <Col span={12}>
             <Card size="small">
               <Title level={5} style={{ margin: 0, marginBottom: 12, display: 'flex', alignItems: 'center' }}>
                 <ArrowLeftOutlined style={{ color: '#1890ff', marginRight: 8 }} />
-                旧版本: {olderVersion.version}
+                Old Version: {olderVersion.version}
               </Title>
               <Space direction="vertical" size={8} style={{ width: '100%' }}>
                 <div>
-                  <Text strong>创建时间：</Text>
+                  <Text strong>Created At：</Text>
                   <Text style={{ marginLeft: 8 }}>
-                    {olderVersion.createTime ? new Date(olderVersion.createTime).toLocaleString('zh-CN') : '未知'}
+                    {olderVersion.createTime ? new Date(olderVersion.createTime).toLocaleString('en-US') : 'Unknown'}
                   </Text>
                 </div>
                 <div>
-                  <Text strong>说明：</Text>
+                  <Text strong>Description：</Text>
                   <Text style={{ marginLeft: 8 }}>
-                    {olderVersion.description || olderVersion.versionDescription || '无说明'}
+                    {olderVersion.description || olderVersion.versionDescription || 'No description'}
                   </Text>
                 </div>
                 {olderVersion.modelConfig && (
                   <div>
-                    <Text strong>模型：</Text>
+                    <Text strong>Model：</Text>
                     <Text style={{ marginLeft: 8 }}>{olderVersion.modelConfig.modelId}</Text>
                   </div>
                 )}
               </Space>
             </Card>
           </Col>
-          
+
           <Col span={12}>
             <Card size="small">
               <Title level={5} style={{ margin: 0, marginBottom: 12, display: 'flex', alignItems: 'center' }}>
                 <ArrowRightOutlined style={{ color: '#52c41a', marginRight: 8 }} />
-                新版本: {newerVersion.version}
+                New Version: {newerVersion.version}
               </Title>
               <Space direction="vertical" size={8} style={{ width: '100%' }}>
                 <div>
-                  <Text strong>创建时间：</Text>
+                  <Text strong>Created At：</Text>
                   <Text style={{ marginLeft: 8 }}>
-                    {newerVersion.createTime ? new Date(newerVersion.createTime).toLocaleString('zh-CN') : '未知'}
+                    {newerVersion.createTime ? new Date(newerVersion.createTime).toLocaleString('en-US') : 'Unknown'}
                   </Text>
                 </div>
                 <div>
-                  <Text strong>说明：</Text>
+                  <Text strong>Description：</Text>
                   <Text style={{ marginLeft: 8 }}>
-                    {newerVersion.description || newerVersion.versionDescription || '无说明'}
+                    {newerVersion.description || newerVersion.versionDescription || 'No description'}
                   </Text>
                 </div>
                 {newerVersion.modelConfig && (
                   <div>
-                    <Text strong>模型：</Text>
+                    <Text strong>Model：</Text>
                     <Text style={{ marginLeft: 8 }}>{newerVersion.modelConfig.modelId}</Text>
                   </div>
                 )}
@@ -208,12 +208,12 @@ const VersionCompareModal = ({ prompt, version1, version2, onClose }) => {
           </Col>
         </Row>
 
-        {/* 模型配置对比 */}
+        {/* Model Configuration Comparison */}
         <Card
           title={
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <SettingOutlined style={{ marginRight: 8 }} />
-              模型配置对比
+              Model Configuration Comparison
             </div>
           }
           size="small"
@@ -221,15 +221,15 @@ const VersionCompareModal = ({ prompt, version1, version2, onClose }) => {
           {(olderVersion.modelConfig || newerVersion.modelConfig) ? (
             <Row gutter={24}>
               <Col span={12}>
-                <Title level={5} style={{ marginBottom: 12 }}>旧版本配置</Title>
+                <Title level={5} style={{ marginBottom: 12 }}>Old Version Config</Title>
                 {olderVersion.modelConfig ? (
                   <Space direction="vertical" size={8} style={{ width: '100%' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Text type="secondary">模型：</Text>
+                      <Text type="secondary">Model：</Text>
                       <Text>{olderVersion.modelConfig.modelId}</Text>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Text type="secondary">最大令牌：</Text>
+                      <Text type="secondary">Max Tokens：</Text>
                       <Text>{olderVersion.modelConfig.maxTokens}</Text>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -242,15 +242,15 @@ const VersionCompareModal = ({ prompt, version1, version2, onClose }) => {
                     </div>
                   </Space>
                 ) : (
-                  <Text type="secondary">无模型配置</Text>
+                  <Text type="secondary">No model configuration</Text>
                 )}
               </Col>
               <Col span={12}>
-                <Title level={5} style={{ marginBottom: 12 }}>新版本配置</Title>
+                <Title level={5} style={{ marginBottom: 12 }}>New Version Config</Title>
                 {newerVersion.modelConfig ? (
                   <Space direction="vertical" size={8} style={{ width: '100%' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Text type="secondary">模型：</Text>
+                      <Text type="secondary">Model：</Text>
                       <Text
                         strong={olderVersion.modelConfig?.modelId !== newerVersion.modelConfig.modelId}
                         style={{
@@ -261,7 +261,7 @@ const VersionCompareModal = ({ prompt, version1, version2, onClose }) => {
                       </Text>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Text type="secondary">最大令牌：</Text>
+                      <Text type="secondary">Max Tokens：</Text>
                       <Text
                         strong={olderVersion.modelConfig?.maxTokens !== newerVersion.modelConfig.maxTokens}
                         style={{
@@ -295,25 +295,25 @@ const VersionCompareModal = ({ prompt, version1, version2, onClose }) => {
                     </div>
                   </Space>
                 ) : (
-                  <Text type="secondary">无模型配置</Text>
+                  <Text type="secondary">No model configuration</Text>
                 )}
               </Col>
             </Row>
           ) : (
             <Empty
               image={<SettingOutlined style={{ fontSize: 48, color: '#d9d9d9' }} />}
-              description="两个版本都没有模型配置"
+              description="Both versions have no model configuration"
               style={{ padding: '32px 0' }}
             />
           )}
         </Card>
 
-        {/* 内容对比 */}
+        {/* Content Comparison */}
         <Card
           title={
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <FileTextOutlined style={{ marginRight: 8 }} />
-              内容对比
+              Content Comparison
             </div>
           }
           size="small"
@@ -355,7 +355,7 @@ const VersionCompareModal = ({ prompt, version1, version2, onClose }) => {
 
                   return (
                     <div key={index} style={getLineStyle(line.type)}>
-                      {/* 行号 */}
+                      {/* Line Number */}
                       <div style={{
                         padding: '4px 8px',
                         textAlign: 'center',
@@ -366,8 +366,8 @@ const VersionCompareModal = ({ prompt, version1, version2, onClose }) => {
                       }}>
                         {line.lineNumber}
                       </div>
-                      
-                      {/* 变更类型图标 */}
+
+                      {/* Change Type Icon */}
                       <div style={{
                         padding: '4px 8px',
                         textAlign: 'center',
@@ -378,8 +378,8 @@ const VersionCompareModal = ({ prompt, version1, version2, onClose }) => {
                       }}>
                         {getIcon(line.type)}
                       </div>
-                      
-                      {/* 旧版本内容 */}
+
+                      {/* Old Version Content */}
                       <div style={{
                         padding: '4px 12px',
                         borderRight: '1px solid #f0f0f0',
@@ -387,7 +387,7 @@ const VersionCompareModal = ({ prompt, version1, version2, onClose }) => {
                         whiteSpace: 'pre-wrap'
                       }}>
                         {line.type === 'added' ? (
-                          <Text type="secondary" italic>（新增行）</Text>
+                          <Text type="secondary" italic>（Added line）</Text>
                         ) : (
                           <span
                             style={{
@@ -399,15 +399,15 @@ const VersionCompareModal = ({ prompt, version1, version2, onClose }) => {
                           </span>
                         )}
                       </div>
-                      
-                      {/* 新版本内容 */}
+
+                      {/* New Version Content */}
                       <div style={{
                         padding: '4px 12px',
                         color: '#262626',
                         whiteSpace: 'pre-wrap'
                       }}>
                         {line.type === 'removed' ? (
-                          <Text type="secondary" italic>（删除行）</Text>
+                          <Text type="secondary" italic>（Deleted line）</Text>
                         ) : (
                           <span
                             style={{
@@ -426,7 +426,7 @@ const VersionCompareModal = ({ prompt, version1, version2, onClose }) => {
             ) : (
               <Empty
                 image={<FileTextOutlined style={{ fontSize: 48, color: '#d9d9d9' }} />}
-                description="两个版本的内容完全相同"
+                description="The content of both versions is identical"
                 style={{ padding: '32px 0' }}
               />
             )}

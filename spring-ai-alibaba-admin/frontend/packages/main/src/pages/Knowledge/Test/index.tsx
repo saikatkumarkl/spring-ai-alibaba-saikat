@@ -44,14 +44,14 @@ export default function () {
         {
           title: $i18n.get({
             id: 'main.pages.Knowledge.Test.index.knowledgeBase',
-            dm: '知识库',
+            dm: 'Knowledge Base',
           }),
           path: '/knowledge',
         },
         {
           title: $i18n.get({
             id: 'main.pages.Knowledge.Test.index.hitTest',
-            dm: '命中测试',
+            dm: 'Hit Test',
           }),
         },
       ]}

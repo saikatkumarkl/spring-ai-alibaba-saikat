@@ -50,7 +50,7 @@ const McpCard: React.FC<McpCardProps> = ({ data, onClick, className }) => {
       key: 'delete',
       label: $i18n.get({
         id: 'main.pages.MCP.components.McpCard.index.delete',
-        dm: '删除',
+        dm: 'Delete',
       }),
       danger: true,
     });
@@ -65,7 +65,7 @@ const McpCard: React.FC<McpCardProps> = ({ data, onClick, className }) => {
           >
             {$i18n.get({
               id: 'main.pages.MCP.components.McpCard.index.stopService',
-              dm: '停止服务',
+              dm: 'Stop Service',
             })}
           </Button>
         )}
@@ -77,7 +77,7 @@ const McpCard: React.FC<McpCardProps> = ({ data, onClick, className }) => {
           >
             {$i18n.get({
               id: 'main.pages.MCP.components.McpCard.index.startService',
-              dm: '启动服务',
+              dm: 'Start Service',
             })}
           </Button>
         )}
@@ -88,7 +88,7 @@ const McpCard: React.FC<McpCardProps> = ({ data, onClick, className }) => {
         >
           {$i18n.get({
             id: 'main.pages.MCP.components.McpCard.index.editService',
-            dm: '编辑服务',
+            dm: 'Edit Service',
           })}
         </Button>
         <Dropdown
@@ -122,7 +122,7 @@ const McpCard: React.FC<McpCardProps> = ({ data, onClick, className }) => {
         {
           label: $i18n.get({
             id: 'main.pages.MCP.components.McpCard.index.description',
-            dm: '描述',
+            dm: 'Description',
           }),
           content: description || '-',
         },
@@ -138,7 +138,7 @@ const McpCard: React.FC<McpCardProps> = ({ data, onClick, className }) => {
         <div className={styles['update-time']}>
           {$i18n.get({
             id: 'main.pages.MCP.components.McpCard.index.updatedAt',
-            dm: '更新于',
+            dm: 'Updated at ',
           })}
           {updateTime}
         </div>

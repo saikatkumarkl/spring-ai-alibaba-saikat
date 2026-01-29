@@ -116,7 +116,7 @@ export default (props: IProps) => {
                     >
                       {$i18n.get({
                         id: 'main.pages.App.components.MCPSelector.MCPServerListItem.index.tool',
-                        dm: '工具',
+                        dm: 'Tool',
                       })}
 
                       {item.tools.length}

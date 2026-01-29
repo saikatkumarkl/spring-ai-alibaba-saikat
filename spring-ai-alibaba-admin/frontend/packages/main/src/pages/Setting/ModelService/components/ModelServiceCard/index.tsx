@@ -15,11 +15,11 @@ const ModelServiceCard = ({ service, onClick }: ModelServiceCardProps) => {
   const text = service.enable
     ? $i18n.get({
         id: 'main.pages.Setting.ModelService.components.ModelServiceCard.index.started',
-        dm: '已启动',
+        dm: 'Started',
       })
     : $i18n.get({
         id: 'main.pages.Setting.ModelService.components.ModelServiceCard.index.stopped',
-        dm: '已停用',
+        dm: 'Stopped',
       });
   const updatedAt = service.gmt_modified
     ? dayjs(service.gmt_modified).format('YYYY-MM-DD HH:mm:ss')
@@ -46,7 +46,7 @@ const ModelServiceCard = ({ service, onClick }: ModelServiceCardProps) => {
         key: 'delete',
         label: $i18n.get({
           id: 'main.pages.Setting.ModelService.components.ModelServiceCard.index.delete',
-          dm: '删除',
+          dm: 'Delete',
         }),
         danger: true,
       });
@@ -62,7 +62,7 @@ const ModelServiceCard = ({ service, onClick }: ModelServiceCardProps) => {
           >
             {$i18n.get({
               id: 'main.pages.Setting.ModelService.components.ModelServiceCard.index.stopService',
-              dm: '停止服务',
+              dm: 'Stop Service',
             })}
           </Button>
         ) : (
@@ -73,7 +73,7 @@ const ModelServiceCard = ({ service, onClick }: ModelServiceCardProps) => {
           >
             {$i18n.get({
               id: 'main.pages.Setting.ModelService.components.ModelServiceCard.index.startService',
-              dm: '启动服务',
+              dm: 'Start Service',
             })}
           </Button>
         )}
@@ -84,7 +84,7 @@ const ModelServiceCard = ({ service, onClick }: ModelServiceCardProps) => {
         >
           {$i18n.get({
             id: 'main.pages.Setting.ModelService.components.ModelServiceCard.index.editService',
-            dm: '编辑服务',
+            dm: 'Edit Service',
           })}
         </Button>
         {menuItems.length > 0 && (
@@ -122,12 +122,12 @@ const ModelServiceCard = ({ service, onClick }: ModelServiceCardProps) => {
         {
           label: $i18n.get({
             id: 'main.pages.Setting.ModelService.components.ModelServiceCard.index.modelCount',
-            dm: '模型数量',
+            dm: 'Model Count',
           }),
           content: $i18n.get(
             {
               id: 'main.pages.Setting.ModelService.components.ModelServiceCard.index.numberOfModels',
-              dm: '{var1}个',
+              dm: '{var1} models',
             },
             { var1: model_count },
           ),
@@ -135,7 +135,7 @@ const ModelServiceCard = ({ service, onClick }: ModelServiceCardProps) => {
         {
           label: $i18n.get({
             id: 'main.pages.Setting.ModelService.components.ModelServiceCard.index.modelType',
-            dm: '模型类型',
+            dm: 'Model Type',
           }),
           content: (
             <div className={styles['model-type']}>
@@ -154,7 +154,7 @@ const ModelServiceCard = ({ service, onClick }: ModelServiceCardProps) => {
         <div className={styles['footer-desc-node']}>
           {$i18n.get({
             id: 'main.pages.Setting.ModelService.components.ModelServiceCard.index.updatedAt',
-            dm: '更新于',
+            dm: 'Updated at ',
           })}
           {updatedAt}
         </div>

@@ -21,7 +21,7 @@ const GuideText = ({ prologue, onChange }: GuideTextProps) => {
       <div className={commonStyles.sectionTitle}>
         {$i18n.get({
           id: 'main.components.ExperienceConfigDrawer.components.guideText.index.welcomeMessage',
-          dm: '欢迎语',
+          dm: 'Welcome Message',
         })}
       </div>
       <div className={styles.textAreaWrapper}>
@@ -30,7 +30,7 @@ const GuideText = ({ prologue, onChange }: GuideTextProps) => {
           onChange={handleTextChange}
           placeholder={$i18n.get({
             id: 'main.components.ExperienceConfigDrawer.components.guideText.index.enterWelcomeMessage',
-            dm: '请输入欢迎语',
+            dm: 'Please enter welcome message',
           })}
           rows={3}
           maxLength={defaultSettings.agentWelcomeMessageMaxLength}

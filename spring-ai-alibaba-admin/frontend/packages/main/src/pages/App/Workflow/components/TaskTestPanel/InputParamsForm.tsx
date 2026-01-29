@@ -50,7 +50,7 @@ function InputParamsForm(props: {
         <div className={styles['var-group-name']}>
           {$i18n.get({
             id: 'main.pages.App.Workflow.components.TaskTestPanel.InputParamsForm.index.customVariable',
-            dm: '自定义变量',
+            dm: 'Custom Variables',
           })}
         </div>
         {userParams.map((item) => (
@@ -82,7 +82,7 @@ function InputParamsForm(props: {
           <div className={styles['var-group-name']}>
             {$i18n.get({
               id: 'main.pages.App.Workflow.components.TaskTestPanel.InputParamsForm.index.builtinVariable',
-              dm: '内置变量',
+              dm: 'Built-in Variables',
             })}
           </div>
           {systemParams.map((item) => (
@@ -99,7 +99,7 @@ function InputParamsForm(props: {
               <Input
                 placeholder={$i18n.get({
                   id: 'main.pages.App.Workflow.components.TaskTestPanel.InputParamsForm.index.enter',
-                  dm: '请输入',
+                  dm: 'Please enter',
                 })}
                 value={item.value}
                 onChange={(e) =>
@@ -130,7 +130,7 @@ export function InputParamsFormDrawer(props: {
       getContainer={false}
       title={$i18n.get({
         id: 'main.pages.App.Workflow.components.TaskTestPanel.InputParamsForm.index.inputParamConfiguration',
-        dm: '入参变量配置',
+        dm: 'Input Parameter Configuration',
       })}
     >
       <InputParamsForm disableShowQuery={props.disableShowQuery} />

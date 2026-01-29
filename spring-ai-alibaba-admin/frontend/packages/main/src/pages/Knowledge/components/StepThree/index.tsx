@@ -16,45 +16,45 @@ const chunkOpts = [
   {
     label: $i18n.get({
       id: 'main.pages.Knowledge.components.StepThree.index.splitByLength',
-      dm: '按长度切分',
+      dm: 'Split by Length',
     }),
     value: 'length',
     desc: $i18n.get({
       id: 'main.pages.Knowledge.components.StepThree.index.suitableForTokenCount',
-      dm: '适合对 Token 数量有严格要求的场景，比如使用上下文长度较小的模型时。',
+      dm: 'Suitable for scenarios with strict token count requirements, such as when using models with smaller context lengths.',
     }),
   },
   {
     label: $i18n.get({
       id: 'main.pages.Knowledge.components.StepThree.index.splitByPage',
-      dm: '按分页切分',
+      dm: 'Split by Page',
     }),
     value: 'page',
     desc: $i18n.get({
       id: 'main.pages.Knowledge.components.StepThree.index.suitableForIndependentPages',
-      dm: '适合每页传达独立主题的文档，要求不同页面的内容不会混杂在同一文本切片中。',
+      dm: 'Suitable for documents where each page conveys an independent topic, requiring content from different pages not to be mixed in the same text chunk.',
     }),
   },
   {
     label: $i18n.get({
       id: 'main.pages.Knowledge.components.StepThree.index.splitByTitle',
-      dm: '按标题切分',
+      dm: 'Split by Title',
     }),
     value: 'title',
     desc: $i18n.get({
       id: 'main.pages.Knowledge.components.StepThree.index.suitableForIndependentTitles',
-      dm: '适合于用标题划分并传达独立主题的文档,要求不同级标题下的内容不会混杂在同一文本切片中。',
+      dm: 'Suitable for documents divided by titles conveying independent topics, requiring content under different heading levels not to be mixed in the same text chunk.',
     }),
   },
   {
     label: $i18n.get({
       id: 'main.pages.Knowledge.components.StepThree.index.splitByRegex',
-      dm: '按正则切分',
+      dm: 'Split by Regex',
     }),
     value: 'regex',
     desc: $i18n.get({
       id: 'main.pages.Knowledge.components.StepThree.index.splitByRegexExpression',
-      dm: '依据设置的正则表达式,对知识库中的文本进行切分。',
+      dm: 'Split the text in the knowledge base based on the configured regular expression.',
     }),
   },
 ];
@@ -88,7 +88,7 @@ export default function StepThree({
         <Form.Item
           label={$i18n.get({
             id: 'main.pages.Knowledge.components.StepThree.index.chunkSplittingMethod',
-            dm: 'Chunk切分方式',
+            dm: 'Chunk Splitting Method',
           })}
         >
           <ChunkType
@@ -104,7 +104,7 @@ export default function StepThree({
           <Form.Item
             label={$i18n.get({
               id: 'main.pages.Knowledge.components.StepThree.index.inputRegularExpression',
-              dm: '输入正则表达式',
+              dm: 'Enter Regular Expression',
             })}
             required
           >
@@ -123,7 +123,7 @@ export default function StepThree({
           <Form.Item
             label={$i18n.get({
               id: 'main.pages.Knowledge.components.StepThree.index.segmentEstimatedLength',
-              dm: '分段预估长度',
+              dm: 'Segment Estimated Length',
             })}
           >
             <SliderInput
@@ -146,7 +146,7 @@ export default function StepThree({
           <Form.Item
             label={$i18n.get({
               id: 'main.pages.Knowledge.components.StepThree.index.segmentOverlapLength',
-              dm: '分段重叠长度',
+              dm: 'Segment Overlap Length',
             })}
           >
             <SliderInput

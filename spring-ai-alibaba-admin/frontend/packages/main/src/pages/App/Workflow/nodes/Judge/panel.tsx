@@ -62,7 +62,7 @@ export default memo(function JudgePanel(props: {
         <div className="spark-flow-panel-form-title">
           {$i18n.get({
             id: 'main.pages.App.Workflow.nodes.Judge.panel.other',
-            dm: '其他',
+            dm: 'Other',
           })}
         </div>
       </div>

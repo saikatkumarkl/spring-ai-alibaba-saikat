@@ -47,11 +47,11 @@ export default memo(function ExtractParamItem(props: IExtractParamItemProps) {
           {data.required
             ? $i18n.get({
                 id: 'main.pages.App.Workflow.components.ExtractParamItem.index.required',
-                dm: '必填',
+                dm: 'Required',
               })
             : $i18n.get({
                 id: 'main.pages.App.Workflow.components.ExtractParamItem.index.optional',
-                dm: '非必填',
+                dm: 'Optional',
               })}
         </div>
         <div

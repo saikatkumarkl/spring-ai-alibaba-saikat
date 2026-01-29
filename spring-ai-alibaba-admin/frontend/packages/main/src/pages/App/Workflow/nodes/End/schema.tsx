@@ -9,8 +9,8 @@ const checkEndNodeDataValid = (data: IEndNodeData) => {
   if (data.node_param.output_type === 'json') {
     checkInputParams(data.node_param.json_params, errorMsg, {
       label: $i18n.get({
-        id: 'main.pages.App.Workflow.nodes.End.schema输出',
-        dm: '输出',
+        id: 'main.pages.App.Workflow.nodes.End.schemaOutput',
+        dm: 'Output',
       }),
     });
   }
@@ -18,12 +18,12 @@ const checkEndNodeDataValid = (data: IEndNodeData) => {
     if (!data.node_param.text_template) {
       errorMsg.push({
         label: $i18n.get({
-          id: 'main.pages.App.Workflow.nodes.End.schema文本模板',
-          dm: '文本模板',
+          id: 'main.pages.App.Workflow.nodes.End.schemaTextTemplate',
+          dm: 'Text Template',
         }),
         error: $i18n.get({
-          id: 'main.pages.App.Workflow.nodes.End.schema不能为空',
-          dm: '不能为空',
+          id: 'main.pages.App.Workflow.nodes.End.schemaCannotBeEmpty',
+          dm: 'Cannot be empty',
         }),
       });
     }
@@ -35,12 +35,12 @@ export const EndSchema: INodeSchema = {
   type: 'End',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.End.schema.end',
-    dm: '结束',
+    dm: 'End',
   }),
   iconType: 'spark-flag-line',
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.End.schema.endNode',
-    dm: '结束节点',
+    dm: 'End Node',
   }),
   defaultParams: {
     input_params: [],
@@ -58,7 +58,7 @@ export const EndSchema: INodeSchema = {
   disableConnectSource: true,
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.End.schema.basic',
-    dm: '基础',
+    dm: 'Basic',
   }),
   bgColor: 'var(--ag-ant-color-purple-hover)',
   checkValid: (data) => checkEndNodeDataValid(data as IEndNodeData),

@@ -284,7 +284,7 @@ export default memo(function GroupVariableForm({
         >
           {$i18n.get({
             id: 'main.pages.App.Workflow.components.GroupVariableForm.index.addVariable',
-            dm: '添加变量',
+            dm: 'Add Variable',
           })}
         </Button>
       </div>

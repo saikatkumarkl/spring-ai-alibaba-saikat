@@ -17,7 +17,7 @@ export default function (props: { appId: string; type: IAppType }) {
 
   const title = $i18n.get({
     id: 'main.pages.App.components.ChannelConfig.index.viewApi',
-    dm: '查看API',
+    dm: 'View API',
   });
 
   const codeText = useMemo(() => {
@@ -88,7 +88,7 @@ export default function (props: { appId: string; type: IAppType }) {
                 message.success(
                   $i18n.get({
                     id: 'main.pages.App.index.copySuccess',
-                    dm: '复制成功',
+                    dm: 'Copy successful',
                   }),
                 );
               }}

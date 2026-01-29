@@ -70,13 +70,13 @@ export default function ExampleConfigForm({
                     <span style={{ flex: 1, width: 'calc(50% - 98px)' }}>
                       {$i18n.get({
                         id: 'main.pages.Component.Plugin.components.ExampleConfigForm.index.userQuery',
-                        dm: '用户输入Query',
+                        dm: 'User Input Query',
                       })}
                     </span>
                     <span style={{ width: 180, flexShrink: 0 }}>
                       {$i18n.get({
                         id: 'main.pages.Component.Plugin.components.ExampleConfigForm.index.inputParameters',
-                        dm: '输入参数',
+                        dm: 'Input Parameters',
                       })}
                     </span>
                     <Flex
@@ -94,7 +94,7 @@ export default function ExampleConfigForm({
                       value={item.query}
                       placeholder={$i18n.get({
                         id: 'main.pages.Component.Plugin.components.ExampleConfigForm.index.enterQuery',
-                        dm: '请输入query',
+                        dm: 'Please enter query',
                       })}
                       style={{ flexShrink: 0, width: 'calc(50% - 98px)' }}
                     />
@@ -114,7 +114,7 @@ export default function ExampleConfigForm({
                               <Input
                                 placeholder={$i18n.get({
                                   id: 'main.pages.Component.Plugin.components.ExampleConfigForm.index.enterExampleValue',
-                                  dm: '请输入示例值',
+                                  dm: 'Please enter example value',
                                 })}
                                 onChange={(e) =>
                                   changeExampleItem(
@@ -162,7 +162,7 @@ export default function ExampleConfigForm({
             >
               {$i18n.get({
                 id: 'main.pages.Component.Plugin.components.ExampleConfigForm.index.addExample',
-                dm: '增加示例',
+                dm: 'Add Example',
               })}
               （{examples.length || 0}/{MAX_LEN}）
             </Button>

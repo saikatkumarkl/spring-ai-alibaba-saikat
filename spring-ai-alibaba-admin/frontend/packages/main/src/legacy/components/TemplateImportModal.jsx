@@ -42,7 +42,7 @@ const TemplateImportModal = ({ onImport, onClose }) => {
     total: 0
   });
 
-  // 获取模板列表
+  // Get template list
   const fetchTemplates = async (params = {}) => {
     setLoading(true);
     try {
@@ -53,7 +53,7 @@ const TemplateImportModal = ({ onImport, onClose }) => {
         promptTemplateKey: searchText || undefined,
         ...params
       });
-      
+
       if (response.code === 200 && response.data) {
         setTemplates(response.data.pageItems || []);
         setPagination(prev => ({
@@ -62,43 +62,43 @@ const TemplateImportModal = ({ onImport, onClose }) => {
           current: response.data.pageNumber || 1
         }));
       } else {
-        message.error(response.message || '获取模板列表失败');
+        message.error(response.message || 'Failed to get template list');
       }
     } catch (error) {
-      console.error('获取模板列表失败:', error);
-      message.error('获取模板列表失败，请稍后重试');
+      console.error('Failed to fetch template list:', error);
+      message.error('Failed to get template list, please try again later');
     } finally {
       setLoading(false);
     }
   };
 
-  // 获取模板详情
+  // Fetch template detail
   const fetchTemplateDetail = async (promptTemplateKey) => {
     if (!promptTemplateKey) return;
-    
+
     setTemplateDetailLoading(true);
     try {
       const response = await getPromptTemplate({ promptTemplateKey });
-      
+
       if (response.code === 200 && response.data) {
         setSelectedTemplateData(response.data);
       } else {
-        message.error(response.message || '获取模板详情失败');
+        message.error(response.message || 'Failed to get template details');
       }
     } catch (error) {
-      console.error('获取模板详情失败:', error);
-      message.error('获取模板详情失败，请稍后重试');
+      console.error('Failed to fetch template detail:', error);
+      message.error('Failed to get template details, please try again later');
     } finally {
       setTemplateDetailLoading(false);
     }
   };
 
-  // 初始化加载
+  // Initialize and load
   useEffect(() => {
     fetchTemplates();
   }, []);
 
-  // 模板选择变化
+  // Template selection change
   useEffect(() => {
     if (selectedTemplate) {
       fetchTemplateDetail(selectedTemplate);
@@ -107,27 +107,27 @@ const TemplateImportModal = ({ onImport, onClose }) => {
     }
   }, [selectedTemplate]);
 
-  // 搜索处理
+  // Search handler
   const handleSearch = (value) => {
     setSearchText(value);
     setPagination(prev => ({ ...prev, current: 1 }));
-    fetchTemplates({ 
+    fetchTemplates({
       pageNo: 1,
       search: value ? 'blur' : undefined,
       promptTemplateKey: value || undefined
     });
   };
 
-  // 分页处理
+  // Pagination handler
   const handlePageChange = (page, pageSize) => {
     setPagination(prev => ({ ...prev, current: page, pageSize }));
     fetchTemplates({ pageNo: page, pageSize });
   };
 
-  // 导入处理
+  // Import handler
   const handleImport = () => {
     if (selectedTemplateData) {
-      // 解析变量
+      // Parse variables
       let variables = [];
       try {
         if (selectedTemplateData.variables) {
@@ -135,17 +135,17 @@ const TemplateImportModal = ({ onImport, onClose }) => {
           variables = Object.keys(varsObj);
         }
       } catch (error) {
-        console.warn('解析模板变量失败:', error);
+        console.warn('Failed to parse template variables:', error);
       }
 
-      // 解析标签
+      // Parse tags
       let tags = [];
       try {
         if (selectedTemplateData.tags) {
           tags = JSON.parse(selectedTemplateData.tags);
         }
       } catch (error) {
-        // 如果解析失败，尝试按逗号分割
+        // If parsing fails, try splitting by comma
         tags = selectedTemplateData.tags ? selectedTemplateData.tags.split(',').map(t => t.trim()) : [];
       }
 
@@ -158,12 +158,12 @@ const TemplateImportModal = ({ onImport, onClose }) => {
         parameters: variables,
         tags: tags
       };
-      
+
       onImport(templateData);
     }
   };
 
-  // 解析标签
+  // Parse tags
   const parseTags = (tagsString) => {
     if (!tagsString) return [];
     try {
@@ -189,8 +189,8 @@ const TemplateImportModal = ({ onImport, onClose }) => {
             <DownloadOutlined style={{ color: '#1890ff', fontSize: 20 }} />
           </div>
           <div>
-            <Title level={3} style={{ margin: 0 }}>从模板导入</Title>
-            <Text type="secondary">选择一个预设模板快速开始创建Prompt</Text>
+            <Title level={3} style={{ margin: 0 }}>Import from Template</Title>
+            <Text type="secondary">Select a preset template to quickly start creating a Prompt</Text>
           </div>
         </div>
       }
@@ -207,7 +207,7 @@ const TemplateImportModal = ({ onImport, onClose }) => {
       }}
       footer={[
         <Button key="cancel" onClick={onClose}>
-          取消
+          Cancel
         </Button>,
         <Button
           key="import"
@@ -216,16 +216,16 @@ const TemplateImportModal = ({ onImport, onClose }) => {
           onClick={handleImport}
           icon={<DownloadOutlined />}
         >
-          导入模板
+          Import Template
         </Button>
       ]}
       closeIcon={<CloseOutlined />}
     >
       <Space direction="vertical" size={24} style={{ width: '100%' }}>
-        {/* 搜索栏 */}
+        {/* Search bar */}
         <div>
           <Search
-            placeholder="搜索模板名称或关键词..."
+            placeholder="Search template name or keywords..."
             allowClear
             onSearch={handleSearch}
             style={{ width: 300 }}
@@ -234,14 +234,14 @@ const TemplateImportModal = ({ onImport, onClose }) => {
         </div>
 
         <Row gutter={24}>
-          {/* 左侧：模板列表 */}
+          {/* Left: Template list */}
           <Col span={16}>
-            <Card 
+            <Card
               title={
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <FolderOutlined />
-                  <span>选择模板</span>
-                  <Text type="secondary">({pagination.total} 个模板)</Text>
+                  <span>Select Template</span>
+                  <Text type="secondary">({pagination.total} templates)</Text>
                 </div>
               }
               size="small"
@@ -273,19 +273,19 @@ const TemplateImportModal = ({ onImport, onClose }) => {
                                   <CheckCircleOutlined style={{ color: '#1890ff', fontSize: 16 }} />
                                 )}
                               </div>
-                              
-                              <Paragraph 
-                                style={{ 
-                                  fontSize: 12, 
-                                  color: '#8c8c8c', 
+
+                              <Paragraph
+                                style={{
+                                  fontSize: 12,
+                                  color: '#8c8c8c',
                                   margin: '0 0 8px 0',
                                   minHeight: 32
                                 }}
                                 ellipsis={{ rows: 2 }}
                               >
-                                {template.templateDescription || '暂无描述'}
+                                {template.templateDescription || 'No description'}
                               </Paragraph>
-                              
+
                               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                                 {tags.slice(0, 3).map((tag, index) => (
                                   <Tag key={index} size="small" color="blue">
@@ -301,8 +301,8 @@ const TemplateImportModal = ({ onImport, onClose }) => {
                         );
                       })}
                     </Row>
-                    
-                    {/* 分页 */}
+
+                    {/* Pagination */}
                     {pagination.total > pagination.pageSize && (
                       <div style={{ textAlign: 'center', marginTop: 24 }}>
                         <Pagination
@@ -311,30 +311,30 @@ const TemplateImportModal = ({ onImport, onClose }) => {
                           pageSize={pagination.pageSize}
                           showSizeChanger
                           showQuickJumper
-                          showTotal={(total, range) => `第 ${range[0]}-${range[1]} 项，共 ${total} 个模板`}
+                          showTotal={(total, range) => `Items ${range[0]}-${range[1]} of ${total} templates`}
                           onChange={handlePageChange}
                         />
                       </div>
                     )}
                   </div>
                 ) : (
-                  <Empty 
+                  <Empty
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    description="暂无模板数据"
+                    description="No template data"
                   />
                 )}
               </Spin>
             </Card>
           </Col>
 
-          {/* 右侧：模板预览 */}
+          {/* Right: Template preview */}
           <Col span={8}>
             <div style={{ position: 'sticky', top: 0 }}>
-              <Card 
+              <Card
                 title={
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <InfoCircleOutlined />
-                    <span>模板预览</span>
+                    <span>Template Preview</span>
                   </div>
                 }
                 size="small"
@@ -343,7 +343,7 @@ const TemplateImportModal = ({ onImport, onClose }) => {
                   {selectedTemplateData ? (
                     <Space direction="vertical" size={16} style={{ width: '100%' }}>
                       <div>
-                        <Text strong style={{ display: 'block', marginBottom: 4 }}>模板名称</Text>
+                        <Text strong style={{ display: 'block', marginBottom: 4 }}>Template Name</Text>
                         <Text>{selectedTemplateData.templateDescription || selectedTemplateData.promptTemplateKey}</Text>
                       </div>
 
@@ -358,7 +358,7 @@ const TemplateImportModal = ({ onImport, onClose }) => {
                           const paramNames = Object.keys(variables);
                           return paramNames.length > 0 ? (
                             <div>
-                              <Text strong style={{ display: 'block', marginBottom: 8 }}>参数列表</Text>
+                              <Text strong style={{ display: 'block', marginBottom: 8 }}>Parameter List</Text>
                               <Space wrap>
                                 {paramNames.map((param, index) => (
                                   <Tag key={index} color="blue">{param}</Tag>
@@ -373,7 +373,7 @@ const TemplateImportModal = ({ onImport, onClose }) => {
 
                       {selectedTemplateData.template && (
                         <div>
-                          <Text strong style={{ display: 'block', marginBottom: 8 }}>内容预览</Text>
+                          <Text strong style={{ display: 'block', marginBottom: 8 }}>Content Preview</Text>
                           <div style={{
                             backgroundColor: '#fafafa',
                             padding: 12,
@@ -394,7 +394,7 @@ const TemplateImportModal = ({ onImport, onClose }) => {
                         const tags = parseTags(selectedTemplateData.tags);
                         return tags.length > 0 ? (
                           <div>
-                            <Text strong style={{ display: 'block', marginBottom: 8 }}>标签</Text>
+                            <Text strong style={{ display: 'block', marginBottom: 8 }}>Tags</Text>
                             <Space wrap>
                               {tags.map((tag, index) => (
                                 <Tag key={index} color="geekblue">{tag}</Tag>
@@ -408,7 +408,7 @@ const TemplateImportModal = ({ onImport, onClose }) => {
                     <div style={{ textAlign: 'center', padding: '40px 0' }}>
                       <FileTextOutlined style={{ fontSize: 48, color: '#d9d9d9', marginBottom: 16 }} />
                       <br />
-                      <Text type="secondary">点击左侧模板查看详情</Text>
+                      <Text type="secondary">Click a template on the left to view details</Text>
                     </div>
                   )}
                 </Spin>
@@ -417,26 +417,26 @@ const TemplateImportModal = ({ onImport, onClose }) => {
           </Col>
         </Row>
 
-        {/* 底部提示 */}
+        {/* Bottom hint */}
         {selectedTemplateData && (
           <Alert
             message={
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <InfoCircleOutlined style={{ color: '#1890ff' }} />
                 <span>
-                  导入后将替换当前Prompt内容
+                  Importing will replace current Prompt content
                   {(() => {
                     try {
                       if (selectedTemplateData.variables) {
                         const variables = JSON.parse(selectedTemplateData.variables);
                         const paramCount = Object.keys(variables).length;
-                        return paramCount > 0 ? `，包含 ${paramCount} 个参数` : '';
+                        return paramCount > 0 ? `, includes ${paramCount} parameters` : '';
                       }
                     } catch (error) {
                       return '';
                     }
                     return '';
-                  })()} 
+                  })()}
                 </span>
               </div>
             }

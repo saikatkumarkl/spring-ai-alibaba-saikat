@@ -135,7 +135,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const createNewSession = () => {
     const newSession: ChatSession = {
       id: `session_${Date.now()}`,
-      title: `对话 ${state.sessions.length + 1}`,
+      title: `Conversation ${state.sessions.length + 1}`,
       messages: [],
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -168,7 +168,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // TODO: Replace with actual API call
       await simulateAPICall(content, currentSession.id, dispatch);
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: '发送消息失败' });
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to send message' });
     } finally {
       dispatch({ type: 'SET_STREAMING', payload: false });
     }
@@ -202,12 +202,12 @@ const simulateAPICall = async (
   const assistantMessage: Message = {
     id: `msg_${Date.now()}`,
     type: 'assistant',
-    content: `我收到了你的消息："${content}"。这是一个模拟回复，用于演示聊天界面功能。`,
+    content: `I received your message: "${content}". This is a mock reply to demonstrate the chat interface functionality.`,
     timestamp: new Date(),
-    toolCalls: content.includes('工具') ? [{
+    toolCalls: content.includes('tool') ? [{
       name: 'example_tool',
       arguments: { query: content },
-      result: '工具调用示例结果'
+      result: 'Tool call example result'
     }] : undefined,
   };
 

@@ -10,11 +10,11 @@ const checkValid = (data: IVariableHandleNodeData) => {
       errorMsg.push({
         label: $i18n.get({
           id: 'main.pages.App.Workflow.nodes.VariableHandle.schema.outputContent',
-          dm: '输出内容',
+          dm: 'Output Content',
         }),
         error: $i18n.get({
           id: 'main.pages.App.Workflow.nodes.VariableHandle.schema.notNull',
-          dm: '不能为空',
+          dm: 'Cannot be empty',
         }),
       });
     }
@@ -22,7 +22,7 @@ const checkValid = (data: IVariableHandleNodeData) => {
     checkInputParams(data.node_param.json_params, errorMsg, {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.VariableHandle.schema.outputContent',
-        dm: '输出内容',
+        dm: 'Output Content',
       }),
     });
   } else if (data.node_param.type === 'group') {
@@ -34,11 +34,11 @@ const checkValid = (data: IVariableHandleNodeData) => {
       errorMsg.push({
         label: $i18n.get({
           id: 'main.pages.App.Workflow.nodes.VariableHandle.schema.group',
-          dm: '分组',
+          dm: 'Group',
         }),
         error: $i18n.get({
           id: 'main.pages.App.Workflow.nodes.VariableHandle.schema.notNull',
-          dm: '不能为空',
+          dm: 'Cannot be empty',
         }),
       });
     }
@@ -51,16 +51,16 @@ export const VariableHandleSchema: INodeSchema = {
   type: 'VariableHandle',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.VariableHandle.schema.variableProcessing',
-    dm: '变量处理',
+    dm: 'Variable Processing',
   }),
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.VariableHandle.schema.processVariables',
-    dm: '对变量进行多种方法的处理。',
+    dm: 'Process variables using multiple methods.',
   }),
   iconType: 'spark-variableProcessing-line',
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.VariableHandle.schema.variable',
-    dm: '变量',
+    dm: 'Variable',
   }),
   defaultParams: {
     input_params: [],

@@ -95,7 +95,7 @@ export const executeStreamingPrompt = async (
     let currentMessage = {
       id: Date.now(),
       promptId,
-      type: 'assistant', // 修正类型匹配，与UI中的判断一致
+      type: 'assistant', // Keep type aligned with UI expectations
       content: '',
       isLoading: true,
       timestamp: formatTime(Date.now()),
@@ -154,7 +154,7 @@ export const executeStreamingPrompt = async (
       if (updateTimeoutId) {
         clearTimeout(updateTimeoutId);
       }
-      // 控制更新频率，避免过于频繁的UI更新
+      // Throttle updates to avoid overly frequent UI refreshes
       updateTimeoutId = setTimeout(updateChatHistory, 50);
     };
 
@@ -166,7 +166,7 @@ export const executeStreamingPrompt = async (
           if (done) {
             // Stream completed
             currentMessage.isLoading = false;
-            // 清除待执行的更新，立即执行最终更新
+            // Clear pending updates and apply final update immediately
             if (updateTimeoutId) {
               clearTimeout(updateTimeoutId);
               updateTimeoutId = null;
@@ -199,12 +199,12 @@ export const executeStreamingPrompt = async (
                 } else if (data.type === 'content' || data.type === 'message') {
                   // Append content incrementally for streaming display
                   currentMessage.content += data.content || '';
-                  // 使用节流更新策略，提高流式展示的流畅性
+                  // Use throttled updates to keep streaming smooth
                   scheduleUpdate();
                 } else if (data.type === 'end') {
                   // Streaming finished
                   currentMessage.isLoading = false;
-                  // 清除待执行的更新，立即执行最终更新
+                  // Clear pending updates and apply final update immediately
                   if (updateTimeoutId) {
                     clearTimeout(updateTimeoutId);
                     updateTimeoutId = null;
@@ -214,16 +214,16 @@ export const executeStreamingPrompt = async (
                   return;
                 } else if (data.type === 'error') {
                   // Handle error
-                  currentMessage.content = `错误: ${data.error || '未知错误'}`;
+                  currentMessage.content = `Error: ${data.error || 'Unknown error'}`;
                   currentMessage.isLoading = false;
-                  // 清除待执行的更新，立即执行错误状态更新
+                  // Clear pending updates and apply error update immediately
                   if (updateTimeoutId) {
                     clearTimeout(updateTimeoutId);
                     updateTimeoutId = null;
                   }
                   updateChatHistory();
                   delete eventSourceRefs[promptId];
-                  message.error(data.error || '请求失败');
+                  message.error(data.error || 'Request failed');
                   return;
                 }
               } catch (parseError) {
@@ -234,16 +234,16 @@ export const executeStreamingPrompt = async (
         }
       } catch (streamError) {
         console.error('Stream reading error:', streamError);
-        currentMessage.content = '连接错误，请稍后重试';
+        currentMessage.content = 'Connection error, please try again later';
         currentMessage.isLoading = false;
-        // 清除待执行的更新，立即执行错误状态更新
+        // Clear pending updates and apply error update immediately
         if (updateTimeoutId) {
           clearTimeout(updateTimeoutId);
           updateTimeoutId = null;
         }
         updateChatHistory();
         delete eventSourceRefs[promptId];
-        message.error('连接失败');
+        message.error('Connection failed');
       }
     };
 
@@ -251,13 +251,13 @@ export const executeStreamingPrompt = async (
 
   } catch (error) {
     console.error('Run prompt error:', error);
-    message.error('请求失败');
+    message.error('Request failed');
 
     // Update the loading message to show error
     onUpdateChatHistory(promptId, (chatHistory) =>
       chatHistory.map(msg =>
         msg.isLoading && msg.promptId === promptId
-          ? { ...msg, content: '请求失败，请稍后重试', isLoading: false }
+          ? { ...msg, content: 'Request failed, please try again later', isLoading: false }
           : msg
       )
     );

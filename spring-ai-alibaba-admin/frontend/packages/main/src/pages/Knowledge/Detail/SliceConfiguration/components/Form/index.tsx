@@ -46,7 +46,7 @@ const TestForm: React.FC<FormProps> = ({ formRef, className, onSubmit }) => {
         <Form.Item
           label={$i18n.get({
             id: 'main.pages.Knowledge.Detail.SliceConfiguration.components.Form.index.chunkSplittingMethod',
-            dm: 'Chunk切分方式',
+            dm: 'Chunk Splitting Method',
           })}
           name="chunk_type"
         >
@@ -61,14 +61,14 @@ const TestForm: React.FC<FormProps> = ({ formRef, className, onSubmit }) => {
           <Form.Item
             label={$i18n.get({
               id: 'main.pages.Knowledge.components.StepThree.index.inputRegularExpression',
-              dm: '输入正则表达式',
+              dm: 'Enter Regular Expression',
             })}
             rules={[
               {
                 required: true,
                 message: $i18n.get({
                   id: 'main.pages.Knowledge.Detail.SliceConfiguration.components.Form.index.enterRegularExpression',
-                  dm: '请输入正则表达式',
+                  dm: 'Please enter regular expression',
                 }),
               },
             ]}
@@ -81,7 +81,7 @@ const TestForm: React.FC<FormProps> = ({ formRef, className, onSubmit }) => {
           <Form.Item
             label={$i18n.get({
               id: 'main.pages.Knowledge.Detail.SliceConfiguration.components.Form.index.estimatedChunkLength',
-              dm: '分段预估长度',
+              dm: 'Estimated Chunk Length',
             })}
             name="chunk_size"
             rules={[
@@ -89,7 +89,7 @@ const TestForm: React.FC<FormProps> = ({ formRef, className, onSubmit }) => {
                 required: true,
                 message: $i18n.get({
                   id: 'main.pages.Knowledge.Detail.SliceConfiguration.components.Form.index.enterEstimatedChunkLength',
-                  dm: '请输入分段预估长度',
+                  dm: 'Please enter estimated chunk length',
                 }),
               },
             ]}
@@ -102,7 +102,7 @@ const TestForm: React.FC<FormProps> = ({ formRef, className, onSubmit }) => {
           <Form.Item
             label={$i18n.get({
               id: 'main.pages.Knowledge.Detail.SliceConfiguration.components.Form.index.chunkOverlapLength',
-              dm: '分段重叠长度',
+              dm: 'Chunk Overlap Length',
             })}
             name="chunk_overlap"
             rules={[
@@ -110,7 +110,7 @@ const TestForm: React.FC<FormProps> = ({ formRef, className, onSubmit }) => {
                 required: true,
                 message: $i18n.get({
                   id: 'main.pages.Knowledge.Detail.SliceConfiguration.components.Form.index.enterChunkOverlapLength',
-                  dm: '请输入分段重叠长度',
+                  dm: 'Please enter chunk overlap length',
                 }),
               },
             ]}
@@ -133,7 +133,7 @@ const TestForm: React.FC<FormProps> = ({ formRef, className, onSubmit }) => {
           >
             {$i18n.get({
               id: 'main.pages.Knowledge.Detail.SliceConfiguration.components.Form.index.previewNow',
-              dm: '立即预览',
+              dm: 'Preview Now',
             })}
           </Button>
         </Form.Item>

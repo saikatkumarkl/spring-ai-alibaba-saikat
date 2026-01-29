@@ -18,7 +18,7 @@ export default memo(function ChannelConfig(
       <div className={styles.title}>
         {$i18n.get({
           id: 'main.pages.App.components.ChannelConfig.index.callMethod',
-          dm: '调用方式',
+          dm: 'Invocation Method',
         })}
       </div>
       <div
@@ -33,13 +33,13 @@ export default memo(function ChannelConfig(
           <div className={styles.name}>
             {$i18n.get({
               id: 'main.pages.App.components.ChannelConfig.index.apiCall',
-              dm: 'API调用',
+              dm: 'API Call',
             })}
           </div>
           <div className={styles.desc}>
             {$i18n.get({
               id: 'main.pages.App.components.ChannelConfig.index.callWithApiKey',
-              dm: '以API的形式调用智能体/工作流应用，需要传入应用ID、API-KEY等参数值，支持通过兼容\n            OpenAI 协议的 Http 协议发起请求',
+              dm: 'Call agent/workflow applications via API. Requires passing application ID, API-KEY and other parameters. Supports requests via OpenAI-compatible HTTP protocol',
             })}
           </div>
         </div>

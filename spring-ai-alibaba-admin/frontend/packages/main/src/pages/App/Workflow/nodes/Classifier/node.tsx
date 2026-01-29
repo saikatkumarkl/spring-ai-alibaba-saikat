@@ -22,12 +22,12 @@ export default memo(function Classifier(props: NodeProps<IWorkFlowNode>) {
               {item.id === 'default'
                 ? $i18n.get({
                     id: 'main.pages.App.Workflow.nodes.Classifier.node.default',
-                    dm: '默认',
+                    dm: 'Default',
                   })
                 : item.subject ||
                   $i18n.get({
                     id: 'main.pages.App.Workflow.nodes.Classifier.node.noIntentionConfigured',
-                    dm: '暂未配置意图',
+                    dm: 'No intents configured',
                   })}
             </Typography.Text>
             <SourceHandle
@@ -43,7 +43,7 @@ export default memo(function Classifier(props: NodeProps<IWorkFlowNode>) {
         <span>
           {$i18n.get({
             id: 'main.pages.App.Workflow.nodes.Classifier.node.default',
-            dm: '默认',
+            dm: 'Default',
           })}
         </span>
         <SourceHandle

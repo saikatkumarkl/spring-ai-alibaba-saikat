@@ -330,20 +330,20 @@ export default function AssistantAppEdit() {
     );
   };
 
-  // 将前端应用详情转换为后端期望的 Agent DSL 格式
+  // Convert frontend application details to backend expected Agent DSL format
   const convertToAgentDSL = (appDetail: IAssistantAppDetailWithInfos): any => {
     const config = appDetail.config;
 
-    // 构建 agent DSL 对象
+    // Build agent DSL object
     const agentDSL: any = {
       mode: 'agent',
       name: appDetail.name || 'agent',
       description: appDetail.description || '',
-      type: 'ReactAgent', // 默认使用 ReactAgent，可以根据实际情况调整
+      type: 'ReactAgent', // Default to ReactAgent, can be adjusted based on actual situation
       instruction: config.instructions || '',
     };
 
-    // 构建 LLM 配置
+    // Build LLM configuration
     if (config.model) {
       const modelId = typeof config.model === 'string'
         ? config.model
@@ -354,7 +354,7 @@ export default function AssistantAppEdit() {
           model: modelId,
         };
 
-        // 添加模型参数配置
+        // Add model parameter configuration
         if (config.parameter) {
           const options: any = {};
           if (config.parameter.temperature !== undefined) {
@@ -373,10 +373,10 @@ export default function AssistantAppEdit() {
       }
     }
 
-    // 构建工具列表
+    // Build tools list
     const tools: string[] = [];
 
-    // 添加插件工具
+    // Add plugin tools
     if (config.tools && config.tools.length > 0) {
       config.tools.forEach((tool) => {
         if (tool.tool_id) {
@@ -385,7 +385,7 @@ export default function AssistantAppEdit() {
       });
     }
 
-    // 添加 MCP 工具
+    // Add MCP tools
     if (config.mcp_servers && config.mcp_servers.length > 0) {
       config.mcp_servers.forEach((server) => {
         if (server.server_code) {
@@ -394,7 +394,7 @@ export default function AssistantAppEdit() {
       });
     }
 
-    // 添加 Agent 组件
+    // Add Agent components
     if (config.agent_components && config.agent_components.length > 0) {
       config.agent_components.forEach((component) => {
         if (component.code) {
@@ -403,7 +403,7 @@ export default function AssistantAppEdit() {
       });
     }
 
-    // 添加 Workflow 组件
+    // Add Workflow components
     if (config.workflow_components && config.workflow_components.length > 0) {
       config.workflow_components.forEach((component) => {
         if (component.code) {
@@ -416,10 +416,10 @@ export default function AssistantAppEdit() {
       agentDSL.tools = tools;
     }
 
-    // 构建 handle 配置（透传字段，用于存储额外的配置信息）
+    // Build handle configuration (pass-through field for storing additional configuration)
     const handle: any = {};
 
-    // 文件搜索配置
+    // File search configuration
     if (config.file_search?.enable_search) {
       handle.file_search = {
         enable_search: config.file_search.enable_search,
@@ -430,19 +430,19 @@ export default function AssistantAppEdit() {
       };
     }
 
-    // 记忆配置
+    // Memory configuration
     if (config.memory) {
       handle.memory = {
         dialog_round: config.memory.dialog_round,
       };
     }
 
-    // 提示变量
+    // Prompt variables
     if (config.prompt_variables && config.prompt_variables.length > 0) {
       handle.prompt_variables = config.prompt_variables;
     }
 
-    // 开场白配置
+    // Prologue configuration
     if (config.prologue) {
       handle.prologue = config.prologue;
     }
@@ -459,11 +459,11 @@ export default function AssistantAppEdit() {
 
     setState({ saveLoading: true });
     try {
-      // 将前端应用详情转换为后端期望的 Agent DSL 格式
+      // Convert frontend app details to backend expected Agent DSL format
       const appDetail = cacheAppDetailWithInfo.current;
       const agentDSL = convertToAgentDSL(appDetail);
 
-      // 准备请求参数
+      // Prepare request parameters
       const params: any = {
         dependencies: 'spring-ai-alibaba-graph,web,spring-ai-alibaba-starter-dashscope,spring-ai-starter-mcp-client',
         appMode: 'agent',
@@ -482,10 +482,10 @@ export default function AssistantAppEdit() {
         dsl: JSON.stringify(agentDSL),
       };
 
-      // 调用转换服务
+      // Call conversion service
       const response = await convertDifyToSpringAI(params);
 
-      // 处理 zip 文件下载
+      // Process zip file download
       const blob = response.data;
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -496,10 +496,10 @@ export default function AssistantAppEdit() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      message.success('转换成功！项目文件已开始下载');
+      message.success('Conversion successful! Project files download started');
     } catch (error: any) {
-      console.error('转换失败:', error);
-      message.error(`转换失败：${error.message || '请重试'}`);
+      console.error('Conversion failed:', error);
+      message.error(`Conversion failed: ${error.message || 'Please try again'}`);
     } finally {
       setState({ saveLoading: false });
     }
@@ -568,7 +568,7 @@ export default function AssistantAppEdit() {
             <Empty
               description={$i18n.get({
                 id: 'main.pages.App.AssistantAppEdit.index.appNotExists',
-                dm: '应用不存在，请返回',
+                dm: 'Application does not exist, please go back',
               })}
             />
           ) : (
@@ -588,7 +588,7 @@ export default function AssistantAppEdit() {
                 {
                   title: $i18n.get({
                     id: 'main.pages.App.AssistantAppEdit.index.appManagement',
-                    dm: '应用管理',
+                    dm: 'App Management',
                   }),
                   path: '/app/agent',
                 },
@@ -631,7 +631,7 @@ export default function AssistantAppEdit() {
                   key: 'config',
                   label: $i18n.get({
                     id: 'main.pages.App.AssistantAppEdit.index.appConfig',
-                    dm: '配置',
+                    dm: 'Configuration',
                   }),
                   children: !state.loading && <AssistantConfig />,
                 },
@@ -639,7 +639,7 @@ export default function AssistantAppEdit() {
                   key: 'share',
                   label: $i18n.get({
                     id: 'main.pages.App.AssistantAppEdit.index.publishChannels',
-                    dm: '发布',
+                    dm: 'Publish',
                   }),
                   children: !state.loading && (
                     <ChannelConfig

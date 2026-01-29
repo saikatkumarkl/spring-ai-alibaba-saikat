@@ -78,14 +78,14 @@ export default function PluginSelectorComp() {
             <span>
               {$i18n.get({
                 id: 'main.components.MCPSelectorComp.index.mcpService',
-                dm: 'MCP服务',
+                dm: 'MCP Service',
               })}
             </span>
 
             <HelpIcon
               content={$i18n.get({
                 id: 'main.components.MCPSelectorComp.index.connectInternalServices',
-                dm: '智能体可以通过标准化协议（MCP）连接企业内部服务API并发起调用。',
+                dm: 'Agents can connect to enterprise internal service APIs through standardized protocol (MCP) and initiate calls.',
               })}
             ></HelpIcon>
           </Flex>

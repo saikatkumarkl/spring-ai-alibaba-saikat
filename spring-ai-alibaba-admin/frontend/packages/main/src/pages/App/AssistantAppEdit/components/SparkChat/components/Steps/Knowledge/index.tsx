@@ -23,7 +23,7 @@ const ResultItem = (props: { item: IFileSearchResult }) => {
             <span style={{ width: 'max-content' }}>
               {$i18n.get({
                 id: 'main.components.SparkChat.components.Steps.Knowledge.index.score',
-                dm: '得分：',
+                dm: 'Score: ',
               })}
             </span>
             {item.score ? Number(item.score).toFixed(2) : '0%'}

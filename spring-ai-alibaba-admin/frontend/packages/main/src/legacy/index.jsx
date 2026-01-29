@@ -5,7 +5,7 @@ import 'antd/dist/reset.css'; // Ant Design styles
 import App from './App';
 import './styles/index.css';
 import './styles/tailwind.css';
-// 初始化全局错误处理
+// Initialize global error handling
 import './utils/requestInterceptors';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

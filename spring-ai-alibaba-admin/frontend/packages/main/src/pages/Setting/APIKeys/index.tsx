@@ -53,11 +53,11 @@ export default function APIKeys() {
     AlertDialog.warning({
       title: $i18n.get({
         id: 'main.pages.Setting.APIKeys.index.deleteApiKey',
-        dm: '删除API KEY',
+        dm: 'Delete API KEY',
       }),
       children: $i18n.get({
         id: 'main.pages.Setting.APIKeys.index.confirmDelete',
-        dm: '删除后将无法使用该API KEY，确定要删除吗？',
+        dm: 'This API KEY will no longer be usable after deletion. Are you sure you want to delete it?',
       }),
       onOk: async () => {
         const res = await deleteApiKey(id);
@@ -65,7 +65,7 @@ export default function APIKeys() {
           message.success(
             $i18n.get({
               id: 'main.pages.Setting.APIKeys.index.deleteSuccess',
-              dm: '删除成功',
+              dm: 'Deleted successfully',
             }),
           );
           fetchApiKeys();
@@ -112,7 +112,7 @@ export default function APIKeys() {
     {
       title: $i18n.get({
         id: 'main.pages.Setting.APIKeys.index.description',
-        dm: '描述',
+        dm: 'Description',
       }),
       dataIndex: 'description',
       key: 'description',
@@ -120,7 +120,7 @@ export default function APIKeys() {
     {
       title: $i18n.get({
         id: 'main.pages.Setting.APIKeys.index.createTime',
-        dm: '创建时间',
+        dm: 'Created At',
       }),
       dataIndex: 'gmt_create',
       key: 'gmt_create',
@@ -133,7 +133,7 @@ export default function APIKeys() {
     {
       title: $i18n.get({
         id: 'main.pages.Setting.APIKeys.index.operation',
-        dm: '操作',
+        dm: 'Actions',
       }),
       key: 'action',
       render: (_: any, record: IApiKey) => {
@@ -148,28 +148,28 @@ export default function APIKeys() {
                   message.success(
                     $i18n.get({
                       id: 'main.utils.base.copySuccess',
-                      dm: '复制成功',
+                      dm: 'Copied successfully',
                     }),
                   );
                 }}
               >
                 {$i18n.get({
                   id: 'main.pages.Setting.APIKeys.index.copy',
-                  dm: '复制',
+                  dm: 'Copy',
                 })}
               </Button>
             ) : (
               <Button type="link" onClick={() => showApiKey(id)}>
                 {$i18n.get({
                   id: 'main.pages.Setting.APIKeys.index.view',
-                  dm: '查看',
+                  dm: 'View',
                 })}
               </Button>
             )}
             <Button type="link" onClick={() => handleDeleteApiKey(id)}>
               {$i18n.get({
                 id: 'main.pages.Setting.APIKeys.index.delete',
-                dm: '删除',
+                dm: 'Delete',
               })}
             </Button>
           </div>
@@ -198,14 +198,14 @@ export default function APIKeys() {
         {
           title: $i18n.get({
             id: 'main.pages.App.index.home',
-            dm: '首页',
+            dm: 'Home',
           }),
           path: '/',
         },
         {
           title: $i18n.get({
             id: 'main.pages.Setting.APIKeys.index.apiKeyManagement',
-            dm: 'API KEY 管理',
+            dm: 'API KEY Management',
           }),
         },
       ]}
@@ -218,7 +218,7 @@ export default function APIKeys() {
         >
           {$i18n.get({
             id: 'main.pages.Setting.APIKeys.index.createApiKey',
-            dm: '创建API KEY',
+            dm: 'Create API KEY',
           })}
         </Button>
       }

@@ -45,7 +45,7 @@ const AccountModal: React.FC<AccountModalProps> = ({
     <Modal
       title={$i18n.get({
         id: 'main.components.AccountModal.index.accountManagement',
-        dm: '账号管理',
+        dm: 'Account Management',
       })}
       open={open}
       onCancel={onCancel}
@@ -53,13 +53,13 @@ const AccountModal: React.FC<AccountModalProps> = ({
         <Button key="cancel" onClick={onCancel}>
           {$i18n.get({
             id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.cancel',
-            dm: '取消',
+            dm: 'Cancel',
           })}
         </Button>,
         <Button key="submit" type="primary" onClick={handleOk}>
           {$i18n.get({
             id: 'main.pages.Setting.Account.components.UserEditModal.index.confirm',
-            dm: '确定',
+            dm: 'OK',
           })}
         </Button>,
       ]}
@@ -79,7 +79,7 @@ const AccountModal: React.FC<AccountModalProps> = ({
             >
               {$i18n.get({
                 id: 'main.components.AccountModal.index.logout',
-                dm: '退出登录',
+                dm: 'Logout',
               })}
             </Button>
           </Flex>
@@ -99,21 +99,21 @@ const AccountModal: React.FC<AccountModalProps> = ({
         <div className={styles['section-title']}>
           {$i18n.get({
             id: 'main.pages.Setting.Account.components.UserEditModal.index.changePassword',
-            dm: '更改密码',
+            dm: 'Change Password',
           })}
         </div>
         <Form.Item
           name="currentPassword"
           label={$i18n.get({
             id: 'main.components.AccountModal.index.currentPassword',
-            dm: '当前密码',
+            dm: 'Current Password',
           })}
           rules={[
             {
               required: true,
               message: $i18n.get({
                 id: 'main.components.AccountModal.index.enterCurrentPassword',
-                dm: '请输入当前密码',
+                dm: 'Please enter current password',
               }),
             },
           ]}
@@ -121,7 +121,7 @@ const AccountModal: React.FC<AccountModalProps> = ({
           <Input.Password
             placeholder={$i18n.get({
               id: 'main.components.AccountModal.index.inputCurrentPassword',
-              dm: '输入当前密码',
+              dm: 'Enter current password',
             })}
           />
         </Form.Item>
@@ -130,13 +130,13 @@ const AccountModal: React.FC<AccountModalProps> = ({
           name="newPassword"
           label={$i18n.get({
             id: 'main.pages.Setting.Account.components.UserEditModal.index.newPassword',
-            dm: '新密码',
+            dm: 'New Password',
           })}
         >
           <Input.Password
             placeholder={$i18n.get({
               id: 'main.components.AccountModal.index.inputNewPassword',
-              dm: '输入新的密码',
+              dm: 'Enter new password',
             })}
           />
         </Form.Item>
@@ -145,7 +145,7 @@ const AccountModal: React.FC<AccountModalProps> = ({
           name="confirmPassword"
           label={$i18n.get({
             id: 'main.pages.Setting.Account.components.UserEditModal.index.newPassword',
-            dm: '新密码',
+            dm: 'Confirm Password',
           })}
           dependencies={['newPassword']}
           rules={[
@@ -157,7 +157,7 @@ const AccountModal: React.FC<AccountModalProps> = ({
                     new Error(
                       $i18n.get({
                         id: 'main.pages.Setting.Account.components.UserEditModal.index.passwordNotMatch',
-                        dm: '两次输入的密码不一致',
+                        dm: 'Passwords do not match',
                       }),
                     ),
                   );
@@ -170,7 +170,7 @@ const AccountModal: React.FC<AccountModalProps> = ({
           <Input.Password
             placeholder={$i18n.get({
               id: 'main.pages.Setting.Account.components.UserEditModal.index.confirmNewPassword',
-              dm: '确认新密码',
+              dm: 'Confirm new password',
             })}
           />
         </Form.Item>

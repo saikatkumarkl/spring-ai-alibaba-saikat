@@ -143,13 +143,13 @@ export default memo(function RetrievalPanel({
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Retrieval.panel.input',
-              dm: '输入',
+              dm: 'Input',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Retrieval.panel.matchedInformation',
-                dm: '输入需要从知识库中匹配的信息。',
+                dm: 'Enter the information to be matched from the knowledge base.',
               })}
             />
           </div>
@@ -173,13 +173,13 @@ export default memo(function RetrievalPanel({
               <div className="spark-flow-panel-form-title">
                 {$i18n.get({
                   id: 'main.pages.App.Workflow.nodes.Retrieval.panel.knowledgeBase',
-                  dm: '知识库',
+                  dm: 'Knowledge Base',
                 })}
 
                 <InfoIcon
                   tip={$i18n.get({
                     id: 'main.pages.App.Workflow.nodes.Retrieval.panel.contentFromConfigured',
-                    dm: '内容只会从设置的知识库中检索。',
+                    dm: 'Content will only be retrieved from the configured knowledge bases.',
                   })}
                 />
               </div>
@@ -194,7 +194,7 @@ export default memo(function RetrievalPanel({
                 >
                   {$i18n.get({
                     id: 'main.pages.App.Workflow.nodes.Retrieval.panel.knowledgeBase',
-                    dm: '知识库',
+                    dm: 'Knowledge Base',
                   })}
                 </Button>
               )}
@@ -209,7 +209,7 @@ export default memo(function RetrievalPanel({
               >
                 {$i18n.get({
                   id: 'main.pages.App.Workflow.nodes.Retrieval.panel.selectKnowledgeBase',
-                  dm: '选择知识库',
+                  dm: 'Select Knowledge Base',
                 })}
               </Button>
             ) : (
@@ -249,7 +249,7 @@ export default memo(function RetrievalPanel({
                   <InfoIcon
                     tip={$i18n.get({
                       id: 'main.pages.App.Workflow.nodes.Retrieval.panel.topMatches',
-                      dm: '从每个知识库中返回的最高近似值的个数。',
+                      dm: 'The number of top similar matches returned from each knowledge base.',
                     })}
                   />
                 </div>
@@ -274,13 +274,13 @@ export default memo(function RetrievalPanel({
                   <span>
                     {$i18n.get({
                       id: 'main.pages.App.Workflow.nodes.Retrieval.panel.similarityThreshold',
-                      dm: '相似度阈值',
+                      dm: 'Similarity Threshold',
                     })}
                   </span>
                   <InfoIcon
                     tip={$i18n.get({
                       id: 'main.pages.App.Workflow.nodes.Retrieval.panel.returnOnlyAboveThreshold',
-                      dm: '只有高于该相似度的内容会返回',
+                      dm: 'Only content with similarity above this threshold will be returned',
                     })}
                   />
                 </div>
@@ -309,13 +309,13 @@ export default memo(function RetrievalPanel({
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Retrieval.panel.output',
-              dm: '输出',
+              dm: 'Output',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Retrieval.panel.matchedContent',
-                dm: '输出匹配到的内容以及关键字段。',
+                dm: 'Output the matched content and key fields.',
               })}
             />
           </div>

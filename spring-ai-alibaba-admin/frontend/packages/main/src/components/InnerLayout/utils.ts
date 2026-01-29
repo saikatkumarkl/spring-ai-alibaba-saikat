@@ -16,7 +16,7 @@ const usePortal = (targetId: string) => {
           $i18n.get(
             {
               id: 'main.components.InnerLayout.utils.notFoundTargetElement',
-              dm: '找不到目标元素 #{var1}',
+              dm: 'Target element #{var1} not found',
             },
             { var1: targetId },
           ),

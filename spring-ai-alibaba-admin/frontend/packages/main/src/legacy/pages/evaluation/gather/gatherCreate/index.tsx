@@ -8,7 +8,7 @@ import './index.css';
 const { TextArea } = Input;
 const { Option } = Select;
 
-// 数据类型选项
+// Data type options
 const DATA_TYPES = [
   { value: 'String', label: 'String' },
   { value: 'Number', label: 'Number' },
@@ -17,7 +17,7 @@ const DATA_TYPES = [
   { value: 'Object', label: 'Object' }
 ];
 
-// 查看格式选项
+// View format options
 const VIEW_FORMATS = [
   { value: 'PlainText', label: 'PlainText' },
   { value: 'JSON', label: 'JSON' },
@@ -25,7 +25,7 @@ const VIEW_FORMATS = [
   { value: 'HTML', label: 'HTML' }
 ];
 
-// 列配置接口
+// Column configuration interface
 interface ColumnConfig {
   name: string;
   dataType: string;
@@ -34,18 +34,18 @@ interface ColumnConfig {
   required: boolean;
 }
 
-// 表单数据接口
+// Form data interface
 interface CreateDatasetForm {
   name: string;
   description: string;
   columns: ColumnConfig[];
 }
 
-// 组件属性接口
+// Component props interface
 interface GatherCreateProps {
   onCancel?: () => void;
   onSuccess?: () => void;
-  hideTitle?: boolean; // 添加hideTitle属性来控制是否隐藏标题
+  hideTitle?: boolean; // Add hideTitle property to control whether to hide title
 }
 
 const GatherCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hideTitle = false }) => {
@@ -53,7 +53,7 @@ const GatherCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hideTi
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
-  // 返回列表页面
+  // Return to list page
   const handleGoBack = () => {
     if (onCancel) {
       onCancel();
@@ -62,43 +62,43 @@ const GatherCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hideTi
     }
   };
 
-  // 提交表单
+  // Submit form
   const handleSubmit = async (values: CreateDatasetForm) => {
     try {
       setLoading(true);
-      
-      // 构造提交数据
+
+      // Build submit data
       const submitData = {
         name: values.name,
         description: values.description,
         columnsConfig: values.columns.map(column => ({
           ...column,
-          required: true as const // API要求required字段必须为true
+          required: true as const // API requires required field to be true
         })),
       };
 
-      console.log('提交数据:', submitData);
-      
-      // 这里调用创建评测集的API
+      console.log('Submit data:', submitData);
+
+      // Call create dataset API here
       await API.createDataset(submitData);
-      
-      message.success('评测集创建成功');
-      
-      // 如果提供了onSuccess回调，则调用它，否则导航到列表页面
+
+      message.success('Dataset created successfully');
+
+      // If onSuccess callback is provided, call it, otherwise navigate to list page
       if (onSuccess) {
         onSuccess();
       } else {
         navigate('/evaluation-gather');
       }
     } catch (error) {
-      message.error('创建失败，请重试');
-      console.error('创建评测集失败:', error);
+      message.error('Creation failed, please try again');
+      console.error('Failed to create dataset:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  // 取消创建
+  // Cancel creation
   const handleCancel = () => {
     if (onCancel) {
       onCancel();
@@ -109,23 +109,23 @@ const GatherCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hideTi
 
   return (
     <div className="gather-create-page">
-      {/* 页面头部 - 固定在顶部 */}
+      {/* Page header - fixed at top */}
       {!hideTitle && (
         <div className="gather-create-header">
           <div className="flex items-center">
-            <Button 
-              type="text" 
-              icon={<ArrowLeftOutlined />} 
+            <Button
+              type="text"
+              icon={<ArrowLeftOutlined />}
               onClick={handleGoBack}
               className="mr-3"
             >
             </Button>
-            <h1 className="text-2xl font-semibold mb-0">创建评测集</h1>
+            <h1 className="text-2xl font-semibold mb-0">Create Dataset</h1>
           </div>
         </div>
       )}
 
-      {/* 页面内容 - 可滚动区域 */}
+      {/* Page content - scrollable area */}
       <div className={`gather-create-content ${hideTitle ? 'pt-6' : ''}`}>
         <Form
           form={form}
@@ -137,41 +137,41 @@ const GatherCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hideTi
                 name: 'input',
                 dataType: 'String',
                 displayFormat: 'PlainText',
-                description: '实际输入（作为输入)过程给评测对象)',
+                description: 'Actual input (passed to the evaluation target as input)',
                 required: true
               },
               {
                 name: 'reference_output',
                 dataType: 'String',
                 displayFormat: 'PlainText',
-                description: '参考输出答案（预期理想输出，可作为评估时的参考标准)',
+                description: 'Reference output answer (expected ideal output, can be used as reference standard during evaluation)',
                 required: true
               }
             ]
           }}
         >
-          {/* 基本信息 */}
-          <Card title="基本信息" className="mb-6">
+          {/* Basic information */}
+          <Card title="Basic Information" className="mb-6">
             <Form.Item
               name="name"
-              label="评测集名称"
+              label="Dataset Name"
               rules={[
-                { required: true, message: '请输入评测集名称' },
-                { max: 100, message: '名称不能超过100个字符' }
+                { required: true, message: 'Please enter dataset name' },
+                { max: 100, message: 'Name cannot exceed 100 characters' }
               ]}
             >
-              <Input placeholder="如：问答机器人" />
+              <Input placeholder="e.g., Q&A Bot" />
             </Form.Item>
 
             <Form.Item
               name="description"
-              label="评测集描述"
+              label="Dataset Description"
               rules={[
-                { max: 500, message: '描述不能超过500个字符' }
+                { max: 500, message: 'Description cannot exceed 500 characters' }
               ]}
             >
-              <TextArea 
-                placeholder="可选填写评测集描述"
+              <TextArea
+                placeholder="Optional dataset description"
                 rows={4}
                 showCount
                 maxLength={500}
@@ -179,14 +179,14 @@ const GatherCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hideTi
             </Form.Item>
           </Card>
 
-          {/* 数据集列结构配置 */}
+          {/* Dataset column configuration */}
           <Form.List name="columns">
             {(fields, { add, remove }) => {
               const formValues = form.getFieldsValue();
-              
+
               return (
-                <Card 
-                  title="评测集列结构配置" 
+                <Card
+                  title="Dataset Column Configuration"
                   extra={
                     <Button
                       type="primary"
@@ -200,7 +200,7 @@ const GatherCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hideTi
                       icon={<PlusOutlined />}
                       size="small"
                     >
-                      添加列
+                      Add Column
                     </Button>
                   }
                   className="mb-6"
@@ -208,9 +208,9 @@ const GatherCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hideTi
                     {fields.map(({ key, name, ...restField }) => {
                       const currentColumn = formValues?.columns?.[name];
                       const isRequired = currentColumn?.required;
-                      
+
                       return (
-                        <Card 
+                        <Card
                           key={key}
                           type="inner"
                           className="mb-4"
@@ -220,8 +220,8 @@ const GatherCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hideTi
                               name={[name, 'name']}
                               className="mb-0"
                             >
-                              <Input 
-                                placeholder="列名称" 
+                              <Input
+                                placeholder="Column Name"
                                 variant="borderless"
                                 className="font-medium"
                               />
@@ -242,19 +242,19 @@ const GatherCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hideTi
                             <Form.Item
                               {...restField}
                               name={[name, 'name']}
-                              label="列名称"
-                              rules={[{ required: true, message: '请输入列名称' }]}
+                              label="Column Name"
+                              rules={[{ required: true, message: 'Please enter column name' }]}
                             >
-                              <Input placeholder="如：input" />
+                              <Input placeholder="e.g., input" />
                             </Form.Item>
 
                             <Form.Item
                               {...restField}
                               name={[name, 'dataType']}
-                              label="数据类型"
-                              rules={[{ required: true, message: '请选择数据类型' }]}
+                              label="Data Type"
+                              rules={[{ required: true, message: 'Please select data type' }]}
                             >
-                              <Select placeholder="请选择">
+                              <Select placeholder="Please select">
                                 {DATA_TYPES.map(type => (
                                   <Option key={type.value} value={type.value}>
                                     {type.label}
@@ -266,10 +266,10 @@ const GatherCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hideTi
                             <Form.Item
                               {...restField}
                               name={[name, 'displayFormat']}
-                              label="查看格式"
-                              rules={[{ required: true, message: '请选择查看格式' }]}
+                              label="View Format"
+                              rules={[{ required: true, message: 'Please select view format' }]}
                             >
-                              <Select placeholder="请选择">
+                              <Select placeholder="Please select">
                                 {VIEW_FORMATS.map(format => (
                                   <Option key={format.value} value={format.value}>
                                     {format.label}
@@ -282,16 +282,16 @@ const GatherCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hideTi
                           <Form.Item
                             {...restField}
                             name={[name, 'description']}
-                            label="列描述"
-                            rules={[{ required: true, message: '请输入列描述' }]}
+                            label="Column Description"
+                            rules={[{ required: true, message: 'Please enter column description' }]}
                           >
-                            <TextArea 
-                              placeholder="请输入列的描述信息"
+                            <TextArea
+                              placeholder="Please enter column description"
                               rows={3}
                             />
                           </Form.Item>
-                        
-                          {/* 隐藏的required字段 */}
+
+                          {/* Hidden required field */}
                           <Form.Item
                             {...restField}
                             name={[name, 'required']}
@@ -309,20 +309,20 @@ const GatherCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hideTi
         </Form>
       </div>
 
-      {/* 底部操作按钮 - 固定在底部 */}
+      {/* Bottom action buttons - fixed at bottom */}
       <div className="gather-create-footer">
         <div className="flex justify-end space-x-4">
           <Button size="large" onClick={handleCancel}>
-            取消
+            Cancel
           </Button>
-          <Button 
-            type="primary" 
-            size="large" 
+          <Button
+            type="primary"
+            size="large"
             htmlType="submit"
             loading={loading}
             onClick={() => form.submit()}
           >
-            创建
+            Create
           </Button>
         </div>
       </div>

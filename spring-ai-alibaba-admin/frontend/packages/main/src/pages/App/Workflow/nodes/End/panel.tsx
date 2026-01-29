@@ -55,7 +55,7 @@ export default memo((props: { id: string; data: IEndNodeData }) => {
       <div className="spark-flow-panel-form-title">
         {$i18n.get({
           id: 'main.pages.App.Workflow.nodes.End.panel.outputMode',
-          dm: '输出模式',
+          dm: 'Output Mode',
         })}
       </div>
       <Select
@@ -65,14 +65,14 @@ export default memo((props: { id: string; data: IEndNodeData }) => {
           {
             label: $i18n.get({
               id: 'main.pages.App.Workflow.nodes.End.panel.textOutput',
-              dm: '文本输出',
+              dm: 'Text Output',
             }),
             value: 'text',
           },
           {
             label: $i18n.get({
               id: 'main.pages.App.Workflow.nodes.End.panel.jsonOutput',
-              dm: 'JSON输出',
+              dm: 'JSON Output',
             }),
             value: 'json',
           },
@@ -117,13 +117,13 @@ export default memo((props: { id: string; data: IEndNodeData }) => {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.End.panel.streamOutput',
-              dm: '流式输出',
+              dm: 'Stream Output',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.End.panel.outputContentInStream',
-                dm: '开启后，节点的来源于大模型的输出内容将用流式呈现。',
+                dm: 'When enabled, the output content from the large model will be presented in streaming mode.',
               })}
             />
           </div>

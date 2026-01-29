@@ -29,14 +29,14 @@ export default (props: {
       message.success(
         $i18n.get({
           id: 'main.components.SparkChat.components.Steps.Plugin.index.copySuccess',
-          dm: '复制成功',
+          dm: 'Copy successful',
         }),
       );
     } catch (error) {
       message.error(
         $i18n.get({
           id: 'main.components.SparkChat.components.Steps.Plugin.index.copyFailed',
-          dm: '复制失败',
+          dm: 'Copy failed',
         }),
       );
     }
@@ -48,7 +48,7 @@ export default (props: {
         <CollapsePanel
           title={$i18n.get({
             id: 'main.components.SparkChat.components.Steps.Plugin.index.inputParameters',
-            dm: '输入参数',
+            dm: 'Input Parameters',
           })}
           collapsedHeight={64}
           expandedHeight={200}
@@ -74,7 +74,7 @@ export default (props: {
         <CollapsePanel
           title={$i18n.get({
             id: 'main.components.SparkChat.components.Steps.Plugin.index.outputParameters',
-            dm: '输出参数',
+            dm: 'Output Parameters',
           })}
           collapsedHeight={64}
           expandedHeight={200}

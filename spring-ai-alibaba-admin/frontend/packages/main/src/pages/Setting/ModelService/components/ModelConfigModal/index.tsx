@@ -1,7 +1,8 @@
 import $i18n from '@/i18n';
-import { ICreateModelParams, IModel, MODEL_TAGS } from '@/types/modelService';
-import { Button, Checkbox, Form, Input, Modal } from '@spark-ai/design';
-import React, { useEffect } from 'react';
+import { getOllamaModels } from '@/services/modelService';
+import { ICreateModelParams, IModel, IProviderConfigInfo, MODEL_TAGS } from '@/types/modelService';
+import { Button, Checkbox, Form, Input, Modal, Select, message } from '@spark-ai/design';
+import React, { useEffect, useState } from 'react';
 import styles from './index.module.less';
 
 interface ModelConfigModalProps {
@@ -10,6 +11,7 @@ interface ModelConfigModalProps {
   onOk: (modelInfo: ICreateModelParams) => void;
   model?: IModel;
   title?: string;
+  provider?: IProviderConfigInfo;
 }
 
 const ModelConfigModal: React.FC<ModelConfigModalProps> = ({
@@ -18,9 +20,13 @@ const ModelConfigModal: React.FC<ModelConfigModalProps> = ({
   onOk,
   model,
   title,
+  provider,
 }) => {
   const [form] = Form.useForm();
   const isEdit = !!model?.model_id;
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [loadingModels, setLoadingModels] = useState(false);
+  const [useDropdown, setUseDropdown] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -31,9 +37,54 @@ const ModelConfigModal: React.FC<ModelConfigModalProps> = ({
         });
       } else {
         form.resetFields();
+        setAvailableModels([]);
+        setUseDropdown(false);
       }
     }
   }, [open, model, form]);
+
+  const fetchAvailableModels = async () => {
+    if (!provider?.credential?.endpoint) {
+      message.warning(
+        $i18n.get({
+          id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.noEndpoint',
+          dm: 'No endpoint configured for this provider',
+        }),
+      );
+      return;
+    }
+
+    setLoadingModels(true);
+    try {
+      const response = await getOllamaModels(provider.credential.endpoint);
+      if (response?.data && response.data.length > 0) {
+        setAvailableModels(response.data);
+        setUseDropdown(true);
+        message.success(
+          $i18n.get({
+            id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.modelsLoaded',
+            dm: `Found ${response.data.length} models`,
+          }),
+        );
+      } else {
+        message.info(
+          $i18n.get({
+            id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.noModels',
+            dm: 'No models found',
+          }),
+        );
+      }
+    } catch (error) {
+      message.error(
+        $i18n.get({
+          id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.fetchFailed',
+          dm: 'Failed to fetch models. Check endpoint URL.',
+        }),
+      );
+    } finally {
+      setLoadingModels(false);
+    }
+  };
 
   const handleSubmit = () => {
     form.validateFields().then((values) => {
@@ -54,11 +105,11 @@ const ModelConfigModal: React.FC<ModelConfigModalProps> = ({
         (isEdit
           ? $i18n.get({
               id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.editModel',
-              dm: '编辑模型',
+              dm: 'Edit Model',
             })
           : $i18n.get({
               id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.addModel',
-              dm: '新增模型',
+              dm: 'Add Model',
             }))
       }
       open={open}
@@ -67,13 +118,13 @@ const ModelConfigModal: React.FC<ModelConfigModalProps> = ({
         <Button key="cancel" onClick={onCancel}>
           {$i18n.get({
             id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.cancel',
-            dm: '取消',
+            dm: 'Cancel',
           })}
         </Button>,
         <Button key="submit" type="primary" onClick={handleSubmit}>
           {$i18n.get({
             id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.confirm',
-            dm: '确认',
+            dm: 'Confirm',
           })}
         </Button>,
       ]}
@@ -84,41 +135,79 @@ const ModelConfigModal: React.FC<ModelConfigModalProps> = ({
         <Form form={form} layout="vertical" requiredMark={false}>
           <Form.Item
             name="name"
-            label={$i18n.get({
-              id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.modelName',
-              dm: '模型名称',
-            })}
+            label={
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                <span>
+                  {$i18n.get({
+                    id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.modelName',
+                    dm: 'Model Name',
+                  })}
+                </span>
+                {!isEdit && provider?.credential?.endpoint && (
+                  <Button
+                    type="link"
+                    size="small"
+                    loading={loadingModels}
+                    onClick={() => {
+                      if (useDropdown) {
+                        setUseDropdown(false);
+                        setAvailableModels([]);
+                      } else {
+                        fetchAvailableModels();
+                      }
+                    }}
+                    style={{ padding: 0, height: 'auto' }}
+                  >
+                    {useDropdown ? 'Use manual input' : 'Load available models'}
+                  </Button>
+                )}
+              </div>
+            }
             rules={[
               {
                 required: true,
                 message: $i18n.get({
                   id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.enterModelName',
-                  dm: '请输入模型名称',
+                  dm: 'Please enter model name',
                 }),
               },
             ]}
           >
-            <Input
-              placeholder={$i18n.get({
-                id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.enterModelName',
-                dm: '请输入模型名称',
-              })}
-              maxLength={50}
-              showCount
-            />
+            {useDropdown && availableModels.length > 0 ? (
+              <Select
+                placeholder={$i18n.get({
+                  id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.selectModel',
+                  dm: 'Select a model',
+                })}
+                showSearch
+                options={availableModels.map(modelName => ({
+                  label: modelName,
+                  value: modelName,
+                }))}
+              />
+            ) : (
+              <Input
+                placeholder={$i18n.get({
+                  id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.enterModelName',
+                  dm: 'Enter model name (e.g., llama3.2, gpt-oss:120b-cloud)',
+                })}
+                maxLength={50}
+                showCount
+              />
+            )}
           </Form.Item>
           <Form.Item
             name="tags"
             label={$i18n.get({
               id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.modelAbility',
-              dm: '模型能力',
+              dm: 'Model Capabilities',
             })}
             rules={[
               {
                 required: true,
                 message: $i18n.get({
                   id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.selectAtLeastOneAbility',
-                  dm: '请选择至少一个模型能力',
+                  dm: 'Please select at least one model capability',
                 }),
               },
             ]}

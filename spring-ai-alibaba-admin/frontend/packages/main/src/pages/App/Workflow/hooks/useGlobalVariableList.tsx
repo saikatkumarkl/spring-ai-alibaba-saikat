@@ -20,7 +20,7 @@ export const useGlobalVariableList = () => {
               {
                 label: $i18n.get({
                   id: 'main.pages.App.Workflow.hooks.useGlobalVariableList.index.conversationVariable',
-                  dm: '会话变量',
+                  dm: 'Session Variables',
                 }),
                 nodeId: 'conversation',
                 nodeType: 'conversation',

@@ -30,14 +30,14 @@ const tabs = [
     value: IAppType.AGENT,
     label: $i18n.get({
       id: 'main.pages.App.Workflow.components.ComponentSelectorModal.index.intelligentAgentComponent',
-      dm: '智能体组件',
+      dm: 'Agent Component',
     }),
   },
   {
     value: IAppType.WORKFLOW,
     label: $i18n.get({
       id: 'main.pages.App.Workflow.components.ComponentSelectorModal.index.workflowComponent',
-      dm: '工作流组件',
+      dm: 'Workflow Component',
     }),
   },
 ];
@@ -92,7 +92,7 @@ export default function ComponentSelectorModal(
       message.warning(
         $i18n.get({
           id: 'main.pages.App.Workflow.components.ComponentSelectorModal.index.selectComponent',
-          dm: '请选择组件',
+          dm: 'Please select component',
         }),
       );
       return;
@@ -104,11 +104,11 @@ export default function ComponentSelectorModal(
     return state.activeTab === IAppType.AGENT
       ? $i18n.get({
           id: 'main.pages.App.Workflow.components.ComponentSelectorModal.index.intelligent',
-          dm: '智能体',
+          dm: 'Agent',
         })
       : $i18n.get({
           id: 'main.pages.App.Workflow.components.ComponentSelectorModal.index.workflow',
-          dm: '工作流',
+          dm: 'Workflow',
         });
   }, [state.activeTab]);
 
@@ -128,7 +128,7 @@ export default function ComponentSelectorModal(
       onCancel={props.onClose}
       title={$i18n.get({
         id: 'main.pages.App.Workflow.components.ComponentSelectorModal.index.selectAppComponent',
-        dm: '选择应用组件',
+        dm: 'Select App Component',
       })}
       bodyProps={{ style: { padding: 0 } }}
     >
@@ -152,7 +152,7 @@ export default function ComponentSelectorModal(
             onSearch={handleSearch}
             placeholder={$i18n.get({
               id: 'main.pages.App.Workflow.components.ComponentSelectorModal.index.searchComponentName',
-              dm: '搜索组件名称',
+              dm: 'Search component name',
             })}
           />
 
@@ -162,13 +162,13 @@ export default function ComponentSelectorModal(
           >
             {$i18n.get({
               id: 'main.pages.App.Workflow.components.ComponentSelectorModal.index.add',
-              dm: '添加',
+              dm: 'Add',
             })}
 
             {typeName}
             {$i18n.get({
               id: 'main.pages.App.Workflow.components.ComponentSelectorModal.index.component',
-              dm: '组件',
+              dm: 'Component',
             })}
           </Button>
         </Flex>
@@ -181,20 +181,20 @@ export default function ComponentSelectorModal(
                 title={$i18n.get(
                   {
                     id: 'main.pages.App.Workflow.components.ComponentSelectorModal.index.noComponent',
-                    dm: '暂无{var1}组件',
+                    dm: 'No {var1} component available',
                   },
                   { var1: typeName },
                 )}
                 description={$i18n.get({
                   id: 'main.pages.App.Workflow.components.ComponentSelectorModal.index.index.goToComponentManagementPageCreate',
-                  dm: '请前往组件管理页面进行组件创建',
+                  dm: 'Please go to the component management page to create components',
                 })}
               >
                 {!isSearch.current && (
                   <Button type="primary" className="mt-4" onClick={clickCreate}>
                     {$i18n.get({
                       id: 'main.pages.App.Workflow.components.ComponentSelectorModal.index.goToCreate',
-                      dm: '前往创建',
+                      dm: 'Go to Create',
                     })}
                   </Button>
                 )}
@@ -235,7 +235,7 @@ export default function ComponentSelectorModal(
                         {$i18n.get(
                           {
                             id: 'main.pages.App.Workflow.components.ComponentSelectorModal.index.id',
-                            dm: 'ID：{var1}',
+                            dm: 'ID: {var1}',
                           },
                           { var1: item.code },
                         )}

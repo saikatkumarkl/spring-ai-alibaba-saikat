@@ -18,11 +18,11 @@ const checkClassifyNodeDataValid = (data: IClassifierNodeData) => {
     errorMsg.push({
       label: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.Classifier.schema.inputVariable',
-        dm: '输入变量',
+        dm: 'Input Variable',
       }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.Classifier.schema.notNull',
-        dm: '不能为空',
+        dm: 'Cannot be empty',
       }),
     });
   }
@@ -37,11 +37,11 @@ const checkClassifyNodeDataValid = (data: IClassifierNodeData) => {
     errorMsg.push({
       label: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.Classifier.schema.intentionClassification',
-        dm: '意图分类',
+        dm: 'Intent Classification',
       }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.Classifier.schema.notNull',
-        dm: '不能为空',
+        dm: 'Cannot be empty',
       }),
     });
   }
@@ -72,16 +72,16 @@ export const ClassifierSchema: INodeSchema = {
   type: 'Classifier',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Classifier.schema.intentionClassification',
-    dm: '意图分类',
+    dm: 'Intent Classification',
   }),
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Classifier.schema.callLargeModelForIntentionJudgment',
-    dm: '调用大模型，根据设定进行意图判断以决定分支执行。',
+    dm: 'Call the large model to determine intent based on settings and decide branch execution.',
   }),
   iconType: 'spark-effciency-line',
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Classifier.schema.logic',
-    dm: '逻辑',
+    dm: 'Logic',
   }),
   defaultParams: {
     input_params: [
@@ -112,7 +112,7 @@ export const ClassifierSchema: INodeSchema = {
         type: 'String',
         desc: $i18n.get({
           id: 'main.pages.App.Workflow.nodes.Classifier.schema.hitSubject',
-          dm: '命中主题',
+          dm: 'Hit Subject',
         }),
       },
       {
@@ -120,7 +120,7 @@ export const ClassifierSchema: INodeSchema = {
         type: 'String',
         desc: $i18n.get({
           id: 'main.pages.App.Workflow.nodes.Classifier.schema.thinkingProcess',
-          dm: '思考过程',
+          dm: 'Thinking Process',
         }),
       },
     ],

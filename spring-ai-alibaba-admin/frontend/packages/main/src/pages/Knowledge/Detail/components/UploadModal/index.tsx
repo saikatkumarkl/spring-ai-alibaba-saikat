@@ -39,7 +39,7 @@ export default function UploadModal(props: IUploadModalProps) {
       message.success(
         $i18n.get({
           id: 'main.pages.Knowledge.Detail.components.UploadModal.index.fileImportSuccess',
-          dm: '文件导入成功',
+          dm: 'File import successful',
         }),
       );
       onClose();
@@ -60,13 +60,13 @@ export default function UploadModal(props: IUploadModalProps) {
     <Modal
       title={$i18n.get({
         id: 'main.pages.Knowledge.Detail.components.UploadModal.index.uploadFile',
-        dm: '上传文件',
+        dm: 'Upload File',
       })}
       open={true}
       onCancel={onClose}
       okText={$i18n.get({
         id: 'main.pages.Knowledge.Detail.components.UploadModal.index.confirm',
-        dm: '确认',
+        dm: 'Confirm',
       })}
       onOk={handleSubmit}
       okButtonProps={{
@@ -78,7 +78,7 @@ export default function UploadModal(props: IUploadModalProps) {
           {$i18n.get(
             {
               id: 'main.pages.Knowledge.Detail.components.UploadModal.index.uploadVar1Of50',
-              dm: '上传（{var1}/ 50）',
+              dm: 'Upload ({var1}/50)',
             },
             { var1: fileList.length },
           )}
@@ -125,7 +125,7 @@ export default function UploadModal(props: IUploadModalProps) {
                 message.error(
                   $i18n.get({
                     id: 'main.pages.Knowledge.Detail.components.UploadModal.index.maxUpload50Files',
-                    dm: '最多只能上传 50 个文件',
+                    dm: 'You can upload a maximum of 50 files',
                   }),
                 );
                 isLimitReachedRef.current = true;
@@ -145,7 +145,7 @@ export default function UploadModal(props: IUploadModalProps) {
               message.error(
                 $i18n.get({
                   id: 'main.pages.Knowledge.Detail.components.UploadModal.index.supportedFormats',
-                  dm: '仅支持上传.pdf、.doc、.txt、.md、.ppt、.docx、.pptx等格式的文件',
+                  dm: 'Only .pdf, .doc, .txt, .md, .ppt, .docx, .pptx format files are supported',
                 }),
               );
               return Upload.LIST_IGNORE;
@@ -155,7 +155,7 @@ export default function UploadModal(props: IUploadModalProps) {
               message.error(
                 $i18n.get({
                   id: 'main.pages.Knowledge.Detail.components.UploadModal.index.fileSizeExceeds100MB',
-                  dm: '单个文件大小不能超过100MB',
+                  dm: 'Single file size cannot exceed 100MB',
                 }),
               );
               return Upload.LIST_IGNORE;
@@ -165,7 +165,7 @@ export default function UploadModal(props: IUploadModalProps) {
               message.error(
                 $i18n.get({
                   id: 'main.pages.Knowledge.Detail.components.UploadModal.index.imageSizeExceeds20MB',
-                  dm: '单个图片大小不能超过20MB',
+                  dm: 'Single image size cannot exceed 20MB',
                 }),
               );
               return Upload.LIST_IGNORE;
@@ -215,19 +215,19 @@ export default function UploadModal(props: IUploadModalProps) {
               <div className={styles['upload-dragger-title']}>
                 {$i18n.get({
                   id: 'main.pages.Knowledge.Detail.components.UploadModal.index.clickOrDragUploadLocalFile',
-                  dm: '点击或拖拽上传本地文件',
+                  dm: 'Click or drag to upload local file',
                 })}
               </div>
               <div className={styles['upload-dragger-desc']}>
                 {$i18n.get({
                   id: 'main.pages.Knowledge.Detail.components.UploadModal.index.supportedFormatsAndMaxSize',
-                  dm: '支持.pdf、.doc、.txt、.md、.ppt、.docx、.pptx等格式的文件，',
+                  dm: 'Supports .pdf, .doc, .txt, .md, .ppt, .docx, .pptx format files,',
                 })}
               </div>
               <div className={styles['upload-dragger-desc']}>
                 {$i18n.get({
                   id: 'main.pages.Knowledge.Detail.components.UploadModal.index.fileSizeAndPageLimit',
-                  dm: '单个文件最大100MB或1000页，单个图片最大限制20MB',
+                  dm: 'Single file max 100MB or 1000 pages, single image max 20MB',
                 })}
               </div>
             </Flex>

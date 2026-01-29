@@ -8,7 +8,7 @@ const Email: React.FC<InputProps> = (props) => {
   const {
     placeholder = $i18n.get({
       id: 'main.pages.Login.components.Form.Email.enterYourAccount',
-      dm: '输入您的账号',
+      dm: 'Enter your account',
     }),
     className,
     ...restProps

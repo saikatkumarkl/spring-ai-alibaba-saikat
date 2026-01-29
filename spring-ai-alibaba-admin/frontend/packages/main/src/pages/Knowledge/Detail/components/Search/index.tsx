@@ -24,35 +24,35 @@ const items: MenuProps['items'] = [
   {
     label: $i18n.get({
       id: 'main.pages.Knowledge.Detail.components.Search.index.allStatuses',
-      dm: '全部状态',
+      dm: 'All Status',
     }),
     key: '',
   },
   {
     label: $i18n.get({
       id: 'main.pages.Knowledge.Detail.components.Search.index.pending',
-      dm: '待处理',
+      dm: 'Pending',
     }),
     key: 'uploaded',
   },
   {
     label: $i18n.get({
       id: 'main.pages.Knowledge.Detail.components.Search.index.processing',
-      dm: '处理中',
+      dm: 'Processing',
     }),
     key: 'processing',
   },
   {
     label: $i18n.get({
       id: 'main.pages.Knowledge.Detail.components.Search.index.completed',
-      dm: '处理完成',
+      dm: 'Completed',
     }),
     key: 'processed',
   },
   {
     label: $i18n.get({
       id: 'main.pages.Knowledge.Detail.components.Search.index.failed',
-      dm: '处理失败',
+      dm: 'Failed',
     }),
     key: 'failed',
   },
@@ -76,7 +76,7 @@ const Search: React.FC<SearchProps> = ({
           className={styles['search-input']}
           placeholder={$i18n.get({
             id: 'main.pages.Knowledge.Detail.components.Search.index.enterFileName',
-            dm: '请输入文件名',
+            dm: 'Please enter file name',
           })}
           onPressEnter={(e) =>
             onSearch && onSearch((e.target as HTMLInputElement).value)
@@ -98,7 +98,7 @@ const Search: React.FC<SearchProps> = ({
                 {statusName ||
                   $i18n.get({
                     id: 'main.pages.Knowledge.Detail.components.Search.index.allStatuses',
-                    dm: '全部状态',
+                    dm: 'All Status',
                   })}
               </Button>
               <IconFont
@@ -113,7 +113,7 @@ const Search: React.FC<SearchProps> = ({
             <Button type="default" onClick={onBatchOperation}>
               {$i18n.get({
                 id: 'main.pages.Knowledge.Detail.components.Search.index.batchOperation',
-                dm: '批量操作',
+                dm: 'Batch Operation',
               })}
             </Button>
             <Button
@@ -123,7 +123,7 @@ const Search: React.FC<SearchProps> = ({
             >
               {$i18n.get({
                 id: 'main.pages.Knowledge.Detail.components.Search.index.uploadFile',
-                dm: '上传文件',
+                dm: 'Upload File',
               })}
             </Button>
           </Flex>

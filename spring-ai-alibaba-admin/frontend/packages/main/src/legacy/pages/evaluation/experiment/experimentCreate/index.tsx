@@ -11,85 +11,85 @@ const { Option } = Select;
 
 
 
-// 表单数据接口
+// Form data interface
 interface ExperimentCreateForm {
-  // 步骤1：配置信息
+  // Step 1: Configuration info
   name: string;
   description: string;
 
-  // 步骤2：配置评测集
+  // Step 2: Configure dataset
   datasetId: string;
   datasetVersionId?: string;
 
-  // 步骤3：配置评测对象
+  // Step 3: Configure evaluation object
   objectType: string;
   promptKey?: string;
   version?: string;
 
-  // 步骤4：配置评估器
+  // Step 4: Configure evaluator
   evaluatorId: string;
 }
 
-// 对象类型选项
+// Object type options
 const objectTypes = [
   { value: 'prompt', label: 'Prompt' }
 ];
 
-// 组件属性接口
+// Component props interface
 interface GatherCreateProps {
   onCancel?: () => void;
   onSuccess?: () => void;
-  hideTitle?: boolean; // 添加hideTitle属性来控制是否隐藏标题
+  hideTitle?: boolean; // Add hideTitle property to control whether to hide title
 }
 
 const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hideTitle = false }) => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [selectedDataset, setSelectedDataset] = useState<any>(null); // 选中的评测集
-  const [datasets, setDatasets] = useState<any[]>([]); // 评测集列表数据
-  const [datasetsLoading, setDatasetsLoading] = useState(false); // 评测集数据加载状态
-  const [datasetVersions, setDatasetVersions] = useState<any[]>([]); // 评测集版本列表
-  const [datasetVersionsLoading, setDatasetVersionsLoading] = useState(false); // 评测集版本加载状态
+  const [selectedDataset, setSelectedDataset] = useState<any>(null); // Selected dataset
+  const [datasets, setDatasets] = useState<any[]>([]); // Dataset list data
+  const [datasetsLoading, setDatasetsLoading] = useState(false); // Dataset data loading status
+  const [datasetVersions, setDatasetVersions] = useState<any[]>([]); // Dataset version list
+  const [datasetVersionsLoading, setDatasetVersionsLoading] = useState(false); // Dataset version loading status
 
-  // Prompts相关状态
-  const [prompts, setPrompts] = useState<any[]>([]); // Prompts列表数据
-  const [promptsLoading, setPromptsLoading] = useState(false); // Prompts数据加载状态
-  const [selectedPrompt, setSelectedPrompt] = useState<any>(null); // 选中的Prompt
-  const [promptVersions, setPromptVersions] = useState<any[]>([]); // 选中的Prompt的版本列表
-  const [promptVersionsLoading, setPromptVersionsLoading] = useState(false); // 版本数据加载状态
+  // Prompts related state
+  const [prompts, setPrompts] = useState<any[]>([]); // Prompts list data
+  const [promptsLoading, setPromptsLoading] = useState(false); // Prompts data loading status
+  const [selectedPrompt, setSelectedPrompt] = useState<any>(null); // Selected Prompt
+  const [promptVersions, setPromptVersions] = useState<any[]>([]); // Selected Prompt version list
+  const [promptVersionsLoading, setPromptVersionsLoading] = useState(false); // Version data loading status
   console.log(promptVersions, 'zxc...')
 
-  // 评估器相关状态
-  const [evaluators, setEvaluators] = useState<any[]>([]); // 评估器列表数据
-  const [evaluatorsLoading, setEvaluatorsLoading] = useState(false); // 评估器数据加载状态
-  const [selectedEvaluators, setSelectedEvaluators] = useState<any[]>([]); // 已选择的评估器列表
+  // Evaluator related state
+  const [evaluators, setEvaluators] = useState<any[]>([]); // Evaluator list data
+  const [evaluatorsLoading, setEvaluatorsLoading] = useState(false); // Evaluator data loading status
+  const [selectedEvaluators, setSelectedEvaluators] = useState<any[]>([]); // Selected evaluator list
 
-  // 评估器版本相关状态
-  const [evaluatorVersions, setEvaluatorVersions] = useState<Record<string, any[]>>({}); // 按评估器ID存储版本列表
-  const [evaluatorVersionsLoading, setEvaluatorVersionsLoading] = useState<Record<string, boolean>>({}); // 按评估器ID存储加载状态
-  const [selectedEvaluatorVersions, setSelectedEvaluatorVersions] = useState<Record<string, string>>({}); // 按评估器ID存储选中的版本
+  // Evaluator version related state
+  const [evaluatorVersions, setEvaluatorVersions] = useState<Record<string, any[]>>({}); // Version list stored by evaluator ID
+  const [evaluatorVersionsLoading, setEvaluatorVersionsLoading] = useState<Record<string, boolean>>({}); // Loading status stored by evaluator ID
+  const [selectedEvaluatorVersions, setSelectedEvaluatorVersions] = useState<Record<string, string>>({}); // Selected version stored by evaluator ID
 
-  // 评估器配置模式状态
-  const [evaluatorConfigMode, setEvaluatorConfigMode] = useState<Record<string, boolean>>({}); // 按评估器ID存储配置模式（true为配置模式，false为映射模式）
-  const [evaluatorParams, setEvaluatorParams] = useState<Record<string, string[]>>({}); // 按评估器ID存储参数列表
-  const [evaluatorParamMappings, setEvaluatorParamMappings] = useState<Record<string, Record<string, string>>>({}); // 按评估器ID存储参数映射关系
+  // Evaluator config mode state
+  const [evaluatorConfigMode, setEvaluatorConfigMode] = useState<Record<string, boolean>>({}); // Config mode stored by evaluator ID (true for config mode, false for mapping mode)
+  const [evaluatorParams, setEvaluatorParams] = useState<Record<string, string[]>>({}); // Parameter list stored by evaluator ID
+  const [evaluatorParamMappings, setEvaluatorParamMappings] = useState<Record<string, Record<string, string>>>({}); // Parameter mapping stored by evaluator ID
 
-  // Prompt版本详情相关状态
-  const [promptVersionDetail, setPromptVersionDetail] = useState<any>(null); // 选中的Prompt版本详情
-  const [promptVersionDetailLoading, setPromptVersionDetailLoading] = useState(false); // Prompt版本详情加载状态
+  // Prompt version detail related state
+  const [promptVersionDetail, setPromptVersionDetail] = useState<any>(null); // Selected Prompt version detail
+  const [promptVersionDetailLoading, setPromptVersionDetailLoading] = useState(false); // Prompt version detail loading status
 
-  // 评测集详情相关状态
-  const [datasetDetail, setDatasetDetail] = useState<any>(null); // 选中的评测集详情
-  const [datasetDetailLoading, setDatasetDetailLoading] = useState(false); // 评测集详情加载状态
+  // Dataset detail related state
+  const [datasetDetail, setDatasetDetail] = useState<any>(null); // Selected dataset detail
+  const [datasetDetailLoading, setDatasetDetailLoading] = useState(false); // Dataset detail loading status
 
-  // 字段映射配置状态
-  const [fieldMapping, setFieldMapping] = useState<Record<string, string>>({}); // 字段映射配置 {promptParam: datasetField}
+  // Field mapping config state
+  const [fieldMapping, setFieldMapping] = useState<Record<string, string>>({}); // Field mapping config {promptParam: datasetField}
 
-  // 对象类型选择状态
-  const [selectedObjectType, setSelectedObjectType] = useState<string>(''); // 选中的对象类型
+  // Object type selection state
+  const [selectedObjectType, setSelectedObjectType] = useState<string>(''); // Selected object type
 
-  // 返回列表页面
+  // Return to list page
   const handleGoBack = () => {
     if (onCancel) {
       onCancel();
@@ -98,23 +98,23 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
     }
   };
 
-  // 获取评测集列表
+  // Get dataset list
   const fetchDatasets = async () => {
     try {
       setDatasetsLoading(true);
       const response = await API.getDatasets({
         pageNumber: 1,
-        pageSize: 100 // 获取较多数据，保证可以获取到所有评测集
+        pageSize: 100 // Get more data to ensure all datasets are retrieved
       });
 
       if (response.code === 200 && response.data) {
         const responseData = response.data as any;
         const dataItems = responseData.pageItems || responseData.records || [];
 
-        // 如果接口返回的数据为空，设置为空数组
+        // If API returns empty data, set to empty array
         const transformedDatasets = dataItems.map((item: any) => {
-          // 解析 columnsConfig 获取列信息
-          let columns = ['input', 'reference_output']; // 默认列
+          // Parse columnsConfig to get column info
+          let columns = ['input', 'reference_output']; // Default columns
           try {
             if (item.columnsConfig) {
               const parsedConfig = JSON.parse(item.columnsConfig);
@@ -123,7 +123,7 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
               }
             }
           } catch (e) {
-            // 解析 columnsConfig 失败处理
+            // Parse columnsConfig failed
           }
 
           return {
@@ -131,7 +131,7 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
             name: item.name,
             description: item.description || '',
             dataCount: item.dataCount || 0,
-            versions: ['v1.0.0'], // 默认版本，后续可以扩展为动态获取
+            versions: ['v1.0.0'], // Default version, can be extended to dynamic fetch later
             columns: columns,
             createTime: item.createTime,
             updateTime: item.updateTime
@@ -139,25 +139,25 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
         });
         setDatasets(transformedDatasets);
       } else {
-        // API调用失败，设置为空数组
+        // API call failed, set to empty array
         setDatasets([]);
       }
     } catch (error) {
-      // 发生错误时设置为空数组
+      // Set to empty array on error
       setDatasets([]);
-      message.error('获取评测集列表失败，请重试');
+      message.error('Failed to fetch dataset list, please try again');
     } finally {
       setDatasetsLoading(false);
     }
   };
 
-  // 获取Prompts列表
+  // Get Prompts list
   const fetchPrompts = async () => {
     try {
       setPromptsLoading(true);
       const response = await API.getPrompts({
         pageNo: 1,
-        pageSize: 100 // 获取较多数据
+        pageSize: 100 // Get more data
       });
 
       if (response.code === 200 && response.data) {
@@ -165,23 +165,23 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
         setPrompts(promptsData);
       } else {
         setPrompts([]);
-        message.error('获取Prompts列表失败');
+        message.error('Failed to fetch Prompts list');
       }
     } catch (error) {
       setPrompts([]);
-      message.error('获取Prompts列表失败，请重试');
+      message.error('Failed to fetch Prompts list, please try again');
     } finally {
       setPromptsLoading(false);
     }
   };
 
-  // 获取评估器列表
+  // Get evaluator list
   const fetchEvaluators = async () => {
     try {
       setEvaluatorsLoading(true);
       const response = await API.getEvaluators({
         pageNumber: 1,
-        pageSize: 100 // 获取较多数据
+        pageSize: 100 // Get more data
       });
 
       if (response.code === 200 && response.data) {
@@ -189,17 +189,17 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
         setEvaluators(evaluatorsData);
       } else {
         setEvaluators([]);
-        message.error('获取评估器列表失败');
+        message.error('Failed to fetch evaluator list');
       }
     } catch (error) {
       setEvaluators([]);
-      message.error('获取评估器列表失败，请重试');
+      message.error('Failed to fetch evaluator list, please try again');
     } finally {
       setEvaluatorsLoading(false);
     }
   };
 
-  // 获取评测集版本列表
+  // Get dataset version list
   const fetchDatasetVersions = async (datasetId: string) => {
     try {
       setDatasetVersionsLoading(true);
@@ -214,17 +214,17 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
         setDatasetVersions(versionsData);
       } else {
         setDatasetVersions([]);
-        message.error('获取评测集版本列表失败');
+        message.error('Failed to fetch dataset version list');
       }
     } catch (error) {
       setDatasetVersions([]);
-      message.error('获取评测集版本列表失败');
+      message.error('Failed to fetch dataset version list');
     } finally {
       setDatasetVersionsLoading(false);
     }
   };
 
-  // 处理Prompt版本选择
+  // Handle Prompt version selection
   const handlePromptVersionChange = async (version: string) => {
     const promptKey = form.getFieldValue('promptKey');
     if (promptKey && version) {
@@ -232,9 +232,9 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
     }
   };
 
-  // 处理字段映射变化
+  // Handle field mapping change
   const handleFieldMappingChange = (promptParam: string, datasetField: string) => {
-        // 确保有实际值
+        // Ensure actual value
     const actualValue = datasetField || 'input';
     setFieldMapping(prev => ({
       ...prev,
@@ -242,30 +242,30 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
     }));
   };
 
-  // 处理评测集选择
+  // Handle dataset selection
   const handleDatasetChange = async (datasetId: string) => {
     const dataset = datasets.find(d => d.id === datasetId);
     setSelectedDataset(dataset);
-    // 清空版本选择
+    // Clear version selection
     form.setFieldValue('datasetVersionId', undefined);
     setDatasetVersions([]);
     setDatasetDetail(null);
 
     if (dataset) {
-      // 获取该评测集的版本列表
+      // Get version list for this dataset
       await fetchDatasetVersions(datasetId);
-      // 获取评测集详情
+      // Get dataset detail
       await fetchDatasetDetail(datasetId);
     }
   };
 
-  // 智能匹配字段映射默认值
+  // Smart match field mapping default values
   const generateDefaultFieldMapping = (promptParams: string[], datasetFields: string[]): Record<string, string> => {
     const mapping: Record<string, string> = {};
 
-    // 定义常见的字段映射规则
+    // Define common field mapping rules
     const mappingRules = [
-      // 完全匹配
+      // Exact match
       { pattern: /^input$/i, target: 'input' },
       { pattern: /^output$/i, target: 'output' },
       { pattern: /^reference_output$/i, target: 'reference_output' },
@@ -276,7 +276,7 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
       { pattern: /^text$/i, target: 'input' },
       { pattern: /^content$/i, target: 'input' },
 
-      // 模糊匹配
+      // Fuzzy match
       { pattern: /input|question|query|prompt/i, target: 'input' },
       { pattern: /output|answer|response|result/i, target: 'reference_output' },
       { pattern: /reference|expected|target|ground_truth/i, target: 'reference_output' }
@@ -285,7 +285,7 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
     promptParams.forEach(param => {
       let matchedField = '';
 
-      // 首先尝试完全匹配
+      // First try exact match
       for (const rule of mappingRules) {
         if (rule.pattern.test(param) && datasetFields.includes(rule.target)) {
           matchedField = rule.target;
@@ -293,7 +293,7 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
         }
       }
 
-      // 如果没有匹配到，尝试在数据集字段中找到包含相似关键词的字段
+      // If no match, try finding similar keywords in dataset fields
       if (!matchedField) {
         for (const field of datasetFields) {
           if (param.toLowerCase().includes(field.toLowerCase()) ||
@@ -304,9 +304,9 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
         }
       }
 
-      // 如果还是没有匹配到，必须设置一个有效的默认字段
+      // If still no match, must set a valid default field
       if (!matchedField && datasetFields.length > 0) {
-        // 优先选择 input 字段，然后是 reference_output，最后是第一个字段
+        // Prioritize input field, then reference_output, finally first field
         if (datasetFields.includes('input')) {
           matchedField = 'input';
         } else if (datasetFields.includes('reference_output')) {
@@ -316,9 +316,9 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
         }
       }
 
-      // 确保总是有一个有效值，即使没有数据集字段也要有默认值
+      // Ensure there's always a valid value, even if no dataset fields available
       if (!matchedField || matchedField === '') {
-        matchedField = 'input'; // 最后的安全默认值
+        matchedField = 'input'; // Final safety default value
       }
 
       mapping[param] = matchedField;
@@ -328,43 +328,43 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
     return mapping;
   };
 
-  // 更新字段映射（在获取到评测集详情后调用）
+  // Update field mapping (called after getting dataset detail)
   const updateFieldMappingWithDefaults = () => {
     if (promptVersionDetail && datasetDetail) {
       try {
         const variables = JSON.parse(promptVersionDetail.variables || '{}');
         const promptParams = Object.keys(variables);
 
-        // 解析评测集字段
+        // Parse dataset fields
         let datasetFields: string[] = [];
         try {
           const columnsConfig = JSON.parse(datasetDetail.columnsConfig || '[]');
           datasetFields = Array.isArray(columnsConfig) ? columnsConfig.map((col: any) => col.name || col) : [];
         } catch (e) {
-          datasetFields = ['input', 'reference_output']; // 默认字段
+          datasetFields = ['input', 'reference_output']; // Default fields
         }
 
-        // 生成默认映射
+        // Generate default mapping
         const defaultMapping = generateDefaultFieldMapping(promptParams, datasetFields);
-                // 再次确认所有映射值非空
+                // Confirm all mapping values are non-empty again
         Object.keys(defaultMapping).forEach(key => {
           if (!defaultMapping[key] || defaultMapping[key] === '') {
             defaultMapping[key] = datasetFields[0] || 'input';
           }
         });
 
-        // 强制更新状态
+        // Force update state
         setFieldMapping({});
         setTimeout(() => {
           setFieldMapping(defaultMapping);
         }, 10);
       } catch (e) {
-        // 更新字段映射默认值失败处理
+        // Update field mapping default values failed
       }
     }
   };
 
-  // 获取Prompt版本详情
+  // Get Prompt version detail
   const fetchPromptVersionDetail = async (promptKey: string, version: string) => {
     try {
       setPromptVersionDetailLoading(true);
@@ -376,20 +376,20 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
       if (response.code === 200 && response.data) {
         setPromptVersionDetail(response.data);
 
-        // 解析variables字段，获取参数信息
+        // Parse variables field to get parameter info
         try {
           const variables = JSON.parse(response.data.variables || '{}');
-          // 初始化字段映射为空，等待评测集详情加载后再设置默认值
+          // Initialize field mapping as empty, set default after dataset detail loads
           const initialMapping: Record<string, string> = {};
           const promptParams = Object.keys(variables);
 
-          // 即使评测集详情未加载，也设置一个初始字段值
+          // Even if dataset detail not loaded, set initial field value
           promptParams.forEach(param => {
-            initialMapping[param] = 'input'; // 默认使用input字段
+            initialMapping[param] = 'input'; // Default use input field
           });
           setFieldMapping(initialMapping);
 
-          // 如果评测集详情已经加载，立即更新默认值
+          // If dataset detail already loaded, update default values immediately
           if (datasetDetail) {
             setTimeout(() => updateFieldMappingWithDefaults(), 100);
           }
@@ -398,17 +398,17 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
         }
       } else {
         setPromptVersionDetail(null);
-        message.error('获取Prompt版本详情失败');
+        message.error('Failed to fetch Prompt version details');
       }
     } catch (error) {
       setPromptVersionDetail(null);
-      message.error('获取Prompt版本详情失败');
+      message.error('Failed to fetch Prompt version details');
     } finally {
       setPromptVersionDetailLoading(false);
     }
   };
 
-  // 获取评测集详情
+  // Get dataset detail
   const fetchDatasetDetail = async (datasetId: string) => {
     try {
       setDatasetDetailLoading(true);
@@ -419,34 +419,34 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
       if (response.code === 200 && response.data) {
         setDatasetDetail(response.data);
 
-        // 如果Prompt版本详情已经加载，立即更新字段映射默认值
+        // If Prompt version detail already loaded, update field mapping default values immediately
         if (promptVersionDetail) {
           setTimeout(() => updateFieldMappingWithDefaults(), 100);
         }
       } else {
         setDatasetDetail(null);
-        message.error('获取评测集详情失败');
+        message.error('Failed to fetch dataset details');
       }
     } catch (error) {
       setDatasetDetail(null);
-      message.error('获取评测集详情失败');
+      message.error('Failed to fetch dataset details');
     } finally {
       setDatasetDetailLoading(false);
     }
   };
 
-  // 处理Prompt Key选择
+  // Handle Prompt Key selection
   const handlePromptKeyChange = async (promptKey: string) => {
     const prompt = prompts.find(p => p.promptKey === promptKey);
     setSelectedPrompt(prompt);
 
-    // 清空版本和详情选择
+    // Clear version and detail selection
     form.setFieldValue('version', undefined);
     setPromptVersionDetail(null);
     setFieldMapping({});
 
     if (prompt) {
-      // 获取该Prompt的版本列表
+      // Get version list for this Prompt
       try {
         setPromptVersionsLoading(true);
         const response = await API.getPromptVersions({
@@ -459,11 +459,11 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
           setPromptVersions((response.data as any).pageItems || []);
         } else {
           setPromptVersions([]);
-          message.error('获取Prompt版本失败');
+          message.error('Failed to fetch Prompt versions');
         }
       } catch (error) {
         setPromptVersions([]);
-        message.error('获取Prompt版本失败');
+        message.error('Failed to fetch Prompt versions');
       } finally {
         setPromptVersionsLoading(false);
       }
@@ -472,21 +472,21 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
     }
   };
 
-  // 获取评估器参数
+  // Get evaluator parameters
   const fetchEvaluatorParams = async (evaluatorId: string, versionId: string) => {
     try {
-      // 调用接口获取评估器详情
+      // Call interface to get evaluator detail
       const response = await API.getEvaluator({
         id: Number(evaluatorId)
       });
 
       if (response.code === 200 && response.data) {
-        // 获取评估器参数
+        // Get evaluator parameters
         const defaultParams = ['input', 'output', 'reference_output'];
         let params: string[] = [];
 
         try {
-          // 尝试解析variables字段
+          // Try to parse variables field
           const variables = JSON.parse(response.data.variables || '{}');
           params = Object.keys(variables);
 
@@ -497,44 +497,44 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
           params = defaultParams;
         }
 
-        // 更新评估器参数
+        // Update evaluator params
         setEvaluatorParams(prev => ({
           ...prev,
           [evaluatorId]: params
         }));
 
-        // 初始化映射关系
+        // Initialize mapping relationship
         const initialMappings: Record<string, string> = {};
         const dataSourceFields = getDataSourceFields();
 
-        // 根据参数智能匹配数据源
+        // Smart match data source based on parameters
         params.forEach(param => {
-          // 默认映射关系
+          // Default mapping relationship
           if (param === 'input') {
             initialMappings[param] = 'input';
           } else if (param === 'output') {
-            // 对于output参数，映射到actual_output字段
+            // For output param, map to actual_output field
             initialMappings[param] = 'actual_output';
           } else if (param === 'reference_output') {
             initialMappings[param] = 'reference_output';
           } else if (dataSourceFields.some(item => item.field === param)) {
-            // 如果数据源中有同名字段，直接映射
+            // If data source has same name field, map directly
             initialMappings[param] = param;
           } else {
-            // 查找相似字段
+            // Find similar field
             let matchedField = '';
 
-            // 定义常见的字段映射规则
+            // Define common field mapping rules
             const mappingRules = [
               { pattern: /input|question|query|prompt/i, target: 'input' },
               { pattern: /output|answer|response|result/i, target: 'actual_output' },
               { pattern: /reference|expected|target|ground_truth/i, target: 'reference_output' }
             ];
 
-            // 尝试匹配
+            // Try to match
             for (const rule of mappingRules) {
               if (rule.pattern.test(param)) {
-                // 查找匹配的目标字段是否存在于数据源中
+                // Check if matched target field exists in data source
                 const targetField = dataSourceFields.find(item => item.field === rule.target);
                 if (targetField) {
                   matchedField = rule.target;
@@ -543,7 +543,7 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
               }
             }
 
-            // 如果没有匹配到，尝试在数据源字段中找到包含相似关键词的字段
+            // If no match, try finding similar keywords in data source fields
             if (!matchedField) {
               for (const field of dataSourceFields) {
                 if (param.toLowerCase().includes(field.field.toLowerCase()) ||
@@ -554,7 +554,7 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
               }
             }
 
-            // 如果还是没有匹配到，使用第一个可用字段或默认input
+            // If still no match, use first available field or default input
             if (!matchedField && dataSourceFields.length > 0) {
               matchedField = dataSourceFields[0].field;
             }
@@ -563,30 +563,30 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
           }
         });
 
-        // 更新评估器参数映射
+        // Update evaluator parameter mapping
         setEvaluatorParamMappings(prev => ({
           ...prev,
           [evaluatorId]: initialMappings
         }));
 
-        // 切换到映射模式
+        // Switch to mapping mode
         setEvaluatorConfigMode(prev => ({
           ...prev,
-          [evaluatorId]: false // 设置为非配置模式，显示映射界面
+          [evaluatorId]: false // Set to non-config mode, show mapping interface
         }));
 
         return true;
       } else {
-        message.error(`获取评估器${evaluatorId}的参数失败`);
+        message.error(`Failed to fetch evaluator ${evaluatorId} parameters`);
         return false;
       }
     } catch (error) {
-      message.error(`获取评估器${evaluatorId}的参数失败`);
+      message.error(`Failed to fetch evaluator ${evaluatorId} parameters`);
       return false;
     }
   };
 
-  // 获取评测集字段
+  // Get dataset fields
   const getDatasetFields = (): string[] => {
     if (!datasetDetail) return ['input', 'reference_output'];
 
@@ -594,7 +594,7 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
       const columnsConfig = JSON.parse(datasetDetail.columnsConfig || '[]');
       const fields = Array.isArray(columnsConfig) ? columnsConfig.map((col: any) => col.name || col) : [];
 
-      // 确保至少有默认字段
+      // Ensure at least default fields
       if (fields.length === 0) {
         return ['input', 'reference_output'];
       }
@@ -605,47 +605,47 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
     }
   };
 
-  // 定义数据源字段接口，包含字段名和来源信息
+  // Define data source field interface, includes field name and source info
   interface DataSourceField {
     field: string;
     source: string;
     displayName: string;
   }
 
-  // 获取数据来源字段（只使用评测集字段，并添加固定的actual_output字段）
+  // Get data source fields (only use dataset fields, add fixed actual_output field)
   const getDataSourceFields = (): DataSourceField[] => {
     let fields: DataSourceField[] = [];
 
-    // 获取评测集字段
+    // Get dataset fields
     if (datasetDetail) {
       try {
         const columnsConfig = JSON.parse(datasetDetail.columnsConfig || '[]');
         const datasetFields = Array.isArray(columnsConfig) ? columnsConfig.map((col: any) => col.name || col) : [];
-        // 添加评测集来源信息
+        // Add dataset source info
         fields = [
           ...fields,
           ...datasetFields.map(field => ({
             field,
-            source: '评测集',
-            displayName: `${field} (评测集)`
+            source: 'Dataset',
+            displayName: `${field} (Dataset)`
           }))
         ];
       } catch (e) {
-        // 解析评测集字段失败处理
+        // Handle dataset field parsing failure
       }
     }
 
-    // 添加固定的actual_output字段，数据来源为"评测对象"
+    // Add fixed actual_output field, data source is "Evaluation Target"
     fields = [
       ...fields,
       {
         field: 'actual_output',
-        source: '评测对象',
-        displayName: 'actual_output (评测对象)'
+        source: 'Evaluation Target',
+        displayName: 'actual_output (Evaluation Target)'
       }
     ];
 
-    // 去重（基于field字段）
+    // Deduplicate (based on field)
     const uniqueFields = Array.from(
       new Map(fields.map(item => [item.field, item])).values()
     );
@@ -653,30 +653,30 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
     return uniqueFields;
   };
 
-  // 切换评估器配置模式
+  // Toggle evaluator config mode
   const toggleEvaluatorConfigMode = (evaluatorId: string) => {
     setEvaluatorConfigMode(prev => ({
       ...prev,
       [evaluatorId]: !prev[evaluatorId]
     }));
 
-    // 清空评估器和版本的选择
+    // Clear evaluator and version selection
     setSelectedEvaluators(prev => prev.map(evaluator =>
       evaluator.evaluatorId === evaluatorId
         ? { ...evaluator, evaluatorId: '', versionId: '' }
         : evaluator
     ));
 
-    // 清空选中的评估器版本
+    // Clear selected evaluator version
     setSelectedEvaluatorVersions(prev => ({
       ...prev,
       [evaluatorId]: ''
     }));
   };
 
-  // 处理评估器参数映射变化
+  // Handle evaluator parameter mapping change
   const handleEvaluatorParamMappingChange = (evaluatorId: string, param: string, fieldValue: string) => {
-    // 获取完整的数据源字段对象
+    // Get complete data source field object
     const dataSourceFields = getDataSourceFields();
     const selectedField = dataSourceFields.find(item => item.field === fieldValue);
 
@@ -689,13 +689,13 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
     }));
   };
 
-  // 获取评估器版本列表
+  // Get evaluator version list
   const fetchEvaluatorVersions = async (evaluatorId: string) => {
     try {
-      // 设置对应评估器的加载状态
+      // Set loading state for corresponding evaluator
       setEvaluatorVersionsLoading(prev => ({ ...prev, [evaluatorId]: true }));
 
-      // 调用接口获取评估器版本列表
+      // Call interface to get evaluator version list
       const response = await API.getEvaluatorVersions({
         evaluatorId: Number(evaluatorId),
         pageNumber: 1,
@@ -703,104 +703,104 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
       });
 
       if (response.code === 200 && response.data) {
-        // 获取版本列表
+        // Get version list
         const versionsData = (response.data as any).pageItems || [];
 
-        // 更新版本列表状态
+        // Update version list state
         setEvaluatorVersions(prev => ({
           ...prev,
           [evaluatorId]: versionsData
         }));
 
-        // 不再自动选择第一个版本，让用户自己选择
-        // 清空当前选中的版本
+        // No longer auto-select first version, let user choose themselves
+        // Clear currently selected version
         setSelectedEvaluatorVersions(prev => ({
           ...prev,
           [evaluatorId]: ''
         }));
       } else {
-        // 设置空数组
+        // Set empty array
         setEvaluatorVersions(prev => ({
           ...prev,
           [evaluatorId]: []
         }));
-        message.error(`获取评估器${evaluatorId}的版本列表失败`);
+        message.error(`Failed to fetch evaluator ${evaluatorId} version list`);
       }
     } catch (error) {
-      // 设置空数组
+      // Set empty array
       setEvaluatorVersions(prev => ({
         ...prev,
         [evaluatorId]: []
       }));
-      message.error(`获取评估器${evaluatorId}的版本列表失败`);
+      message.error(`Failed to fetch evaluator ${evaluatorId} version list`);
     } finally {
-      // 重置加载状态
+      // Reset loading state
       setEvaluatorVersionsLoading(prev => ({ ...prev, [evaluatorId]: false }));
     }
   };
 
-  // 处理评估器选择变化
+  // Handle evaluator selection change
   const handleEvaluatorSelectChange = async (index: number, evaluatorId: string) => {
-    // 更新指定索引的评估器ID，同时保留其他评估器的状态
+    // Update evaluator ID at specified index, preserve other evaluators' state
     const newEvaluators = [...selectedEvaluators];
     newEvaluators[index] = { ...newEvaluators[index], evaluatorId: evaluatorId };
     setSelectedEvaluators(newEvaluators);
 
-    // 为当前评估器实例初始化配置模式为true（配置模式）
-    // 使用索引和评估器ID组合作为key，确保每个实例独立
+    // Initialize config mode as true (config mode) for current evaluator instance
+    // Use index and evaluator ID combination as key to ensure each instance is independent
     const instanceKey = `${index}-${evaluatorId}`;
     setEvaluatorConfigMode(prev => ({
       ...prev,
       [instanceKey]: true
     }));
 
-    // 清空当前评估器实例的版本选择
+    // Clear version selection for current evaluator instance
     setSelectedEvaluatorVersions(prev => ({
       ...prev,
       [instanceKey]: ''
     }));
 
-    // 如果评估器ID有效，获取其版本列表
+    // If evaluator ID is valid, get its version list
     if (evaluatorId) {
       await fetchEvaluatorVersions(evaluatorId);
     }
   };
 
-  // 处理评估器版本选择变化
+  // Handle evaluator version selection change
   const handleEvaluatorVersionChange = async (index: number, evaluatorId: string, versionId: string) => {
-    // 使用索引和评估器ID组合作为key，确保每个实例独立
+    // Use index and evaluator ID combination as key to ensure each instance is independent
     const instanceKey = `${index}-${evaluatorId}`;
 
-    // 更新选中的版本
+    // Update selected version
     setSelectedEvaluatorVersions(prev => ({
       ...prev,
       [instanceKey]: versionId
     }));
 
-    // 如果选择了评估器和版本，获取评估器参数
+    // If evaluator and version selected, get evaluator parameters
     if (evaluatorId && versionId && datasetDetail) {
-      // 获取参数并初始化映射
+      // Get parameters and initialize mapping
       const success = await fetchEvaluatorParams(evaluatorId, versionId);
 
       if (success) {
-        // 已在fetchEvaluatorParams中切换到映射模式
-        // 字段映射已自动配置
+        // Already switched to mapping mode in fetchEvaluatorParams
+        // Field mapping already auto-configured
         setEvaluatorConfigMode(prev => ({
           ...prev,
-          [instanceKey]: false // 切换到映射模式
+          [instanceKey]: false // Switch to mapping mode
         }));
       }
     } else if (evaluatorId && versionId && !datasetDetail) {
-      // 有评估器和版本但没有数据集详情，仍然切换到映射模式
+      // Have evaluator and version but no dataset detail, still switch to mapping mode
       setEvaluatorConfigMode(prev => ({
         ...prev,
-        [instanceKey]: false // 切换到映射模式
+        [instanceKey]: false // Switch to mapping mode
       }));
 
-      // 获取参数并初始化映射
+      // Get parameters and initialize mapping
       await fetchEvaluatorParams(evaluatorId, versionId);
     } else {
-      // 没有选择完整的评估器和版本，保持配置模式
+      // Didn't select complete evaluator and version, keep config mode
       if (evaluatorId) {
         setEvaluatorConfigMode(prev => ({
           ...prev,
@@ -810,46 +810,46 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
     }
   };
 
-  // 添加评估器
+  // Add evaluator
   const handleAddEvaluator = () => {
-    // 创建一个新的评估器项
+    // Create a new evaluator item
     const newEvaluator = {
-      id: Date.now().toString(), // 临时ID，提交时会替换为实际选择的评估器ID
+      id: Date.now().toString(), // Temporary ID, will be replaced by actual selected evaluator ID when submitting
       evaluatorId: '',
       versionId: ''
     };
 
-    // 添加到评估器列表
+    // Add to evaluator list
     setSelectedEvaluators(prev => [...prev, newEvaluator]);
 
-    // 为新添加的评估器初始化状态
+    // Initialize state for newly added evaluator
     const newIndex = selectedEvaluators.length;
     const instanceKey = `${newIndex}-`;
 
-    // 初始化配置模式为true（配置模式）
+    // Initialize config mode as true (config mode)
     setEvaluatorConfigMode(prev => ({
       ...prev,
       [instanceKey]: true
     }));
 
-    // 初始化版本选择为空
+    // Initialize version selection as empty
     setSelectedEvaluatorVersions(prev => ({
       ...prev,
       [instanceKey]: ''
     }));
   };
 
-  // 移除评估器
+  // Remove evaluator
   const handleRemoveEvaluator = (index: number) => {
     setSelectedEvaluators(prev => prev.filter((_, i) => i !== index));
   };
 
-  // 查看评估器详情
+  // View evaluator detail
   const handleViewEvaluatorDetail = (evaluatorId: string) => {
     navigate(getLegacyPath(`/evaluation/evaluator/${evaluatorId}`));
   };
 
-  // 查看Prompt详情
+  // View Prompt detail
   const handleViewPromptDetail = () => {
     const promptKey = form.getFieldValue('promptKey');
     if (promptKey) {
@@ -857,27 +857,27 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
     }
   };
 
-  // 查看评测集详情
+  // View dataset detail
   const handleViewDatasetDetail = () => {
     if (selectedDataset) {
       navigate(getLegacyPath(`/evaluation/gather/detail/${selectedDataset.id}`));
     }
   };
 
-  // 组件加载时获取数据
+  // Fetch data when component loads
   useEffect(() => {
     fetchDatasets();
     fetchPrompts();
     fetchEvaluators();
   }, []);
 
-  // 监听字段映射状态变化
+  // Listen to field mapping state changes
   useEffect(() => {
     if (promptVersionDetail && datasetDetail) {
       const variables = JSON.parse(promptVersionDetail.variables || '{}');
       const promptParams = Object.keys(variables);
 
-      // 检查是否有没有设置映射值的参数
+      // Check if there are parameters without mapping values
       let hasEmptyMapping = false;
       promptParams.forEach(param => {
         if (!fieldMapping[param]) {
@@ -885,82 +885,82 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
         }
       });
 
-      // 如果有空值，则重新生成默认映射
+      // If there are empty values, regenerate default mapping
       if (hasEmptyMapping) {
         updateFieldMappingWithDefaults();
       }
     }
   }, [promptVersionDetail, datasetDetail, fieldMapping]);
 
-  // 提交表单
+  // Submit form
   const handleSubmit = async (values: any) => {
     try {
       setLoading(true);
 
-      // 检查是否有效的评估器配置
+      // Check if there is a valid evaluator configuration
       if (selectedEvaluators.length === 0) {
-        message.error('请至少添加一个评估器');
+        message.error('Please add at least one evaluator');
         setLoading(false);
         return;
       }
 
-      // 检查是否所有评估器都有选择版本
-      // 使用instanceKey来正确检查每个评估器实例的版本选择状态
+      // Check if all evaluators have a version selected
+      // Use instanceKey to correctly check version selection state for each evaluator instance
       const missingVersions = selectedEvaluators.some((evaluator, index) => {
         const instanceKey = `${index}-${evaluator.evaluatorId}`;
         return !evaluator.evaluatorId || !selectedEvaluatorVersions[instanceKey];
       });
       if (missingVersions) {
-        message.error('请确保所有评估器都选择了版本');
+        message.error('Please ensure all evaluators have a version selected');
         setLoading(false);
         return;
       }
 
-      // 检查评估器配置是否有效
+      // Check if evaluator config is valid
       const invalidEvaluators = selectedEvaluators.some((evaluator, index) => {
         const instanceKey = `${index}-${evaluator.evaluatorId}`;
         return !evaluator.evaluatorId || !selectedEvaluatorVersions[instanceKey];
       });
       if (invalidEvaluators) {
-        message.error('请确保所有评估器都已正确配置');
+        message.error('Please ensure all evaluators are properly configured');
         setLoading(false);
         return;
       }
 
-      // 构造评测对象配置
-      // 解析Prompt参数变量
+      // Construct evaluation object config
+      // Parse Prompt parameter variables
       let promptVariables = {};
       try {
         promptVariables = JSON.parse(promptVersionDetail?.variables || '{}');
       } catch (e) {
-        // 解析失败则使用空对象
+        // If parsing fails, use empty object
       }
 
-      // 构造字段映射关系
+      // Construct field mapping relationship
       const variableMap = Object.keys(promptVariables).map(param => ({
         promptVariable: param,
         datasetVolumn: fieldMapping[param] || 'input'
       }));
 
-      // 构造评测对象配置（将variableMap放在config内部，与promptKey、version平级）
+      // Construct evaluation object config (put variableMap inside config, at same level as promptKey and version)
       const evaluationObjectConfig = {
         type: values.objectType,
         config: {
           promptKey: values.promptKey,
-          version: values.version, // 使用prompt的version字段
-          variableMap: variableMap // 将variableMap放在config内部
+          version: values.version, // Use prompt's version field
+          variableMap: variableMap // Put variableMap inside config
         }
       };
 
-      // 构造评估器配置
+      // Construct evaluator configuration
       const evaluatorConfig = selectedEvaluators.map((evaluator, index) => {
-        // 获取评估器名称
+        // Get evaluator name
         const evaluatorInfo = evaluators.find(e => e.id.toString() === evaluator.evaluatorId);
 
-        // 使用instanceKey获取正确的版本信息
+        // Use instanceKey to get correct version information
         const instanceKey = `${index}-${evaluator.evaluatorId}`;
 
-        // 获取评估器版本名称
+        // Get evaluator version name
         let evaluatorVersionName = '';
         if (evaluator.evaluatorId && selectedEvaluatorVersions[instanceKey]) {
           const versions = evaluatorVersions[evaluator.evaluatorId];
@@ -972,21 +972,21 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
           }
         }
 
-        // 构造评估器参数映射关系
+        // Construct evaluator parameter mapping relationship
         const variableMap: { evaluatorVariable: string; source: string; dataSource?: string }[] = [];
         if (evaluatorParams[evaluator.evaluatorId]) {
           evaluatorParams[evaluator.evaluatorId].forEach(param => {
-            // 获取参数映射的源字段
+            // Get parameter mapping source field
             const sourceField = evaluatorParamMappings[evaluator.evaluatorId]?.[param] || 'input';
 
-            // 获取源字段的来源信息
+            // Get source field origin information
             const dataSourceFields = getDataSourceFields();
             const sourceFieldInfo = dataSourceFields.find(item => item.field === sourceField);
 
             variableMap.push({
               evaluatorVariable: param,
               source: sourceField,
-              dataSource: sourceFieldInfo?.source || '默认' // 添加数据来源信息
+              dataSource: sourceFieldInfo?.source || 'Default' // Add data source information
             });
           });
         }
@@ -996,11 +996,11 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
           evaluatorVersionId: Number(selectedEvaluatorVersions[instanceKey]),
           variableMap: variableMap,
           evaluatorName: evaluatorInfo?.name || '',
-          evaluatorVersionName: evaluatorVersionName // 添加版本名称
+          evaluatorVersionName: evaluatorVersionName // Add version name
         };
-      }).filter(e => e.evaluatorId && e.evaluatorVersionId); // 过滤掉无效的评估器配置
+      }).filter(e => e.evaluatorId && e.evaluatorVersionId); // Filter out invalid evaluator configurations
 
-      // 获取正确的datasetVersion值
+      // Get correct datasetVersion value
       let datasetVersionValue = '';
       if (values.datasetVersionId) {
         const selectedVersion = datasetVersions.find(version => version.id === values.datasetVersionId);
@@ -1009,37 +1009,37 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
         }
       }
 
-      // 在最终提交时才使用JSON.stringify转换
+      // Use JSON.stringify conversion only at final submission
       const submitData = {
         name: values.name,
         description: values.description,
         datasetId: Number(values.datasetId),
         datasetVersionId: Number(values.datasetVersionId),
-        datasetVersion: datasetVersionValue, // 使用从datasetVersions中找到的version字段值
+        datasetVersion: datasetVersionValue, // Use version field value found in datasetVersions
         evaluationObjectConfig: JSON.stringify(evaluationObjectConfig),
         evaluatorConfig: JSON.stringify(evaluatorConfig),
       };
 
-      // 调用创建实验的API
+      // Call create experiment API
       await API.createExperiment(submitData);
 
-      message.success('实验创建成功');
+      message.success('Experiment created successfully');
 
-      // 如果提供了onSuccess回调，则调用它，否则导航到列表页面
+      // If onSuccess callback is provided, call it, otherwise navigate to list page
       if (onSuccess) {
         onSuccess();
       } else {
         navigate('/evaluation-experiment');
       }
     } catch (error) {
-      message.error('创建失败，请重试');
+      message.error('Creation failed, please try again');
 
     } finally {
       setLoading(false);
     }
   };
 
-  // 取消创建
+  // Cancel creation
   const handleCancel = () => {
     if (onCancel) {
       onCancel();
@@ -1052,7 +1052,7 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
 
   return (
     <div className="experiment-create-page">
-      {/* 页面头部 - 固定在顶部 */}
+      {/* Page header - fixed at top */}
       {!hideTitle && (
         <div className="experiment-create-header">
           <div className="flex items-center mb-4">
@@ -1062,40 +1062,40 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
               onClick={handleGoBack}
               className="mr-3"
             >
-              返回
+              Back
             </Button>
-            <h1 className="text-2xl font-semibold mb-0">新建实验</h1>
+            <h1 className="text-2xl font-semibold mb-0">Create Experiment</h1>
           </div>
         </div>
       )}
 
-      {/* 表单区域 - 可滚动区域 */}
+      {/* Form area - scrollable area */}
       <div className={`experiment-create-content ${hideTitle ? 'pt-6' : ''}`}>
         <Form
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
         >
-          {/* 步骤1：配置信息 */}
-          <Card title="步骤1：配置信息" className="mb-6">
+          {/* Step 1: Configuration */}
+          <Card title="Step 1: Configuration" className="mb-6">
             <Form.Item
               name="name"
-              label="实验名称"
+              label="Experiment Name"
               rules={[
-                { required: true, message: '请输入实验名称' },
-                { max: 100, message: '名称不能超过100个字符' }
+                { required: true, message: 'Please enter experiment name' },
+                { max: 100, message: 'Name cannot exceed 100 characters' }
               ]}
             >
-              <Input placeholder="如：问答机器人实验测试" />
+              <Input placeholder="e.g., Q&A Bot Experiment" />
             </Form.Item>
 
             <Form.Item
               name="description"
-              label="实验描述"
-              rules={[{ max: 500, message: '描述不能超过500个字符' }]}
+              label="Experiment Description"
+              rules={[{ max: 500, message: 'Description cannot exceed 500 characters' }]}
             >
               <TextArea
-                placeholder="描述实验目的和内容"
+                placeholder="Describe the purpose and content of the experiment"
                 rows={4}
                 showCount
                 maxLength={500}
@@ -1103,18 +1103,18 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
             </Form.Item>
           </Card>
 
-          {/* 步骤2：配置评测集 */}
-          <Card title="步骤2：配置评测集" className="mb-6">
+          {/* Step 2: Configure Dataset */}
+          <Card title="Step 2: Configure Dataset" className="mb-6">
             <Form.Item
               name="datasetId"
-              label="选择评测集"
-              rules={[{ required: true, message: '请选择评测集' }]}
+              label="Select Dataset"
+              rules={[{ required: true, message: 'Please select a dataset' }]}
             >
               <Select
-                placeholder="选择已创建的评测集"
+                placeholder="Select a created dataset"
                 onChange={handleDatasetChange}
                 loading={datasetsLoading}
-                notFoundContent={datasetsLoading ? '加载中...' : '暂无数据'}
+                notFoundContent={datasetsLoading ? 'Loading...' : 'No data available'}
               >
                 {datasets.map(dataset => (
                   <Option key={dataset.id} value={dataset.id}>
@@ -1124,18 +1124,18 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
               </Select>
             </Form.Item>
 
-            {/* 当选择了评测集后，显示版本选择和评测集信息 */}
+            {/* When dataset is selected, show version selection and dataset info */}
             {selectedDataset && (
               <>
                 <Form.Item
                   name="datasetVersionId"
-                  label="选择版本"
-                  rules={[{ required: true, message: '请选择评测集版本' }]}
+                  label="Select Version"
+                  rules={[{ required: true, message: 'Please select a dataset version' }]}
                 >
                   <Select
-                    placeholder="选择评测集版本"
+                    placeholder="Select dataset version"
                     loading={datasetVersionsLoading}
-                    notFoundContent={datasetVersionsLoading ? '加载中...' : '暂无版本数据'}
+                    notFoundContent={datasetVersionsLoading ? 'Loading...' : 'No version data available'}
                   >
                     {datasetVersions.map((version: any) => (
                       <Option key={version.id} value={version.id}>
@@ -1145,33 +1145,33 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
                   </Select>
                 </Form.Item>
 
-                {/* 评测集信息 */}
+                {/* Dataset info */}
                 <div className="bg-gray-50 rounded-lg p-4 mt-4">
                   <div className="flex justify-between items-start mb-3">
-                    <h4 className="text-base font-medium text-gray-900">评测集信息</h4>
+                    <h4 className="text-base font-medium text-gray-900">Dataset Info</h4>
                     <Button
                       type="link"
                       icon={<EyeOutlined />}
                       className="text-blue-600 hover:text-blue-800 font-medium"
                       onClick={handleViewDatasetDetail}
                     >
-                      查看详情
+                      View Details
                     </Button>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <span className="text-sm text-gray-600">描述：</span>
+                      <span className="text-sm text-gray-600">Description:</span>
                       <span className="ml-2 text-sm text-gray-900">{selectedDataset.description}</span>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-600">数据量：</span>
-                      <span className="ml-2 text-sm text-gray-900">{selectedDataset.dataCount} 条</span>
+                      <span className="text-sm text-gray-600">Data Count:</span>
+                      <span className="ml-2 text-sm text-gray-900">{selectedDataset.dataCount} items</span>
                     </div>
                   </div>
 
                   <div className="mt-3">
-                    <span className="text-sm text-gray-600">列名称：</span>
+                    <span className="text-sm text-gray-600">Columns:</span>
                     <div className="mt-1 flex flex-wrap gap-2">
                       {selectedDataset.columns.map((column: string) => (
                         <span
@@ -1188,19 +1188,19 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
             )}
           </Card>
 
-          {/* 步骤3：配置评测对象 */}
-          <Card title="步骤3：配置评测对象" className="mb-6">
+          {/* Step 3: Configure Evaluation Target */}
+          <Card title="Step 3: Configure Evaluation Target" className="mb-6">
             <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-4">
               <Form.Item
                 name="objectType"
-                label="对象类型"
-                rules={[{ required: true, message: '请选择对象类型' }]}
+                label="Object Type"
+                rules={[{ required: true, message: 'Please select object type' }]}
               >
                 <Select
-                  placeholder="选择评测对象类型"
+                  placeholder="Select evaluation object type"
                   onChange={(value) => {
                     setSelectedObjectType(value);
-                    // 当切换对象类型时，清空相关字段
+                    // When switching object type, clear related fields
                     if (value !== 'prompt') {
                       form.setFieldsValue({
                         promptKey: undefined,
@@ -1221,16 +1221,16 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
                 </Select>
               </Form.Item>
 
-              {/* 只有当选择了 prompt 类型时才显示 Prompt 相关配置 */}
+              {/* Only show Prompt related configuration when prompt type is selected */}
               {selectedObjectType === 'prompt' && (
                 <>
                   <Form.Item
                     name="promptKey"
                     label="Prompt Key"
-                    rules={[{ required: true, message: '请输入或选择Prompt Key' }]}
+                    rules={[{ required: true, message: 'Please enter or select Prompt Key' }]}
                   >
                     <AutoComplete
-                      placeholder="请输入或选择Prompt Key"
+                      placeholder="Enter or select Prompt Key"
                       onChange={handlePromptKeyChange}
                       filterOption={(inputValue, option) => {
                         if (!option || !option.value) return false;
@@ -1238,7 +1238,7 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
                         const input = inputValue.toLowerCase();
                         return value.indexOf(input) !== -1;
                       }}
-                      notFoundContent={promptsLoading ? '加载中...' : '暂无数据'}
+                      notFoundContent={promptsLoading ? 'Loading...' : 'No data available'}
                     >
                       {prompts.map(prompt => (
                         <AutoComplete.Option key={prompt.promptKey} value={prompt.promptKey}>
@@ -1251,20 +1251,20 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
               )}
             </div>
 
-            {/* 只有当选择了 prompt 类型时才显示版本选择 */}
+            {/* Only show version selection when prompt type is selected */}
             {selectedObjectType === 'prompt' && (
               <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                 <Form.Item
                   name="version"
-                  label="版本"
-                  rules={[{ required: true, message: '请选择版本' }]}
+                  label="Version"
+                  rules={[{ required: true, message: 'Please select a version' }]}
                 >
                   <Select
-                    placeholder="选择版本"
+                    placeholder="Select version"
                     loading={promptVersionsLoading}
                     disabled={!selectedPrompt}
                     onChange={handlePromptVersionChange}
-                    notFoundContent={promptVersionsLoading ? '加载中...' : '请先选择Prompt Key'}
+                    notFoundContent={promptVersionsLoading ? 'Loading...' : 'Please select Prompt Key first'}
                   >
                     {promptVersions.map(version => {
                       const versionStatus = version.status;
@@ -1273,7 +1273,7 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
                           <span className='mr-2'>
                             {version.version} {version.versionDescription ? " - " : ""} {version.versionDescription}
                           </span>
-                          <Tag color={versionStatus === "release" ? "green" : "blue"}>{version.status === "release" ? "正式版本" : "PRE版本"}</Tag>
+                          <Tag color={versionStatus === "release" ? "green" : "blue"}>{version.status === "release" ? "Release" : "PRE"}</Tag>
                         </Option>
                       )
                     })}
@@ -1282,42 +1282,42 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
               </div>
             )}
 
-            {/* 只有当选择了 prompt 类型时才显示 Prompt版本详情信息卡片 */}
+            {/* Only show Prompt version detail card when prompt type is selected */}
             {selectedObjectType === 'prompt' && promptVersionDetail && (
               <div className="bg-gray-50 rounded-lg p-4 mt-4">
                 <div className="flex justify-between items-start mb-3">
-                  <h4 className="text-base font-medium text-gray-900">Prompt版本详情</h4>
+                  <h4 className="text-base font-medium text-gray-900">Prompt Version Details</h4>
                   <Button
                     type="link"
                     icon={<EyeOutlined />}
                     className="text-blue-600 hover:text-blue-800 font-medium"
                     onClick={handleViewPromptDetail}
                   >
-                    查看完整详情
+                    View Full Details
                   </Button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <span className="text-sm" style={{color: 'rgba(0, 0, 0, 0.45)'}}>版本：</span>
+                    <span className="text-sm" style={{color: 'rgba(0, 0, 0, 0.45)'}}>Version:</span>
                     <span className="ml-2 text-sm text-gray-900">{promptVersionDetail.version}</span>
                   </div>
                   <div>
-                    <span className="text-sm" style={{color: 'rgba(0, 0, 0, 0.45)'}}>版本描述：</span>
+                    <span className="text-sm" style={{color: 'rgba(0, 0, 0, 0.45)'}}>Version Description:</span>
                     <span className="ml-2 text-sm text-gray-900">{promptVersionDetail.versionDescription}</span>
                   </div>
                 </div>
 
                 <div className="mt-3">
-                  <span className="text-sm" style={{color: 'rgba(0, 0, 0, 0.45)'}}>模板：</span>
+                  <span className="text-sm" style={{color: 'rgba(0, 0, 0, 0.45)'}}>Template:</span>
                   <div className="mt-1 bg-white rounded border p-3 text-sm text-gray-900 max-h-32 overflow-y-auto">
-                    {promptVersionDetail.template || '暂无模板内容'}
+                    {promptVersionDetail.template || 'No template content'}
                   </div>
                 </div>
 
                 {promptVersionDetail.variables && (
                   <div className="mt-3">
-                    <span className="text-sm" style={{color: 'rgba(0, 0, 0, 0.45)'}}>参数：</span>
+                    <span className="text-sm" style={{color: 'rgba(0, 0, 0, 0.45)'}}>Parameters:</span>
                     <div className="mt-1 flex flex-wrap gap-2">
                       {Object.keys(JSON.parse(promptVersionDetail.variables || '{}')).map((param: string) => (
                         <span
@@ -1333,41 +1333,41 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
               </div>
             )}
 
-            {/* 只有当选择了 prompt 类型时才显示字段映射配置卡片 */}
+            {/* Only show field mapping configuration card when prompt type is selected */}
             {selectedObjectType === 'prompt' && selectedDataset && promptVersionDetail && datasetDetail && (
               <div className="bg-gray-50 rounded-lg p-4 mt-4">
-                <h4 className="text-base font-medium text-gray-900 mb-4">字段映射配置</h4>
+                <h4 className="text-base font-medium text-gray-900 mb-4">Field Mapping Configuration</h4>
                 <div className="flex items-center justify-between mb-4">
-                  <p className="text-sm text-gray-600">配置Prompt参数与评测集字段的映射关系：</p>
+                  <p className="text-sm text-gray-600">Configure the mapping between Prompt parameters and dataset fields:</p>
                   <div className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                    ✨ 系统已智能匹配默认值
+                    ✨ System has auto-matched default values
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4 items-center">
-                  <span className="text-sm" style={{color: 'rgba(0, 0, 0, 0.45)'}}>Prompt参数：</span>
+                  <span className="text-sm" style={{color: 'rgba(0, 0, 0, 0.45)'}}>Prompt Parameter:</span>
                   <div></div>
-                  <span className="text-sm" style={{color: 'rgba(0, 0, 0, 0.45)'}}>映射到评测集字段：</span>
+                  <span className="text-sm" style={{color: 'rgba(0, 0, 0, 0.45)'}}>Map to Dataset Field:</span>
                 </div>
                 <div className="space-y-3">
                   {Object.keys(JSON.parse(promptVersionDetail.variables || '{}')).map((param: string) => {
-                    // 解析评测集的字段列表
+                    // Parse dataset field list
                     let datasetFields: string[] = [];
                     try {
                       const columnsConfig = JSON.parse(datasetDetail.columnsConfig || '[]');
                       datasetFields = Array.isArray(columnsConfig) ? columnsConfig.map((col: any) => col.name || col) : [];
-                      // 确保至少有一个字段
+                      // Ensure at least one field
                       if (datasetFields.length === 0) {
                         datasetFields = ['input', 'reference_output'];
                       }
                     } catch (e) {
-                      datasetFields = ['input', 'reference_output']; // 默认字段
+                      datasetFields = ['input', 'reference_output']; // Default fields
                     }
 
-                    // 确保当前参数有映射值
+                    // Ensure current parameter has mapping value
                     const currentValue = fieldMapping[param] || datasetFields[0];
                     if (!fieldMapping[param] && datasetFields.length > 0) {
-                      // 立即设置一个默认值
+                      // Immediately set a default value
                       setTimeout(() => {
                         handleFieldMappingChange(param, datasetFields[0]);
                       }, 0);
@@ -1380,7 +1380,7 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
                             value={param}
                             readOnly
                             className="mt-1"
-                            placeholder="Prompt参数"
+                            placeholder="Prompt parameters"
                           />
                         </div>
                         <div style={{textAlign: 'center'}}>↔</div>
@@ -1408,20 +1408,20 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
 
                 {Object.keys(JSON.parse(promptVersionDetail.variables || '{}')).length === 0 && (
                   <div className="text-center py-4 text-gray-500">
-                    该Prompt版本暂无参数需要映射
+                    This Prompt version has no parameters to map
                   </div>
                 )}
 
-                {/* 字段映射说明 */}
+                {/* Field mapping instructions */}
                 <div className="mt-6 bg-blue-50 rounded-lg p-4">
                   <div className="flex items-start">
                     <span className="mr-2 text-blue-500 text-xl">💡</span>
                     <div>
-                      <div className="text-base font-medium text-gray-900 mb-2">字段映射说明：</div>
+                      <div className="text-base font-medium text-gray-900 mb-2">Field Mapping Instructions:</div>
                       <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600">
-                        <li>系统已自动检测Prompt中的参数变量并尝试智能匹配评测集字段</li>
-                        <li>请确认每个映射关系是否正确，确保实验执行时数据能正确传递</li>
-                        <li>映射关系将在实验执行时用于将评测集数据填充到Prompt参数中</li>
+                        <li>System has auto-detected Prompt parameter variables and attempted smart matching with dataset fields</li>
+                        <li>Please confirm each mapping is correct to ensure data is properly passed during experiment execution</li>
+                        <li>Mappings will be used during experiment execution to fill Prompt parameters with dataset data</li>
                       </ul>
                     </div>
                   </div>
@@ -1430,28 +1430,28 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
             )}
           </Card>
 
-          {/* 步骤4：配置评估器 */}
-          <Card title="步骤4：配置评估器" className="mb-6">
-            <p className="text-gray-600 mb-4">选个添加评估器，每个评估器需要选择版本并配置字段映射</p>
+          {/* Step 4: Configure Evaluators */}
+          <Card title="Step 4: Configure Evaluators" className="mb-6">
+            <p className="text-gray-600 mb-4">Add evaluators, each evaluator needs a version and field mapping configuration</p>
 
-            {/* 添加评估器按钮 */}
+            {/* Add evaluator button */}
             <div className="text-center border-2 border-dashed rounded-lg p-4 mb-6 cursor-pointer hover:bg-gray-50"
               onClick={handleAddEvaluator}>
               <PlusOutlined className="text-xl text-gray-500" />
-              <div className="mt-2 text-gray-600">添加评估器</div>
+              <div className="mt-2 text-gray-600">Add Evaluator</div>
             </div>
 
-            {/* 已配置的评估器列表 */}
+            {/* Configured evaluator list */}
             {selectedEvaluators.length > 0 && (
               <div className="mt-4">
-                <h4 className="text-base font-medium text-gray-900 mb-4">已配置的评估器：</h4>
+                <h4 className="text-base font-medium text-gray-900 mb-4">Configured Evaluators:</h4>
                 <div className="space-y-6">
                   {selectedEvaluators.map((evaluator, index) => {
-                    // 获取当前评估器的ID
+                    // Get current evaluator ID
                     const evaluatorId = evaluator.evaluatorId;
-                    // 使用索引和评估器ID组合作为key，确保每个实例独立
+                    // Use index and evaluator ID combination as key, ensuring each instance is independent
                     const instanceKey = `${index}-${evaluatorId}`;
-                    // 判断是否处于映射模式（评估器和版本都已选择，且配置模式为false）
+                    // Determine if in mapping mode (evaluator and version both selected, and config mode is false)
                     const isMappingMode = evaluatorId &&
                                               selectedEvaluatorVersions[instanceKey] &&
                                               !evaluatorConfigMode[instanceKey];
@@ -1461,7 +1461,7 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                           <div style={{ display: 'flex' }}>
                             <h5 className="text-base font-medium text-gray-900 mb-4 mr-4">
-                              评估器 {index + 1}
+                              Evaluator {index + 1}
                             </h5>
                             {isMappingMode && <>
                               <h5 className="text-base font-medium text-blue-500 mb-4 mr-4">
@@ -1479,61 +1479,61 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
                               icon={<DeleteOutlined />}
                               onClick={() => handleRemoveEvaluator(index)}
                             >
-                              移除
+                              Remove
                             </Button>
                           </div>
                         </div>
 
                         {isMappingMode ? (
-                          // 映射模式：显示字段映射配置
+                          // Mapping mode: show field mapping configuration
                           <div>
-                            {/* 查看详情、Prompt详情按钮、重新配置按钮 */}
+                            {/* View details, Prompt details buttons, reconfigure button */}
                             <div className="flex mb-4">
                               <div
                                 className="flex items-center text-blue-500 cursor-pointer mr-6"
                                 style={{marginRight: '6px'}}
                                 onClick={() => handleViewEvaluatorDetail(evaluatorId)}
                               >
-                                <EyeOutlined className="mr-1" /> 查看详情
+                                <EyeOutlined className="mr-1" /> View Details
                               </div>
                               <div
                                 className="text-blue-500 cursor-pointer mr-6"
                                 style={{marginRight: '6px'}}
                                 onClick={handleViewPromptDetail}
                               >
-                                Prompt详情
+                                Prompt Details
                               </div>
                               <div
                                 className="text-blue-500 cursor-pointer"
                                 onClick={() => {
-                                  // 使用实例key来切换配置模式
+                                  // Use instance key to toggle config mode
                                   setEvaluatorConfigMode(prev => ({
                                     ...prev,
                                     [instanceKey]: true
                                   }));
 
-                                  // 清空当前评估器实例的版本选择
+                                  // Clear current evaluator instance version selection
                                   setSelectedEvaluatorVersions(prev => ({
                                     ...prev,
                                     [instanceKey]: ''
                                   }));
                                 }}
                               >
-                                重新配置
+                                Reconfigure
                               </div>
                             </div>
 
-                            {/* 评估器信息展示 */}
+                            {/* Evaluator info display */}
                             <div className="bg-white rounded-lg p-4 mb-4">
                               <div className="grid grid-cols-1 gap-2">
                                 <div>
-                                  <span className="text-gray-600">描述：</span>
+                                  <span className="text-gray-600">Description:</span>
                                   <span className="ml-2 text-gray-900">
                                     {evaluators.find(e => e.id.toString() === evaluatorId)?.description || '-'}
                                   </span>
                                 </div>
                                 <div>
-                                  <span className="text-gray-600">模型：</span>
+                                  <span className="text-gray-600">Model:</span>
                                   <span className="ml-2">
                                     <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
                                       {evaluators.find(e => e.id.toString() === evaluatorId)?.modelName || '-'}
@@ -1543,25 +1543,25 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
                               </div>
                             </div>
 
-                            {/* 字段映射配置 */}
+                            {/* Field mapping configuration */}
                             <div className="bg-white rounded-lg p-4">
-                              <h4 className="text-base font-medium text-gray-900 mb-4">字段映射配置</h4>
+                              <h4 className="text-base font-medium text-gray-900 mb-4">Field Mapping Configuration</h4>
                               <div className="space-y-3">
-                                {/* 映射表头 */}
+                                {/* Mapping table header */}
                                 <div className="grid grid-cols-3 gap-4 font-medium text-gray-700">
-                                  <div>评估器参数</div>
-                                  <div style={{textAlign: 'center'}}>映射关系</div>
-                                  <div>数据来源</div>
+                                  <div>Evaluator Parameter</div>
+                                  <div style={{textAlign: 'center'}}>Mapping</div>
+                                  <div>Data Source</div>
                                 </div>
 
-                                {/* 映射项 */}
+                                {/* Mapping items */}
                                 {evaluatorParams[evaluatorId] && evaluatorParams[evaluatorId].length > 0 ? (
                                   evaluatorParams[evaluatorId].map((param) => {
-                                    // 获取数据来源字段
+                                    // Get data source fields
                                     const dataSourceFields = getDataSourceFields();
-                                    // 获取当前映射值
+                                    // Get current mapping value
                                     const currentMapping = evaluatorParamMappings[evaluatorId]?.[param] || dataSourceFields[0]?.field || 'input';
-                                    // 查找当前选中的数据源字段对象
+                                    // Find current selected data source field object
                                     const currentDataSourceField = dataSourceFields.find(item => item.field === currentMapping);
 
                                     return (
@@ -1597,22 +1597,22 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
                                   })
                                 ) : (
                                   <div className="text-center py-4 text-gray-500">
-                                    该评估器暂无参数需要映射
+                                    This evaluator has no parameters to map
                                   </div>
                                 )}
                               </div>
                             </div>
 
-                            {/* 字段映射说明 */}
+                            {/* Field mapping instructions */}
                             <div className="mt-6 bg-blue-50 rounded-lg p-4">
                               <div className="flex items-start">
                                 <span className="mr-2 text-blue-500 text-xl">💡</span>
                                 <div>
-                                  <div className="text-base font-medium text-gray-900 mb-2">映射说明：</div>
+                                  <div className="text-base font-medium text-gray-900 mb-2">Mapping Instructions:</div>
                                   <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600">
-                                    <li>评估器参数映射到相应的数据来源字段</li>
-                                    <li>可选的数据来源包含评测集字段和评测对象输出（actual_output）</li>
-                                    <li>确保每个映射关系是合理的，以便正确评估</li>
+                                    <li>Evaluator parameters are mapped to corresponding data source fields</li>
+                                    <li>Available data sources include dataset fields and evaluation output (actual_output)</li>
+                                    <li>Ensure each mapping is reasonable for proper evaluation</li>
                                   </ul>
                                 </div>
                               </div>
@@ -1620,29 +1620,29 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
 
                           </div>
                         ) : (
-                          // 配置模式：显示评估器和版本选择
+                          // Config mode: show evaluator and version selection
                           <div>
                             <div className="grid grid-cols-2 gap-4">
-                              {/* 选择评估器 */}
+                              {/* Select evaluator */}
                               <div>
                                 <div className="mb-1 text-sm" style={{color: 'rgba(0, 0, 0, 0.85)'}}>
-                                  <span className="text-red-500">*</span> 选择评估器
+                                  <span className="text-red-500">*</span> Select Evaluator
                                 </div>
                                 <Select
                                   className="w-full"
-                                  placeholder="选择评估器"
+                                  placeholder="Select evaluator"
                                   value={evaluator.evaluatorId || undefined}
                                   onChange={(value) => {
-                                    // 更新评估器ID
+                                    // Update evaluator ID
                                     const newEvaluators = [...selectedEvaluators];
                                     newEvaluators[index] = { ...newEvaluators[index], evaluatorId: value };
                                     setSelectedEvaluators(newEvaluators);
 
-                                    // 获取该评估器的版本列表
+                                    // Get version list for this evaluator
                                     handleEvaluatorSelectChange(index, value);
                                   }}
                                   loading={evaluatorsLoading}
-                                  notFoundContent={evaluatorsLoading ? '加载中...' : '暂无数据'}
+                                  notFoundContent={evaluatorsLoading ? 'Loading...' : 'No data available'}
                                 >
                                   {evaluators.map(e => (
                                     <Option key={e.id} value={e.id.toString()}>
@@ -1652,22 +1652,22 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
                                 </Select>
                               </div>
 
-                              {/* 选择版本 */}
+                              {/* Select version */}
                               <div>
                                 <div className="mb-1 text-sm" style={{color: 'rgba(0, 0, 0, 0.85)'}}>
-                                  <span className="text-red-500">*</span> 选择版本
+                                  <span className="text-red-500">*</span> Select Version
                                 </div>
                                 <Select
                                   className="w-full"
-                                  placeholder="选择版本"
+                                  placeholder="Select version"
                                   value={evaluator.evaluatorId ? selectedEvaluatorVersions[instanceKey] : undefined}
                                   onChange={(value) => handleEvaluatorVersionChange(index, evaluator.evaluatorId, value)}
                                   disabled={!evaluator.evaluatorId}
                                   loading={evaluator.evaluatorId ? evaluatorVersionsLoading[evaluator.evaluatorId] : false}
                                   notFoundContent={
-                                    !evaluator.evaluatorId ? '请先选择评估器' :
-                                    evaluatorVersionsLoading[evaluator.evaluatorId] ? '加载中...' :
-                                    evaluatorVersions[evaluator.evaluatorId]?.length === 0 ? '暂无版本数据' : '请选择版本'
+                                    !evaluator.evaluatorId ? 'Please select evaluator first' :
+                                    evaluatorVersionsLoading[evaluator.evaluatorId] ? 'Loading...' :
+                                    evaluatorVersions[evaluator.evaluatorId]?.length === 0 ? 'No version data' : 'Please select version'
                                   }
                                 >
                                     {evaluator.evaluatorId && evaluatorVersions[evaluator.evaluatorId]?.map((version: any) => {
@@ -1682,14 +1682,14 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
                               </div>
                             </div>
 
-                            {/* 查看详情按钮 */}
+                            {/* View details button */}
                             {evaluator.evaluatorId && (
                               <div className="mt-4 flex justify-end">
                                 <div
                                   className="flex items-center text-blue-500 cursor-pointer"
                                   onClick={() => handleViewEvaluatorDetail(evaluator.evaluatorId)}
                                 >
-                                  <EyeOutlined className="mr-1" /> 查看详情
+                                  <EyeOutlined className="mr-1" /> View Details
                                 </div>
                               </div>
                             )}
@@ -1705,11 +1705,11 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
         </Form>
       </div>
 
-      {/* 底部操作按钮 - 固定在底部 */}
+      {/* Bottom action buttons - fixed at bottom */}
       <div className="experiment-create-footer">
         <div className="flex justify-end space-x-4">
           <Button size="large" onClick={handleCancel}>
-            取消
+            Cancel
           </Button>
           <Button
             type="primary"
@@ -1718,7 +1718,7 @@ const ExperimentCreate: React.FC<GatherCreateProps> = ({ onCancel, onSuccess, hi
             loading={loading}
             onClick={() => form.submit()}
           >
-            发起实验
+            Start Experiment
           </Button>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { request } from '../../utils/request';
 import { API_PATH } from '../const';
 
-// 创建测评集
+// Create evaluation dataset
 export async function createDataset(params: EvaluatorsAPI.CreateDatasetParams) {
   return request<EvaluatorsAPI.CreateDatasetResult>(`${API_PATH}/dataset/dataset`, {
     method: 'POST',
@@ -9,7 +9,7 @@ export async function createDataset(params: EvaluatorsAPI.CreateDatasetParams) {
   });
 }
 
-// 获取测评集列表
+// Get evaluation dataset list
 // /dataset/datasets
 export async function getDatasets(params: EvaluatorsAPI.GetDatasetsParams) {
   return request<EvaluatorsAPI.GetDatasetsResult>(`${API_PATH}/dataset/datasets`, {
@@ -18,7 +18,7 @@ export async function getDatasets(params: EvaluatorsAPI.GetDatasetsParams) {
   });
 }
 
-// 获取测评集详情
+// Get evaluation dataset details
 // /dataset/dataset
 export async function getDataset(params: EvaluatorsAPI.GetDatasetParams) {
   return request<EvaluatorsAPI.GetDatasetResult>(`${API_PATH}/dataset/dataset`, {
@@ -27,7 +27,7 @@ export async function getDataset(params: EvaluatorsAPI.GetDatasetParams) {
   });
 }
 
-// 更新测评集
+// Update evaluation dataset
 // /dataset/dataset
 export async function updateDataset(params: EvaluatorsAPI.UpdateDatasetParams) {
   return request<EvaluatorsAPI.UpdateDatasetResult>(`${API_PATH}/dataset/dataset`, {
@@ -36,7 +36,7 @@ export async function updateDataset(params: EvaluatorsAPI.UpdateDatasetParams) {
   });
 }
 
-// 删除测评集
+// Delete evaluation dataset
 // DELETE /api/dataset/dataset
 export async function deleteDataset(params: EvaluatorsAPI.DeleteDatasetParams) {
   return request<EvaluatorsAPI.DeleteDatasetResult>(`${API_PATH}/dataset/dataset?datasetId=${params.datasetId}`, {
@@ -45,9 +45,9 @@ export async function deleteDataset(params: EvaluatorsAPI.DeleteDatasetParams) {
   });
 }
 
-// -------------- 测评集数据项管理接口 --------------
+// -------------- Evaluation dataset data item management interfaces --------------
 
-// 创建数据项
+// Create data item
 // POST /api/dataset/dataItem
 export async function createDatasetDataItem(params: EvaluatorsAPI.CreateDatasetDataItemParams) {
   return request<EvaluatorsAPI.CreateDatasetDataItemResult | EvaluatorsAPI.BatchCreateDatasetDataItemResult>(`${API_PATH}/dataset/dataItem`, {
@@ -56,7 +56,7 @@ export async function createDatasetDataItem(params: EvaluatorsAPI.CreateDatasetD
   });
 }
 
-// 获取数据项列表
+// Get data item list
 // GET /api/dataset/dataItems
 export async function getDatasetDataItems(params: EvaluatorsAPI.GetDatasetDataItemsParams) {
   return request<EvaluatorsAPI.GetDatasetDataItemsResult>(`${API_PATH}/dataset/dataItems`, {
@@ -65,7 +65,7 @@ export async function getDatasetDataItems(params: EvaluatorsAPI.GetDatasetDataIt
   });
 }
 
-//获取数据项详情
+// Get data item details
 // GET /api/dataset/dataItem
 export async function getDatasetDataItem(params: EvaluatorsAPI.GetDatasetDataItemParams) {
   return request<EvaluatorsAPI.GetDatasetDataItemResult>(`${API_PATH}/dataset/dataItem`, {
@@ -74,7 +74,7 @@ export async function getDatasetDataItem(params: EvaluatorsAPI.GetDatasetDataIte
   });
 }
 
-// 更新数据项
+// Update data item
 // PUT /api/dataset/dataItem
 export async function updateDatasetDataItem(params: EvaluatorsAPI.UpdateDatasetDataItemParams) {
   return request<EvaluatorsAPI.UpdateDatasetDataItemResult>(`${API_PATH}/dataset/dataItem`, {
@@ -83,7 +83,7 @@ export async function updateDatasetDataItem(params: EvaluatorsAPI.UpdateDatasetD
   });
 }
 
-// 删除数据项
+// Delete data item
 // DELETE /api/dataset/dataItem
 export async function deleteDatasetDataItem(params: EvaluatorsAPI.DeleteDatasetDataItemParams) {
   return request<EvaluatorsAPI.DeleteDatasetDataItemResult>(`${API_PATH}/dataset/dataItem`, {
@@ -92,7 +92,7 @@ export async function deleteDatasetDataItem(params: EvaluatorsAPI.DeleteDatasetD
   });
 }
 
-// 批量删除数据项
+// Batch delete data items
 // DELETE /api/dataset/dataItems
 export async function deleteDatasetDataItems(params: EvaluatorsAPI.DeleteDatasetDataItemsParams) {
   return request<EvaluatorsAPI.DeleteDatasetDataItemsResult>(`${API_PATH}/dataset/dataItems`, {
@@ -101,7 +101,7 @@ export async function deleteDatasetDataItems(params: EvaluatorsAPI.DeleteDataset
   });
 }
 
-// 从Trace添加数据项到数据集
+// Add data item to dataset from Trace
 // POST /api/dataset/dataItemFromTrace
 export async function createDatasetDataItemFromTrace(params: EvaluatorsAPI.CreateDatasetDataItemFromTraceParams) {
   return request<EvaluatorsAPI.CreateDatasetDataItemFromTraceResult>(`${API_PATH}/dataset/dataItemFromTrace`, {
@@ -110,9 +110,9 @@ export async function createDatasetDataItemFromTrace(params: EvaluatorsAPI.Creat
   });
 }
 
-// -------------- 测评集版本管理接口 --------------
+// -------------- Evaluation dataset version management interfaces --------------
 
-// 创建测评集版本
+// Create evaluation dataset version
 // POST /api/dataset/datasetVersion
 export async function createDatasetVersion(params: EvaluatorsAPI.CreateDatasetVersionParams) {
   return request<EvaluatorsAPI.CreateDatasetVersionResult>(`${API_PATH}/dataset/datasetVersion`, {
@@ -121,7 +121,7 @@ export async function createDatasetVersion(params: EvaluatorsAPI.CreateDatasetVe
   });
 }
 
-// 获取测评集版本列表
+// Get evaluation dataset version list
 // GET /api/dataset/datasetVersions
 export async function getDatasetVersions(params: EvaluatorsAPI.GetDatasetVersionsParams) {
   return request<EvaluatorsAPI.GetDatasetVersionsResult>(`${API_PATH}/dataset/datasetVersions`, {
@@ -130,7 +130,7 @@ export async function getDatasetVersions(params: EvaluatorsAPI.GetDatasetVersion
   });
 }
 
-// 更新测评集版本
+// Update evaluation dataset version
 // PUT /api/dataset/datasetVersion
 export async function updateDatasetVersion(params: EvaluatorsAPI.UpdateDatasetVersionParams) {
   return request<EvaluatorsAPI.UpdateDatasetVersionResult>(`${API_PATH}/dataset/datasetVersion`, {
@@ -140,9 +140,9 @@ export async function updateDatasetVersion(params: EvaluatorsAPI.UpdateDatasetVe
 }
 
 
-// -------------- 评估器管理接口 --------------
+// -------------- Evaluator management interfaces --------------
 
-// 创建评估器
+// Create evaluator
 // POST /api/evaluator
 export async function createEvaluator(params: EvaluatorsAPI.CreateEvaluatorParams) {
   return request<EvaluatorsAPI.CreateEvaluatorResult>(`${API_PATH}/evaluator/evaluator`, {
@@ -151,7 +151,7 @@ export async function createEvaluator(params: EvaluatorsAPI.CreateEvaluatorParam
   });
 }
 
-// 创建评估器版本
+// Create evaluator version
 // POST /api/evaluatorVersion
 export async function createEvaluatorVersion(params: EvaluatorsAPI.CreateEvaluatorVersionParams) {
   return request<EvaluatorsAPI.CreateEvaluatorVersionResult>(`${API_PATH}/evaluator/evaluatorVersion`, {
@@ -160,7 +160,7 @@ export async function createEvaluatorVersion(params: EvaluatorsAPI.CreateEvaluat
   });
 }
 
-// 获取评估器列表
+// Get evaluators list
 // GET /api/evaluators
 export async function getEvaluators(params: EvaluatorsAPI.GetEvaluatorsParams) {
   return request<EvaluatorsAPI.GetEvaluatorsResult>(`${API_PATH}/evaluator/evaluators`, {
@@ -169,7 +169,7 @@ export async function getEvaluators(params: EvaluatorsAPI.GetEvaluatorsParams) {
   });
 }
 
-// 获取评估器详情
+// Get evaluator details
 // GET /api/evaluator
 export async function getEvaluator(params: EvaluatorsAPI.GetEvaluatorParams) {
   return request<EvaluatorsAPI.GetEvaluatorResult>(`${API_PATH}/evaluator/evaluator`, {
@@ -178,7 +178,7 @@ export async function getEvaluator(params: EvaluatorsAPI.GetEvaluatorParams) {
   });
 }
 
-// 更新评估器
+// Update evaluator
 // PUT /api/evaluator
 export async function updateEvaluator(params: EvaluatorsAPI.UpdateEvaluatorParams) {
   return request<EvaluatorsAPI.UpdateEvaluatorResult>(`${API_PATH}/evaluator/evaluator`, {
@@ -187,7 +187,7 @@ export async function updateEvaluator(params: EvaluatorsAPI.UpdateEvaluatorParam
   });
 }
 
-// 删除评估器
+// Delete evaluator
 // DELETE /api/evaluator
 export async function deleteEvaluator(params: EvaluatorsAPI.DeleteEvaluatorParams) {
   return request<EvaluatorsAPI.DeleteEvaluatorResult>(`${API_PATH}/evaluator/evaluator`, {
@@ -196,7 +196,7 @@ export async function deleteEvaluator(params: EvaluatorsAPI.DeleteEvaluatorParam
   });
 }
 
-// 调试评估器
+// Debug evaluator
 // POST /api/evaluator/debug
 export async function debugEvaluator(params: EvaluatorsAPI.DebugEvaluatorParams) {
   return request<EvaluatorsAPI.DebugEvaluatorResult>(`${API_PATH}/evaluator/debug`, {
@@ -205,7 +205,7 @@ export async function debugEvaluator(params: EvaluatorsAPI.DebugEvaluatorParams)
   });
 }
 
-// 获取评估模板列表
+// Get evaluator templates list
 // GET /api/evaluator/templates
 export async function getEvaluatorTemplates() {
   return request<EvaluatorsAPI.GetEvaluatorTemplatesResult>(`${API_PATH}/evaluator/templates`, {
@@ -213,7 +213,7 @@ export async function getEvaluatorTemplates() {
   });
 }
 
-// 获取评估模板详情
+// Get evaluator template details
 // GET /api/evaluator/templates
 export async function getEvaluatorTemplate(params: { templateId: number }) {
   return request<EvaluatorsAPI.GetEvaluatorTemplateResult>(`${API_PATH}/evaluator/template`, {
@@ -222,7 +222,7 @@ export async function getEvaluatorTemplate(params: { templateId: number }) {
   });
 }
 
-// 获取评估器版本列表
+// Get evaluator versions list
 export async function getEvaluatorVersions(params: EvaluatorsAPI.GetEvaluatorVersionsParams) {
   return request<EvaluatorsAPI.GetEvaluatorVersionsResult>(`${API_PATH}/evaluator/evaluatorVersions`, {
     method: 'GET',
@@ -231,7 +231,7 @@ export async function getEvaluatorVersions(params: EvaluatorsAPI.GetEvaluatorVer
 }
 
 
-// 获取评估器关联的实现列表
+// Get experiments associated with evaluator
 // GET /api/evaluator/experiments
 export async function getEvaluatorExperiments(params: EvaluatorsAPI.GetEvaluatorExperimentsParams) {
   return request<EvaluatorsAPI.GetEvaluatorExperimentsResult>(`${API_PATH}/evaluator/experiments`, {
@@ -240,7 +240,7 @@ export async function getEvaluatorExperiments(params: EvaluatorsAPI.GetEvaluator
   });
 }
 
-// 获取评估器版本详情
+// Get evaluator version details
 // export async function getEvaluatorVersion(params: EvaluatorsAPI.GetEvaluatorVersionParams) {
 //   return request<EvaluatorsAPI.GetEvaluatorVersionResult>(`${API_PATH}/evaluator/version`, {
 //     method: 'GET',
@@ -248,9 +248,9 @@ export async function getEvaluatorExperiments(params: EvaluatorsAPI.GetEvaluator
 //   });
 // }
 
-// -------------- 实验管理接口 --------------
+// -------------- Experiment Management APIs --------------
 
-// 创建实验
+// Create experiment
 // POST /api/experiment
 export async function createExperiment(params: EvaluatorsAPI.CreateExperimentParams) {
   return request<EvaluatorsAPI.CreateExperimentResult>(`${API_PATH}/experiment`, {
@@ -259,7 +259,7 @@ export async function createExperiment(params: EvaluatorsAPI.CreateExperimentPar
   });
 }
 
-// 获取实验列表
+// Get experiments list
 // GET /api/experiments
 export async function getExperiments(params: EvaluatorsAPI.GetExperimentsParams) {
   return request<EvaluatorsAPI.GetExperimentsResult>(`${API_PATH}/experiments`, {
@@ -268,7 +268,7 @@ export async function getExperiments(params: EvaluatorsAPI.GetExperimentsParams)
   });
 }
 
-// 获取实验详情
+// Get experiment details
 // GET /api/experiment
 export async function getExperiment(params: EvaluatorsAPI.GetExperimentParams) {
   return request<EvaluatorsAPI.GetExperimentResult>(`${API_PATH}/experiment`, {
@@ -277,7 +277,7 @@ export async function getExperiment(params: EvaluatorsAPI.GetExperimentParams) {
   });
 }
 
-// 获取实验结果
+// Get experiment result
 // GET /api/experiment/result
 export async function getExperimentResult(params: EvaluatorsAPI.GetExperimentResultParams) {
   return request<EvaluatorsAPI.GetExperimentResultResult>(`${API_PATH}/experiment/result`, {
@@ -286,7 +286,7 @@ export async function getExperimentResult(params: EvaluatorsAPI.GetExperimentRes
   });
 }
 
-// 停止实验
+// Stop experiment
 // PUT /api/experiment/stop
 export async function stopExperiment(params: EvaluatorsAPI.StopExperimentParams) {
   return request<EvaluatorsAPI.StopExperimentResult>(`${API_PATH}/experiment/stop?experimentId=${params.experimentId}`, {
@@ -295,7 +295,7 @@ export async function stopExperiment(params: EvaluatorsAPI.StopExperimentParams)
   });
 }
 
-// 删除实验
+// Delete experiment
 // DELETE /api/experiment
 export async function deleteExperiment(params: EvaluatorsAPI.DeleteExperimentParams) {
   return request<EvaluatorsAPI.DeleteExperimentResult>(`${API_PATH}/experiment?experimentId=${params.experimentId}`, {
@@ -304,7 +304,7 @@ export async function deleteExperiment(params: EvaluatorsAPI.DeleteExperimentPar
   });
 }
 
-// 获取实验概览结果
+// Get experiment overview results
 // GET /api/experiment/overview
 export async function getExperimentOverview(params: EvaluatorsAPI.GetExperimentOverviewParams) {
   return request<EvaluatorsAPI.GetExperimentOverviewResult>(`${API_PATH}/experiment/results`, {

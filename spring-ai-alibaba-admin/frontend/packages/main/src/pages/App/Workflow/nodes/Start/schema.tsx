@@ -6,12 +6,12 @@ export const StartSchema: INodeSchema = {
   type: 'Start',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Start.schema.start',
-    dm: '开始',
+    dm: 'Start',
   }),
   iconType: 'spark-processStart-line',
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Start.schema.startNode',
-    dm: '开始节点',
+    dm: 'Start Node',
   }),
   defaultParams: {
     input_params: [],
@@ -24,7 +24,7 @@ export const StartSchema: INodeSchema = {
   disableConnectSource: true,
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Start.schema.basis',
-    dm: '基础',
+    dm: 'Basic',
   }),
   checkValid: () => [],
   bgColor: 'var(--ag-ant-color-purple-hover)',

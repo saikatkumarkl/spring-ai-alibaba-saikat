@@ -146,22 +146,22 @@ export interface IModelSelectorItem {
 export const MODEL_TAGS = {
   vision: $i18n.get({
     id: 'main.types.modelService.visual',
-    dm: '视觉',
+    dm: 'Vision',
   }),
   web_search: $i18n.get({
     id: 'main.types.modelService.connected',
-    dm: '联网',
+    dm: 'Web Search',
   }),
   embedding: $i18n.get({
     id: 'main.types.modelService.embedded',
-    dm: '嵌入',
+    dm: 'Embedding',
   }),
   reasoning: $i18n.get({
     id: 'main.types.modelService.inference',
-    dm: '推理',
+    dm: 'Reasoning',
   }),
   function_call: $i18n.get({
     id: 'main.types.modelService.tool',
-    dm: '工具',
+    dm: 'Tools',
   }),
 };

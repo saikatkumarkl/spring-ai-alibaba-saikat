@@ -141,7 +141,7 @@ export function fetchEventSource(
         handleError(
           $i18n.get({
             id: 'main.pages.App.AssistantAppEdit.components.SparkChat.libs.fetchEventSource.networkError',
-            dm: '网络异常，您可以稍后重新尝试，谢谢',
+            dm: 'Network error, please try again later. Thank you.',
           }),
         );
         return;
@@ -180,7 +180,7 @@ export function fetchEventSource(
         handleError(
           $i18n.get({
             id: 'main.pages.App.AssistantAppEdit.components.SparkChat.libs.fetchEventSource.unknownError',
-            dm: '未知异常，您可以稍后重新尝试，谢谢',
+            dm: 'Unknown error, please try again later. Thank you.',
           }),
         );
       }

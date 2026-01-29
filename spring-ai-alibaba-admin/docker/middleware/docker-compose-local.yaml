@@ -1,0 +1,154 @@
+services:
+  mysql:
+    container_name: mysql
+    restart: always
+    image: mysql:8.0
+    platform: linux/amd64
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=root123
+      - MYSQL_DATABASE=saa_studio
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ${MIDDLEWARE_HOME:-.}/init/mysql:/docker-entrypoint-initdb.d/
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    networks:
+      - saa-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    platform: linux/amd64
+    container_name: elasticsearch
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.name=es-cluster
+      - node.name=es-node-1
+      - bootstrap.memory_lock=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - saa-network
+
+  redis:
+    image: redis:7.2
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - saa-network
+
+  nacos:
+    container_name: nacos
+    image: nacos/nacos-server:v2.3.0
+    platform: linux/amd64
+    restart: always
+    environment:
+      - MODE=standalone
+      - PREFER_HOST_MODE=hostname
+      - NACOS_AUTH_ENABLE=false
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+      - "9849:9849"
+    networks:
+      - saa-network
+
+  rmq_namesrv:
+    image: apache/rocketmq:5.3.2
+    platform: linux/amd64
+    container_name: rmq_namesrv
+    restart: always
+    environment:
+      - NAMESRV_ADDR=rmq_namesrv:9876
+      - HEAP_OPTS=-Xms128M -Xmx256M -Xmn128M
+    ports:
+      - "9876:9876"
+    networks:
+      - saa-network
+    command: sh mqnamesrv
+    healthcheck:
+      test: ["CMD", "sh", "-c", "ps aux | grep mqnamesrv | grep -v grep || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rmq_broker:
+    image: apache/rocketmq:5.3.2
+    platform: linux/amd64
+    container_name: rmq_broker
+    restart: always
+    environment:
+      - NAMESRV_ADDR=rmq_namesrv:9876
+      - HEAP_OPTS=-Xms256M -Xmx512M -Xmn256M -XX:MaxDirectMemorySize=128M
+      - ROCKETMQ_HOME=/home/rocketmq/rocketmq-5.3.2
+    ports:
+      - "10909:10909"
+      - "10911:10911"
+      - "10912:10912"
+    depends_on:
+      rmq_namesrv:
+        condition: service_healthy
+    networks:
+      - saa-network
+    command: sh mqbroker -c /home/rocketmq/rocketmq-5.3.2/conf/broker.conf
+    healthcheck:
+      test: ["CMD", "sh", "-c", "ps aux | grep mqbroker | grep -v grep || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rmq_proxy:
+    image: apache/rocketmq:5.3.2
+    platform: linux/amd64
+    container_name: rmq_proxy
+    restart: always
+    environment:
+      - NAMESRV_ADDR=rmq_namesrv:9876
+      - HEAP_OPTS=-Xms128M -Xmx256M -Xmn128M
+    volumes:
+      - ./conf/rocketmq:/home/rocketmq/conf
+    networks:
+      - saa-network
+    depends_on:
+      rmq_broker:
+        condition: service_healthy
+      rmq_namesrv:
+        condition: service_healthy
+    ports:
+      - "18080:18080"
+      - "18081:18081"
+    command: sh mqproxy -pc /home/rocketmq/conf/rmq-proxy.json
+
+networks:
+  saa-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  elasticsearch_data:
+  redis_data:

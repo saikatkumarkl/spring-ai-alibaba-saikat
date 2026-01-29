@@ -24,24 +24,24 @@ export function onRouteChange({ clientRoutes, location }) {
   const firstLevelRouteMaps = {
     '/app': $i18n.get({
       id: 'main.layouts.MenuList.application',
-      dm: '应用',
+      dm: 'Applications',
     }),
     '/mcp': 'MCP',
     '/component': $i18n.get({
       id: 'main.pages.Component.AppComponent.index.component',
-      dm: '组件',
+      dm: 'Components',
     }),
     '/knowledge': $i18n.get({
       id: 'main.pages.Knowledge.Test.index.knowledgeBase',
-      dm: '知识库',
+      dm: 'Knowledge Base',
     }),
     '/setting': $i18n.get({
       id: 'main.pages.Setting.ModelService.Detail.setting',
-      dm: '设置',
+      dm: 'Settings',
     }),
     '/login': $i18n.get({
       id: 'main.pages.Login.components.Register.index.login',
-      dm: '登录',
+      dm: 'Login',
     }),
     '/debug': $i18n.get({
       id: 'main.pages.Debug.index.title',
@@ -49,7 +49,7 @@ export function onRouteChange({ clientRoutes, location }) {
     }),
     '/dify': $i18n.get({
       id: 'main.pages.Dify.index.title',
-      dm: 'Dify转换',
+      dm: 'Dify Converter',
     }),
   };
 

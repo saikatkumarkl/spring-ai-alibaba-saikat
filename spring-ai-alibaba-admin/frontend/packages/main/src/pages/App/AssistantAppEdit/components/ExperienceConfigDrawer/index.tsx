@@ -62,7 +62,7 @@ const ExperienceConfigDrawer = forwardRef<any, IProps>((props, ref) => {
       title={$i18n.get(
         {
           id: 'main.components.ExperienceConfigDrawer.index.experienceConfiguration',
-          dm: '体验配置：{var1}',
+          dm: 'Experience Configuration: {var1}',
         },
         { var1: ModalityTypeTexts[appState?.modalType] },
       )}
@@ -79,13 +79,13 @@ const ExperienceConfigDrawer = forwardRef<any, IProps>((props, ref) => {
           >
             {$i18n.get({
               id: 'main.components.ExperienceConfigDrawer.index.cancel',
-              dm: '取消',
+              dm: 'Cancel',
             })}
           </Button>
           <Button type="primary" onClick={handleSave}>
             {$i18n.get({
               id: 'main.components.ExperienceConfigDrawer.index.confirm',
-              dm: '确认',
+              dm: 'Confirm',
             })}
           </Button>
         </Flex>

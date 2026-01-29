@@ -22,7 +22,7 @@ export default function ReferDetailDrawer(props: IProps) {
       {
         title: $i18n.get({
           id: 'main.pages.Component.AppComponent.components.ReferDetailDrawer.index.name',
-          dm: '名称',
+          dm: 'Name',
         }),
         dataIndex: 'name',
         render: (val) => (
@@ -34,7 +34,7 @@ export default function ReferDetailDrawer(props: IProps) {
       {
         title: $i18n.get({
           id: 'main.pages.Component.AppComponent.components.ReferDetailDrawer.index.type',
-          dm: '类型',
+          dm: 'Type',
         }),
         dataIndex: 'type',
         width: 140,
@@ -42,18 +42,18 @@ export default function ReferDetailDrawer(props: IProps) {
           return type === IAppType.WORKFLOW
             ? $i18n.get({
                 id: 'main.pages.Component.AppComponent.components.ReferDetailDrawer.index.workflow',
-                dm: '工作流',
+                dm: 'Workflow',
               })
             : $i18n.get({
                 id: 'main.pages.Component.AppComponent.components.ReferDetailDrawer.index.smartAgentApplication',
-                dm: '智能体应用',
+                dm: 'Agent Application',
               });
         },
       },
       {
         title: $i18n.get({
           id: 'main.pages.Component.AppComponent.components.ReferDetailDrawer.index.operation',
-          dm: '操作',
+          dm: 'Actions',
         }),
         width: 90,
         dataIndex: 'action',
@@ -70,7 +70,7 @@ export default function ReferDetailDrawer(props: IProps) {
             >
               {$i18n.get({
                 id: 'main.pages.Component.AppComponent.components.ReferDetailDrawer.index.detail',
-                dm: '详情',
+                dm: 'Details',
               })}
             </a>
           );
@@ -95,7 +95,7 @@ export default function ReferDetailDrawer(props: IProps) {
       open
       title={$i18n.get({
         id: 'main.pages.Component.AppComponent.components.ReferDetailDrawer.index.componentReferenceDetails',
-        dm: '组件引用详情',
+        dm: 'Component Reference Details',
       })}
     >
       <Table

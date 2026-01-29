@@ -23,7 +23,8 @@ spring:
 nacos:
   server-addr: localhost:8848
 rocketmq:
-  endpoints: localhost:18080
+  endpoints: localhost:18081
+  enabled: false
 management:
   otlp:
     tracing:

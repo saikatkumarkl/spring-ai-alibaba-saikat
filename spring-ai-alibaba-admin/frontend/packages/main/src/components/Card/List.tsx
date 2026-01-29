@@ -53,22 +53,22 @@ const CardList: React.FC<IProps> = (props) => {
             props.isSearch
               ? $i18n.get({
                   id: 'main.pages.App.components.MCPSelector.index.noSearchResult',
-                  dm: '暂无搜索结果',
+                  dm: 'No search results',
                 })
               : $i18n.get({
                   id: 'main.pages.MCP.components.Overview.index.noData',
-                  dm: '暂无数据',
+                  dm: 'No data',
                 })
           }
           description={
             props.isSearch
               ? $i18n.get({
                   id: 'main.pages.Component.AppComponent.components.AppSelector.index.tryAnotherSearchCondition',
-                  dm: '换个搜索条件试试',
+                  dm: 'Try another search condition',
                 })
               : $i18n.get({
                   id: 'main.components.Card.List.createDataAndRetry',
-                  dm: '请创建数据后重试',
+                  dm: 'Please create data and try again',
                 })
           }
           {...(props.emptyProps || {})}

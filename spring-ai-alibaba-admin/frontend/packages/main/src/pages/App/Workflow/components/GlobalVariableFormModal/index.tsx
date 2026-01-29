@@ -71,7 +71,7 @@ export default function GlobalVariableFormModal(
       if (!key) {
         return $i18n.get({
           id: 'main.pages.App.Workflow.components.GlobalVariableFormModal.index.enterVariableName',
-          dm: '请输入变量名',
+          dm: 'Please enter variable name',
         });
       }
 
@@ -79,7 +79,7 @@ export default function GlobalVariableFormModal(
       if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key)) {
         return $i18n.get({
           id: 'main.pages.App.Workflow.components.GlobalVariableFormModal.index.variableNameFormat',
-          dm: '只能包含字母、数字、下划线和$，且不能以数字开头',
+          dm: 'Can only contain letters, numbers, underscores and $, and cannot start with a number',
         });
       }
 
@@ -87,7 +87,7 @@ export default function GlobalVariableFormModal(
       if (keys.has(key)) {
         return $i18n.get({
           id: 'main.pages.App.Workflow.components.GlobalVariableFormModal.index.variableNameExists',
-          dm: '变量名已存在',
+          dm: 'Variable name already exists',
         });
       }
       keys.add(key);
@@ -122,7 +122,7 @@ export default function GlobalVariableFormModal(
         message.success(
           $i18n.get({
             id: 'main.pages.App.Workflow.components.GlobalVariableFormModal.index.saveSuccess',
-            dm: '保存成功',
+            dm: 'Save successful',
           }),
         );
         props.onOk();
@@ -142,17 +142,17 @@ export default function GlobalVariableFormModal(
         title: saveLoading
           ? $i18n.get({
               id: 'main.pages.App.Workflow.components.GlobalVariableFormModal.index.saving',
-              dm: '保存中...',
+              dm: 'Saving...',
             })
           : $i18n.get({
               id: 'main.pages.App.Workflow.components.GlobalVariableFormModal.index.save',
-              dm: '保存',
+              dm: 'Save',
             }),
       }}
       open
       title={$i18n.get({
         id: 'main.pages.App.Workflow.components.GlobalVariableFormModal.index.conversationVariable',
-        dm: '会话变量',
+        dm: 'Session Variable',
       })}
     >
       <div className={styles.form}>
@@ -161,25 +161,25 @@ export default function GlobalVariableFormModal(
             <span style={{ width: 120 }}>
               {$i18n.get({
                 id: 'main.pages.App.Workflow.components.GlobalVariableFormModal.index.variableName',
-                dm: '变量名',
+                dm: 'Variable Name',
               })}
             </span>
             <span style={{ width: 100 }}>
               {$i18n.get({
                 id: 'main.pages.App.Workflow.components.GlobalVariableFormModal.index.variableType',
-                dm: '变量类型',
+                dm: 'Variable Type',
               })}
             </span>
             <span style={{ width: 176 }}>
               {$i18n.get({
                 id: 'main.pages.App.Workflow.components.GlobalVariableFormModal.index.variableDescription',
-                dm: '变量描述',
+                dm: 'Variable Description',
               })}
             </span>
             <span>
               {$i18n.get({
                 id: 'main.pages.App.Workflow.components.GlobalVariableFormModal.index.defaultValue',
-                dm: '默认值',
+                dm: 'Default Value',
               })}
             </span>
           </Flex>
@@ -193,7 +193,7 @@ export default function GlobalVariableFormModal(
                 }
                 placeholder={$i18n.get({
                   id: 'main.pages.App.Workflow.components.GlobalVariableFormModal.index.enterVariableName',
-                  dm: '请输入变量名',
+                  dm: 'Please enter variable name',
                 })}
               />
 
@@ -212,7 +212,7 @@ export default function GlobalVariableFormModal(
                 }
                 placeholder={$i18n.get({
                   id: 'main.pages.App.Workflow.components.GlobalVariableFormModal.index.enterDescription',
-                  dm: '请输入描述',
+                  dm: 'Please enter description',
                 })}
               />
 
@@ -220,7 +220,7 @@ export default function GlobalVariableFormModal(
                 <VariableBaseInput
                   placeholder={$i18n.get({
                     id: 'main.pages.App.Workflow.components.GlobalVariableFormModal.index.enterDefaultValue',
-                    dm: '请输入默认值',
+                    dm: 'Please enter default value',
                   })}
                   type={item.type}
                   value={item.default_value}
@@ -246,7 +246,7 @@ export default function GlobalVariableFormModal(
         >
           {$i18n.get({
             id: 'main.pages.App.Workflow.components.GlobalVariableFormModal.index.addVariable',
-            dm: '添加变量',
+            dm: 'Add Variable',
           })}
         </Button>
       </div>

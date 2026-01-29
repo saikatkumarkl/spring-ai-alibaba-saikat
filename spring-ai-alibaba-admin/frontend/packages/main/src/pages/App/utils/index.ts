@@ -11,7 +11,7 @@ const generateWorkflowConfig = () => {
         id: `Start_${uniqueId(4)}`,
         name: $i18n.get({
           id: 'main.pages.App.utils.index.start',
-          dm: '开始',
+          dm: 'Start',
         }),
         type: 'Start',
         position: {
@@ -26,7 +26,7 @@ const generateWorkflowConfig = () => {
               type: 'String',
               desc: $i18n.get({
                 id: 'main.pages.App.utils.index.city',
-                dm: '城市',
+                dm: 'City',
               }),
             },
             {
@@ -34,7 +34,7 @@ const generateWorkflowConfig = () => {
               type: 'String',
               desc: $i18n.get({
                 id: 'main.pages.App.utils.index.date',
-                dm: '日期',
+                dm: 'Date',
               }),
             },
           ],
@@ -47,7 +47,7 @@ const generateWorkflowConfig = () => {
         id: `End_${uniqueId(4)}`,
         name: $i18n.get({
           id: 'main.pages.App.utils.index.end',
-          dm: '结束',
+          dm: 'End',
         }),
         type: 'End',
         position: {

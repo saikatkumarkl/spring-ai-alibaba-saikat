@@ -62,7 +62,7 @@ function SortableItem({ id, content, onDelete, onChange }: SortableItemProps) {
         onChange={handleInputChange}
         placeholder={$i18n.get({
           id: 'main.components.ExperienceConfigDrawer.components.presetQuestions.index.inputPresetQuestion',
-          dm: '输入预设问题',
+          dm: 'Enter preset question',
         })}
       />
 
@@ -116,7 +116,7 @@ const PresetQuestions = ({
       message.warning(
         $i18n.get({
           id: 'main.components.ExperienceConfigDrawer.components.presetQuestions.index.maxFiveQuestions',
-          dm: '最多只能添加5个预设问题',
+          dm: 'Maximum 5 preset questions allowed',
         }),
       );
       return;
@@ -145,7 +145,7 @@ const PresetQuestions = ({
       <div className={commonStyles.sectionTitle}>
         {$i18n.get({
           id: 'main.components.ExperienceConfigDrawer.components.presetQuestions.index.presetQuestions',
-          dm: '预设问题',
+          dm: 'Preset Questions',
         })}
 
         <span style={{ color: 'var(--efm_ant-color-text-tertiary)' }}>
@@ -182,7 +182,7 @@ const PresetQuestions = ({
           <div className={styles.empty}>
             {$i18n.get({
               id: 'main.components.ExperienceConfigDrawer.components.presetQuestions.index.noPresetQuestions',
-              dm: '暂无预设问题，通过下方按钮添加',
+              dm: 'No preset questions. Add using the button below',
             })}
           </div>
         </div>
@@ -196,7 +196,7 @@ const PresetQuestions = ({
             ? $i18n.get(
                 {
                   id: 'main.components.ExperienceConfigDrawer.components.presetQuestions.index.maxQuestions',
-                  dm: '最多只能添加{var1}个预设问题',
+                  dm: 'Maximum {var1} preset questions allowed',
                 },
                 { var1: MAX_PRESET_QUESTIONS },
               )
@@ -205,7 +205,7 @@ const PresetQuestions = ({
       >
         {$i18n.get({
           id: 'main.components.ExperienceConfigDrawer.components.presetQuestions.index.addQuestion',
-          dm: '添加问题',
+          dm: 'Add Question',
         })}
       </Button>
     </div>

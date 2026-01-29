@@ -52,7 +52,7 @@ const ModelServiceProviderModal: React.FC<ModelServiceProviderModalProps> = ({
         message.success(
           $i18n.get({
             id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.createSuccess',
-            dm: '模型服务商创建成功',
+            dm: 'Model service provider created successfully',
           }),
         );
         form.resetFields();
@@ -67,7 +67,7 @@ const ModelServiceProviderModal: React.FC<ModelServiceProviderModalProps> = ({
     <Modal
       title={$i18n.get({
         id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.addServiceProvider',
-        dm: '新增模型服务商',
+        dm: 'Add Model Service Provider',
       })}
       open={open}
       onCancel={() => {
@@ -84,13 +84,13 @@ const ModelServiceProviderModal: React.FC<ModelServiceProviderModalProps> = ({
           >
             {$i18n.get({
               id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.cancel',
-              dm: '取消',
+              dm: 'Cancel',
             })}
           </Button>
           <Button type="primary" loading={loading} onClick={handleSubmit}>
             {$i18n.get({
               id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.confirm',
-              dm: '确认',
+              dm: 'Confirm',
             })}
           </Button>
         </div>
@@ -108,14 +108,14 @@ const ModelServiceProviderModal: React.FC<ModelServiceProviderModalProps> = ({
           name="name"
           label={$i18n.get({
             id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.serviceProviderName',
-            dm: '服务商名称',
+            dm: 'Service Provider Name',
           })}
           rules={[
             {
               required: true,
               message: $i18n.get({
                 id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.enterServiceProviderName',
-                dm: '请输入服务商名称',
+                dm: 'Please enter service provider name',
               }),
             },
           ]}
@@ -123,7 +123,7 @@ const ModelServiceProviderModal: React.FC<ModelServiceProviderModalProps> = ({
           <Input
             placeholder={$i18n.get({
               id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.enterYourServiceProviderName',
-              dm: '输入您的服务商名称',
+              dm: 'Enter your service provider name',
             })}
             maxLength={15}
             showCount
@@ -138,7 +138,7 @@ const ModelServiceProviderModal: React.FC<ModelServiceProviderModalProps> = ({
               required: true,
               message: $i18n.get({
                 id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.enterApiKey',
-                dm: '请输入API-KEY',
+                dm: 'Please enter API-KEY',
               }),
             },
           ]}
@@ -147,7 +147,7 @@ const ModelServiceProviderModal: React.FC<ModelServiceProviderModalProps> = ({
           <Input.Password
             placeholder={$i18n.get({
               id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.enterYourApiKey',
-              dm: '输入您的API-KEY',
+              dm: 'Enter your API-KEY',
             })}
             maxLength={100}
           />
@@ -161,14 +161,14 @@ const ModelServiceProviderModal: React.FC<ModelServiceProviderModalProps> = ({
               required: true,
               message: $i18n.get({
                 id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.enterApiUrl',
-                dm: '请输入API URL',
+                dm: 'Please enter API URL',
               }),
             },
             {
               type: 'url',
               message: $i18n.get({
                 id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.enterValidUrl',
-                dm: '请输入有效的URL地址',
+                dm: 'Please enter a valid URL',
               }),
             },
           ]}
@@ -177,7 +177,7 @@ const ModelServiceProviderModal: React.FC<ModelServiceProviderModalProps> = ({
             rows={2}
             placeholder={$i18n.get({
               id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.enterYourApiUrl',
-              dm: '输入您的API URL，请在服务商文档获取，如 https://dashscope.aliyuncs.com/compatible-mode',
+              dm: 'Enter your API URL from provider docs, e.g., https://dashscope.aliyuncs.com/compatible-mode',
             })}
           />
         </Form.Item>
@@ -186,14 +186,14 @@ const ModelServiceProviderModal: React.FC<ModelServiceProviderModalProps> = ({
           name="protocol"
           label={$i18n.get({
             id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.serviceProviderType',
-            dm: '服务商类型',
+            dm: 'Service Provider Type',
           })}
           rules={[
             {
               required: true,
               message: $i18n.get({
                 id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.selectServiceProviderType',
-                dm: '请选择服务商类型',
+                dm: 'Please select service provider type',
               }),
             },
           ]}
@@ -209,7 +209,7 @@ const ModelServiceProviderModal: React.FC<ModelServiceProviderModalProps> = ({
             <TipBox
               title={$i18n.get({
                 id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.howToGetModelServiceApi',
-                dm: '如何获取模型服务API？',
+                dm: 'How to get Model Service API?',
               })}
               sections={API_KEY_TIP_SECTIONS}
             />

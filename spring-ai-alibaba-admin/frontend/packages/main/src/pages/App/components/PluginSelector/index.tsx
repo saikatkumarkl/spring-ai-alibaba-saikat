@@ -53,7 +53,7 @@ export default function ToolSelector(props: IProps) {
       message.warning(
         $i18n.get({
           id: 'main.pages.App.components.PluginSelector.index.reachMaxLimit',
-          dm: '已达到最大数量限制',
+          dm: 'Maximum limit reached',
         }),
       );
       return;
@@ -77,7 +77,7 @@ export default function ToolSelector(props: IProps) {
             onChange={(e) => setState({ name: e.target.value })}
             placeholder={$i18n.get({
               id: 'main.pages.App.components.PluginSelector.index.searchPluginName',
-              dm: '搜索插件名称',
+              dm: 'Search plugin name',
             })}
             onSearch={() => {
               setState({ current: 1 });
@@ -92,7 +92,7 @@ export default function ToolSelector(props: IProps) {
           >
             {$i18n.get({
               id: 'main.pages.App.components.PluginSelector.index.createPlugin',
-              dm: '创建插件',
+              dm: 'Create Plugin',
             })}
           </Button>
         </Flex>
@@ -101,19 +101,19 @@ export default function ToolSelector(props: IProps) {
         <span className={styles.topDesc}>
           {$i18n.get({
             id: 'main.pages.App.components.PluginSelector.index.publishedPluginSupportAddToSmartAgentWorkflowApp',
-            dm: '已发布的插件支持添加到智能体/工作流应用中，可前往',
+            dm: 'Published plugins can be added to agent/workflow applications, go to',
           })}
           &nbsp;
           <a target="_blank" href="/component/plugin">
             {$i18n.get({
               id: 'main.pages.App.components.PluginSelector.index.pluginList',
-              dm: '插件列表',
+              dm: 'Plugin List',
             })}
           </a>
           &nbsp;
           {$i18n.get({
             id: 'main.pages.App.components.PluginSelector.index.manage',
-            dm: '管理',
+            dm: 'to manage',
           })}
         </span>
       }
@@ -124,7 +124,7 @@ export default function ToolSelector(props: IProps) {
           <Empty
             description={$i18n.get({
               id: 'main.pages.App.components.PluginSelector.index.noAvailablePlugin',
-              dm: '暂无可用插件',
+              dm: 'No available plugins',
             })}
             style={{ marginTop: 90 }}
           />
@@ -173,7 +173,7 @@ export function ToolSelectorModal(props: {
       open
       title={$i18n.get({
         id: 'main.pages.App.components.PluginSelector.index.selectPlugin',
-        dm: '选择插件',
+        dm: 'Select Plugin',
       })}
       onOk={() => props.onOk?.(value.selectedTools)}
       okButtonProps={{
@@ -210,7 +210,7 @@ export function ToolSelectorDrawer(props: {
       <Flex align="center" className={styles.drawerTitle} gap={4}>
         {$i18n.get({
           id: 'main.pages.App.components.PluginSelector.index.selectPlugin',
-          dm: '选择插件',
+          dm: 'Select Plugin',
         })}
       </Flex>
     );
@@ -243,7 +243,7 @@ export function ToolSelectorDrawer(props: {
               $i18n.get(
                 {
                   id: 'main.pages.App.components.PluginSelector.index.addedToolVar1Var2',
-                  dm: '已添加工具{var1}/{var2}',
+                  dm: 'Tools added {var1}/{var2}',
                 },
                 { var1: selectedTools?.length || 0, var2: props.maxLen || 10 },
               )}
@@ -263,7 +263,7 @@ export function ToolSelectorDrawer(props: {
             >
               {$i18n.get({
                 id: 'main.pages.App.components.PluginSelector.index.cancel',
-                dm: '取消',
+                dm: 'Cancel',
               })}
             </Button>
             <Button
@@ -274,14 +274,14 @@ export function ToolSelectorDrawer(props: {
                 message.success(
                   $i18n.get({
                     id: 'main.pages.App.components.PluginSelector.index.addSuccess',
-                    dm: '添加成功！',
+                    dm: 'Added successfully!',
                   }),
                 );
               }}
             >
               {$i18n.get({
                 id: 'main.pages.App.components.PluginSelector.index.confirm',
-                dm: '确认',
+                dm: 'Confirm',
               })}
             </Button>
           </div>

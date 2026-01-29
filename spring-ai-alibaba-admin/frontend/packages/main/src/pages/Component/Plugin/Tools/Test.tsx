@@ -36,7 +36,7 @@ export default function (props: {
       key: '1',
       label: $i18n.get({
         id: 'main.pages.Component.Plugin.Tools.Test.input',
-        dm: '入参',
+        dm: 'Input Parameters',
       }),
       classNames: { header: styles.collapse },
       children: (
@@ -61,7 +61,7 @@ export default function (props: {
           >
             {$i18n.get({
               id: 'main.pages.Component.Plugin.Tools.Test.startRunning',
-              dm: '开始运行',
+              dm: 'Start Running',
             })}
           </Button>
         </Flex>
@@ -71,7 +71,7 @@ export default function (props: {
       key: '2',
       label: $i18n.get({
         id: 'main.pages.Component.Plugin.Tools.Test.output',
-        dm: '出参',
+        dm: 'Output Parameters',
       }),
       classNames: { header: styles.collapse },
       children: <CodeBlock value={result} language="json" />,
@@ -83,13 +83,13 @@ export default function (props: {
       <Button iconType="spark-circlePlay-line" onClick={() => setOpen(true)}>
         {$i18n.get({
           id: 'main.pages.Component.Plugin.Tools.Test.testTool',
-          dm: '测试工具',
+          dm: 'Test Tool',
         })}
       </Button>
       <Drawer
         title={$i18n.get({
           id: 'main.pages.Component.Plugin.Tools.Test.testTool',
-          dm: '测试工具',
+          dm: 'Test Tool',
         })}
         width={480}
         open={open}

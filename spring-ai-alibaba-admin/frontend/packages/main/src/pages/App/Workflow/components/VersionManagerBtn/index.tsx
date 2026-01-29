@@ -21,11 +21,11 @@ export default memo(function VersionManagerBtn(props: IVersionManageBtnProps) {
         isFlushing
           ? $i18n.get({
               id: 'main.pages.App.AssistantAppEdit.components.AppActions.index.dialogProcessingProhibitedSwitchVersion',
-              dm: '对话进行中，禁止切换版本',
+              dm: 'Conversation in progress, version switching disabled',
             })
           : $i18n.get({
               id: 'main.components.HistoryPanel.index.historyVersion',
-              dm: '历史版本',
+              dm: 'History Versions',
             })
       }
     >
@@ -38,7 +38,7 @@ export default memo(function VersionManagerBtn(props: IVersionManageBtnProps) {
       >
         {$i18n.get({
           id: 'main.pages.App.AssistantAppEdit.components.AppActions.index.versionManagement',
-          dm: '版本管理',
+          dm: 'Version Management',
         })}
       </Button>
     </Tooltip>

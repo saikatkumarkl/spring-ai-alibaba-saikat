@@ -163,7 +163,7 @@ export const FlowBase = memo((props: IFlowBaseProps) => {
               <Tooltip
                 title={$i18n.get({
                   id: 'main.pages.App.Workflow.index.index.conversationVariablesRecordParameters',
-                  dm: '通过会话变量,可以在流程的全生命周期中记录参数信息,并在节点中被引用',
+                  dm: 'Session variables allow recording parameter information throughout the workflow lifecycle and can be referenced in nodes',
                 })}
               >
                 <IconButton
@@ -188,17 +188,17 @@ export const FlowBase = memo((props: IFlowBaseProps) => {
                 >
                   {$i18n.get({
                     id: 'main.pages.App.Workflow.index.index.test',
-                    dm: '测试',
+                    dm: 'Test',
                   })}
                 </Button>
                 <CheckListBtn />
               </Space.Compact>
-              {/* 新增“导出SAA工程代码”按钮 */}
+              {/* Add "Export SAA Project Code" button */}
               <Button
                 disabled={actionLoading}
                 onClick={handleExportSAA}
               >
-                导出SAA工程代码
+                Export SAA Project Code
               </Button>
               <Button
                 disabled={actionLoading}
@@ -207,7 +207,7 @@ export const FlowBase = memo((props: IFlowBaseProps) => {
                     message.warning(
                       $i18n.get({
                         id: 'main.pages.App.Workflow.index.checkNodeConfiguration',
-                        dm: '请先检查节点配置',
+                        dm: 'Please check node configuration first',
                       }),
                     );
                     setShowCheckList(true);
@@ -219,7 +219,7 @@ export const FlowBase = memo((props: IFlowBaseProps) => {
               >
                 {$i18n.get({
                   id: 'main.pages.App.Workflow.index.index.publish',
-                  dm: '发布',
+                  dm: 'Publish',
                 })}
               </Button>
             </>
@@ -231,14 +231,14 @@ export const FlowBase = memo((props: IFlowBaseProps) => {
                 message.success(
                   $i18n.get({
                     id: 'main.pages.App.AssistantAppEdit.components.AppActions.index.returnedToCurrentVersion',
-                    dm: '已回到当前版本',
+                    dm: 'Returned to current version',
                   }),
                 );
               }}
             >
               {$i18n.get({
                 id: 'main.pages.App.AssistantAppEdit.components.AppActions.index.returnToCurrentVersion',
-                dm: '回到当前版本',
+                dm: 'Return to Current Version',
               })}
             </Button>
           )}
@@ -290,7 +290,7 @@ export const FlowEditor = memo((props: IProps) => {
 
     setActionLoading(true);
     try {
-      // 准备请求参数
+      // Prepare request parameters
       const params = {
         dependencies: 'spring-ai-alibaba-graph,web,spring-ai-alibaba-starter-dashscope,spring-ai-starter-mcp-client',
         appMode: 'workflow',
@@ -309,10 +309,10 @@ export const FlowEditor = memo((props: IProps) => {
         dsl: JSON.stringify(props.appDetail),
       };
 
-      // 调用转换服务
+      // Call conversion service
       const response = await convertDifyToSpringAI(params);
 
-      // 处理 zip 文件下载
+      // Handle zip file download
       const blob = response.data;
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -323,12 +323,12 @@ export const FlowEditor = memo((props: IProps) => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      message.success('转换成功！项目文件已开始下载');
+      message.success('Conversion successful! Project file download started');
     } catch (error) {
-      console.error('转换失败:', error);
-      message.error(`转换失败：${error.message || '请重试'}`);
+      console.error('Conversion failed:', error);
+      message.error(`Conversion failed: ${error.message || 'Please try again'}`);
     } finally {
-      setActionLoading(false); // 重置加载状态
+      setActionLoading(false); // Reset loading state
     }
   }, [props.appDetail]);
 
@@ -574,7 +574,7 @@ function Workflow() {
         <Empty
           description={$i18n.get({
             id: 'main.pages.App.Workflow.index.index.applicationDoesNotExist',
-            dm: '应用不存在',
+            dm: 'Application does not exist',
           })}
         />
       </div>
@@ -596,7 +596,7 @@ function Workflow() {
             {
               title: $i18n.get({
                 id: 'main.pages.App.Workflow.index.index.applicationManagement',
-                dm: '应用管理',
+                dm: 'Application Management',
               }),
               path: '/app/workflow',
             },
@@ -638,7 +638,7 @@ function Workflow() {
             {
               label: $i18n.get({
                 id: 'main.pages.App.Workflow.index.index.canvasConfiguration',
-                dm: '画布配置',
+                dm: 'Canvas Configuration',
               }),
               key: 'config',
               children: state.appDetail && (
@@ -653,7 +653,7 @@ function Workflow() {
             {
               label: $i18n.get({
                 id: 'main.pages.App.Workflow.index.publishChannel',
-                dm: '发布渠道',
+                dm: 'Publish Channel',
               }),
               key: 'channel',
               children: state.appDetail && (

@@ -22,14 +22,14 @@ const options = [
   {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.Iterator.panel.useArrayLoop',
-      dm: '使用数组循环',
+      dm: 'Use Array Loop',
     }),
     value: 'byArray',
   },
   {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.Iterator.panel.specifyLoopCount',
-      dm: '指定循环次数',
+      dm: 'Specify Loop Count',
     }),
     value: 'byCount',
   },
@@ -118,13 +118,13 @@ export default memo(function IteratorPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Iterator.panel.loopType',
-              dm: '循环类型',
+              dm: 'Loop Type',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Iterator.panel.twoTypesOfLoops',
-                dm: '分为指定循环次数和数组循环两种，区别在循环的轮次，前者为固定轮次，后者为数组长度。',
+                dm: 'There are two types: specify loop count and array loop. The difference is in the number of iterations - the former has a fixed count, while the latter uses the array length.',
               })}
             />
           </div>
@@ -141,13 +141,13 @@ export default memo(function IteratorPanel(props: {
             <div className="spark-flow-panel-form-title">
               {$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Iterator.panel.loopArray',
-                dm: '循环数组',
+                dm: 'Loop Array',
               })}
 
               <InfoIcon
                 tip={$i18n.get({
                   id: 'main.pages.App.Workflow.nodes.Iterator.panel.loopBodyInput',
-                  dm: '循环体的输入，必须是数组（List）类型数据，循环会按照数组的索引顺序执行。',
+                  dm: 'The input for the loop body must be an array (List) type data. The loop executes in the order of array indices.',
                 })}
               />
             </div>
@@ -179,7 +179,7 @@ export default memo(function IteratorPanel(props: {
             <div className="spark-flow-panel-form-title">
               {$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Iterator.panel.loopCount',
-                dm: '循环次数',
+                dm: 'Loop Count',
               })}
             </div>
             <SliderSelector
@@ -201,13 +201,13 @@ export default memo(function IteratorPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Iterator.panel.middleVariable',
-              dm: '中间变量',
+              dm: 'Intermediate Variables',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Iterator.panel.variableUsedInLoopBody',
-                dm: '循环体中用到的变量，可以用于循环体中。',
+                dm: 'Variables used in the loop body can be utilized within the loop.',
               })}
             />
           </div>
@@ -224,13 +224,13 @@ export default memo(function IteratorPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Iterator.panel.terminationCondition',
-              dm: '终止条件',
+              dm: 'Termination Condition',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Iterator.panel.setTerminationCondition',
-                dm: '用户自行设定的循环退出条件，通过变量设置节点更新循环体中间变量达成用户提前设置的终止条件的方式，让循环体提前结束循环，当未设置循环终止条件时，会根据循环类型判断退出。',
+                dm: 'User-defined loop exit condition. By using the variable setting node to update intermediate variables in the loop body to meet the preset termination condition, the loop can exit early. When no termination condition is set, the exit is determined by the loop type.',
               })}
             />
           </div>
@@ -249,7 +249,7 @@ export default memo(function IteratorPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Iterator.panel.outputVariable',
-              dm: '输出变量',
+              dm: 'Output Variables',
             })}
           </div>
           <CustomInputsControl

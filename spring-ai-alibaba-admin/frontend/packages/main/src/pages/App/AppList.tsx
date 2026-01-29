@@ -22,21 +22,21 @@ const tabs = [
   {
     label: $i18n.get({
       id: 'main.pages.App.index.allApplications',
-      dm: '全部应用',
+      dm: 'All Applications',
     }),
     key: 'all',
   },
   {
     label: $i18n.get({
       id: 'main.pages.App.index.smartAgentApplication',
-      dm: '智能体应用',
+      dm: 'Agent Applications',
     }),
     key: 'agent',
   },
   {
     label: $i18n.get({
       id: 'main.pages.App.index.workflowApplication',
-      dm: '工作流应用',
+      dm: 'Workflow Applications',
     }),
     key: 'workflow',
   },
@@ -129,11 +129,11 @@ export default function () {
     AlertDialog.warning({
       title: $i18n.get({
         id: 'main.pages.App.index.deleteApplication',
-        dm: '删除应用',
+        dm: 'Delete Application',
       }),
       content: $i18n.get({
         id: 'main.pages.App.index.confirmDeleteApplication',
-        dm: '确定删除该应用吗？',
+        dm: 'Are you sure you want to delete this application?',
       }),
       onOk: () => {
         deleteApp(app_id).then(() => {
@@ -198,7 +198,7 @@ export default function () {
           message.success(
             $i18n.get({
               id: 'main.pages.App.index.copySuccess',
-              dm: '复制成功',
+              dm: 'Copy successful',
             }),
           );
           initList();
@@ -218,14 +218,14 @@ export default function () {
         {
           title: $i18n.get({
             id: 'main.pages.App.index.home',
-            dm: '首页',
+            dm: 'Home',
           }),
           path: '/',
         },
         {
           title: $i18n.get({
             id: 'main.pages.App.index.applicationManagement',
-            dm: '应用管理',
+            dm: 'Application Management',
           }),
         },
       ]}
@@ -239,7 +239,7 @@ export default function () {
         >
           {$i18n.get({
             id: 'main.pages.App.index.createApplication',
-            dm: '创建应用',
+            dm: 'Create Application',
           })}
         </Button>
       }
@@ -249,7 +249,7 @@ export default function () {
         <Search
           placeholder={$i18n.get({
             id: 'main.pages.App.index.enterApplicationName',
-            dm: '请输入应用名称',
+            dm: 'Please enter application name',
           })}
           value={state.name}
           onChange={(val) => setState({ name: val })}
@@ -282,7 +282,7 @@ export default function () {
           >
             {$i18n.get({
               id: 'main.pages.App.index.createApplication',
-              dm: '创建应用',
+              dm: 'Create Application',
             })}
           </Button>
         }

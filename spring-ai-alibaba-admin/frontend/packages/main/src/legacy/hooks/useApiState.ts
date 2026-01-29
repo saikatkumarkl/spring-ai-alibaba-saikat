@@ -56,30 +56,30 @@ export const useApiState = <T = any>(
 
     try {
       const result = await apiCall();
-      
-      setState(prev => ({ 
-        ...prev, 
-        data: result, 
-        loading: false, 
-        error: null 
+
+      setState(prev => ({
+        ...prev,
+        data: result,
+        loading: false,
+        error: null
       }));
 
-      // 显示成功通知
+      // Display success notification
       if (options.showSuccessNotification && options.successMessage) {
         notifySuccess({ message: options.successMessage });
       }
 
       return result;
     } catch (error: any) {
-      const errorMessage = error?.message || '请求失败';
-      
-      setState(prev => ({ 
-        ...prev, 
-        loading: false, 
-        error: errorMessage 
+      const errorMessage = error?.message || 'Request failed';
+
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: errorMessage
       }));
 
-      // 处理不同类型的错误
+      // Handle different types of errors
       if (error?.name === 'NetworkError' || error?.code === 'NETWORK_ERROR') {
         handleNetworkError(options.errorContext);
       } else {

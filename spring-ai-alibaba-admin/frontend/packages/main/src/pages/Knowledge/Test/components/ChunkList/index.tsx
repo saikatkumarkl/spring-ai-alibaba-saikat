@@ -27,7 +27,7 @@ const ChunkList: React.FC<ChunkListProps> = ({ list, className }) => {
             <span>
               {$i18n.get({
                 id: 'main.pages.Knowledge.Test.components.ChunkList.index.recallResults',
-                dm: '召回结果',
+                dm: 'Recall Results',
               })}
             </span>
             <span className={styles['chunk-list-header-count']}>
@@ -55,11 +55,11 @@ const ChunkList: React.FC<ChunkListProps> = ({ list, className }) => {
           <Empty
             title={$i18n.get({
               id: 'main.pages.Knowledge.Test.components.ChunkList.index.noData',
-              dm: '暂无数据',
+              dm: 'No Data',
             })}
             description={$i18n.get({
               id: 'main.pages.Knowledge.Test.components.ChunkList.index.enterContentLeftClickTest',
-              dm: '请在左侧输入内容，点击测试进行结果查看',
+              dm: 'Please enter content on the left and click test to view results',
             })}
           />
         </div>

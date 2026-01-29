@@ -36,28 +36,28 @@ const needCheckCfgList = [
   {
     label: $i18n.get({
       id: 'main.pages.App.AssistantAppEdit.components.AppConfigDiffModal.index.modelModelSelection',
-      dm: '模型/模型选择',
+      dm: 'Model/Model Selection',
     }),
     code: 'modelSelect',
   },
   {
     label: $i18n.get({
       id: 'main.pages.App.AssistantAppEdit.components.AppConfigDiffModal.index.modelParameterConfigurationTemperatureCoefficient',
-      dm: '模型/参数配置/温度系数',
+      dm: 'Model/Parameters/Temperature',
     }),
     code: 'temperature',
   },
   {
     label: $i18n.get({
       id: 'main.pages.App.AssistantAppEdit.components.AppConfigDiffModal.index.modelParameterConfigurationMaxReplyLength',
-      dm: '模型/参数配置/最长回复长度',
+      dm: 'Model/Parameters/Max Response Length',
     }),
     code: 'maxTokens',
   },
   {
     label: $i18n.get({
       id: 'main.pages.App.AssistantAppEdit.components.AppConfigDiffModal.index.modelParameterConfigurationContextTurns',
-      dm: '模型/参数配置/携带上下文轮数',
+      dm: 'Model/Parameters/Context Rounds',
     }),
     code: 'dialogRound',
   },
@@ -65,42 +65,42 @@ const needCheckCfgList = [
   {
     label: $i18n.get({
       id: 'main.pages.App.AssistantAppEdit.components.AppConfigDiffModal.index.knowledgeRetrievalEnhancementSwitch',
-      dm: '知识检索增强开关',
+      dm: 'Knowledge Retrieval Enhancement Switch',
     }),
     code: 'enableSearch',
   },
   {
     label: $i18n.get({
       id: 'main.pages.App.AssistantAppEdit.components.AppConfigDiffModal.index.knowledgeRetrievalEnhancementSelectedKnowledgeBase',
-      dm: '知识检索增强/所选知识库',
+      dm: 'Knowledge Retrieval/Selected Knowledge Base',
     }),
     code: 'knowledgeBaseCodeList',
   },
   {
     label: $i18n.get({
       id: 'main.pages.Component.index.plugin',
-      dm: '插件',
+      dm: 'Plugin',
     }),
     code: 'plugins',
   },
   {
     label: $i18n.get({
       id: 'main.components.MCPSelectorComp.index.mcpService',
-      dm: 'MCP服务',
+      dm: 'MCP Service',
     }),
     code: 'mcp_servers',
   },
   {
     label: $i18n.get({
       id: 'main.pages.Component.index.intelligentAgent',
-      dm: '智能体',
+      dm: 'Agent',
     }),
     code: 'agent_components',
   },
   {
     label: $i18n.get({
       id: 'main.pages.Component.index.workflow',
-      dm: '工作流',
+      dm: 'Workflow',
     }),
     code: 'workflow_components',
   },
@@ -189,20 +189,20 @@ export default function AppConfigDiffModal(props: IProps) {
             draftCfg: prevJsonCfg.file_search?.enable_search
               ? $i18n.get({
                   id: 'main.pages.App.AssistantAppEdit.components.AppConfigDiffModal.index.enable',
-                  dm: '开启',
+                  dm: 'Enabled',
                 })
               : $i18n.get({
                   id: 'main.pages.Knowledge.Detail.components.FileList.index.close',
-                  dm: '关闭',
+                  dm: 'Disabled',
                 }),
             onlineCfg: nowJsonCfg.file_search?.enable_search
               ? $i18n.get({
                   id: 'main.pages.App.AssistantAppEdit.components.AppConfigDiffModal.index.enable',
-                  dm: '开启',
+                  dm: 'Enabled',
                 })
               : $i18n.get({
                   id: 'main.pages.Knowledge.Detail.components.FileList.index.close',
-                  dm: '关闭',
+                  dm: 'Disabled',
                 }),
           });
           break;
@@ -307,7 +307,7 @@ export default function AppConfigDiffModal(props: IProps) {
           {$i18n.get(
             {
               id: 'main.pages.App.AssistantAppEdit.components.AppConfigDiffModal.index.adjustedConfigurationItems',
-              dm: '已调整配置项（{var1}个）',
+              dm: 'Adjusted configuration items ({var1})',
             },
             { var1: state.diffList.length },
           )}
@@ -325,7 +325,7 @@ export default function AppConfigDiffModal(props: IProps) {
       open
       title={$i18n.get({
         id: 'main.pages.App.AssistantAppEdit.components.AppConfigDiffModal.index.releaseVersion',
-        dm: '发布版本',
+        dm: 'Publish Version',
       })}
       width={981}
       footer={
@@ -333,13 +333,13 @@ export default function AppConfigDiffModal(props: IProps) {
           <Button onClick={props.onCancel}>
             {$i18n.get({
               id: 'main.pages.App.AssistantAppEdit.components.AppConfigDiffModal.index.cancelPublish',
-              dm: '取消发布',
+              dm: 'Cancel Publish',
             })}
           </Button>
           <Button onClick={() => props.onOk()} type="primary">
             {$i18n.get({
               id: 'main.pages.App.AssistantAppEdit.components.AppConfigDiffModal.index.confirmPublish',
-              dm: '确认发布',
+              dm: 'Confirm Publish',
             })}
           </Button>
         </>
@@ -356,7 +356,7 @@ export default function AppConfigDiffModal(props: IProps) {
               <div className={styles.title}>
                 {$i18n.get({
                   id: 'main.pages.App.AssistantAppEdit.components.AppConfigDiffModal.index.modificationDetails',
-                  dm: '修改详情',
+                  dm: 'Modification Details',
                 })}
               </div>
               <div className={styles.table}>
@@ -365,7 +365,7 @@ export default function AppConfigDiffModal(props: IProps) {
                     {
                       title: $i18n.get({
                         id: 'main.pages.App.AssistantAppEdit.components.AppConfigDiffModal.index.configurationItem',
-                        dm: '配置项',
+                        dm: 'Configuration Item',
                       }),
                       dataIndex: 'title',
                       width: 240,
@@ -373,7 +373,7 @@ export default function AppConfigDiffModal(props: IProps) {
                     {
                       title: $i18n.get({
                         id: 'main.pages.App.AssistantAppEdit.components.AppConfigDiffModal.index.publishedVersion',
-                        dm: '已发布版本',
+                        dm: 'Published Version',
                       }),
                       dataIndex: 'onlineCfg',
                       render: (val) => (
@@ -383,7 +383,7 @@ export default function AppConfigDiffModal(props: IProps) {
                     {
                       title: $i18n.get({
                         id: 'main.pages.App.AssistantAppEdit.components.AppConfigDiffModal.index.pendingPublishVersion',
-                        dm: '待发布版本',
+                        dm: 'Pending Version',
                       }),
                       dataIndex: 'draftCfg',
                       render: (val) => (

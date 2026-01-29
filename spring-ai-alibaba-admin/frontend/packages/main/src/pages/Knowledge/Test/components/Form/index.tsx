@@ -45,7 +45,7 @@ const TestForm: React.FC<FormProps> = ({
         <div className={styles['form-title']}>
           {$i18n.get({
             id: 'main.pages.Knowledge.Test.components.Form.index.databaseConfigDebug',
-            dm: '数据库配置调试',
+            dm: 'Database Configuration Debug',
           })}
         </div>
         <Form.Item
@@ -54,13 +54,13 @@ const TestForm: React.FC<FormProps> = ({
               <span>
                 {$i18n.get({
                   id: 'main.pages.Knowledge.Test.components.Form.index.similarityThreshold',
-                  dm: '相似度阈值',
+                  dm: 'Similarity Threshold',
                 })}
               </span>
               <Tooltip
                 title={$i18n.get({
                   id: 'main.pages.Knowledge.Test.components.Form.index.thresholdMeasureSimilarity',
-                  dm: '用于衡量文本或数据间相似程度的临界值,当计算出的文本相似度达到或超过该值时，会返回该文本 。',
+                  dm: 'A threshold value used to measure the degree of similarity between texts or data. When the calculated text similarity reaches or exceeds this value, the text will be returned.',
                 })}
                 placement="rightBottom"
               >
@@ -77,7 +77,7 @@ const TestForm: React.FC<FormProps> = ({
               required: true,
               message: $i18n.get({
                 id: 'main.pages.Knowledge.Test.components.Form.index.enterSimilarityThreshold',
-                dm: '请输入相似度阈值',
+                dm: 'Please enter similarity threshold',
               }),
             },
           ]}
@@ -88,7 +88,7 @@ const TestForm: React.FC<FormProps> = ({
         <Form.Item
           label={$i18n.get({
             id: 'main.pages.Knowledge.Test.components.Form.index.input',
-            dm: '输入',
+            dm: 'Input',
           })}
           name="query"
           rules={[
@@ -96,7 +96,7 @@ const TestForm: React.FC<FormProps> = ({
               required: true,
               message: $i18n.get({
                 id: 'main.pages.Knowledge.Test.components.Form.index.enter',
-                dm: '请输入',
+                dm: 'Please enter',
               }),
             },
           ]}
@@ -104,7 +104,7 @@ const TestForm: React.FC<FormProps> = ({
           <Input.TextArea
             placeholder={$i18n.get({
               id: 'main.pages.Knowledge.Test.components.Form.index.enter',
-              dm: '请输入',
+              dm: 'Please enter',
             })}
             className={styles['text-area']}
             autoSize={{ minRows: 4, maxRows: 4 }}
@@ -120,7 +120,7 @@ const TestForm: React.FC<FormProps> = ({
           >
             {$i18n.get({
               id: 'main.pages.Knowledge.Test.components.Form.index.test',
-              dm: '测试',
+              dm: 'Test',
             })}
           </Button>
         </Form.Item>

@@ -16,28 +16,28 @@ const statusMap = {
     icon: 'spark-process-line',
     text: $i18n.get({
       id: 'main.pages.Knowledge.Detail.components.Search.index.pending',
-      dm: '待处理',
+      dm: 'Pending',
     }),
   },
   processing: {
     icon: 'spark-loading-line',
     text: $i18n.get({
       id: 'main.pages.Knowledge.Detail.components.Search.index.processing',
-      dm: '处理中',
+      dm: 'Processing',
     }),
   },
   processed: {
     icon: 'spark-checkCircle-fill',
     text: $i18n.get({
       id: 'main.pages.Knowledge.Detail.components.Search.index.completed',
-      dm: '处理完成',
+      dm: 'Completed',
     }),
   },
   failed: {
     icon: 'spark-errorCircle-fill',
     text: $i18n.get({
       id: 'main.pages.Knowledge.Detail.components.Search.index.failed',
-      dm: '处理失败',
+      dm: 'Failed',
     }),
   },
 };

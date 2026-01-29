@@ -5,16 +5,16 @@ export const IteratorStartSchema: INodeSchema = {
   type: 'IteratorStart',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.IteratorStart.schema.iterationStart',
-    dm: '循环开始',
+    dm: 'Iterator Start',
   }),
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.IteratorStart.schema.iterationStartNode',
-    dm: '循环开始节点',
+    dm: 'Iterator Start Node',
   }),
   iconType: 'spark-processStart-line',
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.IteratorStart.schema.logic',
-    dm: '逻辑',
+    dm: 'Logic',
   }),
   defaultParams: {
     input_params: [],

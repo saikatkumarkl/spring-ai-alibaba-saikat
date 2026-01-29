@@ -1,10 +1,10 @@
 import { request } from '../../utils/request';
 import { API_PATH } from '../const';
 
-// 获取Trace列表
-// 接口地址: GET /api/observability/traces
-// 接口作用: 分页查询追踪列表，支持搜索和筛选
-// res 示例:
+// Get Trace list
+// API endpoint: GET /api/observability/traces
+// Purpose: Paginated query for trace list, supports search and filtering
+// Response example:
 // {
 //   "totalCount": 3000,
 //     "totalPage": 30,
@@ -59,9 +59,9 @@ export async function getTraces(params: TracingAPI.GetTracesParams) {
   });
 }
 
-// 获取单个Trace详情
-// 接口地址: GET /api/observability/traces/{traceId}
-// 接口作用: 根据Trace ID获取完整的Trace数据，包含所有Span的详细信息
+// Get single Trace details
+// API endpoint: GET /api/observability/traces/{traceId}
+// Purpose: Get complete Trace data by Trace ID, including detailed information of all Spans
 // {
 //   "records": [
 //     {
@@ -111,10 +111,10 @@ export async function getTraceDetail(params: { traceId: string }) {
   });
 }
 
-// 获取服务列表
-// 接口地址: GET /api/observability/services
-// 接口作用: 获取所有服务列表及其操作
-// res 示例:
+// Get services list
+// API endpoint: GET /api/observability/services
+// Purpose: Get all services list and their operations
+// Response example:
 // {
 //   "services": [
 //     {
@@ -138,10 +138,10 @@ export async function getServices(params: {startTime: string; endTime: string}) 
   });
 }
 
-// 获取 Trace 概览
-// 接口地址: GET /api/observability/overview
-// 接口作用: 获取 Trace的概览信息，包括 Span 数量、操作数量、使用 Token 数量等
-// res 示例：
+// Get Trace overview
+// API endpoint: GET /api/observability/overview
+// Purpose: Get Trace overview information, including Span count, operation count, Token usage, etc.
+// Response example:
 // {
 //   "span.count": {
 //     "total": 88,

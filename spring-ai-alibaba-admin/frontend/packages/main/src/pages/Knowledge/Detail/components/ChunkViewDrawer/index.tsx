@@ -30,7 +30,7 @@ export default function ChunkViewDrawer(props: ChunkViewDrawerProps) {
       title={$i18n.get(
         {
           id: 'main.pages.Knowledge.Detail.components.ChunkViewDrawer.index.viewSliceVar1',
-          dm: '查看切片{var1}',
+          dm: 'View Slice {var1}',
         },
         { var1: title },
       )}
@@ -42,13 +42,13 @@ export default function ChunkViewDrawer(props: ChunkViewDrawerProps) {
             {content.length}
             {$i18n.get({
               id: 'main.pages.Knowledge.Detail.components.ChunkViewDrawer.index.character',
-              dm: '字符',
+              dm: ' characters',
             })}
           </div>
           <Button onClick={onClose}>
             {$i18n.get({
               id: 'main.pages.Knowledge.Detail.components.ChunkViewDrawer.index.close',
-              dm: '关闭',
+              dm: 'Close',
             })}
           </Button>
         </div>

@@ -32,7 +32,7 @@ export default function () {
         >
           {$i18n.get({
             id: 'main.pages.Component.Plugin.List.List.addCustomPlugin',
-            dm: '新增自定义插件',
+            dm: 'Add Custom Plugin',
           })}
         </Button>
       }

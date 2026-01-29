@@ -39,24 +39,24 @@ const CreateEvaluatorModal = ({ onClose, onSuccess }) => {
       });
 
       if (response.code === 200) {
-        notifySuccess({ 
-          message: '评估器创建成功',
-          description: `评估器 "${values.name}" 已成功创建`
+        notifySuccess({
+          message: 'Evaluator created successfully',
+          description: `Evaluator "${values.name}" has been successfully created`
         });
         form.resetFields();
         onSuccess?.(response.data);
         onClose();
       } else {
-        throw new Error(response.message || '创建失败');
+        throw new Error(response.message || 'Creation failed');
       }
     } catch (error) {
-      console.error('创建评估器失败:', error);
+      console.error('Failed to create evaluator:', error);
       if (error.errorFields) {
-        // 表单验证错误
-        setError('请检查表单填写是否正确');
+        // Form validation error
+        setError('Please check if the form is filled correctly');
       } else {
-        handleApiError(error, '创建评估器');
-        setError(error.message || '创建失败，请稍后重试');
+        handleApiError(error, 'Create Evaluator');
+        setError(error.message || 'Creation failed, please try again later');
       }
     } finally {
       setLoading(false);
@@ -84,7 +84,7 @@ const CreateEvaluatorModal = ({ onClose, onSuccess }) => {
             <PlusOutlined style={{ color: '#52c41a', fontSize: 20 }} />
           </div>
           <Title level={3} style={{ margin: 0 }}>
-            创建新评估器
+            Create New Evaluator
           </Title>
         </div>
       }
@@ -101,7 +101,7 @@ const CreateEvaluatorModal = ({ onClose, onSuccess }) => {
       }}
       footer={[
         <Button key="cancel" onClick={handleCancel}>
-          取消
+          Cancel
         </Button>,
         <Button
           key="submit"
@@ -110,7 +110,7 @@ const CreateEvaluatorModal = ({ onClose, onSuccess }) => {
           onClick={handleSubmit}
           icon={<PlusOutlined />}
         >
-          {loading ? '创建中...' : '创建评估器'}
+          {loading ? 'Creating...' : 'Create Evaluator'}
         </Button>
       ]}
       closeIcon={<CloseOutlined />}
@@ -118,7 +118,7 @@ const CreateEvaluatorModal = ({ onClose, onSuccess }) => {
       <Space direction="vertical" size={24} style={{ width: '100%' }}>
         {error && (
           <Alert
-            message="创建失败"
+            message="Creation Failed"
             description={error}
             type="error"
             icon={<ExclamationCircleOutlined />}
@@ -133,19 +133,19 @@ const CreateEvaluatorModal = ({ onClose, onSuccess }) => {
           style={{ width: '100%' }}
         >
           <Form.Item
-            label="评估器名称"
+            label="Evaluator Name"
             name="name"
             rules={[
-              { required: true, message: '请输入评估器名称' },
-              { max: 50, message: '名称不能超过50个字符' },
-              { 
-                pattern: /^[a-zA-Z0-9\u4e00-\u9fa5_-]+$/, 
-                message: '名称只能包含中英文、数字、下划线和横线' 
+              { required: true, message: 'Please enter evaluator name' },
+              { max: 50, message: 'Name cannot exceed 50 characters' },
+              {
+                pattern: /^[a-zA-Z0-9\u4e00-\u9fa5_-]+$/,
+                message: 'Name can only contain Chinese, English, numbers, underscores and hyphens'
               }
             ]}
           >
             <Input
-              placeholder="输入评估器名称"
+              placeholder="Enter evaluator name"
               size="large"
               showCount
               maxLength={50}
@@ -153,14 +153,14 @@ const CreateEvaluatorModal = ({ onClose, onSuccess }) => {
           </Form.Item>
 
           <Form.Item
-            label="描述"
+            label="Description"
             name="description"
             rules={[
-              { max: 500, message: '描述不能超过500个字符' }
+              { max: 500, message: 'Description cannot exceed 500 characters' }
             ]}
           >
             <TextArea
-              placeholder="输入评估器描述（可选）"
+              placeholder="Enter evaluator description (optional)"
               rows={4}
               showCount
               maxLength={500}
@@ -168,19 +168,19 @@ const CreateEvaluatorModal = ({ onClose, onSuccess }) => {
           </Form.Item>
         </Form>
 
-        {/* 提示信息 */}
+        {/* Notification Information */}
         <Alert
-          message="创建后的配置步骤"
+          message="Configuration Steps After Creation"
           description={
             <div>
               <Paragraph style={{ margin: 0, marginBottom: 8 }}>
-                创建评估器后，您可以在详情页面配置具体的版本信息，包括：
+                After creating the evaluator, you can configure detailed version information on the details page, including:
               </Paragraph>
               <ul style={{ margin: 0, paddingLeft: 20 }}>
-                <li>裁判模型选择（GPT-4、Claude等）</li>
-                <li>评估Prompt内容</li>
-                <li>模型参数配置</li>
-                <li>版本管理和发布</li>
+                <li>Judge model selection (GPT-4, Claude, etc.)</li>
+                <li>Evaluation Prompt content</li>
+                <li>Model parameter configuration</li>
+                <li>Version management and publishing</li>
               </ul>
             </div>
           }

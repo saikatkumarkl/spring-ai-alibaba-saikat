@@ -56,8 +56,8 @@ const formatDateTime = (dateString: string) => {
 const SOURCE_TYPE_MAP: Record<string, string> = {
   prompt: 'Prompt',
   playground: 'Playground',
-  experiment: '实验',
-  evaluator: '评估器',
+  experiment: 'Experiment',
+  evaluator: 'Evaluator',
 };
 
 const STATUS_COLOR_MAP: Record<string, string> = {
@@ -138,10 +138,10 @@ const SpanWaterfallRow: React.FC<SpanWaterfallRowProps> = ({ span, depth, traceS
   const operationName = attr["gen_ai.operation.name"];
   const hasChildren = span.children && span.children.length > 0;
 
-  // 添加到评测集按钮的点击处理函数
+  // Click handler for add to dataset button
   const handleAddToDataset = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // 通过props传递的函数处理添加到评测集的操作
+    // Handle adding to dataset operation through props-passed function
     if (typeof (window as any).handleAddToDataset === 'function') {
       (window as any).handleAddToDataset(span);
     }
@@ -174,11 +174,11 @@ const SpanWaterfallRow: React.FC<SpanWaterfallRowProps> = ({ span, depth, traceS
                 {span.operationName}
               </div>
               {operationName && <Tag color={types[operationName]}>{operationName}</Tag>}
-              {/* 添加到评测集按钮 */}
+              {/* Add to dataset button */}
             </div>
           </Tooltip>
           {operationName === 'chat' && <div className="">
-            <Tooltip title="添加到评测集">
+            <Tooltip title="Add to Dataset">
               <Button
                 size="small"
                 icon={<DatabaseOutlined />}
@@ -235,7 +235,7 @@ function TracingPage() {
   const [filteredPromptName, setFilteredPromptName] = useState<string | null>(null);
   const [collapsedSpans, setCollapsedSpans] = useState<Set<string>>(new Set());
 
-  // 添加到评测集弹出框相关状态
+  // Add to dataset modal related state
   const [addToDatasetModalVisible, setAddToDatasetModalVisible] = useState(false);
   const [selectedSpanForDataset, setSelectedSpanForDataset] = useState<Span | null>(null);
   const [datasets, setDatasets] = useState<any[]>([]);
@@ -247,12 +247,12 @@ function TracingPage() {
   const [selectedDatasetVersionId, setSelectedDatasetVersionId] = useState<string>('');
   const [fieldMappings, setFieldMappings] = useState<Record<string, string>>({});
 
-  // 新增状态用于存储提取的数据
+  // New state for storing extracted data
   const [inputContentValues, setInputContentValues] = useState<string[]>([]);
   const [outputContentValues, setOutputContentValues] = useState<string[]>([]);
   const [otherAttrValues, setOtherAttrValues] = useState<Record<string, any>>({});
 
-  // 添加处理函数
+  // Handle dataset change
   const handleDatasetChange = (value: string) => {
     setSelectedDatasetId(value);
     setDatasetVersions([]);
@@ -260,21 +260,21 @@ function TracingPage() {
     setSelectedDatasetVersionId('');
     setFieldMappings({});
     if (value) {
-      // 并行调用两个接口：获取版本列表和评测集详情
+      // Parallel call two APIs: get version list and dataset details
       Promise.all([
         fetchDatasetVersions(value),
         fetchDatasetDetail(value)
       ]).catch(error => {
-        console.error('获取评测集信息失败:', error);
-        message.error('获取评测集信息失败');
+        console.error('Failed to get dataset info:', error);
+        message.error('Failed to get dataset info');
       });
     }
   };
 
   const handleDatasetVersionChange = (value: string) => {
     setSelectedDatasetVersionId(value);
-    // 不再更新datasetColumns，保持从评测集详情接口获取的columnsConfig
-    // 只做版本选择的处理
+    // No longer update datasetColumns, keep columnsConfig from dataset detail API
+    // Only handle version selection
   };
 
   const handleFieldMappingChange = (spanField: string, datasetField: string) => {
@@ -299,7 +299,7 @@ function TracingPage() {
         setOperations([...new Set(res.data.services?.flatMap((s: any) => s.operations) || [])]);
       }
     } catch (error) {
-      handleApiError(error, '获取服务列表失败');
+      handleApiError(error, 'Failed to get service list');
     }
   }, []);
 
@@ -341,7 +341,7 @@ function TracingPage() {
         setOverviewData(res.data);
       }
     } catch (error) {
-      handleApiError(error, '获取概览数据失败');
+      handleApiError(error, 'Failed to get overview data');
     } finally {
       setOverviewLoading(false);
     }
@@ -361,7 +361,7 @@ function TracingPage() {
         setPagination(prev => ({ ...prev, total: res.data.totalCount || 0 }));
       }
     } catch (error) {
-      handleApiError(error, '获取Trace列表失败');
+      handleApiError(error, 'Failed to get Trace list');
     } finally {
       setLoading(false);
     }
@@ -423,7 +423,7 @@ function TracingPage() {
     });
   };
 
-  // 获取评测集列表
+  // Get dataset list
   const fetchDatasets = useCallback(async () => {
     try {
       setDatasetsLoading(true);
@@ -433,7 +433,7 @@ function TracingPage() {
       });
 
       if (response.code === 200 && response.data) {
-        // 根据API定义，使用pageItems而不是records
+        // Use pageItems instead of records according to API definition
         const dataItems = response.data.pageItems || [];
         const transformedDatasets = dataItems.map((item: any) => ({
           id: item.id.toString(),
@@ -443,17 +443,17 @@ function TracingPage() {
         setDatasets(transformedDatasets);
       } else {
         setDatasets([]);
-        message.error('获取评测集列表失败');
+        message.error('Failed to fetch dataset list');
       }
     } catch (error) {
       setDatasets([]);
-      message.error('获取评测集列表失败');
+      message.error('Failed to fetch dataset list');
     } finally {
       setDatasetsLoading(false);
     }
   }, []);
 
-  // 获取评测集版本列表
+  // Get dataset version list
   const fetchDatasetVersions = useCallback(async (datasetId: string) => {
     try {
       setDatasetVersionsLoading(true);
@@ -467,24 +467,24 @@ function TracingPage() {
         const versionsData = response.data.pageItems || [];
         setDatasetVersions(versionsData);
 
-        // 自动选择第一个版本
+        // Automatically select the first version
         if (versionsData.length > 0) {
           const firstVersion = versionsData[0];
           setSelectedDatasetVersionId(firstVersion.id.toString());
         }
       } else {
         setDatasetVersions([]);
-        message.error('获取评测集版本列表失败');
+        message.error('Failed to fetch dataset version list');
       }
     } catch (error) {
       setDatasetVersions([]);
-      message.error('获取评测集版本列表失败');
+      message.error('Failed to fetch dataset version list');
     } finally {
       setDatasetVersionsLoading(false);
     }
   }, []);
 
-  // 获取评测集详情
+  // Get dataset details
   const fetchDatasetDetail = useCallback(async (datasetId: string) => {
     try {
       const response = await API.getDataset({
@@ -492,19 +492,19 @@ function TracingPage() {
       });
 
       if (response.code === 200 && response.data) {
-        // 解析columnsConfig字段获取列结构信息
+        // Parse columnsConfig field to get column structure information
         try {
           const columnsConfig = JSON.parse(response.data.columnsConfig || '[]');
           if (Array.isArray(columnsConfig)) {
             setDatasetColumns(columnsConfig);
 
-            // 初始化字段映射，自动映射一些常用字段
+            // Initialize field mapping, automatically map some common fields
             const initialMappings: Record<string, string> = {};
 
-            // 自动映射一些常见的字段
+            // Automatically map some common fields
             const commonFields = ['operationName', 'duration', 'startTime'];
             commonFields.forEach(field => {
-              // 查找是否有匹配的列名
+              // Find if there is a matching column name
               const matchingColumn = columnsConfig.find((col: any) =>
                 col.name.toLowerCase().includes(field.toLowerCase()) ||
                 field.toLowerCase().includes(col.name.toLowerCase())
@@ -521,25 +521,25 @@ function TracingPage() {
             setFieldMappings({});
           }
         } catch (parseError) {
-          console.error('解析评测集列结构失败:', parseError);
+          console.error('Failed to parse dataset column structure:', parseError);
           setDatasetColumns([]);
           setFieldMappings({});
         }
       } else {
-        message.error('获取评测集详情失败');
+        message.error('Failed to fetch dataset details');
         setDatasetColumns([]);
         setFieldMappings({});
       }
     } catch (error) {
-      message.error('获取评测集详情失败');
+      message.error('Failed to fetch dataset details');
       setDatasetColumns([]);
       setFieldMappings({});
     }
   }, []);
 
-  // 处理添加到评测集按钮点击
+  // Handle add to dataset button click
   const handleAddToDataset = (span: Span) => {
-    // 计算 aiAttr 和 otherAttr 数据
+    // Calculate aiAttr and otherAttr data
     const aiAttr = Object.entries(span?.attributes || {}).filter(([key, value]) => {
       return key.startsWith('gen_ai')
     }).reduce((acc, [key, value]) => {
@@ -554,30 +554,30 @@ function TracingPage() {
       return acc;
     }, {} as any)
 
-    // 打印这两个数据
+    // Print these two data objects
     console.log('aiAttr:', aiAttr);
     console.log('otherAttr:', otherAttr);
 
-    // 解析 gen_ai.input.messages 和 gen_ai.output.messages 中的 content 字段
+    // Parse content fields in gen_ai.input.messages and gen_ai.output.messages
     let inputContents: string[] = [];
     let outputContents: string[] = [];
 
     try {
       if (aiAttr['gen_ai.input.messages']) {
         const inputMessages = JSON.parse(aiAttr['gen_ai.input.messages']);
-        // input只处理 role 为 'user' 的消息
+        // For input, only process messages with role 'user'
         inputContents = inputMessages.filter((message: any) => message.role === 'user').flatMap((message: any) =>
           message.parts ? message.parts.map((part: any) => part.content || part.text || '').filter(Boolean) : []
         );
       }
     } catch (error) {
-      console.error('解析 gen_ai.input.messages 失败:', error);
+      console.error('Failed to parse gen_ai.input.messages:', error);
     }
 
     try {
       if (aiAttr['gen_ai.output.messages']) {
         const outputMessages = JSON.parse(aiAttr['gen_ai.output.messages']);
-        // output只处理 role 为 'assistant' 的消息
+        // output only processes messages with role 'assistant'
         outputContents = outputMessages
           .filter((message: any) => message.role === 'assistant')
           .flatMap((message: any) =>
@@ -585,14 +585,14 @@ function TracingPage() {
           );
       }
     } catch (error) {
-      console.error('解析 gen_ai.output.messages 失败:', error);
+      console.error('Failed to parse gen_ai.output.messages:', error);
     }
 
-    // 打印提取的 content 字段值
+    // Print extracted content field values
     console.log('inputContentValues:', inputContents);
     console.log('outputContentValues:', outputContents);
 
-    // 提取 otherAttr 中 spring.ai.alibaba.prompt.variable 键名下的所有键值对
+    // Extract all key-value pairs under spring.ai.alibaba.prompt.variable in otherAttr
     const promptVariableValues: Record<string, any> = {};
     if (otherAttr['spring.ai.alibaba.prompt.variable']) {
       try {
@@ -601,46 +601,46 @@ function TracingPage() {
           promptVariableValues[key] = promptVariables[key];
         });
       } catch (error) {
-        console.error('解析 spring.ai.alibaba.prompt.variable 失败:', error);
+        console.error('Failed to parse spring.ai.alibaba.prompt.variable:', error);
       }
     }
 
-    // 打印 promptVariableValues 中的所有键值对
+    // Print all key-value pairs in promptVariableValues
     console.log('promptVariableValues:', promptVariableValues);
 
-    // 保存数据到状态变量
+    // Save data to state variables
     setInputContentValues(inputContents);
     setOutputContentValues(outputContents);
     setOtherAttrValues(promptVariableValues);
 
     setSelectedSpanForDataset(span);
     setAddToDatasetModalVisible(true);
-    // 获取评测集列表
+    // Fetch dataset list
     fetchDatasets();
   };
 
-  // 保存到数据集
+  // Save to dataset
   const handleSaveToDataset = async () => {
     if (!selectedSpanForDataset || !selectedDatasetId || !selectedDatasetVersionId) {
-      message.error('请选择完整的评测集和版本信息');
+      message.error('Please select complete dataset and version information');
       return;
     }
 
-    // 检查是否有字段映射配置
+    // Check for field mapping configuration
     const hasMappings = Object.values(fieldMappings).some(mapping => mapping);
     if (!hasMappings) {
-      message.warning('请至少配置一个字段映射关系');
+      message.warning('Please configure at least one field mapping');
       return;
     }
 
     try {
-      // 构造要保存的数据内容
+      // Construct data content to save
       const dataContent: Record<string, any> = {};
 
-      // 根据字段映射关系构造数据
+      // Construct data based on field mapping
       Object.entries(fieldMappings).forEach(([spanField, datasetField]) => {
         if (datasetField) {
-          // 处理基本字段
+          // Process basic fields
           if (spanField === 'operationName') {
             dataContent[datasetField] = selectedSpanForDataset.operationName;
           } else if (spanField === 'duration') {
@@ -650,28 +650,28 @@ function TracingPage() {
           } else if (spanField === 'finishTime') {
             dataContent[datasetField] = selectedSpanForDataset.finishTime;
           }
-          // 处理输入内容字段
+          // Process input content fields
           else if (spanField.startsWith('inputContent-')) {
             const index = parseInt(spanField.split('-')[1]);
             if (!isNaN(index) && inputContentValues[index]) {
               dataContent[datasetField] = inputContentValues[index];
             }
           }
-          // 处理输出内容字段
+          // Process output content fields
           else if (spanField.startsWith('outputContent-')) {
             const index = parseInt(spanField.split('-')[1]);
             if (!isNaN(index) && outputContentValues[index]) {
               dataContent[datasetField] = outputContentValues[index];
             }
           }
-          // 处理其他属性字段
+          // Process other attribute fields
           else if (spanField.startsWith('otherAttr-')) {
             const key = spanField.split('-').slice(1).join('-');
             if (otherAttrValues[key] !== undefined) {
               dataContent[datasetField] = otherAttrValues[key];
             }
           }
-          // 处理属性字段
+          // Process attribute fields
           else {
             if (selectedSpanForDataset.attributes && selectedSpanForDataset.attributes[spanField]) {
               dataContent[datasetField] = selectedSpanForDataset.attributes[spanField];
@@ -680,17 +680,17 @@ function TracingPage() {
         }
       });
 
-      // 检查构造的数据是否为空
+      // Check if constructed data is empty
       if (Object.keys(dataContent).length === 0) {
-        message.warning('没有可保存的数据，请检查字段映射配置');
+        message.warning('No data to save. Please check field mapping configuration');
         return;
       }
 
-      // 获取当前选中的数据集版本信息
+      // Get selected dataset version info
       const selectedVersion = datasetVersions.find(v => v.id.toString() === selectedDatasetVersionId);
       const columnsConfig = selectedVersion?.columnsConfig || datasetColumns || [];
 
-      // 创建数据项
+      // Create data item
       const response = await API.createDatasetDataItemFromTrace({
         datasetId: Number(selectedDatasetId),
         datasetVersionId: Number(selectedDatasetVersionId),
@@ -699,49 +699,49 @@ function TracingPage() {
       });
 
       if (response.code === 200) {
-        message.success('已成功添加到评测集');
+        message.success('Successfully added to dataset');
         setAddToDatasetModalVisible(false);
-        // 重置状态
+        // Reset state
         setSelectedSpanForDataset(null);
         setSelectedDatasetId('');
         setSelectedDatasetVersionId('');
         setDatasetVersions([]);
         setDatasetColumns([]);
         setFieldMappings({});
-        // 重置新添加的状态
+        // Reset newly added state
         setInputContentValues([]);
         setOutputContentValues([]);
         setOtherAttrValues({});
       } else {
-        message.error('添加到评测集失败: ' + (response.message || '未知错误'));
+        message.error('Failed to add to dataset: ' + (response.message || 'Unknown error'));
       }
     } catch (error: any) {
-      message.error('添加到评测集失败: ' + (error.message || '网络错误或服务器异常'));
-      console.error('添加到评测集失败:', error);
+      message.error('Failed to add to dataset: ' + (error.message || 'Network error or server exception'));
+      console.error('Failed to add to dataset:', error);
     }
   };
 
-  // 关闭弹出框
+  // Close modal
   const handleCloseAddToDatasetModal = () => {
     setAddToDatasetModalVisible(false);
-    // 重置状态
+    // Reset state
     setSelectedSpanForDataset(null);
     setSelectedDatasetId('');
     setSelectedDatasetVersionId('');
     setDatasetVersions([]);
     setDatasetColumns([]);
     setFieldMappings({});
-    // 重置新添加的状态
+    // Reset newly added state
     setInputContentValues([]);
     setOutputContentValues([]);
     setOtherAttrValues({});
   };
 
-  // 设置全局函数供子组件调用
+  // Set global function for subcomponent call
   useEffect(() => {
     (window as any).handleAddToDataset = handleAddToDataset;
     return () => {
-      // 清理全局函数
+      // Cleanup global function
       delete (window as any).handleAddToDataset;
     };
   }, []);
@@ -811,7 +811,7 @@ function TracingPage() {
           spans: componentSpans,
         };
 
-        // 如果没有 root ， 则取第一个作为 root
+        // If no root, take the first as root
         if (traceDetailData?.spans.some(v => v.parentSpanID === "")) { }
         else {
           traceDetailData.spans = traceDetailData.spans.map((v, i) => {
@@ -823,10 +823,10 @@ function TracingPage() {
         const tree = buildSpanTree(traceDetailData.spans || []);
         setSpanTree(tree);
       } else {
-        notifyError({ message: '获取Trace详情失败' });
+        notifyError({ message: 'Failed to get Trace detail' });
       }
     } catch (error) {
-      handleApiError(error, '获取Trace详情失败');
+      handleApiError(error, 'Failed to get Trace detail');
     } finally {
       setTraceDetailLoading(false);
     }
@@ -859,13 +859,13 @@ function TracingPage() {
       }
     },
     {
-      title: '来源类型',
+      title: 'Source Type',
       dataIndex: ['attributes', 'spring.ai.alibaba.studio.source'],
       key: 'sourceType',
       render: (type: string) => SOURCE_TYPE_MAP[type] || type || "-"
     },
     {
-      title: '应用 / Span',
+      title: 'App / Span',
       key: 'service',
       width: "15%",
       render: (_: any, record: any) => {
@@ -886,7 +886,7 @@ function TracingPage() {
       }
     },
     {
-      title: "输入/输出信息",
+      title: "Input/Output",
       dataIndex: "inputMessage",
       width: "20%",
       render: (_v: any, record: any) => {
@@ -960,14 +960,14 @@ function TracingPage() {
       }
     },
     {
-      title: '模型',
+      title: 'Model',
       dataIndex: ['attributes', 'gen_ai.request.model'],
       key: 'model',
       ellipsis: true,
       render: (val: string) => <Popover content={val || '-'}>{val || '-'}</Popover>
     },
     {
-      title: '状态',
+      title: 'Status',
       dataIndex: 'status',
       key: 'status',
       width: 80,
@@ -975,21 +975,21 @@ function TracingPage() {
         return <Tag color={STATUS_COLOR_MAP[status] || STATUS_COLOR_MAP.default}>{status}</Tag>
       }
     },
-    { title: '开始时间', dataIndex: 'startTime', key: 'startTime', render: (time: string) => formatDateTime(time) },
+    { title: 'Start Time', dataIndex: 'startTime', key: 'startTime', render: (time: string) => formatDateTime(time) },
     {
-      title: '持续时间',
+      title: 'Duration',
       dataIndex: 'durationNs',
       key: 'duration',
       render: (ns: number) => formatDuration(ns / 1000000)
     },
     {
-      title: '操作',
+      title: 'Actions',
       key: 'action',
       render: (_: any, record: any) => (
         <Button type="link" onClick={() => {
           showDrawer(record);
         }}>
-          查看详情
+          View Details
         </Button>
       ),
     },
@@ -1014,7 +1014,7 @@ function TracingPage() {
 
   const renderDrawerContent = () => {
     if (traceDetailLoading) return <div style={{ textAlign: 'center', padding: '48px 0' }}><Spin size="large" /></div>;
-    if (!traceDetail) return <Empty description="无法加载Trace详情" />;
+    if (!traceDetail) return <Empty description="Unable to load Trace detail" />;
 
     console.log(traceDetail, 'asd...')
     if (traceDetail.duration === 0 || traceDetail.startTime === undefined) {
@@ -1048,7 +1048,7 @@ function TracingPage() {
       <>
       <Row gutter={[24, 24]}>
         <Col span={15}>
-          <Card title="Span 瀑布图" bodyStyle={{ padding: 0 }}>
+          <Card title="Span Waterfall" bodyStyle={{ padding: 0 }}>
             <div className="span-waterfall-chart">
               <div className="flex items-center w-full border-b border-gray-200 bg-gray-50 font-semibold text-xs text-gray-500">
                 <div className="w-3/5 shrink-0 p-2">Operation Name</div>
@@ -1077,15 +1077,15 @@ function TracingPage() {
           </Card>
         </Col>
           <Col span={9}>
-            <Card title={`Span 详情: ${selectedSpan?.operationName || '-'}`}>
+            <Card title={`Span Details: ${selectedSpan?.operationName || '-'}`}>
             {
               selectedSpan ? (
                 <Tabs defaultActiveKey="info">
-                  <Tabs.TabPane tab="基本信息" key="info">
+                  <Tabs.TabPane tab="Basic Info" key="info">
                     <div className='flex flex-col gap-2 mb-2'>
                     {
                       Boolean(selectedSpan.attributes?.["gen_ai.input.messages"]) && (
-                        <Card size="small" title="输入信息">
+                        <Card size="small" title="Input Info">
                           <Tabs
                             items={
                               formatMessageToJSON(selectedSpan.attributes["gen_ai.input.messages"]).map(([key, value]) => {
@@ -1106,7 +1106,7 @@ function TracingPage() {
                     }
                     {
                       Boolean(selectedSpan.attributes["gen_ai.output.messages"])&& (
-                        <Card size="small" title="输出信息">
+                        <Card size="small" title="Output Info">
                           <Tabs
                             items={
                               formatMessageToJSON(selectedSpan.attributes["gen_ai.output.messages"]).map(([key, value]) => {
@@ -1128,16 +1128,16 @@ function TracingPage() {
                     </div>
                     <Row gutter={[0, 12]}>
                       <Col span={12}><Text strong>SpanId:</Text> {selectedSpan.spanID}</Col>
-                      <Col span={12}><Text strong>类型:</Text> {selectedSpan.operationName}</Col>
+                      <Col span={12}><Text strong>Type:</Text> {selectedSpan.operationName}</Col>
                       <Col span={12}><Text strong>Kind:</Text> {selectedSpan.kind}</Col>
-                      <Col span={12}><Text strong>状态:</Text> {selectedSpan.status.code}</Col>
-                      <Col span={12}><Text strong>开始时间:</Text> {formatDateTime(selectedSpan.startTime)}</Col>
-                      <Col span={12}><Text strong>结束时间:</Text> {formatDateTime(selectedSpan.finishTime)}</Col>
-                      <Col span={12}><Text strong>持续时间:</Text> {formatDuration(selectedSpan.duration)}</Col>
+                      <Col span={12}><Text strong>Status:</Text> {selectedSpan.status.code}</Col>
+                      <Col span={12}><Text strong>Start Time:</Text> {formatDateTime(selectedSpan.startTime)}</Col>
+                      <Col span={12}><Text strong>End Time:</Text> {formatDateTime(selectedSpan.finishTime)}</Col>
+                      <Col span={12}><Text strong>Duration:</Text> {formatDuration(selectedSpan.duration)}</Col>
                     </Row>
                   </Tabs.TabPane>
-                  <Tabs.TabPane tab="属性" key="attributes" className='flex flex-col gap-4'>
-                    <Card size="small" title="AI 相关属性">
+                  <Tabs.TabPane tab="Attributes" key="attributes" className='flex flex-col gap-4'>
+                    <Card size="small" title="AI Related Attributes">
                       {
                         Object.entries(aiAttr).map(([key, value]) => {
                           return (
@@ -1156,9 +1156,9 @@ function TracingPage() {
                                 <CopyOutlined
                                   onClick={() => {
                                     copyToClipboard(value as string).then(() => {
-                                      message.success("复制成功")
+                                      message.success("Copied successfully")
                                     }).catch((error) => {
-                                      message.error("复制失败")
+                                      message.error("Copy failed")
                                     });
                                   }}
                                 className='text-blue-400 cursor-pointer' />
@@ -1168,7 +1168,7 @@ function TracingPage() {
                         })
                       }
                     </Card>
-                    <Card size="small" title="其他属性">
+                    <Card size="small" title="Other Attributes">
                       {
                         Object.entries(otherAttr).map(([key, value]) => {
                           return (
@@ -1187,9 +1187,9 @@ function TracingPage() {
                                 <CopyOutlined
                                   onClick={() => {
                                     copyToClipboard(value as string).then(() => {
-                                      message.success("复制成功")
+                                      message.success("Copied successfully")
                                     }).catch((error) => {
-                                      message.error("复制失败")
+                                      message.error("Copy failed")
                                     });
                                   }}
                                 className='text-blue-400 cursor-pointer' />
@@ -1200,7 +1200,7 @@ function TracingPage() {
                       }
                     </Card>
                   </Tabs.TabPane>
-                  <Tabs.TabPane tab="事件" key="events">
+                  <Tabs.TabPane tab="Events" key="events">
                     {
                       selectedSpan.events.length > 0 ? (
                         <Timeline>
@@ -1212,22 +1212,22 @@ function TracingPage() {
                           ))}
                         </Timeline>
                       ) : (
-                        <Empty description="暂无事件" />
+                        <Empty description="No events" />
                       )
                     }
                   </Tabs.TabPane>
                 </Tabs>
               ) : (
-                <Empty description="请选择一个 Span 查看详情" />
+                <Empty description="Please select a Span to view details" />
               )
             }
             </Card>
           </Col>
         </Row>
 
-        {/* 添加到评测集弹出框 */}
+        {/* Add to dataset modal */}
         <Modal
-          title="添加到评测集"
+          title="Add to Dataset"
           open={addToDatasetModalVisible}
           onCancel={handleCloseAddToDatasetModal}
           width={800}
@@ -1235,36 +1235,36 @@ function TracingPage() {
           bodyStyle={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}
           footer={[
             <Button key="cancel" onClick={handleCloseAddToDatasetModal}>
-              取消
+              Cancel
             </Button>,
             <Button key="save" type="primary" onClick={handleSaveToDataset}>
-              保存到数据集
+              Save to Dataset
             </Button>
           ]}
         >
           {selectedSpanForDataset && (
             <div>
-              {/* Span信息展示 */}
-              <Card title="Span信息" size="small" className="mb-4">
+              {/* Span info display */}
+              <Card title="Span Info" size="small" className="mb-4">
                 <Row gutter={[12, 12]}>
-                  <Col span={12}><Text strong>名称:</Text> {selectedSpanForDataset?.operationName || '-'}</Col>
+                  <Col span={12}><Text strong>Name:</Text> {selectedSpanForDataset?.operationName || '-'}</Col>
                   <Col span={12}><Text strong>SpanId:</Text> {selectedSpanForDataset?.spanID || '-'}</Col>
-                  <Col span={12}><Text strong>类型:</Text> {selectedSpan?.kind || '-'}</Col>
-                  <Col span={12}><Text strong>服务:</Text> {traceDetail?.serviceName || '-'}</Col>
+                  <Col span={12}><Text strong>Type:</Text> {selectedSpan?.kind || '-'}</Col>
+                  <Col span={12}><Text strong>Service:</Text> {traceDetail?.serviceName || '-'}</Col>
                 </Row>
               </Card>
 
-              {/* 评测集选择 */}
-              <Card title="选择评测集" size="small" className="mb-4">
+              {/* Dataset selection */}
+              <Card title="Select Dataset" size="small" className="mb-4">
                 <Row gutter={[16, 16]}>
                   <Col span={24}>
                     <Form.Item
-                      label="评测集"
+                      label="Dataset"
                       required
                       className="mb-0"
                     >
                       <Select
-                        placeholder="请选择评测集"
+                        placeholder="Please select dataset"
                         loading={datasetsLoading}
                         value={selectedDatasetId || undefined}
                         onChange={handleDatasetChange}
@@ -1281,12 +1281,12 @@ function TracingPage() {
                   </Col>
                   <Col span={24}>
                     <Form.Item
-                      label="版本"
+                      label="Version"
                       required
                       className="mb-0"
                     >
                       <Select
-                        placeholder="请选择版本"
+                        placeholder="Please select version"
                         loading={datasetVersionsLoading}
                         value={selectedDatasetVersionId || undefined}
                         onChange={handleDatasetVersionChange}
@@ -1305,11 +1305,11 @@ function TracingPage() {
                 </Row>
               </Card>
 
-              {/* 评测集列结构展示和字段映射配置 */}
+              {/* Dataset column structure display and field mapping config */}
               {(selectedDatasetId && selectedDatasetVersionId) && (
-                <Card title="字段映射配置" size="small">
+                <Card title="Field Mapping Config" size="small">
                   <div className="mb-3">
-                    <Text strong>评测集列结构 (版本 {datasetVersions.find(v => v.id.toString() === selectedDatasetVersionId)?.version || selectedDatasetVersionId}):</Text>
+                    <Text strong>Dataset Column Structure (Version {datasetVersions.find(v => v.id.toString() === selectedDatasetVersionId)?.version || selectedDatasetVersionId}):</Text>
                     {datasetColumns.length > 0 ? (
                       <div className="mt-2">
                         {datasetColumns.map((column: any) => (
@@ -1320,27 +1320,27 @@ function TracingPage() {
                       </div>
                     ) : (
                       <div className="mt-2">
-                        <Text type="secondary">暂无列结构信息</Text>
+                        <Text type="secondary">No column structure info</Text>
                       </div>
                     )}
                   </div>
 
                   {datasetColumns.length > 0 && (
                     <div>
-                      <Text strong>字段映射:</Text>
+                      <Text strong>Field Mapping:</Text>
                       <div className="mt-2">
-                        {/* 根据Span数据结构动态生成映射项 */}
+                        {/* Dynamically generate mapping items based on Span data structure */}
                         <div className="bg-gray-50 p-3 rounded">
                           {selectedSpanForDataset && (
                             <>
 
-                              {/* 输入内容字段映射 */}
+                              {/* Input content field mapping */}
                               {inputContentValues.map((content, index) => (
                                 <div className="mb-3" key={`input-${index}`}>
                                   <Row gutter={[8, 8]} align="middle">
                                     <Col span={11}>
                                       <Input
-                                        placeholder="输入内容"
+                                        placeholder="Input Content"
                                         value={content}
                                         onChange={(e) => {
                                           const newValues = [...inputContentValues];
@@ -1354,7 +1354,7 @@ function TracingPage() {
                                     </Col>
                                     <Col span={11}>
                                       <Select
-                                        placeholder="映射到评测集字段"
+                                        placeholder="Map to dataset field"
                                         style={{ width: '100%' }}
                                         value={fieldMappings[`inputContent-${index}`] || undefined}
                                         onChange={(value) => handleFieldMappingChange(`inputContent-${index}`, value)}
@@ -1370,13 +1370,13 @@ function TracingPage() {
                                 </div>
                               ))}
 
-                              {/* 输出内容字段映射 */}
+                              {/* Output content field mapping */}
                               {outputContentValues.map((content, index) => (
                                 <div className="mb-3" key={`output-${index}`}>
                                   <Row gutter={[8, 8]} align="middle">
                                     <Col span={11}>
                                       <Input
-                                        placeholder="输出内容"
+                                        placeholder="Output Content"
                                         value={content}
                                         onChange={(e) => {
                                           const newValues = [...outputContentValues];
@@ -1390,7 +1390,7 @@ function TracingPage() {
                                     </Col>
                                     <Col span={11}>
                                       <Select
-                                        placeholder="映射到评测集字段"
+                                        placeholder="Map to dataset field"
                                         style={{ width: '100%' }}
                                         value={fieldMappings[`outputContent-${index}`] || undefined}
                                         onChange={(value) => handleFieldMappingChange(`outputContent-${index}`, value)}
@@ -1406,13 +1406,13 @@ function TracingPage() {
                                 </div>
                               ))}
 
-                              {/* 其他属性字段映射 */}
+                              {/* Other attribute field mapping */}
                               {Object.entries(otherAttrValues).map(([key, value]) => (
                                 <div className="mb-3" key={`other-${key}`}>
                                   <Row gutter={[8, 8]} align="middle">
                                     <Col span={11}>
                                       <Input
-                                        placeholder="其他属性"
+                                        placeholder="Other Attribute"
                                         value={typeof value === 'object' ? JSON.stringify(value) : value}
                                         onChange={(e) => {
                                           setOtherAttrValues(prev => ({
@@ -1427,7 +1427,7 @@ function TracingPage() {
                                     </Col>
                                     <Col span={11}>
                                       <Select
-                                        placeholder="映射到评测集字段"
+                                        placeholder="Map to dataset field"
                                         style={{ width: '100%' }}
                                         value={fieldMappings[`otherAttr-${key}`] || undefined}
                                         onChange={(value) => handleFieldMappingChange(`otherAttr-${key}`, value)}
@@ -1464,7 +1464,7 @@ function TracingPage() {
   return (
     <div style={{ padding: 24 }}>
       <Title level={2}>
-        链路追踪
+        Tracing
         {filteredPromptName && (
           <Tag color="blue" closable onClose={handleClearPromptFilter} style={{ marginLeft: 8, verticalAlign: 'middle' }}>
             Prompt: {filteredPromptName}
@@ -1490,13 +1490,13 @@ function TracingPage() {
         <Card style={{ marginBottom: 24 }}>
           <Row gutter={16}>
             <Col span={8}>
-              <Statistic title="Trace 总数" value={overviewData?.['operation.count']?.total} loading={overviewLoading} />
+              <Statistic title="Total Traces" value={overviewData?.['operation.count']?.total} loading={overviewLoading} />
             </Col>
             <Col span={8}>
-              <Statistic title="Token 消耗" value={overviewData?.['usage.tokens']?.total} loading={overviewLoading} />
+              <Statistic title="Token Consumption" value={overviewData?.['usage.tokens']?.total} loading={overviewLoading} />
             </Col>
             <Col span={8}>
-              <Statistic title="模型调用次数" value={overviewData?.['operation.count']?.total} loading={overviewLoading} />
+              <Statistic title="Model Calls" value={overviewData?.['operation.count']?.total} loading={overviewLoading} />
             </Col>
           </Row>
         </Card>
@@ -1504,8 +1504,8 @@ function TracingPage() {
         <Card style={{ marginBottom: 24 }}>
           <Row gutter={24}>
             <Col span={6}>
-              <Form.Item name="serviceName" label="来源应用">
-                <Select showSearch placeholder="全部" allowClear>
+              <Form.Item name="serviceName" label="Source App">
+                <Select showSearch placeholder="All" allowClear>
                   {services.map(s => <Option key={s} value={s}>{s}</Option>)}
                 </Select>
               </Form.Item>
@@ -1513,36 +1513,36 @@ function TracingPage() {
             {
               serviceName === "spring-ai-alibaba-studio" && (
                 <Col span={6}>
-                  <Form.Item name="sourceType" label="来源类型">
-                    <Select placeholder="全部" allowClear>
+                  <Form.Item name="sourceType" label="Source Type">
+                    <Select placeholder="All" allowClear>
                       <Option value="prompt">Prompt</Option>
                       <Option value="playground">Playground</Option>
-                      <Option value="evaluator">评估器</Option>
-                      <Option value="experiment">实验</Option>
+                      <Option value="evaluator">Evaluator</Option>
+                      <Option value="experiment">Experiment</Option>
                     </Select>
                   </Form.Item>
                 </Col>
               )
             }
             <Col span={6}>
-              <Form.Item name="spanName" label="Span名称">
-                <Select showSearch placeholder="全部" allowClear>
+              <Form.Item name="spanName" label="Span Name">
+                <Select showSearch placeholder="All" allowClear>
                   {operations.map(op => <Option key={op} value={op}>{op}</Option>)}
                 </Select>
               </Form.Item>
             </Col>
             <Col span={6}>
               <Form.Item name="traceId" label="TraceId">
-                <Input placeholder="输入TraceId" />
+                <Input placeholder="Enter TraceId" />
               </Form.Item>
             </Col>
             <Col span={6} className="flex gap-2 justify-end">
-              <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>查询</Button>
+              <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>Search</Button>
               <Button className='mr-2' onClick={() => {
                form.resetFields();
                onSearch();
                navigate('/tracing', { replace: true });
-              }}>重置</Button>
+              }}>Reset</Button>
             </Col>
           </Row>
           <Form.List name="advancedFilters">
@@ -1550,11 +1550,11 @@ function TracingPage() {
               <>
                 {fields.map(({ key, name, ...restField }) => (
                   <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
-                    <Form.Item {...restField} name={[name, 'key']} rules={[{ required: true, message: '请选择属性' }]}>
-                      <Input placeholder='属性' width={200} />
+                    <Form.Item {...restField} name={[name, 'key']} rules={[{ required: true, message: 'Please select attribute' }]}>
+                      <Input placeholder='Attribute' width={200} />
                     </Form.Item>
-                    <Form.Item {...restField} name={[name, 'value']} rules={[{ required: true, message: '请输入属性值' }]}>
-                      <Input placeholder="属性值" width={200} />
+                    <Form.Item {...restField} name={[name, 'value']} rules={[{ required: true, message: 'Please enter attribute value' }]}>
+                      <Input placeholder="Attribute Value" width={200} />
                     </Form.Item>
                     <MinusCircleOutlined onClick={() => remove(name)} />
                   </Space>
@@ -1564,7 +1564,7 @@ function TracingPage() {
                     type="dashed"
                     onClick={() => add()} block icon={<PlusOutlined />}
                   >
-                    添加高级筛选
+                    Add Advanced Filter
                   </Button>
                 </Form.Item>
               </>
@@ -1589,7 +1589,7 @@ function TracingPage() {
       <Drawer
         title={
           <div className='flex items-center'>
-            Trace 详情
+            Trace Details
             <Paragraph className='ml-2' style={{marginBottom: 0}} copyable={{ text: traceDetail?.traceID }}>
               {traceDetail?.traceID}</Paragraph>
           </div>

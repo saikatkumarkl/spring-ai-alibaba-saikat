@@ -65,13 +65,13 @@ export default memo(function IteratorVariableForm({
         <div style={{ width: 140 }}>
           {$i18n.get({
             id: 'main.pages.App.Workflow.components.IteratorVariableForm.index.variableName',
-            dm: '变量名',
+            dm: 'Variable Name',
           })}
         </div>
         <div>
           {$i18n.get({
             id: 'main.pages.App.Workflow.components.IteratorVariableForm.index.value',
-            dm: '值',
+            dm: 'Value',
           })}
         </div>
       </Flex>
@@ -83,7 +83,7 @@ export default memo(function IteratorVariableForm({
               className="flex-1"
               placeholder={$i18n.get({
                 id: 'main.pages.App.Workflow.components.IteratorVariableForm.index.enterVariableName',
-                dm: '请输入变量名',
+                dm: 'Please enter variable name',
               })}
               value={item.key}
               onChange={(e) => changeRowItem(index, { key: e.target.value })}
@@ -115,7 +115,7 @@ export default memo(function IteratorVariableForm({
       >
         {$i18n.get({
           id: 'main.pages.App.Workflow.components.IteratorVariableForm.index.addVariable',
-          dm: '添加变量',
+          dm: 'Add Variable',
         })}
       </Button>
     </Flex>

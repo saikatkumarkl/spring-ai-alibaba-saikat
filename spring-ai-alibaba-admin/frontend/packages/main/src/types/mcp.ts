@@ -11,15 +11,15 @@ export enum McpStatus {
 export const McpStatusMap = {
   [McpStatus.DISABLED]: {
     color: 'error',
-    text: $i18n.get({ id: 'main.types.mcp.stopped', dm: '已停用' }),
+    text: $i18n.get({ id: 'main.types.mcp.stopped', dm: 'Stopped' }),
   },
   [McpStatus.ENABLED]: {
     color: 'success',
-    text: $i18n.get({ id: 'main.types.mcp.started', dm: '已启动' }),
+    text: $i18n.get({ id: 'main.types.mcp.started', dm: 'Started' }),
   },
   [McpStatus.DELETED]: {
     color: 'default',
-    text: $i18n.get({ id: 'main.types.mcp.deleted', dm: '已删除' }),
+    text: $i18n.get({ id: 'main.types.mcp.deleted', dm: 'Deleted' }),
   },
 };
 

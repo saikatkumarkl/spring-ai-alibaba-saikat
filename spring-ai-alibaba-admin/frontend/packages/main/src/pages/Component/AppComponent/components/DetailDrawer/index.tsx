@@ -51,7 +51,7 @@ export default function DetailDrawer(props: IProps) {
       onClose={props.onClose}
       title={$i18n.get({
         id: 'main.pages.Component.AppComponent.components.DetailDrawer.index.detailView',
-        dm: '查看详情',
+        dm: 'View Details',
       })}
     >
       {state.loading ? (
@@ -64,7 +64,7 @@ export default function DetailDrawer(props: IProps) {
             <div className={styles['form-title']}>
               {$i18n.get({
                 id: 'main.pages.Component.AppComponent.components.DetailDrawer.index.basicInformation',
-                dm: '基础信息',
+                dm: 'Basic Info',
               })}
             </div>
             <Flex vertical gap={16}>
@@ -72,7 +72,7 @@ export default function DetailDrawer(props: IProps) {
                 <div className={styles.label}>
                   {$i18n.get({
                     id: 'main.pages.Component.AppComponent.components.DetailDrawer.index.componentName',
-                    dm: '组件名称',
+                    dm: 'Component Name',
                   })}
                 </div>
                 <div className={styles.value}>{props.data.name}</div>
@@ -81,7 +81,7 @@ export default function DetailDrawer(props: IProps) {
                 <div className={styles.label}>
                   {$i18n.get({
                     id: 'main.pages.Component.AppComponent.components.DetailDrawer.index.componentId',
-                    dm: '组件ID',
+                    dm: 'Component ID',
                   })}
                 </div>
                 <div className={styles.value}>{props.data.code}</div>
@@ -90,7 +90,7 @@ export default function DetailDrawer(props: IProps) {
                 <div className={styles.label}>
                   {$i18n.get({
                     id: 'main.pages.Component.AppComponent.components.DetailDrawer.index.componentDescription',
-                    dm: '组件描述',
+                    dm: 'Component Description',
                   })}
                 </div>
                 <div className={styles.value}>{props.data.description}</div>
@@ -99,7 +99,7 @@ export default function DetailDrawer(props: IProps) {
                 <div className={styles.label}>
                   {$i18n.get({
                     id: 'main.pages.Component.AppComponent.components.DetailDrawer.index.updateTime',
-                    dm: '更新时间',
+                    dm: 'Updated Time',
                   })}
                 </div>
                 <div className={styles.value}>
@@ -110,7 +110,7 @@ export default function DetailDrawer(props: IProps) {
                 <div className={styles.label}>
                   {$i18n.get({
                     id: 'main.pages.Component.AppComponent.components.DetailDrawer.index.createTime',
-                    dm: '创建时间',
+                    dm: 'Created Time',
                   })}
                 </div>
                 <div className={styles.value}>
@@ -126,7 +126,7 @@ export default function DetailDrawer(props: IProps) {
               <span>
                 {$i18n.get({
                   id: 'main.pages.Component.AppComponent.components.DetailDrawer.index.inputParameters',
-                  dm: '输入参数',
+                  dm: 'Input Parameters',
                 })}
               </span>
             </div>
@@ -150,7 +150,7 @@ export default function DetailDrawer(props: IProps) {
               <span>
                 {$i18n.get({
                   id: 'main.pages.Component.AppComponent.components.DetailDrawer.index.outputParameters',
-                  dm: '输出参数',
+                  dm: 'Output Parameters',
                 })}
               </span>
             </div>

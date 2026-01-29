@@ -116,7 +116,7 @@ export default memo(function AppComponentPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.AppComponent.panel.component',
-              dm: '组件',
+              dm: 'Component',
             })}
           </div>
           <Flex
@@ -140,12 +140,12 @@ export default memo(function AppComponentPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.AppComponent.panel.inputVariables',
-              dm: '输入变量',
+              dm: 'Input Variables',
             })}
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.AppComponent.panel.inputVariablesForThisNode',
-                dm: '输入本节点需要处理的变量，用于识别需要处理的内容，支持引用前置。',
+                dm: 'Input variables that this node needs to process, used to identify the content to be processed, supports referencing previous nodes.',
               })}
             />
           </div>
@@ -170,13 +170,13 @@ export default memo(function AppComponentPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.AppComponent.panel.streamSwitch',
-              dm: '流式开关',
+              dm: 'Stream Switch',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.AppComponent.panel.outputInStream',
-                dm: '本节点模型输出的内容会以流式的方式输出。',
+                dm: 'The output content of this node model will be output in streaming mode.',
               })}
             />
           </div>
@@ -207,13 +207,13 @@ export default memo(function AppComponentPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.AppComponent.panel.output',
-              dm: '输出',
+              dm: 'Output',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.AppComponent.panel.outputVariables',
-                dm: '输出本节点处理结果的变量，用于后续节点识别和处理本节点的处理结果。',
+                dm: 'Output variables for this node processing results, used for subsequent nodes to identify and process the results.',
               })}
             />
           </div>

@@ -8,7 +8,7 @@ const Password: React.FC<InputProps> = (props) => {
   const {
     placeholder = $i18n.get({
       id: 'main.pages.Login.components.Form.Password.enterYourPassword',
-      dm: '输入您的密码',
+      dm: 'Enter your password',
     }),
     className,
     ...restProps

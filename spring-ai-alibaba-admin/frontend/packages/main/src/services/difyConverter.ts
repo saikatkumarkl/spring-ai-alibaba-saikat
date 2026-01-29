@@ -31,6 +31,6 @@ export function convertDifyToSpringAI(data: DifyConvertParams) {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-    responseType: 'blob', // 期望接收 blob 数据（zip 文件）
+    responseType: 'blob', // Expect blob data (zip file)
   });
 }

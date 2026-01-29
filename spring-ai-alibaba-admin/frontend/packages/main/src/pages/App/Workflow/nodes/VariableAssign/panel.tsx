@@ -27,7 +27,7 @@ const VALUE_FROM_OPTIONS = [
         <IconFont size="small" type="spark-quotation-line" />
         {$i18n.get({
           id: 'spark-flow.components.CustomInputsControl.index.reference',
-          dm: '引用',
+          dm: 'Reference',
         })}
       </div>
     ),
@@ -39,7 +39,7 @@ const VALUE_FROM_OPTIONS = [
         <IconFont size="small" type="spark-edit-line" />
         {$i18n.get({
           id: 'spark-flow.components.CustomInputsControl.index.input',
-          dm: '输入',
+          dm: 'Input',
         })}
       </div>
     ),
@@ -51,7 +51,7 @@ const VALUE_FROM_OPTIONS = [
         <IconFont size="small" type="spark-clear-line" />
         {$i18n.get({
           id: 'spark-flow.components.CustomInputsControl.index.clear',
-          dm: '清空',
+          dm: 'Clear',
         })}
       </div>
     ),
@@ -180,20 +180,20 @@ export default memo(function VariableAssignPanel({
         <div className="spark-flow-panel-form-title">
           {$i18n.get({
             id: 'main.pages.App.Workflow.nodes.VariableAssign.panel.setVariable',
-            dm: '设置变量',
+            dm: 'Set Variable',
           })}
         </div>
         <div className="spark-flow-panel-form-title-desc flex gap-[36px]">
           <span style={{ width: '40%' }}>
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.VariableAssign.panel.variable',
-              dm: '变量',
+              dm: 'Variable',
             })}
           </span>
           <span>
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.VariableAssign.panel.setValue',
-              dm: '设置值',
+              dm: 'Set Value',
             })}
           </span>
         </div>
@@ -279,7 +279,7 @@ export default memo(function VariableAssignPanel({
         >
           {$i18n.get({
             id: 'main.pages.App.Workflow.nodes.VariableAssign.panel.addVariable',
-            dm: '添加变量',
+            dm: 'Add Variable',
           })}
         </Button>
       </Flex>

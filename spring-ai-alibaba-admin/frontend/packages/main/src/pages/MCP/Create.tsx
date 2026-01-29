@@ -66,22 +66,22 @@ export default function McpCreate() {
       case McpStatus.ENABLED:
         return $i18n.get({
           id: 'main.pages.MCP.Create.enabled',
-          dm: '已启用',
+          dm: 'Enabled',
         });
       case McpStatus.DISABLED:
         return $i18n.get({
           id: 'main.pages.MCP.Create.disabled',
-          dm: '未启用',
+          dm: 'Disabled',
         });
       case McpStatus.DELETED:
         return $i18n.get({
           id: 'main.pages.MCP.Create.deleted',
-          dm: '已删除',
+          dm: 'Deleted',
         });
       default:
         return $i18n.get({
           id: 'main.pages.MCP.Create.unknownStatus',
-          dm: '未知状态',
+          dm: 'Unknown Status',
         });
     }
   }, [deployStatus]);
@@ -104,7 +104,7 @@ export default function McpCreate() {
         message.error(
           $i18n.get({
             id: 'main.pages.MCP.Create.mcpServiceConfigurationInvalidJsonFormat',
-            dm: 'MCP服务配置不是有效的JSON格式',
+            dm: 'MCP service configuration is not valid JSON format',
           }),
         );
         return;
@@ -133,7 +133,7 @@ export default function McpCreate() {
         message.success(
           $i18n.get({
             id: 'main.pages.MCP.Create.mcpServiceUpdatedSuccessfully',
-            dm: 'MCP服务更新成功',
+            dm: 'MCP service updated successfully',
           }),
         );
       } else {
@@ -146,7 +146,7 @@ export default function McpCreate() {
         message.success(
           $i18n.get({
             id: 'main.pages.MCP.Create.mcpServiceCreatedSuccessfully',
-            dm: 'MCP服务创建成功',
+            dm: 'MCP service created successfully',
           }),
         );
       }
@@ -190,11 +190,11 @@ export default function McpCreate() {
       AlertDialog.warning({
         title: $i18n.get({
           id: 'main.pages.MCP.Create.confirmReturn',
-          dm: '确认返回吗',
+          dm: 'Confirm Return',
         }),
         children: $i18n.get({
           id: 'main.pages.MCP.Create.returnWillNotSaveCurrentEditingContentConfirmReturn',
-          dm: '返回将不会保存当前编辑的内容，确认返回吗？',
+          dm: 'Returning will not save the current editing content. Confirm return?',
         }),
         onOk: () => {
           navigate('/mcp');
@@ -211,18 +211,18 @@ export default function McpCreate() {
       return server_code
         ? $i18n.get({
             id: 'main.pages.MCP.Create.saving',
-            dm: '保存中...',
+            dm: 'Saving...',
           })
         : $i18n.get({
             id: 'main.pages.MCP.Create.creating',
-            dm: '创建中...',
+            dm: 'Creating...',
           });
     }
     return server_code
-      ? $i18n.get({ id: 'main.pages.MCP.Create.save', dm: '保存' })
+      ? $i18n.get({ id: 'main.pages.MCP.Create.save', dm: 'Save' })
       : $i18n.get({
           id: 'main.pages.MCP.Create.create',
-          dm: '创建',
+          dm: 'Create',
         });
   }, [saveLoading, server_code]);
 
@@ -233,7 +233,7 @@ export default function McpCreate() {
         {
           title: $i18n.get({
             id: 'main.pages.MCP.Create.mcpManagement',
-            dm: 'MCP管理',
+            dm: 'MCP Management',
           }),
           onClick: onBack,
         },
@@ -243,7 +243,7 @@ export default function McpCreate() {
               <span>
                 {$i18n.get({
                   id: 'main.pages.MCP.Create.editMcpService',
-                  dm: '编辑MCP服务',
+                  dm: 'Edit MCP Service',
                 })}
               </span>
               <Flex
@@ -261,7 +261,7 @@ export default function McpCreate() {
           ) : (
             $i18n.get({
               id: 'main.pages.MCP.Create.createMcpService',
-              dm: '创建MCP服务',
+              dm: 'Create MCP Service',
             })
           ),
         },
@@ -274,7 +274,7 @@ export default function McpCreate() {
           <Button onClick={onBack}>
             {$i18n.get({
               id: 'main.pages.MCP.Create.cancel',
-              dm: '取消',
+              dm: 'Cancel',
             })}
           </Button>
         </div>
@@ -288,7 +288,7 @@ export default function McpCreate() {
                 required
                 label={$i18n.get({
                   id: 'main.pages.MCP.Create.serviceName',
-                  dm: '服务名称',
+                  dm: 'Service Name',
                 })}
                 name="serverName"
                 rules={[
@@ -296,7 +296,7 @@ export default function McpCreate() {
                     required: true,
                     message: $i18n.get({
                       id: 'main.pages.MCP.Create.enterServiceName',
-                      dm: '请输入服务名称',
+                      dm: 'Please enter service name',
                     }),
                   },
                 ]}
@@ -307,7 +307,7 @@ export default function McpCreate() {
                   maxLength={30}
                   placeholder={$i18n.get({
                     id: 'main.pages.MCP.Create.mcpServiceName',
-                    dm: 'MCP服务名称',
+                    dm: 'MCP Service Name',
                   })}
                 />
               </Form.Item>
@@ -315,7 +315,7 @@ export default function McpCreate() {
                 name="description"
                 label={$i18n.get({
                   id: 'main.pages.MCP.Create.description',
-                  dm: '描述',
+                  dm: 'Description',
                 })}
               >
                 <Input.TextArea
@@ -325,7 +325,7 @@ export default function McpCreate() {
                   autoSize={{ minRows: 2, maxRows: 2 }}
                   placeholder={$i18n.get({
                     id: 'main.pages.MCP.Create.describeYourMcpService',
-                    dm: '描述你的MCP服务',
+                    dm: 'Describe your MCP service',
                   })}
                 />
               </Form.Item>
@@ -333,7 +333,7 @@ export default function McpCreate() {
                 name="installType"
                 label={$i18n.get({
                   id: 'main.pages.MCP.Create.installType',
-                  dm: '安装类型',
+                  dm: 'Installation Type',
                 })}
               >
                 {installTypeOptions.map((item) => (
@@ -355,21 +355,21 @@ export default function McpCreate() {
                     <span className={styles['custom-label']}>
                       {$i18n.get({
                         id: 'main.pages.MCP.Create.mcpServiceConfiguration',
-                        dm: 'MCP服务配置',
+                        dm: 'MCP Service Configuration',
                       })}
 
                       <span className={styles['mark']}>*</span>
                       <span className={styles['label-desc']}>
                         {$i18n.get({
                           id: 'main.pages.MCP.Create.mcpServiceUsesJsonFormatSubmitBeforeEnsureFormatIsCorrect',
-                          dm: 'MCP服务使用Json表示，提交前请保证格式正确',
+                          dm: 'MCP service uses JSON format. Please ensure the format is correct before submitting',
                         })}
                       </span>
                     </span>
                     <TipBox
                       title={$i18n.get({
                         id: 'main.pages.MCP.Create.howToGetMcpService',
-                        dm: '如何获取MCP服务？',
+                        dm: 'How to get MCP service?',
                       })}
                       sections={MCP_TIP_SECTIONS}
                     />
@@ -381,7 +381,7 @@ export default function McpCreate() {
                     required: true,
                     message: $i18n.get({
                       id: 'main.pages.MCP.Create.enterMcpServiceConfiguration',
-                      dm: '请输入MCP服务配置',
+                      dm: 'Please enter MCP service configuration',
                     }),
                   },
                 ]}

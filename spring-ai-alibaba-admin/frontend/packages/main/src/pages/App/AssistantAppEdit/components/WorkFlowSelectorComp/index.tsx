@@ -51,14 +51,14 @@ export default function WorkFlowSelectorComp() {
             <span>
               {$i18n.get({
                 id: 'main.pages.App.AssistantAppEdit.components.WorkFlowSelectorComp.index.workflow',
-                dm: '工作流',
+                dm: 'Workflow',
               })}
             </span>
 
             <HelpIcon
               content={$i18n.get({
                 id: 'main.pages.App.AssistantAppEdit.components.WorkFlowSelectorComp.index.workflowDescription',
-                dm: '编排好的工作流应用可发布为工作流组件，从而实现复杂、稳定的业务流程。',
+                dm: 'Orchestrated workflow applications can be published as workflow components to achieve complex and stable business processes.',
               })}
             ></HelpIcon>
           </Flex>
@@ -79,7 +79,7 @@ export default function WorkFlowSelectorComp() {
           >
             {$i18n.get({
               id: 'main.pages.App.AssistantAppEdit.components.WorkFlowSelectorComp.index.workflow',
-              dm: '工作流',
+              dm: 'Workflow',
             })}
           </Button>
           <Divider type="vertical" className="ml-[16px] mr-[16px]"></Divider>

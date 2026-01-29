@@ -382,7 +382,7 @@ export default function VarConfigDrawer(props: IVarConfigDrawerProps) {
     <Drawer
       title={$i18n.get({
         id: 'main.pages.App.AssistantAppEdit.components.VarConfigDrawer.index.paramConfig',
-        dm: '入参变量配置',
+        dm: 'Input Variable Configuration',
       })}
       width={480}
       open={props.open}
@@ -414,7 +414,7 @@ export default function VarConfigDrawer(props: IVarConfigDrawerProps) {
             >
               {$i18n.get({
                 id: 'main.pages.App.AssistantAppEdit.components.VarConfigDrawer.index.cancel',
-                dm: '取消',
+                dm: 'Cancel',
               })}
             </Button>
             <Button
@@ -432,7 +432,7 @@ export default function VarConfigDrawer(props: IVarConfigDrawerProps) {
             >
               {$i18n.get({
                 id: 'main.pages.App.AssistantAppEdit.components.VarConfigDrawer.index.confirm',
-                dm: '确认',
+                dm: 'Confirm',
               })}
             </Button>
           </div>
@@ -442,7 +442,7 @@ export default function VarConfigDrawer(props: IVarConfigDrawerProps) {
       <div className={styles.desc}>
         {$i18n.get({
           id: 'main.pages.App.AssistantAppEdit.components.VarConfigDrawer.index.description',
-          dm: '请填写本轮对话需要传入的变量值，这些参数来自您设置的自定义变量或技能中的业务透传参数。每次修改后，会在新一轮对话中生效。',
+          dm: 'Please fill in the variable values for this conversation round. These parameters come from your custom variables or business passthrough parameters in skills. Changes will take effect in the new conversation round.',
         })}
       </div>
       <VarConfigComponent ref={varConfigRef} {...varConfigComponentProps} />

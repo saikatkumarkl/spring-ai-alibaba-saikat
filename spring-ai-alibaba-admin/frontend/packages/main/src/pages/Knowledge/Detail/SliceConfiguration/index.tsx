@@ -32,7 +32,7 @@ export default function SliceConfiguration() {
       message.success(
         $i18n.get({
           id: 'main.pages.Knowledge.Detail.SliceConfiguration.index.chunkConfigurationSuccessful',
-          dm: '切片配置成功',
+          dm: 'Chunk configuration successful',
         }),
       );
     });
@@ -59,14 +59,14 @@ export default function SliceConfiguration() {
         {
           title: $i18n.get({
             id: 'main.pages.Knowledge.Detail.SliceConfiguration.index.fileList',
-            dm: '文件列表',
+            dm: 'File List',
           }),
           path: `/knowledge/${kb_id}`,
         },
         {
           title: $i18n.get({
             id: 'main.pages.Knowledge.Detail.SliceConfiguration.index.chunkConfiguration',
-            dm: '切片配置',
+            dm: 'Chunk Configuration',
           }),
         },
       ]}
@@ -76,13 +76,13 @@ export default function SliceConfiguration() {
           <Button type="primary" onClick={handleSubmit}>
             {$i18n.get({
               id: 'main.pages.Knowledge.Detail.SliceConfiguration.index.save',
-              dm: '保存',
+              dm: 'Save',
             })}
           </Button>
           <Button type="default" onClick={() => navigate(-1)}>
             {$i18n.get({
               id: 'main.pages.Knowledge.Detail.SliceConfiguration.index.cancel',
-              dm: '取消',
+              dm: 'Cancel',
             })}
           </Button>
         </div>

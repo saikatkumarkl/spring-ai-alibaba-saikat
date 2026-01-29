@@ -52,7 +52,7 @@ const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
 
-// 添加闪烁光标的CSS动画样式
+// Add CSS animation style for blinking cursor
 const cursorBlinkStyle = `
   @keyframes blink {
     0%, 50% { opacity: 1; }
@@ -100,7 +100,7 @@ const PlaygroundPage = () => {
     return mergedParams;
   };
 
-  // 获取模型参数显示值的辅助函数
+  // Helper function to get model parameter display values
   const getDisplayModelParams = (modelParams, selectedModel) => {
     if (modelParams) {
       // Filter out model identifier fields from display parameters
@@ -108,7 +108,7 @@ const PlaygroundPage = () => {
       return filteredParams; // Return filtered parameters dynamically
     }
 
-    // 如果没有modelParams，使用模型的默认参数
+    // If there is no modelParams, use model's default parameters
     const selectedModelData = models.find(m => m.id === selectedModel);
     const defaultParams = selectedModelData?.defaultParameters || {};
 
@@ -155,10 +155,10 @@ const PlaygroundPage = () => {
       selectedVersionId: playgroundData?.currentVersion?.id || null,
       selectedModel: defaultModelId,
       modelParams: modelParams,
-      isContentModified: false, // 标记内容是否被修改
-      chatHistory: [], // 独立的对话历史
-      sessionId: null, // 会话 ID
-      mockTools: [] // 函数工具列表
+      isContentModified: false, // Flag whether content has been modified
+      chatHistory: [], // Independent conversation history
+      sessionId: null, // Session ID
+      mockTools: [] // Function tool list
     };
   };
 
@@ -170,11 +170,11 @@ const PlaygroundPage = () => {
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
-  const [showTemplateModal, setShowTemplateModal] = useState(null); // 存储要导入模版的prompt ID
-  const [recentlyDeletedSessions, setRecentlyDeletedSessions] = useState({}); // 存储最近删除的会话 ID
+  const [showTemplateModal, setShowTemplateModal] = useState(null); // Store prompt ID to import template from
+  const [recentlyDeletedSessions, setRecentlyDeletedSessions] = useState({}); // Store recently deleted session IDs
   const [selectedSessionId, setSelectedSessionId] = useState(null);
 
-  // 为每个 prompt 实例添加输入状态
+  // Add input state for each prompt instance
   const [promptInputs, setPromptInputs] = useState({});
 
   // Add refs for cleaning up streaming requests
@@ -221,7 +221,7 @@ const PlaygroundPage = () => {
       });
 
       if (response.code !== 200) {
-        throw new Error(response.message || '获取 Prompts 列表失败');
+        throw new Error(response.message || 'Failed to get Prompts list');
       }
 
       // Transform API data to match expected format
@@ -289,9 +289,9 @@ const PlaygroundPage = () => {
 
       setPrompts(transformedPrompts);
     } catch (err) {
-      console.error('加载 Prompts 数据失败:', err);
-      handleApiError(err, '加载 Prompts 数据');
-      setError(err.message || '加载失败，请稍后重试');
+      console.error('Failed to load Prompts data:', err);
+      handleApiError(err, 'Load Prompts data');
+      setError(err.message || 'Failed to load, please try again later');
     } finally {
       setLoading(false);
     }
@@ -313,7 +313,7 @@ const PlaygroundPage = () => {
       });
 
       if (response.code !== 200) {
-        throw new Error(response.message || '获取版本详情失败');
+        throw new Error(response.message || 'Failed to get version details');
       }
 
       const versionDetail = response.data;
@@ -339,8 +339,8 @@ const PlaygroundPage = () => {
 
       return enhancedVersion;
     } catch (err) {
-      console.error('加载版本详情失败:', err);
-      handleApiError(err, '加载版本详情');
+      console.error('Failed to load version details:', err);
+      handleApiError(err, 'Load version details');
       throw err;
     }
   };
@@ -404,7 +404,7 @@ const PlaygroundPage = () => {
 
   const selectPrompt = (promptInstanceId, selectedPromptKey) => {
     if (selectedPromptKey === '') {
-      // 清空选择
+      // Clear selection
       setPromptInstances(prev => prev.map(prompt =>
         prompt.id === promptInstanceId
           ? {
@@ -421,7 +421,7 @@ const PlaygroundPage = () => {
           : prompt
       ));
     } else {
-      // 设置选中的Prompt，清空版本选择
+      // Set selected Prompt, clear version selection
       const selectedPrompt = prompts.find(p => p.promptKey === selectedPromptKey);
       setPromptInstances(prev => prev.map(prompt =>
         prompt.id === promptInstanceId
@@ -443,7 +443,7 @@ const PlaygroundPage = () => {
 
   const selectVersion = async (promptInstanceId, selectedVersionId) => {
     if (selectedVersionId === '') {
-      // 清空版本选择，但保持Prompt选择
+      // Clear version selection, but keep Prompt selection
       const promptInstance = promptInstances.find(p => p.id === promptInstanceId);
       const selectedPrompt = prompts.find(p => p.promptKey === promptInstance.selectedPromptId);
 
@@ -497,8 +497,8 @@ const PlaygroundPage = () => {
               : prompt
           ));
         } catch (err) {
-          console.error('加载版本详情失败:', err);
-          notifyError({ message: '加载版本详情失败' });
+          console.error('Failed to load version details:', err);
+          notifyError({ message: 'Failed to load version details' });
         }
       }
     }
@@ -528,7 +528,7 @@ const PlaygroundPage = () => {
 
   const copyPrompt = (promptId) => {
     if (promptInstances.length >= 3) {
-      alert('最多只能同时对比3个Prompt');
+      alert('Maximum 3 prompts can be compared simultaneously');
       return;
     }
 
@@ -537,21 +537,21 @@ const PlaygroundPage = () => {
       const newPrompt = {
         ...promptToCopy,
         id: Date.now(),
-        promptName: '', // 置空promptName
-        version: '', // 置空version
-        content: promptToCopy.content, // 保留内容
-        parameters: [...promptToCopy.parameters], // 保留参数
+        promptName: '', // Clear promptName
+        version: '', // Clear version
+        content: promptToCopy.content, // Keep content
+        parameters: [...promptToCopy.parameters], // Keep parameters
         parameterValues: { ...promptToCopy.parameterValues },
         results: [],
         isLoading: false,
-        selectedPromptId: null, // 置空选择
-        selectedVersionId: null, // 置空版本选择
-        selectedModel: promptToCopy.selectedModel, // 保留模型选择
-        modelParams: { ...promptToCopy.modelParams }, // 保留模型参数
+        selectedPromptId: null, // Clear selection
+        selectedVersionId: null, // Clear version selection
+        selectedModel: promptToCopy.selectedModel, // Keep model selection
+        modelParams: { ...promptToCopy.modelParams }, // Keep model parameters
         isContentModified: false,
-        chatHistory: [], // 新窗口独立的对话历史
-        sessionId: null, // 新的会话 ID
-        mockTools: [] // 函数工具列表
+        chatHistory: [], // Independent conversation history for new window
+        sessionId: null, // New session ID
+        mockTools: [] // Function tool list
       };
       setPromptInstances(prev => [...prev, newPrompt]);
     }
@@ -563,7 +563,7 @@ const PlaygroundPage = () => {
     }
   };
 
-  // 单个 Prompt 执行函数
+  // Single Prompt execution function
   const runSinglePrompt = async (promptInstance, inputText) => {
     const {
       id: promptId, content, parameterValues, selectedModel, modelParams, sessionId, mockTools,
@@ -611,7 +611,7 @@ const PlaygroundPage = () => {
       replaceParameters
     };
 
-    // 为单个 prompt 添加用户消息到对话历史
+    // Add user message to conversation history for single prompt
     setPromptInstances(prev => prev.map(prompt => {
       if (prompt.id === promptId) {
         const userMessage = {
@@ -632,7 +632,7 @@ const PlaygroundPage = () => {
     try {
       await executeStreamingPrompt(config, inputText, callbacks, eventSourceRefs.current);
     } finally {
-      // 结束加载状态
+      // End loading state
       setPromptInstances(prev => prev.map(prompt =>
         prompt.id === promptId
           ? { ...prompt, isLoading: false }
@@ -641,14 +641,14 @@ const PlaygroundPage = () => {
     }
   };
 
-  // 单个配置的对话发送函数
+  // Single configuration chat send function
   const handleSendMessage = (promptId, inputText) => {
     if (!inputText?.trim()) return;
 
     const promptInstance = promptInstances.find(p => p.id === promptId);
     if (promptInstance) {
       runSinglePrompt(promptInstance, inputText);
-      // 清空输入框
+      // Clear input box
       setPromptInputs(prev => ({
         ...prev,
         [promptId]: ''
@@ -656,7 +656,7 @@ const PlaygroundPage = () => {
     }
   };
 
-  // 更新输入内容
+  // Update input content
   const updatePromptInput = (promptId, value) => {
     setPromptInputs(prev => ({
       ...prev,
@@ -668,7 +668,7 @@ const PlaygroundPage = () => {
 
   const clearChatHistory = (promptId = null) => {
     if (promptId) {
-      // 存储即将清除的会话 ID
+      // Store session ID to be cleared
       const prompt = promptInstances.find(p => p.id === promptId);
       if (prompt && prompt.sessionId) {
         setRecentlyDeletedSessions(prev => ({
@@ -677,14 +677,14 @@ const PlaygroundPage = () => {
         }));
       }
 
-      // 清空指定prompt的对话历史和会话
+      // Clear conversation history and session for specified prompt
       setPromptInstances(prev => prev.map(prompt =>
         prompt.id === promptId
           ? { ...prompt, chatHistory: [], sessionId: null }
           : prompt
       ));
     } else {
-      // 存储所有即将清除的会话 ID
+      // Store all session IDs to be cleared
       const sessionsToStore = {};
       promptInstances.forEach(prompt => {
         if (prompt.sessionId) {
@@ -696,18 +696,18 @@ const PlaygroundPage = () => {
         ...sessionsToStore
       }));
 
-      // 清空所有prompt的对话历史和会话
+      // Clear conversation history and session for all prompts
       setPromptInstances(prev => prev.map(prompt =>
         ({ ...prompt, chatHistory: [], sessionId: null })
       ));
     }
   };
 
-  // 恢复会话功能
+  // Restore session functionality
   const restoreSession = async (promptId) => {
     const sessionId = recentlyDeletedSessions[promptId];
     if (!sessionId) {
-      message.error('没有可恢复的会话');
+      message.error('No session available to restore');
       return false;
     }
 
@@ -716,7 +716,7 @@ const PlaygroundPage = () => {
       if (response.code === 200) {
         const sessionData = response.data;
 
-        // 转换会话数据为聊天历史格式
+        // Convert session data to chat history format
         const chatHistory = sessionData.messages.map((msg, index) => {
           const displayParams = msg.role === 'assistant' && msg.modelParams ?
             msg.modelParams :
@@ -732,34 +732,34 @@ const PlaygroundPage = () => {
           };
         });
 
-        // 更新 prompt 实例
+        // Update prompt instance
         setPromptInstances(prev => prev.map(prompt =>
           prompt.id === promptId
             ? { ...prompt, sessionId, chatHistory }
             : prompt
         ));
 
-        // 清除已恢复的会话 ID
+        // Clear restored session ID
         setRecentlyDeletedSessions(prev => {
           const newSessions = { ...prev };
           delete newSessions[promptId];
           return newSessions;
         });
 
-        message.success('会话恢复成功');
+        message.success('Session restored successfully');
         return true;
       } else {
-        message.error(response.message || '恢复会话失败');
+        message.error(response.message || 'Failed to restore session');
         return false;
       }
     } catch (error) {
       console.error('Restore session error:', error);
-      message.error('恢复会话失败');
+      message.error('Failed to restore session');
       return false;
     }
   };
 
-  // 删除会话功能
+  // Delete session functionality
   const deleteSession = async (promptId) => {
     const prompt = promptInstances.find(p => p.id === promptId);
     if (!prompt || !prompt.sessionId) return false;
@@ -767,21 +767,21 @@ const PlaygroundPage = () => {
     try {
       const response = await API.deletePromptSession(prompt.sessionId);
       if (response.code === 200) {
-        // 清空对话历史和会话ID
+        // Clear conversation history and session ID
         setPromptInstances(prev => prev.map(p =>
           p.id === promptId
             ? { ...p, sessionId: null, chatHistory: [] }
             : p
         ));
-        message.success('会话删除成功');
+        message.success('Session deleted successfully');
         return true;
       } else {
-        message.error(response.message || '删除会话失败');
+        message.error(response.message || 'Failed to delete session');
         return false;
       }
     } catch (error) {
       console.error('Delete session error:', error);
-      message.error('删除会话失败');
+      message.error('Failed to delete session');
       return false;
     }
   };
@@ -789,7 +789,7 @@ const PlaygroundPage = () => {
   // Cleanup streaming connections on component unmount
   React.useEffect(() => {
     return () => {
-      // 清理所有流连接
+      // Cleanup all stream connections
       Object.values(eventSourceRefs.current).forEach(eventSource => {
         if (eventSource && eventSource.close) {
           eventSource.close();
@@ -847,7 +847,7 @@ const PlaygroundPage = () => {
             acc[param] = prompt.parameterValues[param] || '';
             return acc;
           }, {}),
-          // 手动修改内容时清空版本选择，标记为已修改
+          // Clear version selection when manually modifying content, mark as modified
           selectedVersionId: content !== '' ? null : prompt.selectedVersionId,
           version: content !== '' ? '' : prompt.version,
           isContentModified: content !== '' && prompt.selectedPromptId ? true : false
@@ -856,12 +856,12 @@ const PlaygroundPage = () => {
     ));
   };
 
-  // 处理模板导入，包括模型配置
+  // Handle template import, including model configuration
   const handleTemplateImport = (promptId, template) => {
     const parameters = extractParameters(template.content);
     const templateModelConfig = template.modelConfig || {};
 
-    // 如果模板有模型配置，使用模板的配置；否则使用当前选中的模型的默认参数
+    // If template has model config, use template's config; otherwise use current selected model's default parameters
     const selectedModelId = templateModelConfig.model || getDefaultModelId();
     const modelParams = getModelParams(selectedModelId, templateModelConfig);
 
@@ -878,7 +878,7 @@ const PlaygroundPage = () => {
           }, {}),
           selectedModel: selectedModelId,
           modelParams: modelParams,
-          // 清除版本选择和修改标记
+          // Clear version selection and modified flag
           selectedVersionId: null,
           version: '',
           isContentModified: false
@@ -906,7 +906,7 @@ const PlaygroundPage = () => {
         >
           <div className="text-center pt-4">
             <Text type="secondary" className="mt-4 block">
-              加载 Prompts 数据中...
+              Loading Prompts data...
             </Text>
           </div>
         </Spin>
@@ -921,11 +921,11 @@ const PlaygroundPage = () => {
 
       <div className="mb-8">
         <Title level={1} className="m-0 mb-2">Playground</Title>
-        <Paragraph type="secondary" className="m-0">测试和调试你的AI提示词</Paragraph>
+        <Paragraph type="secondary" className="m-0">Test and debug your AI prompts</Paragraph>
       </div>
 
       <Space direction="vertical" size={32} className="w-full">
-        {/* Prompt配置区域 */}
+        {/* Prompt configuration area */}
         <div
           className="grid gap-4"
           style={{
@@ -937,7 +937,7 @@ const PlaygroundPage = () => {
             minHeight: 'fit-content'
           }}
         >
-          {/* 响应式布局优化 */}
+          {/* Responsive layout optimization */}
           <style>{`
             @media (max-width: 1600px) {
               .grid {
@@ -964,7 +964,7 @@ const PlaygroundPage = () => {
                 <div className="text-center">
                   <Spin size="large" />
                   <div className="mt-4">
-                    <Text type="secondary">正在加载模型...</Text>
+                    <Text type="secondary">Loading models...</Text>
                   </div>
                 </div>
               </Card>
@@ -973,7 +973,7 @@ const PlaygroundPage = () => {
             <div className="col-span-full">
               <Card className="h-[400px] flex items-center justify-center">
                 <div className="text-center">
-                  <Text type="secondary">正在初始化...</Text>
+                  <Text type="secondary">Initializing...</Text>
                 </div>
               </Card>
             </div>
@@ -990,7 +990,7 @@ const PlaygroundPage = () => {
                       <div className="flex items-center justify-between">
                         <div>
                           <Text strong style={{ fontSize: promptInstances.length === 3 ? '16px' : '18px' }}>
-                            配置 {index + 1}
+                            Configuration {index + 1}
                           </Text>
                           {prompt.promptName && (
                             <Text
@@ -1014,7 +1014,7 @@ const PlaygroundPage = () => {
                               setSelectedSessionId(prompt.id);
                             }}
                           >
-                            {promptInstances.length >= 3 ? '新增' : '新增函数'}
+                            {promptInstances.length >= 3 ? 'Add' : 'Add Function'}
                           </Button>
                           <Button
                             type="primary"
@@ -1026,7 +1026,7 @@ const PlaygroundPage = () => {
                               background: 'linear-gradient(90deg, #16a085 0%, #2ecc71 100%)'
                             }}
                           >
-                            {promptInstances.length === 3 ? '模板' : '从模板导入'}
+                            {promptInstances.length === 3 ? 'Template' : 'Import from Template'}
                           </Button>
                           <Button
                             type="text"
@@ -1034,7 +1034,7 @@ const PlaygroundPage = () => {
                             size={promptInstances.length === 3 ? "small" : "default"}
                             onClick={() => copyPrompt(prompt.id)}
                             disabled={promptInstances.length >= 3}
-                            title={promptInstances.length >= 3 ? '最多同时调试三个prompt' : '复制Prompt进行对比'}
+                            title={promptInstances.length >= 3 ? 'Maximum 3 prompts for comparison' : 'Copy Prompt for comparison'}
                           />
                           {promptInstances.length > 1 && (
                             <Button
@@ -1043,19 +1043,19 @@ const PlaygroundPage = () => {
                               icon={<DeleteOutlined />}
                               size={promptInstances.length === 3 ? "small" : "default"}
                               onClick={() => removePrompt(prompt.id)}
-                              title="删除Prompt"
+                              title="Delete Prompt"
                             />
                           )}
                         </Space>
                       </div>
                     }
                   >
-                    {/* 配置区域 */}
+                    {/* Configuration area */}
                     <div className={promptInstances.length >= 3 ? "mb-4" : "mb-6"}>
                       {
                         (!prompt.selectedPromptId || !prompt.selectedVersionId) && (
                           <Alert
-                            message={!prompt.selectedPromptId ? "请选择 Prompt 或直接编辑内容" : "请选择版本"}
+                            message={!prompt.selectedPromptId ? "Please select a Prompt or edit content directly" : "Please select a version"}
                             type="info"
                             showIcon
                             className="w-full text-center mb-3"
@@ -1064,7 +1064,7 @@ const PlaygroundPage = () => {
                       }
 
                       <div className={promptInstances.length >= 3 ? "space-y-3" : "space-y-4"}>
-                        {/* Prompt选择下拉框 */}
+                        {/* Prompt selection dropdown */}
                         <div>
                           <Text
                             strong
@@ -1073,29 +1073,29 @@ const PlaygroundPage = () => {
                               fontSize: promptInstances.length === 3 ? '12px' : '14px'
                             }}
                           >
-                            选择Prompt
+                            Select Prompt
                           </Text>
                           <Select
                             value={prompt.selectedPromptId || undefined}
                             onChange={(value) => selectPrompt(prompt.id, value || '')}
-                            placeholder="选择已有Prompt..."
+                            placeholder="Select existing Prompt..."
                             className="w-full"
                             size={promptInstances.length === 3 ? 'small' : 'middle'}
                             allowClear
                           >
                             {prompts.filter(p => p.versions && p.versions.length > 0).length === 0 ? (
-                              <Option disabled value="">暂无可用的 Prompts</Option>
+                              <Option disabled value="">No available Prompts</Option>
                             ) : (
                               prompts.filter(p => p.versions && p.versions.length > 0).map((p) => (
                                 <Option key={p.promptKey} value={p.promptKey}>
-                                  {p.name} ({p.versions.length} 个版本)
+                                  {p.name} ({p.versions.length} versions)
                                 </Option>
                               ))
                             )}
                           </Select>
                         </div>
 
-                        {/* 版本选择下拉框 */}
+                        {/* Version selection dropdown */}
                         {prompt.selectedPromptId && (
                           <div>
                             <Text
@@ -1105,12 +1105,12 @@ const PlaygroundPage = () => {
                                 fontSize: promptInstances.length === 3 ? '12px' : '14px'
                               }}
                             >
-                              选择版本
+                              Select Version
                             </Text>
                             <Select
                               value={prompt.selectedVersionId || undefined}
                               onChange={(value) => selectVersion(prompt.id, value || '')}
-                              placeholder="选择版本..."
+                              placeholder="Select version..."
                               className="w-full"
                               size={promptInstances.length === 3 ? 'small' : 'middle'}
                               allowClear
@@ -1121,7 +1121,7 @@ const PlaygroundPage = () => {
                                   selectedPrompt.versions.slice().reverse().map((version) => (
                                     <Option key={version.id} value={version.id}>
                                       {version.version} - {version.description}
-                                      {version.versionType === 'release' || version.status === 'release' || version.status === 'published' ? ' (正式版)' : ' (PRE版)'}
+                                      {version.versionType === 'release' || version.status === 'release' || version.status === 'published' ? ' (Release)' : ' (Pre-release)'}
                                     </Option>
                                   )) : [];
                               })()}
@@ -1129,7 +1129,7 @@ const PlaygroundPage = () => {
                           </div>
                         )}
 
-                        {/* Prompt内容展示 */}
+                        {/* Prompt content display */}
                         <div>
                           <Text
                             strong
@@ -1138,12 +1138,12 @@ const PlaygroundPage = () => {
                               fontSize: promptInstances.length === 3 ? '12px' : '14px'
                             }}
                           >
-                            Prompt内容
+                            Prompt Content
                           </Text>
                           <TextArea
                             value={prompt.content}
                             onChange={(e) => handleContentChange(prompt.id, e.target.value)}
-                            placeholder="输入Prompt内容，使用 {{参数名}} 来定义参数..."
+                            placeholder="Enter prompt content, use {{parameterName}} to define parameters..."
                             style={{
                               height: promptInstances.length >= 3 ? 100 : 120,
                               resize: 'none'
@@ -1152,24 +1152,24 @@ const PlaygroundPage = () => {
                           />
                         </div>
 
-                        {/* 模型配置区域 */}
+                        {/* Model configuration area */}
                         <div>
                           <Space direction="vertical" className='w-full' size="small">
-                            {/* 模型选择 */}
+                            {/* Model selection */}
                             <div>
                               <Text strong className='mb-2 block'>
-                                模型
+                                Model
                               </Text>
                               <Select
                                 value={prompt.selectedModel}
                                 onChange={(value) => updatePromptModel(prompt.id, value)}
                                 style={{ width: '100%' }}
                                 size={promptInstances.length === 3 ? 'small' : 'middle'}
-                                placeholder={models.length === 0 ? "正在加载模型..." : "选择模型"}
+                                placeholder={models.length === 0 ? "Loading models..." : "Select model"}
                                 disabled={models.length === 0}
                               >
                                 {models.length === 0 ? (
-                                  <Option disabled value="">暂无可用模型</Option>
+                                  <Option disabled value="">No available models</Option>
                                 ) : (
                                   models.map((model) => (
                                     <Option key={model.id} value={model.id}>
@@ -1180,10 +1180,10 @@ const PlaygroundPage = () => {
                               </Select>
                             </div>
 
-                            {/* 模型参数 */}
+                            {/* Model parameters */}
                             <Card size="small" style={{ backgroundColor: '#fafafa' }}>
                               <Text strong className="block mb-2">
-                                模型参数
+                                Model Parameters
                               </Text>
                               <Row gutter={[8, 8]}>
                                 {(() => {
@@ -1248,11 +1248,11 @@ const PlaygroundPage = () => {
                           </Space>
                         </div>
 
-                        {/* 参数配置 */}
+                        {/* Parameter configuration */}
                         {prompt.parameters.length > 0 && (
                           <div>
                             <Text strong className="block mb-2">
-                              参数配置
+                              Parameter Configuration
                             </Text>
                             <Row gutter={[8, 8]}>
                               {prompt.parameters.map((param) => (
@@ -1263,7 +1263,7 @@ const PlaygroundPage = () => {
                                   <Input
                                     value={prompt.parameterValues[param] || ''}
                                     onChange={(e) => updateParameterValue(prompt.id, param, e.target.value)}
-                                    placeholder={`输入 ${param} 的值...`}
+                                    placeholder={`Enter value for ${param}...`}
                                     size="small"
                                   />
                                 </Col>
@@ -1272,9 +1272,9 @@ const PlaygroundPage = () => {
                           </div>
                         )}
 
-                        {/* 创建Prompt和发布版本按钮 */}
+                        {/* Create Prompt and publish version buttons */}
                         <div className="flex flex-wrap gap-2">
-                          {/* 发布新版本按钮 - 选择了已有Prompt时显示 */}
+                          {/* Publish new version button - shown when existing Prompt is selected */}
                           {prompt.selectedPromptId && (
                             <Button
                               type="primary"
@@ -1301,11 +1301,11 @@ const PlaygroundPage = () => {
                                 background: 'linear-gradient(90deg, #52c41a 0%, #2ecc71 100%)'
                               }}
                             >
-                              发布新版本
+                              Publish New Version
                             </Button>
                           )}
 
-                          {/* 快速创建新Prompt按钮 - 在没有从详情页进入时总是显示 */}
+                          {/* Quick create new Prompt button - always shown when not from detail page */}
                           {!playgroundData && (
                             <Button
                               type="primary"
@@ -1324,7 +1324,7 @@ const PlaygroundPage = () => {
                               size={promptInstances.length === 3 ? 'small' : 'middle'}
                               className="border-none"
                             >
-                              快速创建新 Prompt
+                              Quick Create New Prompt
                             </Button>
                           )}
                         </div>
@@ -1333,19 +1333,19 @@ const PlaygroundPage = () => {
 
                     <Divider />
 
-                    {/* 对话测试区域 */}
+                    {/* Chat testing area */}
                     <div>
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
                           <Avatar icon={<CommentOutlined />} style={{ backgroundColor: '#e6f7ff' }} />
                           <div>
-                            <Text strong className="text-lg">对话测试</Text>
+                            <Text strong className="text-lg">Chat Testing</Text>
                             <div>
                               <Text type="secondary" className="text-sm">
-                                测试配置 {index + 1} 的效果
+                                Test configuration {index + 1} effectiveness
                                 {prompt.sessionId && (
                                   <Tag color="green" size="small" className="ml-2">
-                                    会话: {prompt.sessionId.substring(0, 8)}...
+                                    Session: {prompt.sessionId.substring(0, 8)}...
                                   </Tag>
                                 )}
                               </Text>
@@ -1359,10 +1359,10 @@ const PlaygroundPage = () => {
                               size="small"
                               icon={<RocketOutlined />}
                               onClick={() => restoreSession(prompt.id)}
-                              title="恢复上一次会话"
+                              title="Restore last session"
                               style={{ color: '#52c41a' }}
                             >
-                              恢复会话
+                              Restore Session
                             </Button>
                           )}
                           {prompt.chatHistory && prompt.chatHistory.length > 0 && (
@@ -1371,9 +1371,9 @@ const PlaygroundPage = () => {
                               size="small"
                               icon={<ClearOutlined />}
                               onClick={() => clearChatHistory(prompt.id)}
-                              title="清空对话"
+                              title="Clear chat"
                             >
-                              清空
+                              Clear
                             </Button>
                           )}
                           <Badge
@@ -1384,7 +1384,7 @@ const PlaygroundPage = () => {
                         </Space>
                       </div>
 
-                      {/* 对话内容区域 */}
+                      {/* Chat content area */}
                       <div
                         ref={(el) => {
                           if (el) {
@@ -1410,10 +1410,10 @@ const PlaygroundPage = () => {
                               }}
                             />
                             <Title level={5} style={{ margin: 0, marginBottom: 8, color: '#8c8c8c' }}>
-                              等待开始对话
+                              Waiting to start chat
                             </Title>
                             <Text type="secondary" style={{ fontSize: '13px' }}>
-                              在下方输入框中发送消息开始测试
+                              Send a message in the input box below to start testing
                             </Text>
                           </div>
                         ) : (
@@ -1443,7 +1443,7 @@ const PlaygroundPage = () => {
                                 ) : (
                                   <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 8 }}>
                                     <div style={{ maxWidth: '90%' }}>
-                                      {/* AI消息头部 */}
+                                      {/* AI message header */}
                                       <div style={{
                                         display: 'flex',
                                         alignItems: 'center',
@@ -1465,15 +1465,15 @@ const PlaygroundPage = () => {
                                             icon={<CopyOutlined />}
                                             onClick={() => {
                                               navigator.clipboard.writeText(message.content);
-                                              message.success('已复制到剪贴板');
+                                              message.success('Copied to clipboard');
                                             }}
-                                            title="复制回复"
+                                            title="Copy reply"
                                             style={{ fontSize: '10px', padding: '2px 4px', height: 20 }}
                                           />
                                         )}
                                       </div>
 
-                                      {/* AI消息内容 */}
+                                      {/* AI message content */}
                                       <div style={{
                                         backgroundColor: '#fff',
                                         padding: '10px 12px',
@@ -1490,7 +1490,7 @@ const PlaygroundPage = () => {
                                             }}>
                                               {message.content}
                                             </Text>
-                                            {/* 流式输入闪烁光标 */}
+                                            {/* Streaming input blinking cursor */}
                                             <span style={{
                                               display: 'inline-block',
                                               width: '2px',
@@ -1511,18 +1511,18 @@ const PlaygroundPage = () => {
                                               {message.content}
                                             </Text>
                                             <div className='flex gap-2 mt-2'>
-                                              <Tag color="geekblue">输入 Token: {message?.usage?.promptTokens}</Tag>
-                                              <Tag color='geekblue'>输出 Token: {message?.usage?.completionTokens}</Tag>
-                                              <Tag color='geekblue'>总 Token: {message?.usage?.totalTokens}</Tag>
+                                              <Tag color="geekblue">Input Tokens: {message?.usage?.promptTokens}</Tag>
+                                              <Tag color='geekblue'>Output Tokens: {message?.usage?.completionTokens}</Tag>
+                                              <Tag color='geekblue'>Total Tokens: {message?.usage?.totalTokens}</Tag>
                                             </div>
-                                            {/* 模型参数信息 */}
+                                            {/* Model parameter information */}
                                             <div className='flex justify-between items-center mt-2 gap-2'>
                                               <Text type="secondary" style={{ fontSize: '11px' }}>
                                                 {message.timestamp}
                                               </Text>
                                               {
                                                 Boolean(message.traceId) && (
-                                                  <Tooltip title="查看调用链路跟踪">
+                                                  <Tooltip title="View trace">
                                                     <Button
                                                       type="text"
                                                       size="small"
@@ -1551,7 +1551,7 @@ const PlaygroundPage = () => {
                         )}
                       </div>
 
-                      {/* 输入区域 */}
+                      {/* Input area */}
                       <div className="flex gap-4">
                         <div style={{ flex: 1 }}>
                           <TextArea
@@ -1563,7 +1563,7 @@ const PlaygroundPage = () => {
                                 handleSendMessage(prompt.id, userInput);
                               }
                             }}
-                            placeholder="输入您的问题进行测试... (Enter发送，Shift+Enter换行)"
+                            placeholder="Enter your question for testing... (Enter to send, Shift+Enter for new line)"
                             rows={3}
                             disabled={prompt.isLoading}
                             style={{
@@ -1594,7 +1594,7 @@ const PlaygroundPage = () => {
                               color: 'white'
                             }}
                           >
-                            {prompt.isLoading ? '处理中...' : '发送'}
+                            {prompt.isLoading ? 'Processing...' : 'Send'}
                           </Button>
                         </div>
                       </div>
@@ -1608,7 +1608,7 @@ const PlaygroundPage = () => {
         </div>
       </Space>
 
-      {/* 模态框 */}
+      {/* Modal dialogs */}
       {showCreateModal && (
         <CreatePromptModal
           initialData={typeof showCreateModal === 'object' ? {
@@ -1627,7 +1627,7 @@ const PlaygroundPage = () => {
         />
       )}
 
-      {/* 发布版本模态框 - 支持从详情页进入和选择已有Prompt两种情况 */}
+      {/* Publish version modal - supports both entering from detail page and selecting existing Prompt */}
       {showPublishModal && (
         <PublishVersionModal
           prompt={typeof showPublishModal === 'object' ? showPublishModal.prompt : (playgroundData || null)}
@@ -1646,7 +1646,7 @@ const PlaygroundPage = () => {
         <TemplateImportModal
           models={models}
           onImport={(template) => {
-            // 使用新的模板导入处理函数，支持模型配置
+            // Use new template import handler function, supports model configuration
             handleTemplateImport(showTemplateModal, template);
             setShowTemplateModal(null);
           }}

@@ -10,7 +10,7 @@ const menus: {
     to: 'app',
     title: $i18n.get({
       id: 'main.layouts.MenuList.application',
-      dm: '应用',
+      dm: 'Applications',
     }),
   },
   { to: 'mcp', title: 'MCP' },
@@ -18,14 +18,14 @@ const menus: {
     to: 'component',
     title: $i18n.get({
       id: 'main.pages.Component.AppComponent.index.component',
-      dm: '组件',
+      dm: 'Components',
     }),
   },
   {
     to: 'knowledge',
     title: $i18n.get({
       id: 'main.pages.Knowledge.Test.index.knowledgeBase',
-      dm: '知识库',
+      dm: 'Knowledge Base',
     }),
   },
 ];

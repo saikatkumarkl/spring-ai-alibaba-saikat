@@ -73,13 +73,13 @@ export default memo(function PublishComponentCard({
         <div className={styles.name}>
           {$i18n.get({
             id: 'main.pages.App.components.ChannelConfig.PublishComponentCard.component',
-            dm: '组件',
+            dm: 'Component',
           })}
         </div>
         <div className={styles.desc}>
           {$i18n.get({
             id: 'main.pages.App.components.ChannelConfig.PublishComponentCard.configureInput',
-            dm: '以组件的形式发布智能体/工作流应用，需要配置入参，发布后用户可以通过组件的方式在其他应用中黑盒的引用这个智能体/工作流的内容',
+            dm: 'Publish agent/workflow applications as components. Requires configuring input parameters. After publishing, users can reference this agent/workflow as a black-box component in other applications',
           })}
         </div>
       </div>
@@ -96,7 +96,7 @@ export default memo(function PublishComponentCard({
           >
             {$i18n.get({
               id: 'main.pages.App.components.ChannelConfig.PublishComponentCard.create',
-              dm: '创建',
+              dm: 'Create',
             })}
           </Button>
         </>
@@ -111,7 +111,7 @@ export default memo(function PublishComponentCard({
           >
             {$i18n.get({
               id: 'main.pages.App.components.ChannelConfig.PublishComponentCard.referenceDetails',
-              dm: '组件引用详情',
+              dm: 'Component Reference Details',
             })}
           </Button>
           <Divider
@@ -128,7 +128,7 @@ export default memo(function PublishComponentCard({
           >
             {$i18n.get({
               id: 'main.pages.App.components.ChannelConfig.PublishComponentCard.edit',
-              dm: '编辑',
+              dm: 'Edit',
             })}
           </Button>
         </>

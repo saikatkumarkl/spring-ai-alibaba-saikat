@@ -25,7 +25,7 @@ const Overview: React.FC<OverviewProps> = ({ detail }) => {
       <Empty
         description={$i18n.get({
           id: 'main.pages.MCP.components.Overview.index.noData',
-          dm: '暂无数据',
+          dm: 'No data',
         })}
       />
     );
@@ -36,7 +36,7 @@ const Overview: React.FC<OverviewProps> = ({ detail }) => {
       {renderItem(
         $i18n.get({
           id: 'main.pages.MCP.components.Overview.index.serviceName',
-          dm: '服务名称',
+          dm: 'Service Name',
         }),
         detail.name,
       )}
@@ -44,7 +44,7 @@ const Overview: React.FC<OverviewProps> = ({ detail }) => {
       {renderItem(
         $i18n.get({
           id: 'main.pages.MCP.components.Overview.index.serviceDescription',
-          dm: '服务描述',
+          dm: 'Service Description',
         }),
         detail.description,
       )}
@@ -53,7 +53,7 @@ const Overview: React.FC<OverviewProps> = ({ detail }) => {
         <div className={styles['info-label']}>
           {$i18n.get({
             id: 'main.pages.MCP.components.Overview.index.mcpServiceConfigurationFile',
-            dm: 'MCP服务配置文件',
+            dm: 'MCP Service Configuration File',
           })}
         </div>
         <div className={styles['code-container']}>

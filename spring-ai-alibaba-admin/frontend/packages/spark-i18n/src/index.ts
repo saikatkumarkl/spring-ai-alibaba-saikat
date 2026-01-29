@@ -27,7 +27,9 @@ export default class I18N {
    */
   constructor({ multiLangMap }: { multiLangMap: IMultiLangMap }) {
     this.multiLangMap = multiLangMap;
-    this.language = localStorage.getItem('data-prefers-language') || 'en';
+    // Force English only
+    this.language = 'en';
+    localStorage.setItem('data-prefers-language', 'en');
     dayjs.locale(this.language);
   }
 

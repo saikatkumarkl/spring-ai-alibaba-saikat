@@ -97,7 +97,7 @@ const Header: React.FC<HeaderProps> = (props) => {
           {content.length}
           {$i18n.get({
             id: 'main.pages.Knowledge.Detail.components.ChunkItem.Header.character',
-            dm: '字符',
+            dm: ' characters',
           })}
         </span>
         {showSimilarValue && (
@@ -105,7 +105,7 @@ const Header: React.FC<HeaderProps> = (props) => {
             {Math.floor(score! * 100)}%
             {$i18n.get({
               id: 'main.pages.Knowledge.Detail.components.ChunkItem.Header.index.similarityValue',
-              dm: '相似值：',
+              dm: ' Similarity: ',
             })}
           </div>
         )}
@@ -123,7 +123,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                 <IconFont type="spark-delete-line" size={16} />
                 {$i18n.get({
                   id: 'main.pages.Knowledge.Detail.components.ChunkItem.Header.index.delete',
-                  dm: '删除',
+                  dm: 'Delete',
                 })}
               </Button>
               <Button
@@ -137,7 +137,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                 <IconFont type="spark-edit-line" size={16} />
                 {$i18n.get({
                   id: 'main.pages.Knowledge.Detail.components.ChunkItem.Header.index.edit',
-                  dm: '编辑',
+                  dm: 'Edit',
                 })}
               </Button>
             </>
@@ -157,12 +157,12 @@ const Header: React.FC<HeaderProps> = (props) => {
                 {isExpanded
                   ? $i18n.get({
                       id: 'main.pages.Knowledge.Detail.components.ChunkItem.Header.index.collapse',
-                      dm: '收起',
+                      dm: 'Collapse',
                     })
                   : expandButtonText ||
                     $i18n.get({
                       id: 'main.pages.Knowledge.Detail.components.ChunkItem.Header.index.expand',
-                      dm: '展开',
+                      dm: 'Expand',
                     })}
               </div>
             </>
@@ -179,11 +179,11 @@ const Header: React.FC<HeaderProps> = (props) => {
               {enabled
                 ? $i18n.get({
                     id: 'main.pages.Knowledge.Detail.components.ChunkItem.Header.enabled',
-                    dm: '已启用',
+                    dm: 'Enabled',
                   })
                 : $i18n.get({
                     id: 'main.pages.Knowledge.Detail.components.ChunkItem.Header.disabled',
-                    dm: '已禁用',
+                    dm: 'Disabled',
                   })}
             </div>
           </Flex>

@@ -70,20 +70,20 @@ export function InputCompItem(props: IInputCompItemProps) {
             <span className={styles.name}>
               {$i18n.get({
                 id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.parameterName',
-                dm: '参数名称',
+                dm: 'Parameter Name',
               })}
             </span>
             <span className={classNames(styles.alias, 'flex items-center')}>
               <span>
                 {$i18n.get({
                   id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.alias',
-                  dm: '别名',
+                  dm: 'Alias',
                 })}
               </span>
               <HelpIcon
                 content={$i18n.get({
                   id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.youNeedToDefineAliasForComponentInputParameters',
-                  dm: '您需要给组件的入参定义别名，用户在引用组件的时候，只会看到别名，不会看到实际的参数名称',
+                  dm: 'You need to define an alias for the component input parameters. Users will only see the alias when referencing the component, not the actual parameter name.',
                 })}
               />
               {!props.disabled && <img src="/images/require.svg" alt="" />}
@@ -91,37 +91,37 @@ export function InputCompItem(props: IInputCompItemProps) {
             <span className={styles.desc}>
               {$i18n.get({
                 id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.parameterDescription',
-                dm: '参数描述',
+                dm: 'Parameter Description',
               })}
             </span>
             <span className={styles.type}>
               {$i18n.get({
                 id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.type',
-                dm: '类型',
+                dm: 'Type',
               })}
             </span>
             <span className={styles.required}>
               {$i18n.get({
                 id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.isRequired',
-                dm: '是否必填',
+                dm: 'Required',
               })}
             </span>
             <span className={styles.enable}>
               {$i18n.get({
                 id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.isVisible',
-                dm: '是否可见',
+                dm: 'Visible',
               })}
             </span>
             <span className={styles.source}>
               {$i18n.get({
                 id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.passingMethod',
-                dm: '传参方式',
+                dm: 'Passing Method',
               })}
             </span>
             <span className={styles['default-value']}>
               {$i18n.get({
                 id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.defaultValue',
-                dm: '默认值',
+                dm: 'Default Value',
               })}
             </span>
           </Flex>
@@ -141,7 +141,7 @@ export function InputCompItem(props: IInputCompItemProps) {
                 className={styles.alias}
                 placeholder={$i18n.get({
                   id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.enterParameterAlias',
-                  dm: '请输入参数别名',
+                  dm: 'Enter parameter alias',
                 })}
                 disabled={props.disabled}
               />
@@ -158,7 +158,7 @@ export function InputCompItem(props: IInputCompItemProps) {
                     ? ''
                     : $i18n.get({
                         id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.enterParameterDescription',
-                        dm: '请输入参数描述',
+                        dm: 'Enter parameter description',
                       })
                 }
               />
@@ -172,14 +172,14 @@ export function InputCompItem(props: IInputCompItemProps) {
                   {
                     label: $i18n.get({
                       id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.yes',
-                      dm: '是',
+                      dm: 'Yes',
                     }),
                     value: true,
                   },
                   {
                     label: $i18n.get({
                       id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.no',
-                      dm: '否',
+                      dm: 'No',
                     }),
                     value: false,
                   },
@@ -194,14 +194,14 @@ export function InputCompItem(props: IInputCompItemProps) {
                   {
                     label: $i18n.get({
                       id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.yes',
-                      dm: '是',
+                      dm: 'Yes',
                     }),
                     value: true,
                   },
                   {
                     label: $i18n.get({
                       id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.no',
-                      dm: '否',
+                      dm: 'No',
                     }),
                     value: false,
                   },
@@ -219,14 +219,14 @@ export function InputCompItem(props: IInputCompItemProps) {
                   {
                     label: $i18n.get({
                       id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.businessPassThrough',
-                      dm: '业务透传',
+                      dm: 'Business Passthrough',
                     }),
                     value: 'biz',
                   },
                   {
                     label: $i18n.get({
                       id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.modelRecognition',
-                      dm: '模型识别',
+                      dm: 'Model Recognition',
                     }),
                     value: 'model',
                   },
@@ -245,7 +245,7 @@ export function InputCompItem(props: IInputCompItemProps) {
                     ? ''
                     : $i18n.get({
                         id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.inputDefaultValue',
-                        dm: '输入默认值',
+                        dm: 'Enter default value',
                       })
                 }
               />
@@ -286,7 +286,7 @@ export default function InputParamsComp(props: IProps) {
       <InputCompItem
         name={$i18n.get({
           id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.systemParameter',
-          dm: '系统参数',
+          dm: 'System Parameters',
         })}
         onChange={(val) => props.onChange({ system_params: val })}
         params={props.input.system_params}

@@ -125,7 +125,7 @@ function InputParamsRowComp({
       setErrorTip(
         $i18n.get({
           id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.parameterNameCannotBeEmpty',
-          dm: '参数名不能为空',
+          dm: 'Parameter name cannot be empty',
         }),
       );
       return;
@@ -134,7 +134,7 @@ function InputParamsRowComp({
       setErrorTip(
         $i18n.get({
           id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.parameterNameOnlyLettersNumbersOrUnderscoresAndStartWithLetterOrUnderscore',
-          dm: '参数名称只能包含字母、数字或下划线，并且以字母或下划线开头',
+          dm: 'Parameter name can only contain letters, numbers, or underscores, and must start with a letter or underscore',
         }),
       );
       return;
@@ -148,7 +148,7 @@ function InputParamsRowComp({
       setErrorTip(
         $i18n.get({
           id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.parameterNameCannotBeDuplicate',
-          dm: '参数名称不能重复',
+          dm: 'Parameter name cannot be duplicated',
         }),
       );
       return;
@@ -161,7 +161,7 @@ function InputParamsRowComp({
       setDescErrorTip(
         $i18n.get({
           id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.parameterExplanationCannotBeEmpty',
-          dm: '参数解释不能为空',
+          dm: 'Parameter explanation cannot be empty',
         }),
       );
       return;
@@ -188,7 +188,7 @@ function InputParamsRowComp({
               value={paramItem.key}
               placeholder={$i18n.get({
                 id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.enterParameterName',
-                dm: '请输入参数名称',
+                dm: 'Enter parameter name',
               })}
             />
 
@@ -205,7 +205,7 @@ function InputParamsRowComp({
               onBlur={handleCheckDesc}
               placeholder={$i18n.get({
                 id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.enterParameterExplanation',
-                dm: '请输入参数解释',
+                dm: 'Enter parameter explanation',
               })}
             />
 
@@ -220,7 +220,7 @@ function InputParamsRowComp({
             style={{ width: !disableShowLocation ? 140 : 248 }}
             placeholder={$i18n.get({
               id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.selectType',
-              dm: '选择类型',
+              dm: 'Select type',
             })}
           />
 
@@ -239,7 +239,7 @@ function InputParamsRowComp({
               style={{ width: 100 }}
               placeholder={$i18n.get({
                 id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.selectInputMethod',
-                dm: '选择传入方法',
+                dm: 'Select input method',
               })}
             />
           )}
@@ -251,14 +251,14 @@ function InputParamsRowComp({
               {
                 label: $i18n.get({
                   id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.required',
-                  dm: '必填',
+                  dm: 'Required',
                 }),
                 value: 1,
               },
               {
                 label: $i18n.get({
                   id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.notRequired',
-                  dm: '非必填',
+                  dm: 'Optional',
                 }),
                 value: 0,
               },
@@ -273,14 +273,14 @@ function InputParamsRowComp({
               {
                 label: $i18n.get({
                   id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.largeModelRecognition',
-                  dm: '大模型识别',
+                  dm: 'Model Recognition',
                 }),
                 value: 0,
               },
               {
                 label: $i18n.get({
                   id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.businessPassThrough',
-                  dm: '业务透传',
+                  dm: 'Business Passthrough',
                 }),
                 value: 1,
               },
@@ -362,37 +362,37 @@ export default function InputParamsConfig({
         <div className={styles.label} style={{ flex: 1 }}>
           {$i18n.get({
             id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.parameterName',
-            dm: '参数名称',
+            dm: 'Parameter Name',
           })}
         </div>
         <div className={styles.label} style={{ width: 150 }}>
           {$i18n.get({
             id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.parameterDescription',
-            dm: '参数描述',
+            dm: 'Parameter Description',
           })}
         </div>
         <div className={styles.label} style={{ width: 140 }}>
           {$i18n.get({
             id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.type',
-            dm: '类型',
+            dm: 'Type',
           })}
         </div>
         <div className={styles.label} style={{ width: 100 }}>
           {$i18n.get({
             id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.inputMethod',
-            dm: '传入方法',
+            dm: 'Input Method',
           })}
         </div>
         <div className={styles.label} style={{ width: 100 }}>
           {$i18n.get({
             id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.isRequired',
-            dm: '是否必填',
+            dm: 'Required',
           })}
         </div>
         <div className={styles.label} style={{ width: 120 }}>
           {$i18n.get({
             id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.passingMethod',
-            dm: '传参方式',
+            dm: 'Passing Method',
           })}
         </div>
         <div style={{ width: 36 }}></div>
@@ -418,7 +418,7 @@ export default function InputParamsConfig({
       >
         {$i18n.get({
           id: 'main.pages.Component.Plugin.components.InputParamsConfig.index.addInputParameter',
-          dm: '增加入参',
+          dm: 'Add Input Parameter',
         })}
       </Button>
     </Flex>

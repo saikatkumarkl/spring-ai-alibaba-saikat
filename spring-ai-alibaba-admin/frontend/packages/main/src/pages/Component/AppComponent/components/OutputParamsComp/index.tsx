@@ -20,13 +20,13 @@ export default function OutputParamsComp(props: IProps) {
         <span className="flex-1">
           {$i18n.get({
             id: 'main.pages.Component.AppComponent.components.OutputParamsComp.index.parameterName',
-            dm: '参数名称',
+            dm: 'Parameter Name',
           })}
         </span>
         <span className="flex-1">
           {$i18n.get({
             id: 'main.pages.Component.AppComponent.components.OutputParamsComp.index.parameterType',
-            dm: '参数类型',
+            dm: 'Parameter Type',
           })}
         </span>
       </Flex>

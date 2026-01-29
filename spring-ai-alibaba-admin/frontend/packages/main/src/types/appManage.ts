@@ -12,15 +12,15 @@ import { IBizEdge, IBizNode } from './workflow';
 export const AppStatus = {
   draft: $i18n.get({
     id: 'main.types.appManage.draft',
-    dm: '草稿',
+    dm: 'Draft',
   }),
   published: $i18n.get({
     id: 'main.types.appManage.published',
-    dm: '已发布',
+    dm: 'Published',
   }),
   published_editing: $i18n.get({
     id: 'main.types.appManage.publishedEditing',
-    dm: '已发布编辑中',
+    dm: 'Published (Editing)',
   }),
 };
 
@@ -30,11 +30,11 @@ export type IAppStatus = keyof typeof AppStatus;
 export const ModalityTypeTexts = {
   textDialog: $i18n.get({
     id: 'main.types.appManage.textDialogue',
-    dm: '文本对话',
+    dm: 'Text Dialog',
   }),
   textGenerate: $i18n.get({
     id: 'main.types.appManage.textGeneration',
-    dm: '文本生成',
+    dm: 'Text Generation',
   }),
 };
 

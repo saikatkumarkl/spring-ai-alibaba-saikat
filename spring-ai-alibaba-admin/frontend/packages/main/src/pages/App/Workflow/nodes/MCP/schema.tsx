@@ -15,12 +15,12 @@ export const MCPSchema: INodeSchema = {
   title: 'MCP',
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.MCP.schema.quickCall',
-    dm: '快捷调用符合MCP协议的工具。',
+    dm: 'Quickly call tools that comply with the MCP protocol.',
   }),
   iconType: 'spark-MCP-mcp-line',
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.MCP.schema.tool',
-    dm: '工具',
+    dm: 'Tool',
   }),
   defaultParams: {
     input_params: [],
@@ -30,7 +30,7 @@ export const MCPSchema: INodeSchema = {
         type: 'String',
         desc: $i18n.get({
           id: 'main.pages.App.Workflow.nodes.MCP.schema.result',
-          dm: '结果',
+          dm: 'Result',
         }),
       },
     ],

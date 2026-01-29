@@ -1,57 +1,57 @@
 import { requestInterceptors } from './request';
 import { notifyError, notifyWarning } from './notification';
 
-// 全局错误处理拦截器
+// Global error handling interceptor
 export const setupGlobalErrorHandling = () => {
-  // 添加全局错误处理拦截器
+  // Add global error handling interceptor
   requestInterceptors.use({
     responseError: (error) => {
-      // 根据错误状态码进行不同处理
+      // Handle different status codes
       if (error.code === 401) {
         notifyWarning({
-          message: '身份验证失败',
-          description: '请重新登录后继续操作',
+          message: 'Authentication failed',
+          description: 'Please sign in again to continue',
           duration: 5,
         });
-        
-        // 可以在这里添加重定向到登录页的逻辑
+
+        // Optional: redirect to login page
         // window.location.href = '/login';
       } else if (error.code === 403) {
         notifyError({
-          message: '访问被拒绝',
-          description: '您没有权限执行此操作',
+          message: 'Access denied',
+          description: 'You do not have permission to perform this action',
           duration: 5,
         });
       } else if (error.code === 404) {
         notifyError({
-          message: '资源不存在',
-          description: '请求的资源未找到',
+          message: 'Resource not found',
+          description: 'The requested resource could not be located',
         });
       } else if (error.code >= 500) {
         notifyError({
-          message: '服务器内部错误',
-          description: '服务器遇到了一个错误，请稍后重试',
+          message: 'Internal server error',
+          description: 'The server encountered an error. Please try again later',
           duration: 6,
         });
       } else if (error.code === 0 || !error.code) {
-        // 网络错误
+        // Network error
         notifyError({
-          message: '网络连接失败',
-          description: '请检查网络连接后重试',
+          message: 'Network connection failed',
+          description: 'Check your network connection and try again',
           duration: 6,
         });
       }
 
-      // 继续抛出错误，让具体的组件处理
+      // Re-throw so individual components can handle
       throw error;
     },
 
     request: async (config) => {
-      // 可以在这里添加全局请求头
+      // Add global request headers here if needed
       return config;
     },
   });
 };
 
-// 初始化全局错误处理
+// Initialize global error handling
 setupGlobalErrorHandling();

@@ -89,7 +89,7 @@ const getInputParams = ({
               nodeType: 'conversation',
               nodeTitle: $i18n.get({
                 id: 'main.pages.App.Workflow.components.SingleNodeDrawer.index.conversationVariable',
-                dm: '会话变量',
+                dm: 'Session Variables',
               }),
             }),
           );
@@ -102,7 +102,7 @@ const getInputParams = ({
               nodeType: 'sys',
               nodeTitle: $i18n.get({
                 id: 'main.pages.App.Workflow.components.SingleNodeDrawer.index.builtinVariable',
-                dm: '内置变量',
+                dm: 'Built-in Variables',
               }),
             }),
           );
@@ -327,7 +327,7 @@ const SingleNodeDrawer = (props: ISingleNodeDrawer) => {
         <span className={classNames(styles['drawer-title'], 'font-semibold')}>
           {$i18n.get({
             id: 'main.pages.App.Workflow.components.SingleNodeDrawer.index.testRun',
-            dm: '测试运行',
+            dm: 'Test Run',
           })}
         </span>
         <div className="flex items-center">
@@ -400,8 +400,8 @@ const SingleNodeDrawer = (props: ISingleNodeDrawer) => {
               <Empty
                 size={150}
                 description={$i18n.get({
-                  id: 'main.pages.App.Workflow.components.SingleNodeDrawer.index暂无输入',
-                  dm: '暂无输入',
+                  id: 'main.pages.App.Workflow.components.SingleNodeDrawer.indexNoInput',
+                  dm: 'No Input',
                 })}
               />
             </div>
@@ -410,7 +410,7 @@ const SingleNodeDrawer = (props: ISingleNodeDrawer) => {
               <div className={styles['panel-form-title']}>
                 {$i18n.get({
                   id: 'main.pages.App.Workflow.components.SingleNodeDrawer.index.inputVariables',
-                  dm: '输入变量',
+                  dm: 'Input Variables',
                 })}
               </div>
               <div className={styles['test-form-inputs']}>
@@ -467,25 +467,25 @@ const SingleNodeDrawer = (props: ISingleNodeDrawer) => {
               {state.loading
                 ? $i18n.get({
                     id: 'main.pages.App.Workflow.components.SingleNodeDrawer.index.running',
-                    dm: '运行中...',
+                    dm: 'Running...',
                   })
                 : $i18n.get({
                     id: 'main.pages.App.Workflow.components.SingleNodeDrawer.index.run',
-                    dm: '运行',
+                    dm: 'Run',
                   })}
             </Button>
             {state.loading && (
               <Button onClick={handleStop}>
                 {$i18n.get({
                   id: 'main.pages.App.Workflow.components.SingleNodeDrawer.index.stop',
-                  dm: '停止',
+                  dm: 'Stop',
                 })}
               </Button>
             )}
             <Button disabled={state.loading} onClick={handleReset}>
               {$i18n.get({
                 id: 'main.pages.App.Workflow.components.SingleNodeDrawer.index.reset',
-                dm: '重置',
+                dm: 'Reset',
               })}
             </Button>
           </div>
@@ -495,7 +495,7 @@ const SingleNodeDrawer = (props: ISingleNodeDrawer) => {
             <span className={styles.title}>
               {$i18n.get({
                 id: 'main.pages.App.Workflow.components.SingleNodeDrawer.index.runResult',
-                dm: '运行结果',
+                dm: 'Run Results',
               })}
             </span>
             {state.taskInfo && (
@@ -512,7 +512,7 @@ const SingleNodeDrawer = (props: ISingleNodeDrawer) => {
                 data={{}}
                 title={$i18n.get({
                   id: 'main.pages.App.Workflow.components.SingleNodeDrawer.index.outputResultDisplayed',
-                  dm: '输出结果在这里展示',
+                  dm: 'Output results displayed here',
                 })}
               />
             ) : (

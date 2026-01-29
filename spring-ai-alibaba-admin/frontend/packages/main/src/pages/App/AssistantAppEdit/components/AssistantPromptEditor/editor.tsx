@@ -46,7 +46,7 @@ export const AssistantPromptEditor = forwardRef((props: IProps, ref: any) => {
         $i18n.get(
           {
             id: 'main.pages.App.AssistantAppEdit.components.AssistantPromptEditor.editor.maxInputCharacters',
-            dm: '最多可输入{var1}字',
+            dm: 'Maximum input of {var1} characters',
           },
           { var1: props.maxTokenContext },
         ),
@@ -256,7 +256,7 @@ export const AssistantPromptEditor = forwardRef((props: IProps, ref: any) => {
             {$i18n.get(
               {
                 id: 'main.pages.App.AssistantAppEdit.components.AssistantPromptEditor.editor.introduceVariables',
-                dm: '可引入{var1}项变量（可通过点击添加）：',
+                dm: 'You can add {var1} variables (click to add):',
               },
               { var1: variables.length },
             )}
@@ -299,7 +299,7 @@ export const AssistantPromptEditor = forwardRef((props: IProps, ref: any) => {
           }}
           placeholder={$i18n.get({
             id: 'work-station-app.pages.App.AssistantAppEdit.components.AssistantPromptEditor.editor.writeSystemPromptIncludingRoleSettingTaskObjectiveAbilityAndReplyRequirements',
-            dm: '在这里编写系统提示词，包括角色设定、任务目标、具备的能力及回复的要求与限制等，好的提示词会直接影响智能体效果',
+            dm: 'Write system prompt here, including role settings, task objectives, capabilities, and reply requirements. A good prompt directly affects agent performance.',
           })}
         ></SlateEditor>
       </div>

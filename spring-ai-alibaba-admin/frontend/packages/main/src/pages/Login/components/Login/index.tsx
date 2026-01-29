@@ -46,7 +46,7 @@ const Login: React.FC<IProps> = ({ onSubmit, loading }) => {
       <div className={styles['login-title']}>
         {$i18n.get({
           id: 'main.pages.Login.components.Login.index.welcomeToAgentScope',
-          dm: '🎉 欢迎使用Spring AI Alibaba Studio',
+          dm: '🎉 Welcome to Spring AI Alibaba Studio',
         })}
       </div>
 
@@ -60,7 +60,7 @@ const Login: React.FC<IProps> = ({ onSubmit, loading }) => {
             <div className="text-[12px]">
               {$i18n.get({
                 id: 'main.pages.Login.components.Login.index.otherWaysLogin',
-                dm: '其他方式登录',
+                dm: 'Other login methods',
               })}
             </div>
           </Divider>
@@ -81,7 +81,7 @@ const Login: React.FC<IProps> = ({ onSubmit, loading }) => {
               required: true,
               message: $i18n.get({
                 id: 'main.pages.Login.components.Login.index.enterAccount',
-                dm: '请输入账号',
+                dm: 'Please enter account',
               }),
             },
           ]}
@@ -96,7 +96,7 @@ const Login: React.FC<IProps> = ({ onSubmit, loading }) => {
               required: true,
               message: $i18n.get({
                 id: 'main.pages.Login.components.Login.index.enterPassword',
-                dm: '请输入密码',
+                dm: 'Please enter password',
               }),
             },
           ]}
@@ -112,7 +112,7 @@ const Login: React.FC<IProps> = ({ onSubmit, loading }) => {
               false
                 ? $i18n.get({
                     id: 'main.pages.Login.components.Login.index.notSupportedAccountPasswordLogin',
-                    dm: '暂不支持账号密码登录',
+                    dm: 'Username/password login not supported yet',
                   })
                 : undefined
             }
@@ -124,7 +124,7 @@ const Login: React.FC<IProps> = ({ onSubmit, loading }) => {
           >
             {$i18n.get({
               id: 'main.pages.Login.components.Login.index.login',
-              dm: '登录',
+              dm: 'Login',
             })}
           </Button>
         </Form.Item>

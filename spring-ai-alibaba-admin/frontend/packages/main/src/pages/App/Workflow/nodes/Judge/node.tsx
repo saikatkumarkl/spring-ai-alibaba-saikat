@@ -38,7 +38,7 @@ export default memo(function Judge(props: NodeProps<IWorkFlowNode>) {
         <span>
           {$i18n.get({
             id: 'main.pages.App.Workflow.nodes.Judge.node.default',
-            dm: '默认',
+            dm: 'Default',
           })}
         </span>
         <span>ELSE</span>

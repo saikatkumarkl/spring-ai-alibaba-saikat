@@ -9,14 +9,14 @@ export default function () {
         {
           title: $i18n.get({
             id: 'main.pages.App.index.home',
-            dm: '首页',
+            dm: 'Home',
           }),
           path: '/',
         },
         {
           title: $i18n.get({
             id: 'main.pages.MCP.index.mcpManagement',
-            dm: 'MCP管理',
+            dm: 'MCP Management',
           }),
         },
       ]}

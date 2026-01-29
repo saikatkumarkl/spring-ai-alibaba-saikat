@@ -47,11 +47,11 @@ interface IConditionResult {
 const logicMap = {
   and: $i18n.get({
     id: 'main.pages.App.Workflow.components.NodeResultPanel.JudgeResult.all',
-    dm: '所有',
+    dm: 'All',
   }),
   or: $i18n.get({
     id: 'main.pages.App.Workflow.components.NodeResultPanel.JudgeResult.any',
-    dm: '任意',
+    dm: 'Any',
   }),
 };
 
@@ -192,13 +192,13 @@ export default memo(function JudgeResult(props: IJudgeResultProps) {
         <span className={styles['condition-title']}>
           {$i18n.get({
             id: 'main.pages.App.Workflow.components.NodeResultPanel.JudgeResult.hitDefaultCondition',
-            dm: '命中【默认】条件',
+            dm: 'Hit [Default] condition',
           })}
         </span>
         <Tag className={styles['condition-result-tag']} color="success">
           {$i18n.get({
             id: 'main.pages.App.Workflow.components.NodeResultPanel.JudgeResult.successHitThisCondition',
-            dm: '成功：命中本条件',
+            dm: 'Success: Hit this condition',
           })}
         </Tag>
       </Flex>
@@ -230,7 +230,7 @@ export default memo(function JudgeResult(props: IJudgeResultProps) {
                 <span>
                   {$i18n.get({
                     id: 'main.pages.App.Workflow.components.BranchTitleHeader.index.whenSatisfy',
-                    dm: '当满足以下',
+                    dm: 'When satisfying the following',
                   })}
                 </span>
                 <span className={styles['logic-label']}>
@@ -239,7 +239,7 @@ export default memo(function JudgeResult(props: IJudgeResultProps) {
                 <span>
                   {$i18n.get({
                     id: 'main.pages.App.Workflow.components.BranchTitleHeader.index.conditions',
-                    dm: '条件时',
+                    dm: 'conditions',
                   })}
                 </span>
               </Flex>
@@ -247,7 +247,7 @@ export default memo(function JudgeResult(props: IJudgeResultProps) {
                 <Tag className={styles['condition-result-tag']} color="success">
                   {$i18n.get({
                     id: 'main.pages.App.Workflow.components.NodeResultPanel.JudgeResult.successHitThisCondition',
-                    dm: '成功：命中本条件',
+                    dm: 'Success: Hit this condition',
                   })}
                 </Tag>
               )}

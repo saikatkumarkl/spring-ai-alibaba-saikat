@@ -5,16 +5,16 @@ export const ParallelStartSchema: INodeSchema = {
   type: 'ParallelStart',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.ParallelStart.schema.parallelStart',
-    dm: '并行开始',
+    dm: 'Parallel Start',
   }),
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.ParallelStart.schema.parallelStartNode',
-    dm: '并行开始节点',
+    dm: 'Parallel Start Node',
   }),
   iconType: 'spark-processStart-line',
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.ParallelStart.schema.logic',
-    dm: '逻辑',
+    dm: 'Logic',
   }),
   defaultParams: {
     input_params: [],

@@ -77,11 +77,11 @@ export default function Account() {
     AlertDialog.warning({
       title: $i18n.get({
         id: 'main.pages.Setting.Account.index.deleteUser',
-        dm: '删除用户',
+        dm: 'Delete User',
       }),
       content: $i18n.get({
         id: 'main.pages.Setting.Account.index.confirmDeleteUser',
-        dm: '确定要删除该用户吗？',
+        dm: 'Are you sure you want to delete this user?',
       }),
       onOk: async () => {
         await deleteAccount(user.account_id);
@@ -94,7 +94,7 @@ export default function Account() {
     {
       title: $i18n.get({
         id: 'main.pages.Setting.Account.index.userName',
-        dm: '用户名称',
+        dm: 'Username',
       }),
       dataIndex: 'username',
       key: 'username',
@@ -102,7 +102,7 @@ export default function Account() {
     {
       title: $i18n.get({
         id: 'main.pages.Setting.Account.index.role',
-        dm: '角色',
+        dm: 'Role',
       }),
       dataIndex: 'type',
       key: 'type',
@@ -111,11 +111,11 @@ export default function Account() {
           {type === 'admin'
             ? $i18n.get({
                 id: 'main.pages.Setting.Account.index.admin',
-                dm: '管理员',
+                dm: 'Administrator',
               })
             : $i18n.get({
                 id: 'main.pages.Setting.Account.index.user',
-                dm: '用户',
+                dm: 'User',
               })}
         </Tag>
       ),
@@ -123,7 +123,7 @@ export default function Account() {
     {
       title: $i18n.get({
         id: 'main.pages.Setting.Account.index.edit',
-        dm: '编辑',
+        dm: 'Actions',
       }),
       key: 'action',
       render: (_, record) => (
@@ -131,7 +131,7 @@ export default function Account() {
           <a onClick={() => handleOpenEditModal(record)}>
             {$i18n.get({
               id: 'main.pages.Setting.Account.index.edit',
-              dm: '编辑',
+              dm: 'Edit',
             })}
           </a>
           <a
@@ -140,7 +140,7 @@ export default function Account() {
           >
             {$i18n.get({
               id: 'main.pages.Setting.Account.index.deleteUser',
-              dm: '删除用户',
+              dm: 'Delete User',
             })}
           </a>
         </span>
@@ -171,14 +171,14 @@ export default function Account() {
         {
           title: $i18n.get({
             id: 'main.pages.App.index.home',
-            dm: '首页',
+            dm: 'Home',
           }),
           path: '/',
         },
         {
           title: $i18n.get({
             id: 'main.pages.Setting.Account.index.accountManagement',
-            dm: '账户管理',
+            dm: 'Account Management',
           }),
         },
       ]}
@@ -190,7 +190,7 @@ export default function Account() {
         >
           {$i18n.get({
             id: 'main.pages.Setting.Account.index.addUser',
-            dm: '新增用户',
+            dm: 'Add User',
           })}
         </Button>
       }

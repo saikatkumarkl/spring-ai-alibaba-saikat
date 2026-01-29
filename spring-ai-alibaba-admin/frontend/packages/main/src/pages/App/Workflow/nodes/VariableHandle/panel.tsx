@@ -30,34 +30,34 @@ const OUTPUT_MODE_OPTIONS = [
   {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.VariableHandle.panel.aggregateGroup',
-      dm: '聚合分组',
+      dm: 'Aggregate Group',
     }),
     value: 'group',
     desc: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.VariableHandle.panel.controlReturn',
-      dm: '将按照聚合策略对分组内的值进行返回控制',
+      dm: 'Controls return values within groups according to aggregation strategy',
     }),
   },
   {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.VariableHandle.panel.textOutput',
-      dm: '文本输出',
+      dm: 'Text Output',
     }),
     value: 'template',
     desc: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.VariableHandle.panel.textType',
-      dm: '输出文本类型',
+      dm: 'Output text type',
     }),
   },
   {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.VariableHandle.panel.jsonOutput',
-      dm: 'JSON输出',
+      dm: 'JSON Output',
     }),
     value: 'json',
     desc: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.VariableHandle.panel.jsonType',
-      dm: '输出格式化的Json类型',
+      dm: 'Output formatted JSON type',
     }),
   },
 ];
@@ -66,14 +66,14 @@ const GROUP_STRATEGY_OPTIONS = [
   {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.VariableHandle.panel.firstNonEmptyValue',
-      dm: '返回每个分组中第一个非空的值',
+      dm: 'Return the first non-empty value in each group',
     }),
     value: 'firstNotNull',
   },
   {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.VariableHandle.panel.lastNonEmptyValue',
-      dm: '返回每个分组中最后一个非空的值',
+      dm: 'Return the last non-empty value in each group',
     }),
     value: 'lastNotNull',
   },
@@ -217,7 +217,7 @@ export default memo(function VariableHandlePanel({
       return Promise.reject(
         $i18n.get({
           id: 'main.pages.App.Workflow.nodes.VariableHandle.panel.enterGroupName',
-          dm: '请输入分组名称',
+          dm: 'Please enter group name',
         }),
       );
     if (
@@ -228,7 +228,7 @@ export default memo(function VariableHandlePanel({
       return Promise.reject(
         $i18n.get({
           id: 'main.pages.App.Workflow.nodes.VariableHandle.panel.groupNameExists',
-          dm: '分组名称已存在',
+          dm: 'Group name already exists',
         }),
       );
 
@@ -236,7 +236,7 @@ export default memo(function VariableHandlePanel({
       return Promise.reject(
         $i18n.get({
           id: 'main.pages.App.Workflow.nodes.VariableHandle.panel.onlyLettersNumbersUnderscoreAndDollar',
-          dm: '只能包含字母、数字、下划线和$，且不能以数字开头',
+          dm: 'Can only contain letters, numbers, underscores, and $, and cannot start with a number',
         }),
       );
     return Promise.resolve(true);
@@ -264,7 +264,7 @@ export default memo(function VariableHandlePanel({
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.VariableHandle.panel.outputMode',
-              dm: '输出模式',
+              dm: 'Output Mode',
             })}
           </div>
           <SelectWithDesc
@@ -300,7 +300,7 @@ export default memo(function VariableHandlePanel({
             <div className="spark-flow-panel-form-title">
               {$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.VariableHandle.panel.groupingStrategy',
-                dm: '分组策略',
+                dm: 'Grouping Strategy',
               })}
             </div>
             <SelectWithDesc
@@ -329,7 +329,7 @@ export default memo(function VariableHandlePanel({
             >
               {$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.VariableHandle.panel.addGroup',
-                dm: '添加分组',
+                dm: 'Add Group',
               })}
             </Button>
           </Flex>
@@ -340,7 +340,7 @@ export default memo(function VariableHandlePanel({
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.VariableHandle.panel.output',
-              dm: '输出',
+              dm: 'Output',
             })}
           </div>
           <OutputParamsTree data={data.output_params} />

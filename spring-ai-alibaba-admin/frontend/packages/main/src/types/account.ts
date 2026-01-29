@@ -4,11 +4,11 @@ import $i18n from '@/i18n';
 export const USER_TYPE = {
   admin: $i18n.get({
     id: 'main.types.account.administrator',
-    dm: '管理员',
+    dm: 'Administrator',
   }),
   user: $i18n.get({
     id: 'main.types.account.normalUser',
-    dm: '普通用户',
+    dm: 'Normal User',
   }),
 };
 

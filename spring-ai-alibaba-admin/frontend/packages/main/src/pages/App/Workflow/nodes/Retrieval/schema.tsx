@@ -10,11 +10,11 @@ const getRetrievalCheckValid = (data: IRetrievalNodeData) => {
     errMsgs.push({
       label: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.Retrieval.schema.input',
-        dm: '输入',
+        dm: 'Input',
       }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.Retrieval.schema.requiredField',
-        dm: '不能为空',
+        dm: 'Cannot be empty',
       }),
     });
   }
@@ -23,11 +23,11 @@ const getRetrievalCheckValid = (data: IRetrievalNodeData) => {
     errMsgs.push({
       label: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.Retrieval.schema.knowledgeBase',
-        dm: '知识库',
+        dm: 'Knowledge Base',
       }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.Retrieval.schema.requiredField',
-        dm: '不能为空',
+        dm: 'Cannot be empty',
       }),
     });
   }
@@ -47,12 +47,12 @@ export const RetrievalSchema: INodeSchema = {
   type: 'Retrieval',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Retrieval.schema.knowledgeBase',
-    dm: '知识库',
+    dm: 'Knowledge Base',
   }),
   iconType: 'spark-book-line',
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Retrieval.schema.retrieveMatchingInfo',
-    dm: '在选定的知识中，根据输入变量召回最匹配的信息。',
+    dm: 'Recall the most matching information from selected knowledge based on input variables.',
   }),
   defaultParams: {
     input_params: [
@@ -114,7 +114,7 @@ export const RetrievalSchema: INodeSchema = {
   disableConnectTarget: true,
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Retrieval.schema.basic',
-    dm: '基础',
+    dm: 'Basic',
   }),
   checkValid: (val) => getRetrievalCheckValid(val as IRetrievalNodeData),
   bgColor: 'var(--ag-ant-color-purple-hover)',

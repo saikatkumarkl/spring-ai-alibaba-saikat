@@ -14,7 +14,7 @@ const Status: React.FC<StatusProps> = ({ status }) => {
         return {
           text: $i18n.get({
             id: 'main.pages.App.components.Card.Status.published',
-            dm: '已发布',
+            dm: 'Published',
           }),
           className: styles.published,
         };
@@ -22,7 +22,7 @@ const Status: React.FC<StatusProps> = ({ status }) => {
         return {
           text: $i18n.get({
             id: 'main.pages.App.components.Card.Status.publishedEditing',
-            dm: '已发布编辑中',
+            dm: 'Published (Editing)',
           }),
           className: styles.editing,
         };
@@ -30,7 +30,7 @@ const Status: React.FC<StatusProps> = ({ status }) => {
         return {
           text: $i18n.get({
             id: 'main.pages.App.components.Card.Status.draft',
-            dm: '草稿',
+            dm: 'Draft',
           }),
           className: styles.draft,
         };

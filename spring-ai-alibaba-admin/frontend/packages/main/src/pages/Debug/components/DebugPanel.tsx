@@ -25,7 +25,7 @@ const DebugPanel: React.FC = () => {
   };
 
   const formatLogTime = (date: Date) => {
-    return date.toLocaleTimeString('zh-CN', {
+    return date.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
@@ -47,20 +47,20 @@ const DebugPanel: React.FC = () => {
   return (
     <div className={styles.debugPanel}>
       <div className={styles.debugHeader}>
-        <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>调试面板</h4>
+        <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>Debug Panel</h4>
         <Button
           type="text"
           size="small"
           icon={<ClearOutlined />}
           onClick={clearLogs}
-          title="清空日志"
+          title="Clear Logs"
         />
       </div>
 
       <div className={styles.debugContent}>
         {/* Connection Status */}
         <div className={styles.debugSection}>
-          <div className={styles.debugSectionTitle}>连接状态</div>
+          <div className={styles.debugSectionTitle}>Connection Status</div>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
             <span
               className={`${styles.statusIndicator} ${styles[debugState.connectionStatus.status]}`}
@@ -71,30 +71,30 @@ const DebugPanel: React.FC = () => {
           </div>
           {debugState.connectionStatus.lastConnected && (
             <div style={{ fontSize: 11, color: '#666' }}>
-              最后连接: {debugState.connectionStatus.lastConnected.toLocaleString()}
+              Last connected: {debugState.connectionStatus.lastConnected.toLocaleString()}
             </div>
           )}
           {debugState.connectionStatus.errorMessage && (
             <div style={{ fontSize: 11, color: '#ff4d4f', marginTop: 4 }}>
-              错误: {debugState.connectionStatus.errorMessage}
+              Error: {debugState.connectionStatus.errorMessage}
             </div>
           )}
         </div>
 
         {/* Metrics */}
         <div className={styles.debugSection}>
-          <div className={styles.debugSectionTitle}>统计信息</div>
+          <div className={styles.debugSectionTitle}>Statistics</div>
           <Row gutter={8}>
             <Col span={12}>
               <Statistic
-                title="消息数"
+                title="Messages"
                 value={debugState.metrics.messagesCount}
                 valueStyle={{ fontSize: 14 }}
               />
             </Col>
             <Col span={12}>
               <Statistic
-                title="错误数"
+                title="Errors"
                 value={debugState.metrics.errorCount}
                 valueStyle={{ fontSize: 14, color: '#ff4d4f' }}
               />
@@ -103,7 +103,7 @@ const DebugPanel: React.FC = () => {
           <Row gutter={8} style={{ marginTop: 8 }}>
             <Col span={12}>
               <Statistic
-                title="平均响应"
+                title="Avg Response"
                 value={debugState.metrics.averageResponseTime}
                 suffix="ms"
                 valueStyle={{ fontSize: 14 }}
@@ -111,11 +111,11 @@ const DebugPanel: React.FC = () => {
             </Col>
             <Col span={12}>
               <div style={{ fontSize: 12, color: '#666' }}>
-                最后活动:
+                Last activity:
                 <br />
                 {debugState.metrics.lastActivity
                   ? debugState.metrics.lastActivity.toLocaleTimeString()
-                  : '无'}
+                  : 'None'}
               </div>
             </Col>
           </Row>
@@ -124,25 +124,25 @@ const DebugPanel: React.FC = () => {
         {/* Current Session Info */}
         {state.currentSessionId && (
           <div className={styles.debugSection}>
-            <div className={styles.debugSectionTitle}>当前会话</div>
+            <div className={styles.debugSectionTitle}>Current Session</div>
             <div className={styles.debugInfo}>
-              <div>会话ID: {state.currentSessionId}</div>
-              <div>加载状态: {state.isLoading ? '是' : '否'}</div>
-              <div>流式传输: {state.isStreaming ? '是' : '否'}</div>
-              {state.error && <div>错误: {state.error}</div>}
+              <div>Session ID: {state.currentSessionId}</div>
+              <div>Loading: {state.isLoading ? 'Yes' : 'No'}</div>
+              <div>Streaming: {state.isStreaming ? 'Yes' : 'No'}</div>
+              {state.error && <div>Error: {state.error}</div>}
             </div>
           </div>
         )}
 
         {/* Debug Logs */}
         <div className={styles.debugSection}>
-          <div className={styles.debugSectionTitle}>调试日志</div>
+          <div className={styles.debugSectionTitle}>Debug Logs</div>
           <Collapse size="small" ghost>
-            <Panel header={`日志 (${debugState.debugLogs.length})`} key="1">
+            <Panel header={`Logs (${debugState.debugLogs.length})`} key="1">
               <div style={{ maxHeight: 200, overflowY: 'auto' }}>
                 {debugState.debugLogs.length === 0 ? (
                   <div style={{ color: '#999', fontSize: 12, textAlign: 'center', padding: 16 }}>
-                    暂无日志
+                    No logs
                   </div>
                 ) : (
                   debugState.debugLogs.map((log: any, index: number) => (
@@ -190,42 +190,42 @@ const DebugPanel: React.FC = () => {
 
         {/* Test Actions */}
         <div className={styles.debugSection}>
-          <div className={styles.debugSectionTitle}>测试操作</div>
+          <div className={styles.debugSectionTitle}>Test Operations</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Button
               size="small"
               onClick={() =>
                 addDebugLog({
                   level: 'info',
-                  message: '测试信息日志',
+                  message: 'Test info log',
                   data: { timestamp: new Date().toISOString() },
                 })
               }
             >
-              添加测试日志
+              Add Test Log
             </Button>
             <Button
               size="small"
               onClick={() =>
                 addDebugLog({
                   level: 'warning',
-                  message: '测试警告日志',
+                  message: 'Test warning log',
                 })
               }
             >
-              添加警告日志
+              Add Warning Log
             </Button>
             <Button
               size="small"
               onClick={() =>
                 addDebugLog({
                   level: 'error',
-                  message: '测试错误日志',
+                  message: 'Test error log',
                   data: { error: 'simulated error' },
                 })
               }
             >
-              添加错误日志
+              Add Error Log
             </Button>
           </div>
         </div>

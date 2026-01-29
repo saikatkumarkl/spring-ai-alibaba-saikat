@@ -16,11 +16,11 @@ export interface AppCardProps extends IAppCard {
 const typeLabelMap: Record<IAppType, string> = {
   [IAppType.AGENT]: $i18n.get({
     id: 'main.pages.App.components.Card.index.intelligentAgentApp',
-    dm: '智能体应用',
+    dm: 'Agent Application',
   }),
   [IAppType.WORKFLOW]: $i18n.get({
     id: 'main.pages.App.components.Card.index.workflowApp',
-    dm: '流程编排应用',
+    dm: 'Workflow Application',
   }),
 };
 
@@ -48,7 +48,7 @@ const AppCard: React.FC<AppCardProps> = ({
         {
           label: $i18n.get({
             id: 'main.pages.App.components.Card.index.updateTime',
-            dm: '更新时间',
+            dm: 'Update Time',
           }),
           content: updateTime,
         },
@@ -71,7 +71,7 @@ const AppCard: React.FC<AppCardProps> = ({
           >
             {$i18n.get({
               id: 'main.pages.App.components.Card.index.edit',
-              dm: '编辑',
+              dm: 'Edit',
             })}
           </Button>
           <Dropdown
@@ -84,21 +84,21 @@ const AppCard: React.FC<AppCardProps> = ({
                 {
                   label: $i18n.get({
                     id: 'main.pages.App.components.Card.index.modifyAppName',
-                    dm: '修改应用名',
+                    dm: 'Edit App Name',
                   }),
                   key: 'editName',
                 },
                 {
                   label: $i18n.get({
                     id: 'main.pages.App.components.Card.index.copyApp',
-                    dm: '复制应用',
+                    dm: 'Copy App',
                   }),
                   key: 'copy',
                 },
                 {
                   label: $i18n.get({
                     id: 'main.pages.App.components.Card.index.delete',
-                    dm: '删除',
+                    dm: 'Delete',
                   }),
                   danger: true,
                   key: 'delete',

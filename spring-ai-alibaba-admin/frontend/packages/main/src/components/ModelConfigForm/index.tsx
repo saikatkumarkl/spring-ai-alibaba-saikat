@@ -93,7 +93,7 @@ const ModelConfigBtn = memo(
       if (!schemaList?.length)
         return $i18n.get({
           id: 'main.components.ModelConfigForm.index.selectModelFirst',
-          dm: '请先选择模型',
+          dm: 'Please select a model first',
         });
       return (
         <div className="flex flex-col gap-3">
@@ -234,7 +234,7 @@ const ModelSelector = memo(
           disabled={disabled}
           placeholder={$i18n.get({
             id: 'main.pages.App.Workflow.nodes.ParameterExtractor.schema.selectModel',
-            dm: '请选择模型',
+            dm: 'Select a model',
           })}
           className="flex-1 w-[240px]"
           value={!value.model_id ? void 0 : value.model_id}

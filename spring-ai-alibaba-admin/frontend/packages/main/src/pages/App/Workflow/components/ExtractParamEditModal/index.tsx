@@ -38,11 +38,11 @@ export default function ExtractParamEditModal({
         initialValues
           ? $i18n.get({
               id: 'main.pages.App.Workflow.components.ExtractParamEditModal.index.editParam',
-              dm: '编辑参数',
+              dm: 'Edit Parameter',
             })
           : $i18n.get({
               id: 'main.pages.App.Workflow.components.ExtractParamEditModal.index.addParam',
-              dm: '新增参数',
+              dm: 'Add Parameter',
             })
       }
       open
@@ -69,7 +69,7 @@ export default function ExtractParamEditModal({
         <Form.Item
           label={$i18n.get({
             id: 'main.pages.App.Workflow.components.ExtractParamEditModal.index.name',
-            dm: '名称',
+            dm: 'Name',
           })}
           name="key"
           rules={[
@@ -77,14 +77,14 @@ export default function ExtractParamEditModal({
               required: true,
               message: $i18n.get({
                 id: 'main.pages.App.Workflow.components.ExtractParamEditModal.index.enterParamName',
-                dm: '请输入参数名称',
+                dm: 'Please enter parameter name',
               }),
             },
             {
               pattern: /^[a-zA-Z_$][a-zA-Z0-9_$]*$/,
               message: $i18n.get({
                 id: 'main.pages.App.Workflow.components.ExtractParamEditModal.index.nameFormat',
-                dm: '只能包含字母、数字、下划线和$，且不能以数字开头',
+                dm: 'Can only contain letters, numbers, underscores, and $, and cannot start with a number',
               }),
             },
             {
@@ -105,7 +105,7 @@ export default function ExtractParamEditModal({
                       new Error(
                         $i18n.get({
                           id: 'main.pages.App.Workflow.components.ExtractParamEditModal.index.paramNameExists',
-                          dm: '参数名称已存在',
+                          dm: 'Parameter name already exists',
                         }),
                       ),
                     )
@@ -117,7 +117,7 @@ export default function ExtractParamEditModal({
           <Input
             placeholder={$i18n.get({
               id: 'main.pages.App.Workflow.components.ExtractParamEditModal.index.enter',
-              dm: '请输入',
+              dm: 'Please enter',
             })}
           />
         </Form.Item>
@@ -125,7 +125,7 @@ export default function ExtractParamEditModal({
         <Form.Item
           label={$i18n.get({
             id: 'main.pages.App.Workflow.components.ExtractParamEditModal.index.type',
-            dm: '类型',
+            dm: 'Type',
           })}
           name="type"
           rules={[
@@ -133,7 +133,7 @@ export default function ExtractParamEditModal({
               required: true,
               message: $i18n.get({
                 id: 'main.pages.App.Workflow.components.ExtractParamEditModal.index.index.selectParameterType',
-                dm: '请选择参数类型',
+                dm: 'Please select parameter type',
               }),
             },
           ]}
@@ -141,7 +141,7 @@ export default function ExtractParamEditModal({
           <Select
             placeholder={$i18n.get({
               id: 'main.pages.App.Workflow.components.ExtractParamEditModal.index.selectType',
-              dm: '选择类型',
+              dm: 'Select type',
             })}
             options={VALUE_TYPE_OPTIONS.map((option) => ({
               label: option.label,
@@ -154,7 +154,7 @@ export default function ExtractParamEditModal({
         <Form.Item
           label={$i18n.get({
             id: 'main.pages.App.Workflow.components.ExtractParamEditModal.index.description',
-            dm: '描述',
+            dm: 'Description',
           })}
           name="desc"
           rules={[
@@ -162,7 +162,7 @@ export default function ExtractParamEditModal({
               required: true,
               message: $i18n.get({
                 id: 'main.pages.App.Workflow.components.ExtractParamEditModal.index.enterDescription',
-                dm: '请输入参数描述',
+                dm: 'Please enter parameter description',
               }),
             },
           ]}
@@ -170,7 +170,7 @@ export default function ExtractParamEditModal({
           <Input.TextArea
             placeholder={$i18n.get({
               id: 'main.pages.App.Workflow.components.ExtractParamEditModal.index.paramDescription',
-              dm: '参数描述',
+              dm: 'Parameter description',
             })}
             style={{ height: '100px', resize: 'none' }}
             showCount
@@ -187,13 +187,13 @@ export default function ExtractParamEditModal({
               <span>
                 {$i18n.get({
                   id: 'main.pages.App.Workflow.components.ExtractParamEditModal.index.required',
-                  dm: '必填',
+                  dm: 'Required',
                 })}
               </span>
               <span className="text-desc">
                 {$i18n.get({
                   id: 'main.pages.App.Workflow.components.ExtractParamEditModal.index.requiredReferenceOnly',
-                  dm: '必填仅作为模型推理的参考，不用于参数输出的强制验证。',
+                  dm: 'Required is only used as a reference for model inference, not for mandatory validation of parameter output.',
                 })}
               </span>
             </div>

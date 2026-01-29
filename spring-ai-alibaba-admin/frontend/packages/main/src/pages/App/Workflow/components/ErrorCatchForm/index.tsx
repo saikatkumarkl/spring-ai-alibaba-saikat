@@ -14,23 +14,23 @@ const strategyOpts = [
   {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.components.ErrorCatchForm.index.defaultValue',
-      dm: '默认值',
+      dm: 'Default Value',
     }),
     value: 'defaultValue',
     desc: $i18n.get({
       id: 'main.pages.App.Workflow.components.ErrorCatchForm.index.index.outputSpecifiedContent',
-      dm: '当发生异常时，输出指定内容。',
+      dm: 'When an exception occurs, output specified content.',
     }),
   },
   {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.components.ErrorCatchForm.index.index.exceptionBranch',
-      dm: '异常分支',
+      dm: 'Exception Branch',
     }),
     value: 'failBranch',
     desc: $i18n.get({
       id: 'main.pages.App.Workflow.components.ErrorCatchForm.index.exceptionBranch',
-      dm: '当发生异常时，执行异常分支。',
+      dm: 'When an exception occurs, execute the exception branch.',
     }),
   },
 ];
@@ -65,13 +65,13 @@ export default memo(function ErrorCatchForm({
           <span>
             {$i18n.get({
               id: 'main.pages.App.Workflow.components.ErrorCatchForm.index.executeExceptionBranch',
-              dm: '异常处理',
+              dm: 'Exception Handling',
             })}
           </span>
           <InfoIcon
             tip={$i18n.get({
               id: 'main.pages.App.Workflow.components.ErrorCatchForm.index.handleErrors',
-              dm: '针对报错等异常情况，节点根据配置继续执行。',
+              dm: 'For error exceptions, the node continues execution based on configuration.',
             })}
           />
         </div>
@@ -89,7 +89,7 @@ export default memo(function ErrorCatchForm({
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.components.ErrorCatchForm.index.handlingMethod',
-              dm: '处理方式',
+              dm: 'Handling Method',
             })}
           </div>
           <SelectWithDesc

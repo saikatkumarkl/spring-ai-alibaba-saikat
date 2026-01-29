@@ -18,22 +18,22 @@ const options = [
   {
     label: $i18n.get({
       id: 'main.pages.App.components.CreateModal.index.intelligentAgentApp',
-      dm: '智能体应用',
+      dm: 'Agent Application',
     }),
     name: $i18n.get({
       id: 'main.pages.App.components.CreateModal.index.intelligentAgent',
-      dm: '智能体',
+      dm: 'Agent',
     }),
     value: 'basic',
   },
   {
     label: $i18n.get({
       id: 'main.pages.App.components.Card.index.workflowApp',
-      dm: '流程编排应用',
+      dm: 'Workflow Application',
     }),
     name: $i18n.get({
       id: 'main.pages.App.components.CreateModal.index.workflow',
-      dm: '流程编排',
+      dm: 'Workflow',
     }),
     value: 'workflow',
   },
@@ -59,7 +59,7 @@ export default function CreateModal(props: ICreateModalProps) {
         message.success(
           $i18n.get({
             id: 'main.pages.App.components.CreateModal.index.createSuccess',
-            dm: '创建成功',
+            dm: 'Created successfully',
           }),
         );
         props.onOk({
@@ -81,7 +81,7 @@ export default function CreateModal(props: ICreateModalProps) {
       onCancel={props.onCancel}
       title={$i18n.get({
         id: 'main.pages.App.components.CreateModal.index.createApp',
-        dm: '创建应用',
+        dm: 'Create App',
       })}
       styles={{
         body: {
@@ -96,7 +96,7 @@ export default function CreateModal(props: ICreateModalProps) {
             <div className={styles['title']}>
               {$i18n.get({
                 id: 'main.pages.App.components.CreateModal.index.intelligentAgentApp',
-                dm: '智能体应用',
+                dm: 'Agent Application',
               })}
             </div>
             <Button
@@ -108,14 +108,14 @@ export default function CreateModal(props: ICreateModalProps) {
             >
               {$i18n.get({
                 id: 'main.pages.App.components.CreateModal.index.create',
-                dm: '创建',
+                dm: 'Create',
               })}
             </Button>
           </div>
           <div className={styles['desc']}>
             {$i18n.get({
               id: 'main.pages.App.components.CreateModal.index.buildIntelligentAgentApp',
-              dm: '构建智能体应用，连接知识、数据与服务，强大的RAG、MCP、插件、记忆及组件能力，适配多种模型，适用于智能助理型、对话型场景。',
+              dm: 'Build agent applications that connect knowledge, data, and services. Powerful RAG, MCP, plugins, memory, and component capabilities. Compatible with multiple models, suitable for intelligent assistant and conversational scenarios.',
             })}
           </div>
         </div>
@@ -125,7 +125,7 @@ export default function CreateModal(props: ICreateModalProps) {
             <div className={styles['title']}>
               {$i18n.get({
                 id: 'main.pages.App.components.CreateModal.index.workflowApp',
-                dm: '工作流编排应用',
+                dm: 'Workflow Application',
               })}
             </div>
             <Button
@@ -137,14 +137,14 @@ export default function CreateModal(props: ICreateModalProps) {
             >
               {$i18n.get({
                 id: 'main.pages.App.components.CreateModal.index.create',
-                dm: '创建',
+                dm: 'Create',
               })}
             </Button>
           </div>
           <div className={styles['desc']}>
             {$i18n.get({
               id: 'main.pages.App.components.CreateModal.index.designWorkflow',
-              dm: '用户通过画布自定义编排工作流，快速实现业务逻辑设计及效果验证，支持大模型、智能体、组件、API等多种节点，适用于多智能体协同型、流程型场景。',
+              dm: 'Design custom workflows on canvas, quickly implement business logic design and validation. Supports LLM, agent, component, API, and other node types. Suitable for multi-agent collaboration and process-oriented scenarios.',
             })}
           </div>
         </div>

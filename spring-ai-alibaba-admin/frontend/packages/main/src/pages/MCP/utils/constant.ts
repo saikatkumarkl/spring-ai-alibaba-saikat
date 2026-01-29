@@ -13,7 +13,7 @@ export const MCP_TIP_SECTIONS = [
   {
     title: $i18n.get({
       id: 'main.pages.MCP.Create.mcpMarket',
-      dm: 'MCP市场',
+      dm: 'MCP Marketplace',
     }),
     linkButtons: [
       { text: 'ModelScope MCP', url: 'https://modelscope.cn/mcp' },
@@ -22,7 +22,7 @@ export const MCP_TIP_SECTIONS = [
     ],
     description: $i18n.get({
       id: 'main.pages.MCP.Create.mcpMarketDescription',
-      dm: '在ModelScope MCP、MCP.so、Simthery等主流的MCP市场获取服务，将Sever地址配置在下方，即可完成自定义MCP服务的注册！',
+      dm: 'Get services from mainstream MCP marketplaces like ModelScope MCP, MCP.so, Smithery, and configure the server address below to complete the registration of your custom MCP service!',
     }),
   },
   {
@@ -35,7 +35,7 @@ export const MCP_TIP_SECTIONS = [
     ],
     description: $i18n.get({
       id: 'main.pages.MCP.Create.nacosDescription',
-      dm: '借助Nacos MCP Rourter结合Nacos MCP Registry，根据任务详情帮您自动推荐、安装、代理MCP Server，免去繁杂的配置与重启操作。\n请在页面下方输入Nacos MCP Router的配置，如果您不了解具体操作步骤，可前往：Nacos MCP Registry。',
+      dm: 'With Nacos MCP Router combined with Nacos MCP Registry, it automatically recommends, installs, and proxies MCP Server based on task details, eliminating complex configuration and restart operations.\nPlease enter the Nacos MCP Router configuration below. If you are unfamiliar with the specific steps, visit: Nacos MCP Registry.',
     }),
   },
   {
@@ -48,7 +48,7 @@ export const MCP_TIP_SECTIONS = [
     ],
     description: $i18n.get({
       id: 'main.pages.MCP.Create.higressDescription',
-      dm: '可以借助 Higress 网关将内部署的业务应用、API平台接入百炼智能体，遵循 Higress 的 MCP 配置流程，可实现零代码改造将现有 API 转化为 MCP 服务（当前支持 HTTP、Dubbo 协议）。请在页面下方输入通过 Higress 代理的 MCP Server 地址，如果您不了解具体操作步骤，可前往：Higress Open API To MCP。',
+      dm: 'You can use Higress gateway to connect internally deployed business applications and API platforms to intelligent agents. Following the Higress MCP configuration process, you can transform existing APIs into MCP services with zero code modification (currently supports HTTP and Dubbo protocols). Please enter the MCP Server address proxied through Higress below. If you are unfamiliar with the specific steps, visit: Higress Open API To MCP.',
     }),
   },
 ];

@@ -46,7 +46,7 @@ export const CreateMcpBtn = memo(
           {props.text ||
             $i18n.get({
               id: 'main.pages.MCP.Manage.createMcpService',
-              dm: '创建MCP服务',
+              dm: 'Create MCP Service',
             })}
         </Button>
       </>
@@ -106,11 +106,11 @@ export default function McpManage() {
     AlertDialog.warning({
       title: $i18n.get({
         id: 'main.pages.MCP.Manage.confirmDeleteThisMcpService',
-        dm: '确认删除此MCP服务吗',
+        dm: 'Confirm delete this MCP service?',
       }),
       children: $i18n.get({
         id: 'main.pages.MCP.Manage.deleteWillNotBeRecoverableAlreadyAddedServicesMayFailPleaseProceedWithCaution',
-        dm: '删除后将不可恢复，已经添加该服务的智能体可能会失效，请谨慎操作',
+        dm: 'Deletion cannot be recovered. Agents that have added this service may fail. Please proceed with caution.',
       }),
 
       danger: true,
@@ -119,7 +119,7 @@ export default function McpManage() {
         message.success(
           $i18n.get({
             id: 'main.pages.MCP.Manage.deletionSuccessful',
-            dm: '删除成功',
+            dm: 'Deleted successfully',
           }),
         );
         fetchList();
@@ -131,15 +131,15 @@ export default function McpManage() {
     AlertDialog.warning({
       title: $i18n.get({
         id: 'main.pages.MCP.Manage.confirmStopDeploymentOfThisService',
-        dm: '确认停止部署此服务吗',
+        dm: 'Confirm stop deployment of this service?',
       }),
       cancelText: $i18n.get({
         id: 'main.pages.MCP.Manage.cancel',
-        dm: '取消',
+        dm: 'Cancel',
       }),
       okText: $i18n.get({
         id: 'main.pages.MCP.Manage.stopDeployment',
-        dm: '停止部署',
+        dm: 'Stop Deployment',
       }),
       onOk: async () => {
         await updateMcpServer({
@@ -149,7 +149,7 @@ export default function McpManage() {
         message.success(
           $i18n.get({
             id: 'main.pages.MCP.Manage.stoppingSuccessful',
-            dm: '停止成功',
+            dm: 'Stopped successfully',
           }),
         );
         fetchList();
@@ -161,15 +161,15 @@ export default function McpManage() {
     AlertDialog.warning({
       title: $i18n.get({
         id: 'main.pages.MCP.Manage.confirmStartDeploymentOfThisService',
-        dm: '确认启动部署此服务吗',
+        dm: 'Confirm start deployment of this service?',
       }),
       cancelText: $i18n.get({
         id: 'main.pages.MCP.Manage.cancel',
-        dm: '取消',
+        dm: 'Cancel',
       }),
       okText: $i18n.get({
         id: 'main.pages.MCP.Manage.startDeployment',
-        dm: '启动部署',
+        dm: 'Start Deployment',
       }),
       onOk: async () => {
         await updateMcpServer({
@@ -179,7 +179,7 @@ export default function McpManage() {
         message.success(
           $i18n.get({
             id: 'main.pages.MCP.Manage.startingSuccessful',
-            dm: '启动成功',
+            dm: 'Started successfully',
           }),
         );
         fetchList();
