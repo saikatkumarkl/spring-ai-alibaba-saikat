@@ -23,7 +23,7 @@ export const EditNameModal = (props: IProps) => {
         message.success(
           $i18n.get({
             id: 'main.pages.App.components.EditNameModal.index.updateSuccess',
-            dm: '更新成功',
+            dm: 'Update successful',
           }),
         );
         props.onOk();
@@ -37,7 +37,7 @@ export const EditNameModal = (props: IProps) => {
       onOk={handleOk}
       title={$i18n.get({
         id: 'main.pages.App.components.EditNameModal.index.editAppName',
-        dm: '编辑应用名称',
+        dm: 'Edit App Name',
       })}
     >
       <Form
@@ -55,13 +55,13 @@ export const EditNameModal = (props: IProps) => {
               required: true,
               message: $i18n.get({
                 id: 'main.pages.App.components.EditNameModal.index.enterAppName',
-                dm: '请输入应用名称',
+                dm: 'Please enter app name',
               }),
             },
           ]}
           label={$i18n.get({
             id: 'main.pages.App.components.EditNameModal.index.appName',
-            dm: '应用名称',
+            dm: 'App Name',
           })}
           name="name"
         >
@@ -77,14 +77,14 @@ export const EditNameModal = (props: IProps) => {
             }}
             placeholder={$i18n.get({
               id: 'main.pages.App.components.EditNameModal.index.enterAppName',
-              dm: '请输入应用名称',
+              dm: 'Please enter app name',
             })}
           />
         </Form.Item>
         <Form.Item
           label={$i18n.get({
             id: 'main.pages.App.components.EditNameModal.index.appDescription',
-            dm: '应用描述',
+            dm: 'App Description',
           })}
           name="description"
         >
@@ -93,7 +93,7 @@ export const EditNameModal = (props: IProps) => {
             maxLength={200}
             placeholder={$i18n.get({
               id: 'main.pages.App.components.EditNameModal.index.enterAppDescription',
-              dm: '请输入应用描述',
+              dm: 'Please enter app description',
             })}
           />
         </Form.Item>

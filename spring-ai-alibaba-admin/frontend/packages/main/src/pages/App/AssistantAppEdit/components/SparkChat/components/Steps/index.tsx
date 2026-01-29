@@ -14,19 +14,19 @@ import Reasoning from './Reasoning';
 const StepsMsgStatus = {
   finished: $i18n.get({
     id: 'main.components.SparkChat.components.Steps.index.completed',
-    dm: '执行完成',
+    dm: 'Execution Complete',
   }),
   generating: $i18n.get({
     id: 'main.components.SparkChat.components.Steps.index.inProgress',
-    dm: '执行中',
+    dm: 'Executing',
   }),
   interrupted: $i18n.get({
     id: 'main.components.SparkChat.components.Steps.index.stopped',
-    dm: '已停止',
+    dm: 'Stopped',
   }),
   error: $i18n.get({
     id: 'main.components.SparkChat.components.Steps.index.error',
-    dm: '错误',
+    dm: 'Error',
   }),
 };
 interface IProps {
@@ -56,7 +56,7 @@ export default (props: IProps) => {
           icon: <IconFont type="spark-document-line" size="small"></IconFont>,
           title: $i18n.get({
             id: 'main.components.SparkChat.components.Steps.index.knowledgeRetrieval',
-            dm: '知识库检索',
+            dm: 'Knowledge Retrieval',
           }),
           children: (
             <Knowledge
@@ -83,7 +83,7 @@ export default (props: IProps) => {
           title: $i18n.get(
             {
               id: 'main.components.SparkChat.components.Steps.index.plugin',
-              dm: '插件：{var1}',
+              dm: 'Plugin: {var1}',
             },
             { var1: (msg.function as IToolCallFunction)?.name },
           ),
@@ -138,7 +138,7 @@ export default (props: IProps) => {
           title: $i18n.get(
             {
               id: 'main.pages.App.AssistantAppEdit.components.SparkChat.components.Steps.component',
-              dm: '组件：{var1}',
+              dm: 'Component: {var1}',
             },
             {
               var1: (msg.function as IToolCallFunction)?.name,
@@ -165,7 +165,7 @@ export default (props: IProps) => {
         icon: <IconFont type="spark-deepThink-line" size="small"></IconFont>,
         title: $i18n.get({
           id: 'main.pages.App.AssistantAppEdit.components.SparkChat.components.Steps.index.deepThinking',
-          dm: '深度思考',
+          dm: 'Deep Thinking',
         }),
         children: <Reasoning reasoning={data.reasoning_content}></Reasoning>,
       });

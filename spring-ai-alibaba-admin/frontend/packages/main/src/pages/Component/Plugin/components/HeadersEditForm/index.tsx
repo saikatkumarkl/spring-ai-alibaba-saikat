@@ -25,13 +25,13 @@ export default function HeadersEditForm() {
                         required: true,
                         message: $i18n.get({
                           id: 'main.pages.Component.Plugin.components.HeadersEditForm.index.parameterNameCannotBeEmpty',
-                          dm: '参数名不可为空',
+                          dm: 'Parameter name cannot be empty',
                         }),
                       },
                       {
                         message: $i18n.get({
                           id: 'main.pages.Component.Plugin.components.HeadersEditForm.index.onlyLettersNumbersOrUnderscoresAndStartWithLetterOrUnderscore',
-                          dm: '只能包含字母、数字或下划线，并且以字母或下划线开头',
+                          dm: 'Can only contain letters, numbers, or underscores, and must start with a letter or underscore',
                         }),
 
                         pattern: /^[a-zA-Z_][a-zA-Z0-9_-]*$/,
@@ -42,7 +42,7 @@ export default function HeadersEditForm() {
                       style={{ width: 300 }}
                       placeholder={$i18n.get({
                         id: 'main.pages.Component.Plugin.components.HeadersEditForm.index.enterParameterName',
-                        dm: '输入参数名',
+                        dm: 'Enter parameter name',
                       })}
                     />
                   </Form.Item>
@@ -54,7 +54,7 @@ export default function HeadersEditForm() {
                         required: true,
                         message: $i18n.get({
                           id: 'main.pages.Component.Plugin.components.HeadersEditForm.index.parameterNameCannotBeEmpty',
-                          dm: '参数名不可为空',
+                          dm: 'Parameter name cannot be empty',
                         }),
                       },
                     ]}
@@ -62,7 +62,7 @@ export default function HeadersEditForm() {
                     <Input
                       placeholder={$i18n.get({
                         id: 'main.pages.Component.Plugin.components.HeadersEditForm.index.enterValue',
-                        dm: '请输入Value',
+                        dm: 'Please enter Value',
                       })}
                       style={{ width: 300 }}
                     />
@@ -80,7 +80,7 @@ export default function HeadersEditForm() {
               <IconFont type="spark-plus-line" />
               {$i18n.get({
                 id: 'main.pages.Component.Plugin.components.HeadersEditForm.index.addInputParameter',
-                dm: '增加输入参数',
+                dm: 'Add Input Parameter',
               })}
             </a>
           </>

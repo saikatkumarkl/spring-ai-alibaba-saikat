@@ -112,7 +112,7 @@ export default function AssistantTestWindow(props: IProps) {
                       >
                         {$i18n.get({
                           id: 'main.components.AssistantTestWindow.index.conversationBased',
-                          dm: '基于LLM的对话型交互，适合进行复杂的多轮对话',
+                          dm: 'LLM-based conversational interaction, suitable for complex multi-turn dialogues',
                         })}
                       </div>
                     </div>
@@ -143,7 +143,7 @@ export default function AssistantTestWindow(props: IProps) {
               <Tooltip
                 title={$i18n.get({
                   id: 'main.components.AssistantTestWindow.index.parameterConfiguration',
-                  dm: '入参变量配置',
+                  dm: 'Parameter Configuration',
                 })}
                 placement="bottom"
               >
@@ -171,7 +171,7 @@ export default function AssistantTestWindow(props: IProps) {
                 overlayStyle={{ maxWidth: 320 }}
                 title={$i18n.get({
                   id: 'main.components.AssistantTestWindow.index.experienceConfiguration',
-                  dm: '体验配置',
+                  dm: 'Experience Configuration',
                 })}
               >
                 <IconButton
@@ -186,7 +186,7 @@ export default function AssistantTestWindow(props: IProps) {
               <Tooltip
                 title={$i18n.get({
                   id: 'main.components.AssistantTestWindow.index.clearHistory',
-                  dm: '清空记录',
+                  dm: 'Clear History',
                 })}
               >
                 <IconButton

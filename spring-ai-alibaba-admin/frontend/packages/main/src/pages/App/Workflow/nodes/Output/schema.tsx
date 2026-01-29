@@ -8,11 +8,11 @@ const checkOutputNodeValid = (data: IOutputNodeData) => {
     errMsgs.push({
       label: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.Output.schema.outputContent',
-        dm: '输出内容',
+        dm: 'Output Content',
       }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.Output.schema.requiredField',
-        dm: '不能为空',
+        dm: 'Cannot be empty',
       }),
     });
   }
@@ -23,16 +23,16 @@ export const OutputSchema: INodeSchema = {
   type: 'Output',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Output.schema.flowOutput',
-    dm: '流程输出',
+    dm: 'Process Output',
   }),
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Output.schema.interaction',
-    dm: '将流程的中间信息输出。',
+    dm: 'Output intermediate information from the process.',
   }),
   iconType: 'spark-processOutput-line',
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Output.schema.output',
-    dm: '交互',
+    dm: 'Interaction',
   }),
   defaultParams: {
     input_params: [],

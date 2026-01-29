@@ -32,7 +32,7 @@ import FunctionList from './FunctionList';
 const { Title, Paragraph, Text } = Typography;
 const { TextArea } = Input;
 
-// 添加闪烁光标的CSS动画样式
+// Add CSS animation style for blinking cursor
 const cursorBlinkStyle = `
   @keyframes blink {
     0%, 50% { opacity: 1; }
@@ -69,11 +69,11 @@ const PromptDetailPage = () => {
   const [showSessionModal, setShowSessionModal] = useState(false);
   const [selectedSessionId, setSelectedSessionId] = useState(null);
   const [selectedFunction, setSelectedFunction] = useState(null);
-  const [recentlyDeletedSessions, setRecentlyDeletedSessions] = useState({}); // 存储最近删除的会话 ID
+  const [recentlyDeletedSessions, setRecentlyDeletedSessions] = useState({}); // Store recently deleted session IDs
   const eventSourceRefs = useRef({}); // promptId -> EventSource
   // Add refs for chat containers to enable auto-scroll
   const chatContainerRefs = useRef({}); // promptId -> chat container element
-  
+
   // Get model parameters with fallback to model's defaultParameters
   const getModelParams = (modelId, modelConfig = {}) => {
     console.log('getModelParams called with:', { modelId, modelConfig, availableModels: models.length }); // Debug log
@@ -100,10 +100,8 @@ const PromptDetailPage = () => {
     isLoading: false,
     selectedModel: '',
     modelParams: {}, // Start with empty object, will be populated when models load
-    chatHistory: [] // 每个prompt独立的对话历史
+    chatHistory: [] // Independent conversation history for each prompt
   }]);
-
-  // 为每个 prompt 实例添加输入状态
   const [promptInputs, setPromptInputs] = useState({});
 
   // Get default model ID (first available model or fallback)
@@ -111,7 +109,7 @@ const PromptDetailPage = () => {
     return models.length > 0 ? models[0].id : '-';
   };
 
-  // 获取模型参数显示值的辅助函数
+  // Helper function to get model parameter display values
   const getDisplayModelParams = (modelParams, selectedModel) => {
     if (modelParams) {
       // Filter out model identifier fields from display parameters
@@ -119,7 +117,7 @@ const PromptDetailPage = () => {
       return filteredParams; // Return filtered parameters dynamically
     }
 
-    // 如果没有modelParams，使用模型的默认参数
+    // If modelParams is missing, use the model's default parameters
     const selectedModelData = models.find(m => m.id === selectedModel);
     const defaultParams = selectedModelData?.defaultParameters || {};
 
@@ -128,12 +126,12 @@ const PromptDetailPage = () => {
     return filteredDefaultParams; // Return filtered default parameters dynamically
   };
 
-  // 🔥 修复：使用useRef避免状态竞争
+  // Fix: Use useRef to avoid state race conditions
   const isRestoringRef = useRef(false);
   const hasInitializedRef = useRef(false);
   const timeoutRefs = useRef([]);
 
-  // 加载 Prompt 详情
+  // Load Prompt details
   const loadPromptDetail = useCallback(async () => {
     if (!promptKey) {
       navigate(buildLegacyPath('/prompts'));
@@ -144,21 +142,21 @@ const PromptDetailPage = () => {
     setError(null);
 
     try {
-      // 1. 首先获取 Prompt 基本信息
+      // 1. First get Prompt basic information
       const promptResponse = await API.getPrompt({ promptKey });
 
       if (promptResponse.code !== 200) {
-        throw new Error(promptResponse.message || '获取 Prompt 详情失败');
+        throw new Error(promptResponse.message || 'Failed to get Prompt details');
       }
 
       const promptData = promptResponse.data;
 
-      // 2. 并行获取版本列表和最新版本详情
+      // 2. Get version list and latest version details in parallel
       const promises = [
         API.getPromptVersions({ promptKey, pageNo: 1, pageSize: 100 })
       ];
 
-      // 如果有最新版本，获取其详细信息
+      // If there is a latest version, get its detailed information
       if (promptData.latestVersion) {
         promises.push(
           API.getPromptVersion({ promptKey, version: promptData.latestVersion })
@@ -168,23 +166,23 @@ const PromptDetailPage = () => {
       const responses = await Promise.all(promises);
       const [versionsResponse, versionDetailResponse] = responses;
 
-      // 3. 处理版本列表
+      // 3. Process version list
       let versions = [];
       if (versionsResponse.code === 200) {
         versions = versionsResponse.data.pageItems || [];
         setPromptVersions(versions);
       } else {
-        console.warn('获取版本列表失败:', versionsResponse.message);
+        console.warn('Failed to get version list:', versionsResponse.message);
         setPromptVersions([]);
       }
 
-      // 4. 聚合 Prompt 数据和最新版本详情
+      // 4. Aggregate Prompt data and latest version details
       let aggregatedPrompt = { ...promptData };
 
       if (versionDetailResponse && versionDetailResponse.code === 200) {
         const versionDetail = versionDetailResponse.data;
 
-        // 聚合最新版本的详细信息到 Prompt 对象中
+        // Aggregate latest version details into Prompt object
         aggregatedPrompt = {
           ...promptData,
           currentVersionDetail: {
@@ -201,15 +199,15 @@ const PromptDetailPage = () => {
       setCurrentPrompt(aggregatedPrompt);
 
     } catch (err) {
-      console.error('加载 Prompt 详情失败:', err);
-      handleApiError(err, '加载 Prompt 详情');
-      setError(err.message || '加载失败，请稍后重试');
+      console.error('Failed to load Prompt details:', err);
+      handleApiError(err, 'Load Prompt details');
+      setError(err.message || 'Failed to load, please try again later');
     } finally {
       setLoading(false);
     }
   }, [promptKey, navigate]);
 
-  // 🔥 修复：清理定时器的函数
+  // Fix: Function to cleanup timers
   const clearAllTimeouts = useCallback(() => {
     timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
     timeoutRefs.current = [];
@@ -226,12 +224,12 @@ const PromptDetailPage = () => {
         }));
         return response.data;
       } else {
-        message.error(response.message || '获取会话失败');
+        message.error(response.message || 'Failed to get session');
         return null;
       }
     } catch (error) {
       console.error('Load session error:', error);
-      message.error('获取会话失败');
+      message.error('Failed to get session');
       return null;
     }
   };
@@ -245,20 +243,20 @@ const PromptDetailPage = () => {
           delete newSessions[sessionId];
           return newSessions;
         });
-        message.success('会话删除成功');
+        message.success('Session deleted successfully');
         return true;
       } else {
-        message.error(response.message || '删除会话失败');
+        message.error(response.message || 'Failed to delete session');
         return false;
       }
     } catch (error) {
       console.error('Delete session error:', error);
-      message.error('删除会话失败');
+      message.error('Failed to delete session');
       return false;
     }
   };
 
-  // 单个 Prompt 执行函数
+  // Single prompt execution function
   const runSinglePrompt = async (promptInstance, inputText, newSession = false) => {
     const {
        id: promptId, content, parameterValues, selectedModel, modelParams, sessionId, mockTools ,
@@ -311,7 +309,7 @@ const PromptDetailPage = () => {
       replaceParameters
     };
 
-    // 为单个 prompt 添加用户消息到对话历史
+    // Add user message to conversation history for a single prompt
     setPromptInstances(prev => prev.map(prompt => {
       if (prompt.id === promptId) {
         const userMessage = {
@@ -332,7 +330,7 @@ const PromptDetailPage = () => {
     try {
       await executeStreamingPrompt(config, inputText, callbacks, eventSourceRefs.current);
     } finally {
-      // 结束加载状态
+      // End loading state
       setPromptInstances(prev => prev.map(prompt =>
         prompt.id === promptId
           ? { ...prompt, isLoading: false }
@@ -341,10 +339,10 @@ const PromptDetailPage = () => {
     }
   };
 
-  // 🔥 修复：组件卸载时清理资源
+  // 🔥 Fix: Cleanup resources on component unmount
   useEffect(() => {
     return () => {
-      // 清理所有EventSource连接
+      // Cleanup all EventSource connections
       Object.values(eventSourceRefs.current).forEach(eventSource => {
         if (eventSource && eventSource.close) {
           eventSource.close();
@@ -352,7 +350,7 @@ const PromptDetailPage = () => {
       });
       eventSourceRefs.current = {};
 
-      // 清理定时器
+      // Cleanup timers
       clearAllTimeouts();
     };
   }, [clearAllTimeouts]);
@@ -373,20 +371,20 @@ const PromptDetailPage = () => {
     });
   }, [promptInstances.map(p => p.chatHistory).flat()]);
 
-  // 🔥 修复：安全的URL参数清理函数
+  // 🔥 Fix: Safe URL parameter cleanup function
   const clearRestoreParams = useCallback(() => {
     const newSearchParams = new URLSearchParams(searchParams);
     const hasRestoreParams = newSearchParams.has('restoreVersionId') || newSearchParams.has('targetWindowId');
 
-    console.log('=== 清理URL参数 ===');
-    console.log('当前参数:', Object.fromEntries(newSearchParams));
-    console.log('需要清理:', hasRestoreParams);
+    console.log('=== Clearing URL parameters ===');
+    console.log('Current parameters:', Object.fromEntries(newSearchParams));
+    console.log('Need to clear:', hasRestoreParams);
 
     if (hasRestoreParams) {
       newSearchParams.delete('restoreVersionId');
       newSearchParams.delete('targetWindowId');
-      console.log('=== 清理后参数 ===', Object.fromEntries(newSearchParams));
-      // 🔥 修复：使用React Router的方式更新URL
+      console.log('=== Parameters after cleanup ===', Object.fromEntries(newSearchParams));
+      // 🔥 Fix: Update URL using React Router's approach
       setSearchParams(newSearchParams, { replace: true });
     }
   }, [searchParams, setSearchParams]);
@@ -432,7 +430,7 @@ const PromptDetailPage = () => {
     })
   }
 
-  // 初始加载数据
+  // Initial data load
   useEffect(() => {
     loadPromptDetail();
   }, [loadPromptDetail]);
@@ -494,14 +492,14 @@ const PromptDetailPage = () => {
     });
   }, [promptInstances]);
 
-  // 加载会话数据当模态框打开时
+  // Load session data when modal opens
   useEffect(() => {
     if (showSessionModal && selectedSessionId && !sessions[selectedSessionId]) {
       loadSession(selectedSessionId);
     }
   }, [showSessionModal, selectedSessionId]);
 
-  // 🔥 修复：统一的初始化和恢复逻辑
+  // 🔥 Fix: Unified initialization and restore logic
   useEffect(() => {
     if (loading || !currentPrompt) {
       return;
@@ -510,18 +508,18 @@ const PromptDetailPage = () => {
     const restoreVersionId = searchParams.get('restoreVersionId');
     const targetWindowId = searchParams.get('targetWindowId');
 
-    // 🔥 修复：版本恢复逻辑
+    // 🔥 Fix: Version restore logic
     if (restoreVersionId && !isRestoringRef.current) {
       isRestoringRef.current = true;
-      hasInitializedRef.current = true; // 🔥 关键：立即标记已初始化，防止后续初始化逻辑执行
+      hasInitializedRef.current = true; // 🔥 Critical: Immediately mark as initialized to prevent subsequent initialization logic execution
 
       const versionToRestore = promptVersions?.find(v => v.version === restoreVersionId);
 
       if (versionToRestore) {
-        console.log('=== 开始版本恢复 ===');
-        console.log('版本号:', versionToRestore.version);
+        console.log('=== Starting version restore ===');
+        console.log('Version:', versionToRestore.version);
 
-        // 获取版本详细内容
+        // Get version detailed content
         const loadVersionDetail = async () => {
           try {
             const versionDetailResponse = await API.getPromptVersion({
@@ -536,7 +534,7 @@ const PromptDetailPage = () => {
               const parameters = Object.keys(variables);
               const modelConfig = versionDetail.modelConfig ? safeJSONParse(versionDetail.modelConfig) : {};
 
-              console.log('版本内容:', content);
+              console.log('Version content:', content);
 
               const selectedModelId = modelConfig?.modelId || getDefaultModelId();
               const restoredWindowConfig = {
@@ -552,12 +550,12 @@ const PromptDetailPage = () => {
                 isLoading: false,
               };
 
-              console.log('=== 恢复配置 ===', restoredWindowConfig);
+              console.log('=== Restore configuration ===', restoredWindowConfig);
 
-              // 🔥 关键修复：立即执行恢复逻辑，不使用延迟
+              // 🔥 Critical fix: Execute restore logic immediately without delay
               if (targetWindowId) {
                 const windowId = parseInt(targetWindowId);
-                console.log('=== 恢复到指定窗口 ===', windowId);
+                console.log('=== Restore to specified window ===', windowId);
 
                 setPromptInstances(_prev => {
                   const prev = window.$$_prompts || _prev;
@@ -600,12 +598,12 @@ const PromptDetailPage = () => {
                 });
               }
 
-              // 设置恢复成功状态
+              // Set restore success status
               setRestoredVersion(versionToRestore);
               setRestoredWindowId(targetWindowId ? parseInt(targetWindowId) : 1);
               setShowRestoreSuccess(true);
 
-              // 🔥 修复：使用安全的定时器管理
+              // 🔥 Fix: Use safe timer management
               const successTimeoutId = setTimeout(() => {
                 setShowRestoreSuccess(false);
                 setRestoredVersion(null);
@@ -613,19 +611,19 @@ const PromptDetailPage = () => {
               }, 5000);
               timeoutRefs.current.push(successTimeoutId);
 
-              // 🔥 修复：安全清理URL参数
+              // 🔥 Fix: Safe cleanup of URL parameters
               clearRestoreParams();
 
-              console.log('=== 版本恢复完成 ===');
+              console.log('=== Version restore complete ===');
             } else {
-              throw new Error(versionDetailResponse.message || '获取版本详情失败');
+              throw new Error(versionDetailResponse.message || 'Failed to get version details');
             }
           } catch (err) {
-            console.error('恢复版本失败:', err);
-            handleApiError(err, '恢复版本');
-            setError(err.message || '恢复版本失败');
+            console.error('Failed to restore version:', err);
+            handleApiError(err, 'Restore version');
+            setError(err.message || 'Failed to restore version');
           } finally {
-            // 🔥 修复：安全重置标志
+            // 🔥 Fix: Safe reset flag
             const resetTimeoutId = setTimeout(() => {
               isRestoringRef.current = false;
             }, 100);
@@ -635,21 +633,21 @@ const PromptDetailPage = () => {
 
         loadVersionDetail();
       } else {
-        console.error('未找到要恢复的版本:', restoreVersionId);
-        console.log('可用版本:', promptVersions);
+        console.error('Version to restore not found:', restoreVersionId);
+        console.log('Available versions:', promptVersions);
         isRestoringRef.current = false;
         clearRestoreParams();
       }
 
-      return; // 🔥 修复：恢复逻辑执行后直接返回，避免执行初始化逻辑
+      return; // 🔥 Fix: Return directly after restore logic execution to avoid executing initialization logic
     }
 
-    // 🔥 修复：正常初始化逻辑 - 使用最新版本初始化
+    // 🔥 Fix: Normal initialization logic - initialize with latest version
     if (!hasInitializedRef.current && !isRestoringRef.current && !restoreVersionId) {
-      console.log('=== 正常初始化 ===');
+      console.log('=== Normal initialization ===');
       hasInitializedRef.current = true;
 
-      // 使用聚合后的数据进行初始化
+      // Use aggregated data for initialization
       if (currentPrompt.currentVersionDetail) {
         const versionDetail = currentPrompt.currentVersionDetail;
         const content = versionDetail.template || '';
@@ -676,7 +674,7 @@ const PromptDetailPage = () => {
           }]);
         }
       } else {
-        // 如果没有版本详情，创建空的实例
+        // If no version details exist, create empty instance
         const sessions = defaultPromptInstances[promptKey];
         if (sessions?.length) {
           resetPromptInstances(sessions);
@@ -735,7 +733,7 @@ const PromptDetailPage = () => {
 
   const copyPrompt = (promptId) => {
     if (promptInstances.length >= 3) {
-      alert('最多只能同时对比3个配置');
+      alert('Maximum 3 configurations can be compared simultaneously');
       return;
     }
 
@@ -748,7 +746,7 @@ const PromptDetailPage = () => {
         results: [],
         isLoading: false,
         modelParams: { ...promptToCopy.modelParams },
-        chatHistory: [], // 新窗口独立的对话历史
+        chatHistory: [], // New window's independent conversation history
         sessionId: "",
       };
       setPromptInstances(prev => {
@@ -772,7 +770,7 @@ const PromptDetailPage = () => {
 
   const clearChatHistory = (promptId = null) => {
     if (promptId) {
-      // 存储即将清除的会话 ID
+      // Store the session ID about to be cleared
       const prompt = promptInstances.find(p => p.id === promptId);
       if (prompt && prompt.sessionId) {
         setRecentlyDeletedSessions(prev => ({
@@ -781,14 +779,14 @@ const PromptDetailPage = () => {
         }));
       }
 
-      // 清空指定prompt的对话历史和会话
+      // Clear specified prompt's conversation history and session
       setPromptInstances(prev => prev.map(prompt =>
         prompt.id === promptId
           ? { ...prompt, chatHistory: [], sessionId: null }
           : prompt
       ));
     } else {
-      // 存储所有即将清除的会话 ID
+      // Store all session IDs about to be cleared
       const sessionsToStore = {};
       promptInstances.forEach(prompt => {
         if (prompt.sessionId) {
@@ -800,18 +798,18 @@ const PromptDetailPage = () => {
         ...sessionsToStore
       }));
 
-      // 清空所有prompt的对话历史和会话
+      // Clear all prompts' conversation history and sessions
       setPromptInstances(prev => prev.map(prompt =>
         ({ ...prompt, chatHistory: [], sessionId: null })
       ));
     }
   };
 
-  // 恢复会话功能
+  // Restore session function
   const restoreSession = async (promptId) => {
     const sessionId = recentlyDeletedSessions[promptId];
     if (!sessionId) {
-      message.error('没有可恢复的会话');
+      message.error('No session available to restore');
       return false;
     }
 
@@ -820,7 +818,7 @@ const PromptDetailPage = () => {
       if (response.code === 200) {
         const sessionData = response.data;
 
-        // 转换会话数据为聊天历史格式
+        // Convert session data to chat history format
         const chatHistory = sessionData.messages.map((msg, index) => {
           const displayParams = msg.role === 'assistant' && msg.modelParams ?
             msg.modelParams :
@@ -836,29 +834,29 @@ const PromptDetailPage = () => {
           };
         });
 
-        // 更新 prompt 实例
+        // Update prompt instance
         setPromptInstances(prev => prev.map(prompt =>
           prompt.id === promptId
             ? { ...prompt, sessionId, chatHistory }
             : prompt
         ));
 
-        // 清除已恢复的会话 ID
+        // Clear restored session ID
         setRecentlyDeletedSessions(prev => {
           const newSessions = { ...prev };
           delete newSessions[promptId];
           return newSessions;
         });
 
-        message.success('会话恢复成功');
+        message.success('Session restored successfully');
         return true;
       } else {
-        message.error(response.message || '恢复会话失败');
+        message.error(response.message || 'Failed to restore session');
         return false;
       }
     } catch (error) {
       console.error('Restore session error:', error);
-      message.error('恢复会话失败');
+      message.error('Failed to restore session');
       return false;
     }
   };
@@ -888,12 +886,12 @@ const PromptDetailPage = () => {
     ));
   };
 
-  // 处理模板导入，包括模型配置
+  // Handle template import including model configuration
   const handleTemplateImport = (promptId, template) => {
     const parameters = extractParametersFromDoubleBrace(template.content);
     const templateModelConfig = template.modelConfig || {};
 
-    // 如果模板有模型配置，使用模板的配置；否则使用当前选中的模型的默认参数
+    // If template has model configuration, use template's config; otherwise use current selected model's default parameters
     const selectedModelId = templateModelConfig.model || getDefaultModelId();
     const modelParams = getModelParams(selectedModelId, templateModelConfig);
 
@@ -915,14 +913,14 @@ const PromptDetailPage = () => {
     ));
   };
 
-  // 单个配置的对话发送函数
+  // Single configuration's conversation send function
   const handleSendMessage = (promptId, inputText) => {
     if (!inputText?.trim()) return;
-    
+
     const promptInstance = promptInstances.find(p => p.id === promptId);
     if (promptInstance) {
       runSinglePrompt(promptInstance, inputText);
-      // 清空输入框
+      // Clear input box
       setPromptInputs(prev => ({
         ...prev,
         [promptId]: ''
@@ -930,7 +928,7 @@ const PromptDetailPage = () => {
     }
   };
 
-  // 更新输入内容
+  // Update input content
   const updatePromptInput = (promptId, value) => {
     setPromptInputs(prev => ({
       ...prev,
@@ -951,7 +949,7 @@ const PromptDetailPage = () => {
             size="large"
           >
             <div className="text-center pt-4">
-              <p className="text-gray-600 mt-4">加载 Prompt 详情中...</p>
+              <p className="text-gray-600 mt-4">Loading Prompt details...</p>
             </div>
           </Spin>
         </div>
@@ -964,14 +962,14 @@ const PromptDetailPage = () => {
       <div className="p-8 fade-in">
         <Result
           status="error"
-          title="加载 Prompt 详情失败"
+          title="Failed to load Prompt details"
           subTitle={error}
           extra={[
             <Button type="primary" key="retry" onClick={() => loadPromptDetail()}>
-              重试
+              Retry
             </Button>,
             <Button key="back" onClick={() => navigate(buildLegacyPath('/prompts'))}>
-              返回列表
+              Return to List
             </Button>,
           ]}
         />
@@ -984,11 +982,11 @@ const PromptDetailPage = () => {
       <div className="p-8 fade-in">
         <Result
           status="404"
-          title="Prompt 不存在"
-          subTitle="未找到指定的 Prompt，可能已被删除或不存在。"
+          title="Prompt not found"
+          subTitle="The specified Prompt was not found. It may have been deleted or does not exist."
           extra={
             <Button type="primary" onClick={() => navigate(buildLegacyPath('/prompts'))}>
-              返回列表
+              Return to List
             </Button>
           }
         />
@@ -1012,12 +1010,12 @@ const PromptDetailPage = () => {
           />
           <Title level={2} className='m-0' >{currentPrompt.promptKey}</Title>
         </div>
-        <Paragraph type="secondary">测试和调试你的AI提示词</Paragraph>
+        <Paragraph type="secondary">Test and debug your AI prompts</Paragraph>
       </div>
 
       <div className="mb-8" />
 
-      {/* Prompt 详情信息卡片 */}
+      {/* Prompt detail information card */}
       <Card className='mb-6' >
         <Row gutter={[24, 16]}>
           <Col xs={24} sm={12} lg={6}>
@@ -1034,13 +1032,13 @@ const PromptDetailPage = () => {
           <Col xs={24} sm={12} lg={6}>
             <div>
               <Text type="secondary" className='text-sm uppercase' >
-                最新版本
+                Latest Version
               </Text>
               <div className='mt-1' >
                 {currentPrompt.latestVersion ? (
                   <Tag color="blue">{currentPrompt.latestVersion}</Tag>
                 ) : (
-                  <Tag color="default">无版本</Tag>
+                  <Tag color="default">No Version</Tag>
                 )}
               </div>
             </div>
@@ -1049,22 +1047,22 @@ const PromptDetailPage = () => {
           <Col xs={24} sm={12} lg={6}>
             <div>
               <Text type="secondary" className='text-sm uppercase' >
-                版本状态
+                Version Status
               </Text>
               <div className='mt-1' >
                 {currentPrompt.latestVersionStatus ? (
                   currentPrompt.latestVersionStatus === 'release' ? (
                     <Tag color="success" icon={<CheckCircleOutlined />}>
-                      正式版本
+                      Release Version
                     </Tag>
                   ) : (
                     <Tag color="processing" icon={<ExperimentOutlined />}>
-                      PRE版本
+                      Pre-release Version
                     </Tag>
                   )
                 ) : (
                   <Tag color="default" icon={<QuestionCircleOutlined />}>
-                    未知状态
+                    Unknown Status
                   </Tag>
                 )}
               </div>
@@ -1074,10 +1072,10 @@ const PromptDetailPage = () => {
           <Col xs={24} sm={12} lg={6}>
             <div>
               <Text type="secondary" className='text-sm uppercase' >
-                版本数量
+                Version Count
               </Text>
               <div className='mt-1' >
-                <Text strong className='text-lg' >{promptVersions.length} 个版本</Text>
+                <Text strong className='text-lg' >{promptVersions.length} versions</Text>
               </div>
             </div>
           </Col>
@@ -1086,7 +1084,7 @@ const PromptDetailPage = () => {
         <div className="flex mt-3">
           <div className='flex-1'>
             <Text type="secondary" className='text-sm uppercase' >
-              描述
+              Description
             </Text>
             <div className='mt-1' >
               <Text>{currentPrompt?.promptDescription || "-"}</Text>
@@ -1096,7 +1094,7 @@ const PromptDetailPage = () => {
           {currentPrompt.tags && (
             <div className='flex-1 ml-6'>
               <Text type="secondary" className='text-sm uppercase' >
-                标签
+                Tags
               </Text>
               <div className='mt-2' >
                 <Space size={[0, 8]} wrap>
@@ -1127,30 +1125,30 @@ const PromptDetailPage = () => {
         <Row gutter={[16, 8]}>
           <Col span={12}>
             <Text type="secondary">
-              创建时间：{dayjs(currentPrompt.createTime).format('YYYY-MM-DD HH:mm:ss')}
+              Created: {dayjs(currentPrompt.createTime).format('YYYY-MM-DD HH:mm:ss')}
             </Text>
           </Col>
           <Col span={12}>
             <Text type="secondary">
-              更新时间：{dayjs(currentPrompt.updateTime).format('YYYY-MM-DD HH:mm:ss')}
+              Updated: {dayjs(currentPrompt.updateTime).format('YYYY-MM-DD HH:mm:ss')}
             </Text>
           </Col>
         </Row>
       </Card>
 
-      {/* 横向布局：配置和对话测试整合 */}
-      <div 
-        className="grid gap-4" 
-        style={{ 
-          gridTemplateColumns: promptInstances.length === 1 
-            ? '1fr' 
-            : promptInstances.length === 2 
-              ? 'repeat(2, 1fr)' 
+      {/* Horizontal layout: configuration and chat testing integration */}
+      <div
+        className="grid gap-4"
+        style={{
+          gridTemplateColumns: promptInstances.length === 1
+            ? '1fr'
+            : promptInstances.length === 2
+              ? 'repeat(2, 1fr)'
               : 'repeat(3, 1fr)',
           minHeight: 'fit-content'
         }}
       >
-        {/* 响应式布局优化 */}
+        {/* Responsive layout optimization */}
         <style>{`
           @media (max-width: 1600px) {
             .grid {
@@ -1172,27 +1170,27 @@ const PromptDetailPage = () => {
         `}</style>
         {promptInstances.map((prompt, index) => {
           const userInput = promptInputs[prompt.id] || '';
-          
+
           return (
             <Card key={prompt.id} className="h-fit" size={promptInstances.length >= 3 ? "small" : "default"}>
-              {/* 配置区域 */}
+              {/* Configuration area */}
               <div className={promptInstances.length >= 3 ? "mb-4" : "mb-6"}>
-                {/* 标题栏 */}
+                {/* Title bar */}
                 <div className='flex flex-col gap-3 mb-4'>
                   <div className='flex flex-wrap justify-between items-center gap-2'>
                     <div>
                       <Text strong size="lg">
-                        配置 {index + 1}
+                        Configuration {index + 1}
                       </Text>
                       <Text type="secondary" className='ml-2'>
                         ({currentPrompt.promptKey})
                       </Text>
                     </div>
                     <div className='flex flex-wrap gap-2 items-center'>
-                      {/* 功能按钮组 - 响应式布局 */}
+                      {/* Function buttons group - responsive layout */}
                       <div className='flex flex-wrap gap-2'>
                         <Button
-                          type="primary" 
+                          type="primary"
                           icon={<PlusOutlined />}
                           size={promptInstances.length >= 3 ? "small" : "default"}
                           onClick={() => {
@@ -1200,7 +1198,7 @@ const PromptDetailPage = () => {
                             setSelectedSessionId(prompt.id);
                           }}
                         >
-                          {promptInstances.length >= 3 ? '新增' : '新增函数'}
+                          {promptInstances.length >= 3 ? 'Add' : 'Add Function'}
                         </Button>
                         <Button
                           type="primary"
@@ -1209,7 +1207,7 @@ const PromptDetailPage = () => {
                           onClick={() => setShowTemplateModal(prompt.id)}
                           style={{ background: 'linear-gradient(90deg, #16a085 0%, #2ecc71 100%)', border: 'none' }}
                         >
-                          {promptInstances.length >= 3 ? '导入' : '从模板导入'}
+                          {promptInstances.length >= 3 ? 'Import' : 'Import from Template'}
                         </Button>
                         {promptVersions && promptVersions.length > 0 && (
                           <Button
@@ -1217,7 +1215,7 @@ const PromptDetailPage = () => {
                             size={promptInstances.length >= 3 ? "small" : "default"}
                             onClick={() => navigate(buildLegacyPath('/version-history', { promptKey, targetWindowId: prompt.id }))}
                           >
-                            {promptInstances.length >= 3 ? '历史' : '版本记录'}
+                            {promptInstances.length >= 3 ? 'History' : 'Version History'}
                           </Button>
                         )}
                         <Button
@@ -1238,17 +1236,17 @@ const PromptDetailPage = () => {
                             }
                           })}
                         >
-                          {promptInstances.length >= 3 ? '发布' : '发布新版本'}
+                          {promptInstances.length >= 3 ? 'Publish' : 'Publish New Version'}
                         </Button>
                       </div>
-                      {/* 基础操作按钮 - 只显示最重要的 */}
+                      {/* Basic operation buttons - show only the most important */}
                       <Space size="small">
                         <Button
                           type="text"
                           icon={<CopyOutlined />}
                           onClick={() => copyPrompt(prompt.id)}
                           disabled={promptInstances.length >= 3}
-                          title={promptInstances.length >= 3 ? '最多同时调试3个配置' : '复制配置进行对比'}
+                          title={promptInstances.length >= 3 ? 'Maximum 3 configurations for debugging' : 'Copy configuration for comparison'}
                         />
                         {promptInstances.length > 1 && (
                           <Button
@@ -1256,7 +1254,7 @@ const PromptDetailPage = () => {
                             danger
                             icon={<DeleteOutlined />}
                             onClick={() => removePrompt(prompt.id)}
-                            title="删除配置"
+                            title="Delete configuration"
                           />
                         )}
                       </Space>
@@ -1264,12 +1262,12 @@ const PromptDetailPage = () => {
                   </div>
                 </div>
 
-                {/* 状态提示区域 */}
+                {/* Status prompt area */}
                 <div className="mb-4">
                   {showRestoreSuccess && restoredVersion && restoredWindowId === prompt.id ? (
                     <Alert
-                      message="版本恢复成功！"
-                      description={`已恢复版本 ${restoredVersion.version} 的内容`}
+                      message="Version restored successfully!"
+                      description={`Restored content from version ${restoredVersion.version}`}
                       type="success"
                       showIcon
                       closable
@@ -1283,15 +1281,15 @@ const PromptDetailPage = () => {
                 </div>
 
                 <div className={promptInstances.length >= 3 ? "space-y-3" : "space-y-4"}>
-                  {/* Prompt内容展示 */}
+                  {/* Prompt content display */}
                   <div>
                     <Text strong className="block mb-2">
-                      Prompt内容
+                      Prompt Content
                     </Text>
                     <TextArea
                       value={prompt.content}
                       onChange={(e) => handleContentChange(prompt.id, e.target.value)}
-                      placeholder="输入Prompt内容，使用 {{参数名}} 来定义参数..."
+                      placeholder="Enter Prompt content, use {{parameterName}} to define parameters..."
                       style={{
                         height: promptInstances.length >= 3 ? 100 : 120,
                         resize: 'none'
@@ -1300,13 +1298,13 @@ const PromptDetailPage = () => {
                     />
                   </div>
 
-                  {/* 模型配置区域 */}
+                  {/* Model configuration area */}
                   <div>
                     <Space direction="vertical" className='w-full' size="small">
-                      {/* 模型选择 */}
+                      {/* Model selection */}
                       <div>
                         <Text strong className='mb-2 block'>
-                          模型
+                          Model
                         </Text>
                         <Select
                           value={prompt.selectedModel}
@@ -1321,10 +1319,10 @@ const PromptDetailPage = () => {
                         </Select>
                       </div>
 
-                      {/* 模型参数 */}
+                      {/* Model parameters */}
                       <Card size="small" style={{ backgroundColor: '#fafafa' }}>
                         <Text strong className="block mb-2">
-                          模型参数
+                          Model Parameters
                         </Text>
                         <Row gutter={[8, 8]}>
                           {(() => {
@@ -1389,11 +1387,11 @@ const PromptDetailPage = () => {
                     </Space>
                   </div>
 
-                  {/* 参数配置 */}
+                  {/* Parameter configuration */}
                   {prompt.parameters.length > 0 && (
                     <div>
                       <Text strong className="block mb-2">
-                        参数配置
+                        Parameter Configuration
                       </Text>
                       <Row gutter={[8, 8]}>
                         {prompt.parameters.map((param) => (
@@ -1404,7 +1402,7 @@ const PromptDetailPage = () => {
                             <Input
                               value={prompt.parameterValues[param] || ''}
                               onChange={(e) => updateParameterValue(prompt.id, param, e.target.value)}
-                              placeholder={`输入 ${param} 的值...`}
+                              placeholder={`Enter value for ${param}...`}
                               size="small"
                             />
                           </Col>
@@ -1417,19 +1415,19 @@ const PromptDetailPage = () => {
 
               <Divider />
 
-              {/* 对话测试区域 */}
+              {/* Chat testing area */}
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <Avatar icon={<CommentOutlined />} style={{ backgroundColor: '#e6f7ff' }} />
                     <div>
-                      <Text strong className="text-lg">对话测试</Text>
+                      <Text strong className="text-lg">Chat Testing</Text>
                       <div>
                         <Text type="secondary" className="text-sm">
-                          测试配置 {index + 1} 的效果
+                          Test configuration {index + 1} effectiveness
                           {prompt.sessionId && (
                             <Tag color="green" size="small" className="ml-2">
-                              会话: {prompt.sessionId.substring(0, 8)}...
+                              Session: {prompt.sessionId.substring(0, 8)}...
                             </Tag>
                           )}
                         </Text>
@@ -1443,10 +1441,10 @@ const PromptDetailPage = () => {
                         size="small"
                         icon={<RocketOutlined />}
                         onClick={() => restoreSession(prompt.id)}
-                        title="恢复上一次会话"
+                        title="Restore last session"
                         style={{ color: '#52c41a' }}
                       >
-                        恢复会话
+                        Restore Session
                       </Button>
                     )}
                     {prompt.sessionId && (
@@ -1459,7 +1457,7 @@ const PromptDetailPage = () => {
                             setSelectedSessionId(prompt.sessionId);
                             setShowSessionModal(true);
                           }}
-                          title="查看会话详情"
+                          title="View session details"
                         />
                         <Button
                           type="text"
@@ -1468,8 +1466,8 @@ const PromptDetailPage = () => {
                           icon={<DeleteOutlined />}
                           onClick={async () => {
                             Modal.confirm({
-                              title: '删除会话',
-                              content: '确定要删除这个会话吗？这将清除所有对话历史。',
+                              title: 'Delete Session',
+                              content: 'Are you sure you want to delete this session? This will clear all chat history.',
                               onOk: async () => {
                                 const success = await deleteSession(prompt.sessionId);
                                 if (success) {
@@ -1482,7 +1480,7 @@ const PromptDetailPage = () => {
                               }
                             });
                           }}
-                          title="删除会话"
+                          title="Delete session"
                         />
                       </Space>
                     )}
@@ -1492,9 +1490,9 @@ const PromptDetailPage = () => {
                         size="small"
                         icon={<ClearOutlined />}
                         onClick={() => clearChatHistory(prompt.id)}
-                        title="清空对话"
+                        title="Clear chat"
                       >
-                        清空
+                        Clear
                       </Button>
                     )}
                     <Badge
@@ -1505,8 +1503,8 @@ const PromptDetailPage = () => {
                   </Space>
                 </div>
 
-                {/* 对话内容区域 */}
-                <div 
+                {/* Chat content area */}
+                <div
                   ref={(el) => {
                     if (el) {
                       chatContainerRefs.current[prompt.id] = el;
@@ -1531,10 +1529,10 @@ const PromptDetailPage = () => {
                         }}
                       />
                       <Title level={5} style={{ margin: 0, marginBottom: 8, color: '#8c8c8c' }}>
-                        等待开始对话
+                        Waiting to start chat
                       </Title>
                       <Text type="secondary" style={{ fontSize: '13px' }}>
-                        在下方输入框中发送消息开始测试
+                        Send a message in the input box below to start testing
                       </Text>
                     </div>
                   ) : (
@@ -1564,7 +1562,7 @@ const PromptDetailPage = () => {
                           ) : (
                             <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 8 }}>
                               <div style={{ maxWidth: '90%' }}>
-                                {/* AI消息头部 */}
+                                {/* AI message header */}
                                 <div style={{
                                   display: 'flex',
                                   alignItems: 'center',
@@ -1586,15 +1584,15 @@ const PromptDetailPage = () => {
                                       icon={<CopyOutlined />}
                                       onClick={() => {
                                         navigator.clipboard.writeText(message.content);
-                                        message.success('已复制到剪贴板');
+                                        message.success('Copied to clipboard');
                                       }}
-                                      title="复制回复"
+                                      title="Copy reply"
                                       style={{ fontSize: '10px', padding: '2px 4px', height: 20 }}
                                     />
                                   )}
                                 </div>
 
-                                {/* AI消息内容 */}
+                                {/* AI message content */}
                                 <div style={{
                                   backgroundColor: '#fff',
                                   padding: '10px 12px',
@@ -1611,7 +1609,7 @@ const PromptDetailPage = () => {
                                       }}>
                                         {message.content}
                                       </Text>
-                                      {/* 流式输入闪烁光标 */}
+                                      {/* Streaming input blinking cursor */}
                                       <span style={{
                                         display: 'inline-block',
                                         width: '2px',
@@ -1632,18 +1630,18 @@ const PromptDetailPage = () => {
                                         {message.content}
                                       </Text>
                                       <div className='flex gap-2 mt-2'>
-                                        <Tag color="geekblue">输入 Token: {message?.usage?.promptTokens}</Tag>
-                                        <Tag color='geekblue'>输出 Token: {message?.usage?.completionTokens}</Tag>
-                                        <Tag color='geekblue'>总 Token: {message?.usage?.totalTokens}</Tag>
+                                        <Tag color="geekblue">Input Tokens: {message?.usage?.promptTokens}</Tag>
+                                        <Tag color='geekblue'>Output Tokens: {message?.usage?.completionTokens}</Tag>
+                                        <Tag color='geekblue'>Total Tokens: {message?.usage?.totalTokens}</Tag>
                                       </div>
-                                      {/* 模型参数信息 */}
+                                      {/* Model parameter information */}
                                       <div className='flex justify-between items-center mt-2 gap-2'>
                                         <Text type="secondary" style={{ fontSize: '11px' }}>
                                           {message.timestamp}
                                         </Text>
                                         {
                                           Boolean(message.traceId) && (
-                                            <Tooltip title="查看调用链路跟踪">
+                                            <Tooltip title="View call trace">
                                               <Button
                                                 type="text"
                                                 size="small"
@@ -1672,7 +1670,7 @@ const PromptDetailPage = () => {
                   )}
                 </div>
 
-                {/* 输入区域 */}
+                {/* Input area */}
                 <div className="flex gap-4">
                   <div style={{ flex: 1 }}>
                     <TextArea
@@ -1684,7 +1682,7 @@ const PromptDetailPage = () => {
                           handleSendMessage(prompt.id, userInput);
                         }
                       }}
-                      placeholder="输入您的问题进行测试... (Enter发送，Shift+Enter换行)"
+                      placeholder="Enter your question for testing... (Enter to send, Shift+Enter for new line)"
                       rows={3}
                       disabled={prompt.isLoading}
                       style={{
@@ -1715,7 +1713,7 @@ const PromptDetailPage = () => {
                         color: 'white'
                       }}
                     >
-                      {prompt.isLoading ? '处理中...' : '发送'}
+                      {prompt.isLoading ? 'Processing...' : 'Send'}
                     </Button>
                   </div>
                 </div>
@@ -1725,7 +1723,7 @@ const PromptDetailPage = () => {
         })}
       </div>
 
-      {/* 模态框保持不变 */}
+      {/* Modal boxes remain unchanged */}
       {showPublishModal && currentPrompt && (
         <PublishVersionModal
           prompt={typeof showPublishModal === 'object' ? showPublishModal.prompt : currentPrompt}
@@ -1758,13 +1756,13 @@ const PromptDetailPage = () => {
         />
       )}
 
-      {/* 会话详情模态框 */}
+      {/* Session details modal */}
       {showSessionModal && selectedSessionId && (
         <Modal
           title={
             <Space>
               <MessageOutlined />
-              <span>会话详情</span>
+              <span>Session Details</span>
               <Tag color="blue">{selectedSessionId.substring(0, 8)}...</Tag>
             </Space>
           }
@@ -1779,7 +1777,7 @@ const PromptDetailPage = () => {
               setShowSessionModal(false);
               setSelectedSessionId(null);
             }}>
-              关闭
+              Close
             </Button>,
             <Button
               key="delete"
@@ -1787,8 +1785,8 @@ const PromptDetailPage = () => {
               icon={<DeleteOutlined />}
               onClick={async () => {
                 Modal.confirm({
-                  title: '删除会话',
-                  content: '确定要删除这个会话吗？这将清除所有对话历史。',
+                  title: 'Delete Session',
+                  content: 'Are you sure you want to delete this session? This will clear all chat history.',
                   onOk: async () => {
                     const success = await deleteSession(selectedSessionId);
                     if (success) {
@@ -1804,37 +1802,37 @@ const PromptDetailPage = () => {
                 });
               }}
             >
-              删除会话
+              Delete Session
             </Button>
           ]}
         >
           {currentSession ? (
             <div>
-              <Card title="会话信息" size="small" style={{ marginBottom: 16 }}>
+              <Card title="Session Info" size="small" style={{ marginBottom: 16 }}>
                 <Row gutter={[16, 8]}>
                   <Col span={12}>
-                    <Text strong>会话 ID：</Text>
+                    <Text strong>Session ID:</Text>
                     <Text code style={{ fontSize: '12px' }}>{currentSession.sessionId}</Text>
                   </Col>
                   <Col span={12}>
-                    <Text strong>Prompt Key：</Text>
+                    <Text strong>Prompt Key:</Text>
                     <Text>{currentSession.promptKey}</Text>
                   </Col>
                   <Col span={12}>
-                    <Text strong>版本：</Text>
+                    <Text strong>Version:</Text>
                     <Tag color="blue">{currentSession.version}</Tag>
                   </Col>
                   <Col span={12}>
-                    <Text strong>创建时间：</Text>
+                    <Text strong>Created:</Text>
                     <Text>{dayjs(currentSession.createTime).format('YYYY-MM-DD HH:mm:ss')}</Text>
                   </Col>
                 </Row>
               </Card>
-              <Card title="模型配置" size="small">
+              <Card title="Model Configuration" size="small">
                 <Row gutter={[16, 8]}>
                   <Col span={24}>
                     <Space>
-                      <Text strong>模型：</Text>
+                      <Text strong>Model:</Text>
                       <Text code>{modelNameMap[currentSession.modelConfig.modelId]}</Text>
                     </Space>
                   </Col>
@@ -1850,13 +1848,13 @@ const PromptDetailPage = () => {
                   }
                 </Row>
               </Card>
-              <Card title="参数配置" size="small">
+              <Card title="Parameter Configuration" size="small">
                 <Row gutter={[16, 8]}>
                   {
                     Object.entries(safeJSONParse(currentSession.variables)).map(([key, value]) => {
                       return (
                         <Col span={6} key={key}>
-                          <Text strong>{key}：</Text>
+                          <Text strong>{key}:</Text>
                           <Text>{value || "-"}</Text>
                         </Col>
                       )
@@ -1869,7 +1867,7 @@ const PromptDetailPage = () => {
             <div style={{ textAlign: 'center', padding: 40 }}>
               <Spin size="large" />
               <div style={{ marginTop: 16 }}>
-                <Text>加载会话详情中...</Text>
+                <Text>Loading session details...</Text>
               </div>
             </div>
           )}

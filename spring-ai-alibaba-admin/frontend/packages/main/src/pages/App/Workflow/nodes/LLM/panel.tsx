@@ -129,13 +129,13 @@ export default memo((props: { id: string; data: ILLMNodeData }) => {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.LLM.panel.modelSelection',
-              dm: '模型选择',
+              dm: 'Model Selection',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.LLM.panel.configureModel',
-                dm: '请自行配置模型，根据业务场景选择即可。',
+                dm: 'Please configure the model according to your business scenario.',
               })}
             />
           </div>
@@ -150,13 +150,13 @@ export default memo((props: { id: string; data: ILLMNodeData }) => {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.LLM.panel.prompt',
-              dm: '提示词',
+              dm: 'System Prompt',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.LLM.panel.systemInstruction',
-                dm: '为模型提供系统级的指令，如人设、约束等。',
+                dm: 'Provide system-level instructions to the model, such as persona and constraints.',
               })}
             />
           </div>
@@ -176,13 +176,13 @@ export default memo((props: { id: string; data: ILLMNodeData }) => {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.LLM.panel.userPrompt',
-              dm: '用户提示词',
+              dm: 'User Prompt',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.LLM.panel.interactionContent',
-                dm: '用户和模型的交互内容，如要求、指令等。',
+                dm: 'Interaction content between user and model, such as requirements and instructions.',
               })}
             />
           </div>
@@ -210,13 +210,13 @@ export default memo((props: { id: string; data: ILLMNodeData }) => {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.LLM.panel.output',
-              dm: '输出',
+              dm: 'Output',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.LLM.panel.outputContent',
-                dm: '模型运行结束后的输出内容。',
+                dm: 'Output content after model execution completes.',
               })}
             />
           </div>

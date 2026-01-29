@@ -112,13 +112,13 @@ export default memo((props: { id: string; data: IScriptNodeData }) => {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Script.panel.input',
-              dm: '输入',
+              dm: 'Input',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Script.panel.parametersOrConstants',
-                dm: '脚本需要引用的入参或常量。',
+                dm: 'Parameters or constants that the script needs to reference.',
               })}
             />
           </div>
@@ -143,7 +143,7 @@ export default memo((props: { id: string; data: IScriptNodeData }) => {
             <div className="spark-flow-panel-form-title">
               {$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Script.panel.code',
-                dm: '代码',
+                dm: 'Code',
               })}
             </div>
             <Flex align="center" gap={8}>
@@ -166,7 +166,7 @@ export default memo((props: { id: string; data: IScriptNodeData }) => {
               >
                 {$i18n.get({
                   id: 'main.pages.App.Workflow.nodes.Script.panel.fullScreenEdit',
-                  dm: '全屏编辑',
+                  dm: 'Full Screen Edit',
                 })}
               </Button>
             </Flex>
@@ -192,13 +192,13 @@ export default memo((props: { id: string; data: IScriptNodeData }) => {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.VariableHandle.panel.output',
-              dm: '输出',
+              dm: 'Output',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Script.panel.output',
-                dm: '脚本的输出内容以及结构。',
+                dm: 'The output content and structure of the script.',
               })}
             />
           </div>

@@ -16,7 +16,7 @@ const Sidebar: React.FC = () => {
   };
 
   const formatTime = (date: Date) => {
-    return date.toLocaleString('zh-CN', {
+    return date.toLocaleString('en-US', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -34,15 +34,15 @@ const Sidebar: React.FC = () => {
           onClick={createNewSession}
           size="small"
         >
-          新对话
+          New Conversation
         </Button>
       </div>
 
       <div className={styles.configSection}>
-        <div className={styles.configTitle}>模型配置</div>
+        <div className={styles.configTitle}>Model Configuration</div>
 
         <div style={{ marginBottom: 12 }}>
-          <label style={{ fontSize: 12, color: '#666' }}>模型:</label>
+          <label style={{ fontSize: 12, color: '#666' }}>Model:</label>
           <Select
             value={config.modelConfig.model}
             onChange={(value) => updateModelConfig({ model: value })}
@@ -85,7 +85,7 @@ const Sidebar: React.FC = () => {
 
         <div style={{ marginBottom: 8 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 12, color: '#666' }}>显示工具调用</span>
+            <span style={{ fontSize: 12, color: '#666' }}>Show Tool Calls</span>
             <Switch
               size="small"
               checked={config.showToolCalls}
@@ -96,7 +96,7 @@ const Sidebar: React.FC = () => {
 
         <div style={{ marginBottom: 8 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 12, color: '#666' }}>调试信息</span>
+            <span style={{ fontSize: 12, color: '#666' }}>Debug Info</span>
             <Switch
               size="small"
               checked={config.showDebugInfo}
@@ -119,10 +119,10 @@ const Sidebar: React.FC = () => {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className={styles.sessionTitle}>{session.title}</div>
                 <div className={styles.sessionTime}>
-                  {formatTime(session.updatedAt)} · {session.messages.length} 条消息
+                  {formatTime(session.updatedAt)} · {session.messages.length} messages
                 </div>
               </div>
-              <Tooltip title="删除对话">
+              <Tooltip title="Delete Conversation">
                 <Button
                   type="text"
                   size="small"
@@ -140,9 +140,9 @@ const Sidebar: React.FC = () => {
 
         {state.sessions.length === 0 && (
           <div style={{ padding: 16, textAlign: 'center', color: '#999', fontSize: 14 }}>
-            暂无对话记录
+            No Conversations Yet
             <br />
-            点击"新对话"开始
+            Click "New Conversation" to Start
           </div>
         )}
       </div>

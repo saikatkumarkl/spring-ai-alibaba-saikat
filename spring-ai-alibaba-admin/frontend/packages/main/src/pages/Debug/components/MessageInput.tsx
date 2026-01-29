@@ -24,7 +24,7 @@ const MessageInput: React.FC = () => {
         textareaRef.current.style.height = '40px';
       }
     } catch (error) {
-      message.error('发送消息失败');
+      message.error('Failed to send message');
     }
   };
 
@@ -51,7 +51,7 @@ const MessageInput: React.FC = () => {
   const handleFileUpload = (file: File) => {
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      message.error('文件大小不能超过 10MB');
+      message.error('File size cannot exceed 10MB');
       return false;
     }
 
@@ -65,7 +65,7 @@ const MessageInput: React.FC = () => {
     ];
 
     if (!allowedTypes.includes(file.type)) {
-      message.error('不支持的文件类型');
+      message.error('Unsupported file type');
       return false;
     }
 
@@ -105,7 +105,7 @@ const MessageInput: React.FC = () => {
         value={inputValue}
         onChange={handleInputChange}
         onKeyPress={handleKeyPress}
-        placeholder={isDisabled ? "AI 正在思考中..." : "输入消息... (Enter 发送，Shift+Enter 换行)"}
+        placeholder={isDisabled ? "AI is thinking..." : "Type a message... (Enter to send, Shift+Enter for new line)"}
         disabled={isDisabled}
         rows={1}
       />
@@ -121,7 +121,7 @@ const MessageInput: React.FC = () => {
             icon={<PaperClipOutlined />}
             size="small"
             disabled={isDisabled}
-            title="上传文件"
+            title="Upload File"
           />
         </Upload>
 
@@ -133,7 +133,7 @@ const MessageInput: React.FC = () => {
           disabled={isDisabled || (!inputValue.trim() && attachedFiles.length === 0)}
           loading={state.isStreaming}
         >
-          发送
+          Send
         </Button>
       </div>
     </div>

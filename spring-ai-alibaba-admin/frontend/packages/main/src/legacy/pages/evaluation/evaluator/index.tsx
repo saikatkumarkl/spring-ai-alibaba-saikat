@@ -37,7 +37,7 @@ const EvaluationEvaluator: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  // 加载评估器列表
+  // Load evaluator list
   const fetchEvaluators = useCallback(async (pagination: ReturnType<typeof usePagination>["pagination"], searchName: string) => {
     setLoading(true);
 
@@ -56,11 +56,11 @@ const EvaluationEvaluator: React.FC = () => {
           total: responseData.totalCount || 0
         }));
       } else {
-        throw new Error(response.message || '获取评估器列表失败');
+        throw new Error(response.message || 'Failed to get evaluator list');
       }
     } catch (error) {
-      console.error('获取评估器列表失败:', error);
-      handleApiError(error, '获取评估器列表');
+      console.error('Failed to get evaluator list:', error);
+      handleApiError(error, 'Get evaluator list');
     } finally {
       setLoading(false);
     }
@@ -70,22 +70,22 @@ const EvaluationEvaluator: React.FC = () => {
     fetchEvaluators(pagination, searchName);
   }, [pagination.current, pagination.pageSize, searchName]);
 
-  // 当模型列表加载完成后，重新获取评估器列表以正确显示模型名称
+  // When model list is loaded, re-fetch evaluator list to display correct model names
   useEffect(() => {
     if (models.length > 0 && evaluators.length > 0) {
-      // 触发重新渲染以显示正确的模型名称
-      setEvaluators(prev => [...prev]); // 触发组件重新渲染
+      // Trigger re-render to display correct model names
+      setEvaluators(prev => [...prev]); // Trigger component re-render
     }
   }, [models, evaluators.length]);
 
-  // 处理搜索
+  // Handle search
   const handleSearch = useCallback((searchName: string) => {
     setSearchName(searchName);
   }, []);
 
-  // 操作处理函数
+  // Action handler functions
   const handleView = (record: EvaluatorRecord) => {
-    // 跳转到评估器详情页面，携带id参数
+    // Navigate to evaluator detail page with id parameter
     navigate(getLegacyPath(`/evaluation/evaluator/${record.id}`));
   };
 
@@ -103,37 +103,37 @@ const EvaluationEvaluator: React.FC = () => {
           }
         });
       })
-      // 跳转到调试页面，携带评估器的实际配置
+      // Navigate to debug page with actual evaluator configuration
     } catch (error) {
       console.error('Error in handleDebug:', error);
-      handleApiError(error, '跳转调试页面');
+      handleApiError(error, 'Navigate to debug page');
     }
   };
 
   const handleDelete = (record: EvaluatorRecord) => {
     Modal.confirm({
-      title: '确认删除',
+      title: 'Confirm Delete',
       icon: <ExclamationCircleOutlined />,
       content: (
         <div>
-          <p>确定要删除评估器 <strong>{record.name}</strong> 吗？</p>
-          <p className="text-gray-500 text-sm">此操作不可恢复，请谨慎操作。</p>
+          <p>Are you sure you want to delete evaluator <strong>{record.name}</strong>?</p>
+          <p className="text-gray-500 text-sm">This action cannot be undone. Please proceed with caution.</p>
         </div>
       ),
-      okText: '确认删除',
+      okText: 'Confirm Delete',
       okType: 'danger',
-      cancelText: '取消',
+      cancelText: 'Cancel',
       onOk: async () => {
         try {
           const response = await API.deleteEvaluator({ id: record.id });
           if (response.code === 200) {
-            notifySuccess({ message: '评估器删除成功' });
-            fetchEvaluators(pagination, searchName); // 重新加载列表
+            notifySuccess({ message: 'Evaluator deleted successfully' });
+            fetchEvaluators(pagination, searchName); // Reload list
           } else {
-            throw new Error(response.message || '删除失败');
+            throw new Error(response.message || 'Delete failed');
           }
         } catch (error) {
-          handleApiError(error, '删除评估器');
+          handleApiError(error, 'Delete evaluator');
         }
       },
     });
@@ -145,13 +145,13 @@ const EvaluationEvaluator: React.FC = () => {
 
   const handleCreateSuccess = () => {
     setShowCreateModal(false);
-    fetchEvaluators(pagination, searchName); // 重新加载列表
+    fetchEvaluators(pagination, searchName); // Reload list
   };
 
-  // 表格列配置
+  // Table column configuration
   const columns = [
     {
-      title: '评估器名称',
+      title: 'Evaluator Name',
       dataIndex: 'name',
       key: 'name',
       render: (text: string, record: EvaluatorRecord) => (
@@ -164,7 +164,7 @@ const EvaluationEvaluator: React.FC = () => {
       ),
     },
     {
-      title: '描述',
+      title: 'Description',
       dataIndex: 'description',
       key: 'description',
       render: (text: string) => (
@@ -174,11 +174,11 @@ const EvaluationEvaluator: React.FC = () => {
       ),
     },
     {
-      title: '模型',
+      title: 'Model',
       dataIndex: 'modelConfig',
       key: 'modelConfig',
       render: (modelConfig: string) => {
-        // 优先使用 modelName，如果为空或为 '-' 则从 modelConfig 中提取
+        // Prioritize modelName, if empty or '-' then extract from modelConfig
         const modelConfigJson = JSON.parse(modelConfig);
         const name = modelNameMap[modelConfigJson?.modelId];
         return name ? (
@@ -187,32 +187,32 @@ const EvaluationEvaluator: React.FC = () => {
       },
     },
     {
-      title: '创建时间',
+      title: 'Created At',
       dataIndex: 'createTime',
       key: 'createTime',
       render: (text: string) => dayjs(text).format('YYYY-MM-DD HH:mm:ss'),
     },
     {
-      title: '更新时间',
+      title: 'Updated At',
       dataIndex: 'updateTime',
       key: 'updateTime',
       render: (text: string) => dayjs(text).format('YYYY-MM-DD HH:mm:ss'),
     },
     {
-      title: '操作',
+      title: 'Actions',
       key: 'action',
       width: 160,
       fixed: 'right' as const,
       render: (_: any, record: EvaluatorRecord) => (
         <Space size="middle">
-          <Tooltip title="详情">
+          <Tooltip title="Details">
             <Button
               type="link"
               icon={<EyeOutlined />}
               onClick={() => handleView(record)}
             />
           </Tooltip>
-          <Tooltip title={!record.modelConfig ? "当前暂未发布版本，请先发布版本后调试" : "调试"} >
+          <Tooltip title={!record.modelConfig ? "No version published yet. Please publish a version first before debugging" : "Debug"} >
             <Button
               type="link"
               icon={<BugOutlined />}
@@ -220,7 +220,7 @@ const EvaluationEvaluator: React.FC = () => {
               onClick={() => handleDebug(record)}
             />
           </Tooltip>
-          <Tooltip title="删除">
+          <Tooltip title="Delete">
             <Button
               type="link"
               icon={<DeleteOutlined />}
@@ -235,15 +235,15 @@ const EvaluationEvaluator: React.FC = () => {
 
   return (
     <div className="evaluator-page p-8 fade-in">
-      {/* 页面标题 */}
+      {/* Page Title */}
       <div className="mb-8">
-        <Title level={2} style={{ marginBottom: 8 }}>评估器管理</Title>
+        <Title level={2} style={{ marginBottom: 8 }}>Evaluator Management</Title>
       </div>
       <Card className='mb-4'>
-        {/* 搜索区域 */}
+        {/* Search Area */}
         <div className="flex gap-4 justify-between" style={{flexWrap: 'wrap'}}>
           <Input.Search
-            placeholder="搜索名称"
+            placeholder="Search name"
             allowClear
             style={{ width: 280 }}
             onSearch={handleSearch}
@@ -253,12 +253,12 @@ const EvaluationEvaluator: React.FC = () => {
             icon={<PlusOutlined />}
             onClick={handleCreate}
           >
-            新建评估器
+            Create Evaluator
           </Button>
         </div>
 
       </Card>
-      {/* 数据表格 */}
+      {/* Data Table */}
       <Card>
         <div className="evaluator-table bg-white rounded-lg">
           <Table
@@ -277,7 +277,7 @@ const EvaluationEvaluator: React.FC = () => {
         </div>
       </Card>
 
-      {/* 创建评估器弹窗 */}
+      {/* Create Evaluator Modal */}
       {showCreateModal && (
         <CreateEvaluatorModal
           onClose={() => setShowCreateModal(false)}

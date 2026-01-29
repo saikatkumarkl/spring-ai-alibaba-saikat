@@ -90,11 +90,11 @@ export default function AppComponent(props: { type: IAppType }) {
     Modal.confirm({
       title: $i18n.get({
         id: 'main.pages.Component.AppComponent.index.delete',
-        dm: '是否删除',
+        dm: 'Confirm Delete',
       }),
       content: $i18n.get({
         id: 'main.pages.Component.AppComponent.index.noticeDeleteComponent',
-        dm: '请注意，删除组件会导致所有已关联的应用中的组件失效，请确认关联应用清单',
+        dm: 'Please note that deleting this component will invalidate it in all associated applications. Please confirm the associated application list.',
       }),
 
       onOk: () => {
@@ -102,7 +102,7 @@ export default function AppComponent(props: { type: IAppType }) {
           message.success(
             $i18n.get({
               id: 'main.pages.Component.AppComponent.index.successDelete',
-              dm: '删除成功',
+              dm: 'Deleted successfully',
             }),
           );
           let current = state.current;
@@ -154,21 +154,21 @@ export default function AppComponent(props: { type: IAppType }) {
         >
           {$i18n.get({
             id: 'main.pages.Component.AppComponent.index.create',
-            dm: '创建',
+            dm: 'Create',
           })}
 
           {props.type === IAppType.WORKFLOW
             ? $i18n.get({
                 id: 'main.pages.Component.AppComponent.index.workflow',
-                dm: '工作流',
+                dm: 'Workflow',
               })
             : $i18n.get({
                 id: 'main.pages.Component.AppComponent.index.intelligentAgent',
-                dm: '智能体',
+                dm: 'Agent',
               })}
           {$i18n.get({
             id: 'main.pages.Component.AppComponent.index.component',
-            dm: '组件',
+            dm: 'Component',
           })}
         </Button>,
       )}
@@ -176,7 +176,7 @@ export default function AppComponent(props: { type: IAppType }) {
         <Search
           placeholder={$i18n.get({
             id: 'main.pages.Component.AppComponent.index.enterComponentName',
-            dm: '请输入组件名称',
+            dm: 'Enter component name',
           })}
           value={state.name}
           onChange={(val) => setState({ name: val })}
@@ -209,21 +209,21 @@ export default function AppComponent(props: { type: IAppType }) {
           >
             {$i18n.get({
               id: 'main.pages.Component.AppComponent.index.create',
-              dm: '创建',
+              dm: 'Create',
             })}
 
             {props.type === IAppType.WORKFLOW
               ? $i18n.get({
                   id: 'main.pages.Component.AppComponent.index.workflow',
-                  dm: '工作流',
+                  dm: 'Workflow',
                 })
               : $i18n.get({
                   id: 'main.pages.Component.AppComponent.index.intelligentAgent',
-                  dm: '智能体',
+                  dm: 'Agent',
                 })}
             {$i18n.get({
               id: 'main.pages.Component.AppComponent.index.component',
-              dm: '组件',
+              dm: 'Component',
             })}
           </Button>
         }

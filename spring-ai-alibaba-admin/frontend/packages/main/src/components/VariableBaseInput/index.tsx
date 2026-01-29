@@ -35,7 +35,7 @@ export const VariableBaseInput = memo(
                 placeholder ||
                 $i18n.get({
                   id: 'main.components.VariableBaseInput.index.inputValue',
-                  dm: '输入变量值',
+                  dm: 'Enter value',
                 })
               }
               stringMode
@@ -57,7 +57,7 @@ export const VariableBaseInput = memo(
                 placeholder ||
                 $i18n.get({
                   id: 'main.components.VariableBaseInput.index.inputValue',
-                  dm: '输入变量值',
+                  dm: 'Enter value',
                 })
               }
               variant={variant}
@@ -75,20 +75,20 @@ export const VariableBaseInput = memo(
               value={value}
               placeholder={$i18n.get({
                 id: 'main.components.VariableBaseInput.index.select',
-                dm: '请选择',
+                dm: 'Please select',
               })}
               options={[
                 {
                   label: $i18n.get({
                     id: 'main.components.VariableBaseInput.index.yes',
-                    dm: '是',
+                    dm: 'Yes',
                   }),
                   value: 'true',
                 },
                 {
                   label: $i18n.get({
                     id: 'main.components.VariableBaseInput.index.no',
-                    dm: '否',
+                    dm: 'No',
                   }),
                   value: 'false',
                 },

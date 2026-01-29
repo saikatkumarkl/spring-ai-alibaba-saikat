@@ -73,16 +73,16 @@ export default function () {
     AlertDialog.warning({
       title: $i18n.get({
         id: 'main.pages.Knowledge.List.index.deleteData',
-        dm: '删除数据',
+        dm: 'Delete Data',
       }),
       children: $i18n.get({
         id: 'main.pages.Knowledge.List.index.confirmDeleteData',
-        dm: '确定删除该数据吗？',
+        dm: 'Are you sure you want to delete this data?',
       }),
       danger: true,
       okText: $i18n.get({
         id: 'main.pages.Knowledge.List.index.confirmDelete',
-        dm: '确认删除',
+        dm: 'Confirm Delete',
       }),
       onOk: () => {
         deleteKnowledge(id).then(() => {
@@ -118,7 +118,7 @@ export default function () {
       >
         {$i18n.get({
           id: 'main.pages.Knowledge.List.index.createKnowledgeBase',
-          dm: '创建知识库',
+          dm: 'Create Knowledge Base',
         })}
       </Button>
     </Flex>
@@ -129,14 +129,14 @@ export default function () {
         {
           title: $i18n.get({
             id: 'main.pages.App.index.home',
-            dm: '首页',
+            dm: 'Home',
           }),
           path: '/',
         },
         {
           title: $i18n.get({
             id: 'main.pages.Knowledge.List.index.knowledgeBase',
-            dm: '知识库',
+            dm: 'Knowledge Base',
           }),
         },
       ]}
@@ -148,7 +148,7 @@ export default function () {
           <Search
             placeholder={$i18n.get({
               id: 'main.pages.Knowledge.List.index.enterKnowledgeBaseName',
-              dm: '请输入知识库名称',
+              dm: 'Please enter knowledge base name',
             })}
             value={state.name}
             onChange={(val) => setState({ name: val })}
@@ -181,7 +181,7 @@ export default function () {
             >
               {$i18n.get({
                 id: 'main.pages.Knowledge.List.index.createKnowledgeBase',
-                dm: '创建知识库',
+                dm: 'Create Knowledge Base',
               })}
             </Button>
           }

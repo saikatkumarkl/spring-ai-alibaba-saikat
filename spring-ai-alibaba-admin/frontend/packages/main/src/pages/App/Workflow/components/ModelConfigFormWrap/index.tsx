@@ -72,13 +72,13 @@ export default memo(function ModelConfigFormWrap(
               <span>
                 {$i18n.get({
                   id: 'main.pages.App.Workflow.components.ModelConfigFormWrap.index.visual',
-                  dm: '视觉',
+                  dm: 'Vision',
                 })}
               </span>
               <InfoIcon
                 tip={$i18n.get({
                   id: 'main.pages.App.Workflow.components.ModelConfigFormWrap.index.inputContentForIntent',
-                  dm: '输入需要用做意图判断的内容。',
+                  dm: 'Input content for intent determination.',
                 })}
               />
             </div>

@@ -88,7 +88,7 @@ export default function ChunkEditDrawer(props: ChunkEditDrawerProps) {
       title={$i18n.get(
         {
           id: 'main.pages.Knowledge.Detail.components.ChunkEditDrawer.index.editSliceVar1',
-          dm: '编辑切片{var1}',
+          dm: 'Edit Slice {var1}',
         },
         { var1: title },
       )}
@@ -100,20 +100,20 @@ export default function ChunkEditDrawer(props: ChunkEditDrawerProps) {
             {text.length}
             {$i18n.get({
               id: 'main.pages.Knowledge.Detail.components.ChunkEditDrawer.index.character',
-              dm: '字符',
+              dm: ' characters',
             })}
           </div>
           <Flex align="center" gap={12}>
             <Button onClick={onClose}>
               {$i18n.get({
                 id: 'main.pages.Knowledge.Detail.components.ChunkEditDrawer.index.cancel',
-                dm: '取消',
+                dm: 'Cancel',
               })}
             </Button>
             <Button type="primary" onClick={handleUpdate} loading={loading}>
               {$i18n.get({
                 id: 'main.pages.Knowledge.Detail.components.ChunkEditDrawer.index.save',
-                dm: '保存',
+                dm: 'Save',
               })}
             </Button>
           </Flex>
@@ -125,7 +125,7 @@ export default function ChunkEditDrawer(props: ChunkEditDrawerProps) {
         onChange={(e) => setText(e.target.value)}
         placeholder={$i18n.get({
           id: 'main.pages.Knowledge.Detail.components.ChunkEditDrawer.index.enterContent',
-          dm: '请输入内容',
+          dm: 'Please enter content',
         })}
         style={{ height: '100%', resize: 'none' }}
         ref={inputRef}

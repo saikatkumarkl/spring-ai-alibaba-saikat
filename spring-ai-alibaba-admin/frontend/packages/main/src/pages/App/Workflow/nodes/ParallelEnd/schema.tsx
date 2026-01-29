@@ -5,16 +5,16 @@ export const ParallelEndSchema: INodeSchema = {
   type: 'ParallelEnd',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.ParallelEnd.schema.parallelEnd',
-    dm: '并行结束',
+    dm: 'Parallel End',
   }),
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.ParallelEnd.schema.parallelEndNode',
-    dm: '并行结束节点',
+    dm: 'Parallel end node',
   }),
   iconType: 'spark-flag-line',
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.ParallelEnd.schema.logic',
-    dm: '逻辑',
+    dm: 'Logic',
   }),
   defaultParams: {
     input_params: [],

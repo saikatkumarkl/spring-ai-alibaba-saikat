@@ -77,7 +77,7 @@ const MCPServerSelector = (props: IMCPServerSelectorProps) => {
           prefix={<IconFont type="spark-search-line" />}
           placeholder={$i18n.get({
             id: 'main.pages.App.components.MCPSelector.index.inputHere',
-            dm: '在此输入',
+            dm: 'Enter here',
           })}
           allowClear
           style={{ width: 220 }}
@@ -103,7 +103,7 @@ const MCPServerSelector = (props: IMCPServerSelectorProps) => {
                       message.warning(
                         $i18n.get({
                           id: 'main.pages.App.components.MCPSelector.index.reachedMaxLimit',
-                          dm: '已达到最大数量限制',
+                          dm: 'Maximum limit reached',
                         }),
                       );
                       return;
@@ -147,11 +147,11 @@ const MCPServerSelector = (props: IMCPServerSelectorProps) => {
                   filterParams.name?.length
                     ? $i18n.get({
                         id: 'main.pages.App.components.MCPSelector.index.noSearchResult',
-                        dm: '暂无搜索结果',
+                        dm: 'No search results',
                       })
                     : $i18n.get({
                         id: 'main.pages.App.components.MCPSelector.index.noCustomMcpService',
-                        dm: '暂无自定义MCP服务',
+                        dm: 'No custom MCP services',
                       })
                 }
                 description={
@@ -160,7 +160,7 @@ const MCPServerSelector = (props: IMCPServerSelectorProps) => {
                       isOpenNew
                       text={$i18n.get({
                         id: 'main.pages.App.components.MCPSelector.index.goCreate',
-                        dm: '去创建',
+                        dm: 'Create',
                       })}
                     />
                   )
@@ -187,7 +187,7 @@ export const MCPServerSelectDrawer = (props: IMCPSelectorDrawerProps) => {
     <Drawer
       title={$i18n.get({
         id: 'main.pages.App.components.MCPSelector.index.selectMcpService',
-        dm: '选择MCP服务',
+        dm: 'Select MCP Service',
       })}
       open
       width={640}
@@ -213,7 +213,7 @@ export const MCPServerSelectDrawer = (props: IMCPSelectorDrawerProps) => {
               $i18n.get(
                 {
                   id: 'main.pages.App.components.MCPSelector.index.addedMcpVar1Var2',
-                  dm: '已添加MCP{var1}/{var2}',
+                  dm: 'MCP added {var1}/{var2}',
                 },
                 { var1: cacheSelcted.length, var2: MCP_MAX_LIMIT },
               )}
@@ -233,7 +233,7 @@ export const MCPServerSelectDrawer = (props: IMCPSelectorDrawerProps) => {
             >
               {$i18n.get({
                 id: 'main.pages.App.components.MCPSelector.index.cancel',
-                dm: '取消',
+                dm: 'Cancel',
               })}
             </Button>
             <Button
@@ -244,14 +244,14 @@ export const MCPServerSelectDrawer = (props: IMCPSelectorDrawerProps) => {
                 message.success(
                   $i18n.get({
                     id: 'main.pages.App.components.MCPSelector.index.addSuccess',
-                    dm: '添加成功！',
+                    dm: 'Added successfully!',
                   }),
                 );
               }}
             >
               {$i18n.get({
                 id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.confirm',
-                dm: '确认',
+                dm: 'Confirm',
               })}
             </Button>
           </div>
@@ -283,7 +283,7 @@ export const MCPToolSelectModal = (props: IMCPToolSelectModalProps) => {
       width={740}
       title={$i18n.get({
         id: 'main.pages.App.components.MCPSelector.index.11',
-        dm: '选择MCP工具',
+        dm: 'Select MCP Tool',
       })}
       open
       onCancel={props.onClose}
@@ -293,7 +293,7 @@ export const MCPToolSelectModal = (props: IMCPToolSelectModalProps) => {
           <Button onClick={props.onClose}>
             {$i18n.get({
               id: 'main.pages.App.components.MCPSelector.index.cancel',
-              dm: '取消',
+              dm: 'Cancel',
             })}
           </Button>
           <Button
@@ -303,7 +303,7 @@ export const MCPToolSelectModal = (props: IMCPToolSelectModalProps) => {
                 message.warning(
                   $i18n.get({
                     id: 'main.pages.App.components.MCPSelector.index.selectMcpTool',
-                    dm: '请选择MCP工具',
+                    dm: 'Please select MCP tool',
                   }),
                 );
                 return;
@@ -314,7 +314,7 @@ export const MCPToolSelectModal = (props: IMCPToolSelectModalProps) => {
           >
             {$i18n.get({
               id: 'main.pages.App.components.MCPSelector.index.confirm',
-              dm: '确定',
+              dm: 'OK',
             })}
           </Button>
         </div>

@@ -12,13 +12,13 @@ const checkValid = (data: IParallelNodeData) => {
   checkInputParams(data.input_params, errorMsg, {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.Parallel.schema.batchProcessingArray',
-      dm: '批处理数组',
+      dm: 'Batch Array',
     }),
   });
   checkInputParams(data.output_params, errorMsg, {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.Parallel.schema.output',
-      dm: '输出',
+      dm: 'Output',
     }),
     checkValue: true,
   });
@@ -35,16 +35,16 @@ export const ParallelSchema: INodeSchema = {
   type: 'Parallel',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Parallel.schema.batchProcessing',
-    dm: '批处理',
+    dm: 'Batch Processing',
   }),
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Parallel.schema.bulkProcessing',
-    dm: '支持对数组进行的批量处理，提升速度。',
+    dm: 'Supports batch processing of arrays to improve speed.',
   }),
   iconType: 'spark-summary-line',
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Parallel.schema.logic',
-    dm: '逻辑',
+    dm: 'Logic',
   }),
   defaultParams: {
     input_params: [],

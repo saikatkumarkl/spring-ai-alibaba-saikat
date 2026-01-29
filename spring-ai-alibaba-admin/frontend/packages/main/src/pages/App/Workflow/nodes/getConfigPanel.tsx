@@ -194,7 +194,7 @@ export default function getConfigPanel(
         <div>
           {$i18n.get({
             id: 'main.pages.App.Workflow.nodes.getConfigPanel.unsupportedNode',
-            dm: '未支持的节点',
+            dm: 'Unsupported Node',
           })}
         </div>
       );

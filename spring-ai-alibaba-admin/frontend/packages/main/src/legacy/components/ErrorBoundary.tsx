@@ -29,12 +29,12 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       errorInfo,
     });
 
-    // 调用错误回调
+    // Call error callback
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
 
-    // 日志记录
+    // Log recording
     console.error('ErrorBoundary caught an error:', error, errorInfo);
   }
 
@@ -52,14 +52,14 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
         <div className="min-h-[400px] flex items-center justify-center">
           <Result
             status="error"
-            title="页面出现错误"
-            subTitle={this.state.error?.message || '抱歉，页面遇到了一个错误'}
+            title="Page Error"
+            subTitle={this.state.error?.message || 'Sorry, the page encountered an error'}
             extra={[
               <Button type="primary" key="retry" onClick={this.handleRetry}>
-                重新尝试
+                Try Again
               </Button>,
               <Button key="home" onClick={() => window.location.href = '/'}>
-                返回首页
+                Return Home
               </Button>,
             ]}
           />

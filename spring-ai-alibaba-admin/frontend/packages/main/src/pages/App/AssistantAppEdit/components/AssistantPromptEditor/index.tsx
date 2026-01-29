@@ -118,7 +118,7 @@ export function AssistantPromptEditorWrap(props: IPromptProps) {
         >
           {$i18n.get({
             id: 'main.pages.MCP.Detail.promptWords',
-            dm: '提示词',
+            dm: 'Prompt',
           })}
         </div>
       </Flex>
@@ -139,7 +139,7 @@ export function AssistantPromptEditorWrap(props: IPromptProps) {
       >
         {$i18n.get({
           id: 'main.pages.App.AssistantAppEdit.components.AssistantPromptEditor.index.variablesOptionsComeFromBelowVariableConfiguration',
-          dm: '提示词中变量的选项来自下方“变量配置”，如需新增请在下方操作',
+          dm: 'Variable options in the prompt come from the "Variable Configuration" below. To add new ones, please operate below.',
         })}
       </div>
       <Variables

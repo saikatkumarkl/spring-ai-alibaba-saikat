@@ -24,20 +24,20 @@ export function ConfigFormItem(props: { item: BizVarItem }) {
                 value: 'true',
                 label: $i18n.get({
                   id: 'main.pages.App.AssistantAppEdit.components.VarConfigDrawer.form.yes',
-                  dm: '是',
+                  dm: 'Yes',
                 }),
               },
               {
                 value: 'false',
                 label: $i18n.get({
                   id: 'main.pages.App.AssistantAppEdit.components.VarConfigDrawer.form.no',
-                  dm: '否',
+                  dm: 'No',
                 }),
               },
             ]}
             placeholder={$i18n.get({
               id: 'main.pages.App.AssistantAppEdit.components.VarConfigDrawer.form.select',
-              dm: '请选择',
+              dm: 'Please select',
             })}
           />
         );
@@ -47,7 +47,7 @@ export function ConfigFormItem(props: { item: BizVarItem }) {
           <InputNumber
             placeholder={$i18n.get({
               id: 'main.pages.App.AssistantAppEdit.components.VarConfigDrawer.form.enterValue',
-              dm: '请输入参数值',
+              dm: 'Please enter value',
             })}
           />
         );
@@ -56,7 +56,7 @@ export function ConfigFormItem(props: { item: BizVarItem }) {
           <Input
             placeholder={$i18n.get({
               id: 'main.pages.App.AssistantAppEdit.components.VarConfigDrawer.form.enterValue',
-              dm: '请输入参数值',
+              dm: 'Please enter value',
             })}
           />
         );
@@ -111,7 +111,7 @@ export default function AgentVarConfigForm(props: VarConfigFormProps) {
         <Empty
           description={$i18n.get({
             id: 'main.pages.App.AssistantAppEdit.components.VarConfigDrawer.form.noVariables',
-            dm: '没有需要填写的变量',
+            dm: 'No variables to fill in',
           })}
         />
       </Flex>
@@ -129,7 +129,7 @@ export default function AgentVarConfigForm(props: VarConfigFormProps) {
           <p className="text-[14px] leading-[24px] font-medium m-[20px_0_12px]">
             {$i18n.get({
               id: 'main.pages.App.AssistantAppEdit.components.VarConfigDrawer.form.customVariable',
-              dm: '自定义变量',
+              dm: 'Custom Variables',
             })}
           </p>
 
@@ -175,7 +175,7 @@ export default function AgentVarConfigForm(props: VarConfigFormProps) {
           <p className="text-[14px] leading-[24px] font-medium m-[20px_0_12px]">
             {$i18n.get({
               id: 'main.pages.App.AssistantAppEdit.components.VarConfigDrawer.form.builtinVariable',
-              dm: '内置变量',
+              dm: 'Built-in Variables',
             })}
           </p>
 

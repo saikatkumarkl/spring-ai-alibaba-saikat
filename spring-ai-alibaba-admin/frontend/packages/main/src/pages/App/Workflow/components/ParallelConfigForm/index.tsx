@@ -22,13 +22,13 @@ export default memo(function ParallelConfigForm({
           <span>
             {$i18n.get({
               id: 'main.pages.App.Workflow.components.ParallelConfigForm.index.maxBatchCount',
-              dm: '批处理次数上限',
+              dm: 'Batch Processing Limit',
             })}
           </span>
           <InfoIcon
             tip={$i18n.get({
               id: 'main.pages.App.Workflow.components.ParallelConfigForm.index.batchExecutionLimit',
-              dm: '批处理运行的次数不大于批处理次数上限',
+              dm: 'Batch processing runs should not exceed the limit',
             })}
           />
         </Flex>
@@ -47,13 +47,13 @@ export default memo(function ParallelConfigForm({
           <span>
             {$i18n.get({
               id: 'main.pages.App.Workflow.components.ParallelConfigForm.index.parallelCount',
-              dm: '并行运行数量',
+              dm: 'Parallel Execution Count',
             })}
           </span>
           <InfoIcon
             tip={$i18n.get({
               id: 'main.pages.App.Workflow.components.ParallelConfigForm.index.concurrentLimit',
-              dm: '批处理的并发限制，设置为 1 表示串行执行所有任务',
+              dm: 'Batch concurrency limit, set to 1 for serial execution',
             })}
           />
         </Flex>

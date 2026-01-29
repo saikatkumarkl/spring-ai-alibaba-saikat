@@ -129,7 +129,7 @@ export default memo(function ApiPanel({
       default:
         return $i18n.get({
           id: 'main.pages.App.Workflow.nodes.APINode.panel.none',
-          dm: '无',
+          dm: 'None',
         });
     }
   }, [data.node_param.authorization]);
@@ -142,7 +142,7 @@ export default memo(function ApiPanel({
             <div className="spark-flow-panel-form-title">
               {$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.APINode.panel.apiAddress',
-                dm: 'API地址',
+                dm: 'API Address',
               })}
             </div>
             <Button
@@ -157,7 +157,7 @@ export default memo(function ApiPanel({
             >
               {$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.APINode.panel.authentication',
-                dm: '鉴权',
+                dm: 'Authentication',
               })}
 
               {`(${memoAuthorization})`}
@@ -184,7 +184,7 @@ export default memo(function ApiPanel({
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.APINode.panel.headerSetting',
-              dm: 'Header设置',
+              dm: 'Header Settings',
             })}
           </div>
           <CustomInputsControl
@@ -200,7 +200,7 @@ export default memo(function ApiPanel({
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.APINode.panel.paramSetting',
-              dm: 'Param设置',
+              dm: 'Param Settings',
             })}
           </div>
           <CustomInputsControl
@@ -216,7 +216,7 @@ export default memo(function ApiPanel({
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.APINode.panel.bodySetting',
-              dm: 'Body设置',
+              dm: 'Body Settings',
             })}
           </div>
           <Radio.Group
@@ -271,7 +271,7 @@ export default memo(function ApiPanel({
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.APINode.panel.timeoutSetting',
-              dm: '超时设置（秒）',
+              dm: 'Timeout Settings (seconds)',
             })}
           </div>
           <InputNumber
@@ -282,7 +282,7 @@ export default memo(function ApiPanel({
             }
             placeholder={$i18n.get({
               id: 'main.pages.App.Workflow.nodes.APINode.panel.enterTimeoutTime',
-              dm: '请输入超时时间',
+              dm: 'Please enter timeout',
             })}
             max={120}
             min={1}
@@ -296,7 +296,7 @@ export default memo(function ApiPanel({
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.APINode.panel.output',
-              dm: '输出',
+              dm: 'Output',
             })}
           </div>
           <Select
@@ -306,14 +306,14 @@ export default memo(function ApiPanel({
               {
                 label: $i18n.get({
                   id: 'main.pages.App.Workflow.nodes.APINode.panel.rawData',
-                  dm: '原始数据',
+                  dm: 'Raw Data',
                 }),
                 value: 'primitive',
               },
               {
                 label: $i18n.get({
                   id: 'main.pages.App.Workflow.nodes.APINode.panel.jsonData',
-                  dm: 'JSON数据',
+                  dm: 'JSON Data',
                 }),
                 value: 'json',
               },

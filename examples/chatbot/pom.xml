@@ -50,13 +50,6 @@
 			</dependency>
 			<dependency>
 				<groupId>com.alibaba.cloud.ai</groupId>
-				<artifactId>spring-ai-alibaba-extensions-bom</artifactId>
-				<version>${spring-ai-alibaba-extensions.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.alibaba.cloud.ai</groupId>
 				<artifactId>spring-ai-alibaba-bom</artifactId>
 				<version>${spring-ai-alibaba.version}</version>
 				<type>pom</type>
@@ -67,8 +60,9 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.alibaba.cloud.ai</groupId>
-			<artifactId>spring-ai-alibaba-starter-dashscope</artifactId>
+			<groupId>org.springframework.ai</groupId>
+			<artifactId>spring-ai-ollama</artifactId>
+			<version>${spring-ai.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba.cloud.ai</groupId>
@@ -77,6 +71,14 @@
 		<dependency>
 			<groupId>com.alibaba.cloud.ai</groupId>
 			<artifactId>spring-ai-alibaba-studio</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -131,4 +133,3 @@
 		</repository>
 	</repositories>
 </project>
-

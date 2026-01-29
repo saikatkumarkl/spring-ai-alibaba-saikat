@@ -45,11 +45,11 @@ const ModelService = () => {
         AlertDialog.warning({
           title: $i18n.get({
             id: 'main.pages.Setting.ModelService.index.delete',
-            dm: '删除',
+            dm: 'Delete',
           }),
           content: $i18n.get({
             id: 'main.pages.Setting.ModelService.index.confirmDeleteModelServiceProvider',
-            dm: '确定删除该模型服务商吗？',
+            dm: 'Confirm delete this model service provider?',
           }),
           onOk: () => {
             handleDeleteService(provider);
@@ -71,7 +71,7 @@ const ModelService = () => {
         message.success(
           $i18n.get({
             id: 'main.pages.Setting.ModelService.index.deleteSuccess',
-            dm: '删除成功',
+            dm: 'Deleted successfully',
           }),
         );
         fetchProviders();
@@ -86,11 +86,11 @@ const ModelService = () => {
           enable
             ? $i18n.get({
                 id: 'main.pages.Setting.ModelService.index.startSuccess',
-                dm: '启动成功',
+                dm: 'Started successfully',
               })
             : $i18n.get({
                 id: 'main.pages.Setting.ModelService.index.stopSuccess',
-                dm: '停止成功',
+                dm: 'Stopped successfully',
               }),
         );
         fetchProviders();
@@ -103,14 +103,14 @@ const ModelService = () => {
         {
           title: $i18n.get({
             id: 'main.pages.App.index.home',
-            dm: '首页',
+            dm: 'Home',
           }),
           path: '/',
         },
         {
           title: $i18n.get({
             id: 'main.pages.Setting.ModelService.index.modelServiceManagement',
-            dm: '模型服务管理',
+            dm: 'Model Service Management',
           }),
         },
       ]}
@@ -123,7 +123,7 @@ const ModelService = () => {
           >
             {$i18n.get({
               id: 'main.pages.Setting.ModelService.index.addModelServiceProvider',
-              dm: '新增模型服务商',
+              dm: 'Add Model Service Provider',
             })}
           </Button>
         </>

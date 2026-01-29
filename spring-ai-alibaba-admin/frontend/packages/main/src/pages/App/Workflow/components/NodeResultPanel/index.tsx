@@ -17,11 +17,11 @@ export interface INodeResultPanelProps {
 const errorStrategyMap = {
   failBranch: $i18n.get({
     id: 'main.pages.App.Workflow.components.NodeResultPanel.index.exceptionBranch',
-    dm: '异常分支',
+    dm: 'Exception Branch',
   }),
   defaultValue: $i18n.get({
     id: 'main.pages.App.Workflow.components.NodeResultPanel.index.defaultValue',
-    dm: '默认值',
+    dm: 'Default Value',
   }),
 };
 
@@ -53,7 +53,7 @@ export function NodeResultPanel(props: INodeResultPanelProps) {
           <Tag className={styles['tag']}>
             {$i18n.get({
               id: 'main.pages.App.Workflow.components.NodeResultPanel.index.retryProcessing',
-              dm: '重试处理：',
+              dm: 'Retry Handling:',
             })}
             {renderData.retry.retry_times}
           </Tag>
@@ -62,7 +62,7 @@ export function NodeResultPanel(props: INodeResultPanelProps) {
           <Tag className={styles['tag']}>
             {$i18n.get({
               id: 'main.pages.App.Workflow.components.NodeResultPanel.index.exceptionHandling',
-              dm: '异常处理：',
+              dm: 'Exception Handling:',
             })}
             {
               errorStrategyMap[
@@ -82,7 +82,7 @@ export function NodeResultPanel(props: INodeResultPanelProps) {
           <JSONViewer
             label={$i18n.get({
               id: 'main.pages.App.Workflow.components.NodeResultPanel.index.input',
-              dm: '输入',
+              dm: 'Input',
             })}
             value={renderData.input}
           />
@@ -100,7 +100,7 @@ export function NodeResultPanel(props: INodeResultPanelProps) {
             type={renderData.output_type}
             label={$i18n.get({
               id: 'main.pages.App.Workflow.components.NodeResultPanel.index.output',
-              dm: '输出',
+              dm: 'Output',
             })}
             value={renderData.output}
           />
@@ -112,7 +112,7 @@ export function NodeResultPanel(props: INodeResultPanelProps) {
             <JSONViewer
               label={$i18n.get({
                 id: 'main.pages.App.Workflow.components.NodeResultPanel.index.input',
-                dm: '输入',
+                dm: 'Input',
               })}
               value={renderData.input}
             />
@@ -121,7 +121,7 @@ export function NodeResultPanel(props: INodeResultPanelProps) {
               type={renderData.output_type}
               label={$i18n.get({
                 id: 'main.pages.App.Workflow.components.NodeResultPanel.index.output',
-                dm: '输出',
+                dm: 'Output',
               })}
               value={renderData.output}
             />
@@ -133,7 +133,7 @@ export function NodeResultPanel(props: INodeResultPanelProps) {
           <JSONViewer
             label={$i18n.get({
               id: 'main.pages.App.Workflow.components.NodeResultPanel.index.input',
-              dm: '输入',
+              dm: 'Input',
             })}
             value={renderData.input}
           />
@@ -144,7 +144,7 @@ export function NodeResultPanel(props: INodeResultPanelProps) {
           <JSONViewer
             label={$i18n.get({
               id: 'main.pages.App.Workflow.components.NodeResultPanel.index.output',
-              dm: '输出',
+              dm: 'Output',
             })}
             type={renderData.output_type}
             value={JSON.stringify({ output: renderData.output })}
@@ -157,7 +157,7 @@ export function NodeResultPanel(props: INodeResultPanelProps) {
             <JSONViewer
               label={$i18n.get({
                 id: 'main.pages.App.Workflow.components.NodeResultPanel.index.input',
-                dm: '输入',
+                dm: 'Input',
               })}
               value={renderData.input}
             />
@@ -167,7 +167,7 @@ export function NodeResultPanel(props: INodeResultPanelProps) {
                 type={renderData.output_type}
                 label={$i18n.get({
                   id: 'main.pages.App.Workflow.components.NodeResultPanel.index.output',
-                  dm: '输出',
+                  dm: 'Output',
                 })}
                 value={renderData.output}
               />

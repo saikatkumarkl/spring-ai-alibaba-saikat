@@ -140,7 +140,7 @@ export default memo(function ChatTestPanel() {
                   placement="top"
                   title={$i18n.get({
                     id: 'main.pages.App.Workflow.components.ChatTestPanel.index.clickCopyRequestId',
-                    dm: '点击复制Request ID',
+                    dm: 'Click to copy Request ID',
                   })}
                   trigger={'hover'}
                 >
@@ -154,7 +154,7 @@ export default memo(function ChatTestPanel() {
                 message.success(
                   $i18n.get({
                     id: 'main.pages.App.Workflow.components.ChatTestPanel.index.copySuccess',
-                    dm: '复制成功',
+                    dm: 'Copy successful',
                   }),
                 );
               },
@@ -165,7 +165,7 @@ export default memo(function ChatTestPanel() {
                   placement="top"
                   title={$i18n.get({
                     id: 'main.pages.App.Workflow.components.ChatTestPanel.index.regenerate',
-                    dm: '重新生成',
+                    dm: 'Regenerate',
                   })}
                   trigger={'hover'}
                 >
@@ -384,7 +384,7 @@ export default memo(function ChatTestPanel() {
             placement="bottom"
             title={$i18n.get({
               id: 'main.pages.App.Workflow.components.ChatTestPanel.index.paramConfig',
-              dm: '入参参数配置',
+              dm: 'Input Parameter Configuration',
             })}
           >
             <IconButton
@@ -398,11 +398,11 @@ export default memo(function ChatTestPanel() {
               loading
                 ? $i18n.get({
                     id: 'main.pages.App.Workflow.components.ChatTestPanel.index.dialogGenerating',
-                    dm: '正在进行对话中，请暂停',
+                    dm: 'Conversation in progress, please pause',
                   })
                 : $i18n.get({
                     id: 'main.pages.App.Workflow.components.ChatTestPanel.index.clearHistory',
-                    dm: '清空记录',
+                    dm: 'Clear Records',
                   })
             }
           >

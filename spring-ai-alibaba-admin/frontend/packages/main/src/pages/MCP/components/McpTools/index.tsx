@@ -20,7 +20,7 @@ const MCPTools: React.FC<McpToolsProps> = ({ tools, code, activated }) => {
       message.success(
         $i18n.get({
           id: 'main.pages.MCP.components.McpTools.index.executionSuccessful',
-          dm: '执行成功',
+          dm: 'Execution successful',
         }),
       );
       return result?.data;
@@ -45,7 +45,7 @@ const MCPTools: React.FC<McpToolsProps> = ({ tools, code, activated }) => {
             <Empty
               description={$i18n.get({
                 id: 'main.pages.MCP.components.McpTools.index.serviceStartingPleaseRefreshLater',
-                dm: '服务启动中，请稍后刷新',
+                dm: 'Service is starting, please refresh later',
               })}
             />
           </Flex>

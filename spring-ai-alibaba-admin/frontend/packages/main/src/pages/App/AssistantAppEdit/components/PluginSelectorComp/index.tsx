@@ -74,13 +74,13 @@ export default function PluginSelectorComp() {
             <span>
               {$i18n.get({
                 id: 'main.components.PluginSelectorComp.index.plugin',
-                dm: '插件',
+                dm: 'Plugin',
               })}
             </span>
             <HelpIcon
               content={$i18n.get({
                 id: 'main.components.PluginSelectorComp.index.callOpenApi',
-                dm: '智能体可以通过插件主动调用OpenAPI，例如信息查询、数据存储等。',
+                dm: 'Agents can proactively call OpenAPI through plugins, such as information queries, data storage, etc.',
               })}
             ></HelpIcon>
           </Flex>
@@ -101,7 +101,7 @@ export default function PluginSelectorComp() {
           >
             {$i18n.get({
               id: 'main.components.PluginSelectorComp.index.plugin',
-              dm: '插件',
+              dm: 'Plugin',
             })}
           </Button>
           <Divider type="vertical" className="ml-[16px] mr-[16px]"></Divider>

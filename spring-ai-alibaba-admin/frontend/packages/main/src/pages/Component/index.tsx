@@ -10,7 +10,7 @@ const tabs = compact([
   process.env.BACK_END !== 'python' && {
     label: $i18n.get({
       id: 'main.pages.Component.index.plugin',
-      dm: '插件',
+      dm: 'Plugins',
     }),
     key: 'plugin',
     children: <PluginList />,
@@ -18,7 +18,7 @@ const tabs = compact([
   {
     label: $i18n.get({
       id: 'main.pages.Component.index.workflow',
-      dm: '工作流',
+      dm: 'Workflows',
     }),
     key: 'flow',
     children: <AppComponent type={IAppType.WORKFLOW} />,
@@ -26,7 +26,7 @@ const tabs = compact([
   {
     label: $i18n.get({
       id: 'main.pages.Component.index.intelligentAgent',
-      dm: '智能体',
+      dm: 'Agents',
     }),
     key: 'agent',
     children: <AppComponent type={IAppType.AGENT} />,
@@ -47,14 +47,14 @@ export default function () {
         {
           title: $i18n.get({
             id: 'main.pages.App.index.home',
-            dm: '首页',
+            dm: 'Home',
           }),
           path: '/',
         },
         {
           title: $i18n.get({
             id: 'main.pages.Component.index.componentManagement',
-            dm: '组件管理',
+            dm: 'Component Management',
           }),
         },
       ]}

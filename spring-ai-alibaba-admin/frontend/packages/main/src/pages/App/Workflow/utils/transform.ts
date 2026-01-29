@@ -50,7 +50,7 @@ export const transformToBizNode = (node: IWorkFlowNode) => {
       y: node.position.y,
     },
     width: node.measured?.width || 320,
-    // 只有组节点会缓存高度
+    // Only group nodes cache height
     height: NODE_SCHEMA_MAP[node.type]?.isGroup
       ? node.measured?.height
       : void 0,

@@ -17,11 +17,11 @@ const validateIteratorNodeData = (data: IIteratorNodeData) => {
     errorMsg.push({
       label: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.Iterator.schema.input',
-        dm: '输入',
+        dm: 'Input',
       }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.Iterator.schema.notNull',
-        dm: '不能为空',
+        dm: 'Cannot be empty',
       }),
     });
   }
@@ -29,7 +29,7 @@ const validateIteratorNodeData = (data: IIteratorNodeData) => {
   checkInputParams(data.node_param.variable_parameters, errorMsg, {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.Iterator.schema.intermediateVariable',
-      dm: '中间变量',
+      dm: 'Intermediate Variable',
     }),
     disableCheckEmptyList: true,
   });
@@ -37,7 +37,7 @@ const validateIteratorNodeData = (data: IIteratorNodeData) => {
   checkInputParams(data.output_params, errorMsg, {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.Iterator.schema.output',
-      dm: '输出',
+      dm: 'Output',
     }),
     checkValue: true,
   });
@@ -63,16 +63,16 @@ export const IteratorSchema: INodeSchema = {
   type: 'Iterator',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Iterator.schema.loop',
-    dm: '循环',
+    dm: 'Loop',
   }),
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Iterator.schema.repeatTasksBySettingLogic',
-    dm: '通过在画布中设定逻辑并配置规则，重复执行一系列任务。',
+    dm: 'Repeatedly execute a series of tasks by setting logic and configuring rules on the canvas.',
   }),
   iconType: 'spark-cycleDiagram-line',
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Iterator.schema.logic',
-    dm: '逻辑',
+    dm: 'Logic',
   }),
   defaultParams: {
     input_params: [],

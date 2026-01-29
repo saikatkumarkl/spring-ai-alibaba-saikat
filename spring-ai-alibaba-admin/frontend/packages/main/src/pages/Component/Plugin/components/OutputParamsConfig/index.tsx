@@ -100,7 +100,7 @@ function OutputParamItemComp({
       setErrorTip(
         $i18n.get({
           id: 'main.pages.Component.Plugin.components.OutputParamsConfig.index.parameterNameCannotBeEmpty',
-          dm: '参数名不能为空',
+          dm: 'Parameter name cannot be empty',
         }),
       );
       return;
@@ -109,7 +109,7 @@ function OutputParamItemComp({
       setErrorTip(
         $i18n.get({
           id: 'main.pages.Component.Plugin.components.OutputParamsConfig.index.parameterNameOnlyLettersNumbersOrUnderscoresAndStartWithLetterOrUnderscore',
-          dm: '参数名称只能包含字母、数字或下划线，并且以字母或下划线开头',
+          dm: 'Parameter name can only contain letters, numbers, or underscores, and must start with a letter or underscore',
         }),
       );
       return;
@@ -123,7 +123,7 @@ function OutputParamItemComp({
       setErrorTip(
         $i18n.get({
           id: 'main.pages.Component.Plugin.components.OutputParamsConfig.index.parameterNameCannotBeDuplicate',
-          dm: '参数名称不能重复',
+          dm: 'Parameter name cannot be duplicated',
         }),
       );
       return;
@@ -136,7 +136,7 @@ function OutputParamItemComp({
       setDescErrorTip(
         $i18n.get({
           id: 'main.pages.Component.Plugin.components.OutputParamsConfig.index.parameterExplanationCannotBeEmpty',
-          dm: '参数解释不能为空',
+          dm: 'Parameter explanation cannot be empty',
         }),
       );
       return;
@@ -170,7 +170,7 @@ function OutputParamItemComp({
               defaultValue={paramItem.key}
               placeholder={$i18n.get({
                 id: 'main.pages.Component.Plugin.components.OutputParamsConfig.index.enterParameterName',
-                dm: '请输入参数名称',
+                dm: 'Enter parameter name',
               })}
             />
 
@@ -186,7 +186,7 @@ function OutputParamItemComp({
               style={{ width: 217 }}
               placeholder={$i18n.get({
                 id: 'main.pages.Component.Plugin.components.OutputParamsConfig.index.enterParameterExplanation',
-                dm: '请输入参数解释',
+                dm: 'Enter parameter explanation',
               })}
               status={descErrorTip ? 'error' : void 0}
               onBlur={handleCheckDesc}
@@ -206,7 +206,7 @@ function OutputParamItemComp({
             style={{ width: 140 }}
             placeholder={$i18n.get({
               id: 'main.pages.Component.Plugin.components.OutputParamsConfig.index.selectType',
-              dm: '选择类型',
+              dm: 'Select type',
             })}
           />
 
@@ -282,19 +282,19 @@ export default function OutputParamsConfig({
         <div className={styles.label} style={{ flex: 1 }}>
           {$i18n.get({
             id: 'main.pages.Component.Plugin.components.OutputParamsConfig.index.parameterName',
-            dm: '参数名称',
+            dm: 'Parameter Name',
           })}
         </div>
         <div className={styles.label} style={{ width: 217 }}>
           {$i18n.get({
             id: 'main.pages.Component.Plugin.components.OutputParamsConfig.index.parameterDescription',
-            dm: '参数描述',
+            dm: 'Parameter Description',
           })}
         </div>
         <div className={styles.label} style={{ width: 140 }}>
           {$i18n.get({
             id: 'main.pages.Component.Plugin.components.OutputParamsConfig.index.type',
-            dm: '类型',
+            dm: 'Type',
           })}
         </div>
         <div style={{ width: 36 }}></div>
@@ -319,7 +319,7 @@ export default function OutputParamsConfig({
       >
         {$i18n.get({
           id: 'main.pages.Component.Plugin.components.OutputParamsConfig.index.addOutputParameter',
-          dm: '增加出参',
+          dm: 'Add Output Parameter',
         })}
       </Button>
     </Flex>

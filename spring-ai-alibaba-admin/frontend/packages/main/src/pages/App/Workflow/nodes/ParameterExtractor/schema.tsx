@@ -22,11 +22,11 @@ const checkValid = (data: IParameterExtractorNodeData) => {
     errorMsg.push({
       label: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.ParameterExtractor.schema.input',
-        dm: '输入',
+        dm: 'Input',
       }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.ParameterExtractor.schema.notNull',
-        dm: '不能为空',
+        dm: 'cannot be empty',
       }),
     });
   }
@@ -34,11 +34,11 @@ const checkValid = (data: IParameterExtractorNodeData) => {
     errorMsg.push({
       label: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.ParameterExtractor.schema.extractParameters',
-        dm: '提取参数',
+        dm: 'Extract Parameters',
       }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.ParameterExtractor.schema.notNull',
-        dm: '不能为空',
+        dm: 'cannot be empty',
       }),
     });
   }
@@ -63,16 +63,16 @@ export const ParameterExtractorSchema: INodeSchema = {
   type: 'ParameterExtractor',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.ParameterExtractor.schema.parameterExtraction',
-    dm: '参数提取',
+    dm: 'Parameter Extraction',
   }),
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.ParameterExtractor.schema.extractStructuredParameters',
-    dm: '通过模型提取一段文本中结构化参数。',
+    dm: 'Extract structured parameters from text using a model.',
   }),
   iconType: 'spark-config-line',
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.ParameterExtractor.schema.variable',
-    dm: '变量',
+    dm: 'Variable',
   }),
   defaultParams: {
     input_params: [
@@ -90,7 +90,7 @@ export const ParameterExtractorSchema: INodeSchema = {
         type: 'String',
         desc: $i18n.get({
           id: 'main.pages.App.Workflow.nodes.ParameterExtractor.schema.city',
-          dm: '城市',
+          dm: 'City',
         }),
       },
       {
@@ -98,7 +98,7 @@ export const ParameterExtractorSchema: INodeSchema = {
         type: 'String',
         desc: $i18n.get({
           id: 'main.pages.App.Workflow.nodes.ParameterExtractor.schema.date',
-          dm: '日期',
+          dm: 'Date',
         }),
       },
       {
@@ -106,7 +106,7 @@ export const ParameterExtractorSchema: INodeSchema = {
         type: 'Boolean',
         desc: $i18n.get({
           id: 'main.pages.App.Workflow.nodes.ParameterExtractor.schema.completeParsing',
-          dm: '是否完整解析',
+          dm: 'Whether parsing is complete',
         }),
       },
       {
@@ -114,7 +114,7 @@ export const ParameterExtractorSchema: INodeSchema = {
         type: 'String',
         desc: $i18n.get({
           id: 'main.pages.App.Workflow.nodes.ParameterExtractor.schema.unsuccessfulReason',
-          dm: '未成功解析的原因',
+          dm: 'Reason for unsuccessful parsing',
         }),
       },
     ],
@@ -129,7 +129,7 @@ export const ParameterExtractorSchema: INodeSchema = {
           required: true,
           desc: $i18n.get({
             id: 'main.pages.App.Workflow.nodes.ParameterExtractor.schema.city',
-            dm: '城市',
+            dm: 'City',
           }),
         },
         {
@@ -138,7 +138,7 @@ export const ParameterExtractorSchema: INodeSchema = {
           required: true,
           desc: $i18n.get({
             id: 'main.pages.App.Workflow.nodes.ParameterExtractor.schema.date',
-            dm: '日期',
+            dm: 'Date',
           }),
         },
       ],

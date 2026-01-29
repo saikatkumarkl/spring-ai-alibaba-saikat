@@ -1,4 +1,4 @@
-// 拦截器接口
+// Interceptor interface
 interface RequestInterceptor {
   request?: (config: RequestConfig) => RequestConfig | Promise<RequestConfig>;
   response?: <T>(response: ApiResponse<T>) => ApiResponse<T> | Promise<ApiResponse<T>>;
@@ -6,24 +6,24 @@ interface RequestInterceptor {
   responseError?: (error: RequestError) => any;
 }
 
-// Request 配置接口
+// Request config interface
 interface RequestConfig {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   params?: Record<string, any>;
   data?: Record<string, any> | any;
   headers?: Record<string, string>;
   timeout?: number;
-  skipInterceptors?: boolean; // 是否跳过拦截器
+  skipInterceptors?: boolean; // Whether to skip interceptors
 }
 
-// 响应接口
+// API response shape
 interface ApiResponse<T = any> {
   code: number;
   message: string;
   data: T;
 }
 
-// 请求错误类
+// Request error class
 class RequestError extends Error {
   public code: number;
   public response?: any;
@@ -36,27 +36,27 @@ class RequestError extends Error {
   }
 }
 
-// 拦截器管理
+// Interceptor manager
 class InterceptorManager {
   private interceptors: (RequestInterceptor | null)[] = [];
 
-  // 添加拦截器
+  // Add interceptor
   use(interceptor: RequestInterceptor): number {
     this.interceptors.push(interceptor);
     return this.interceptors.length - 1;
   }
 
-  // 移除拦截器
+  // Remove interceptor
   eject(id: number): void {
     if (this.interceptors[id]) {
       this.interceptors[id] = null;
     }
   }
 
-  // 执行请求拦截器
+  // Run request interceptors
   async processRequest(config: RequestConfig): Promise<RequestConfig> {
     let processedConfig = config;
-    
+
     for (const interceptor of this.interceptors) {
       if (interceptor && interceptor.request) {
         try {
@@ -69,14 +69,14 @@ class InterceptorManager {
         }
       }
     }
-    
+
     return processedConfig;
   }
 
-  // 执行响应拦截器
+  // Run response interceptors
   async processResponse<T>(response: ApiResponse<T>): Promise<ApiResponse<T>> {
     let processedResponse = response;
-    
+
     for (const interceptor of this.interceptors) {
       if (interceptor && interceptor.response) {
         try {
@@ -89,18 +89,18 @@ class InterceptorManager {
         }
       }
     }
-    
+
     return processedResponse;
   }
 
-  // 执行错误拦截器
+  // Run error interceptors
   async processError(error: RequestError): Promise<never> {
     for (const interceptor of this.interceptors) {
       if (interceptor && interceptor.responseError) {
         try {
           throw interceptor.responseError(error);
         } catch (processedError) {
-          // 如果拦截器返回了新的错误，继续抛出
+          // If an interceptor returns a new error, keep throwing that
           error = processedError instanceof RequestError ? processedError : error;
         }
       }
@@ -108,19 +108,19 @@ class InterceptorManager {
     throw error;
   }
 
-  // 清空所有拦截器
+  // Clear all interceptors
   clear(): void {
     this.interceptors = [];
   }
 }
 
-// 全局拦截器管理器
+// Global interceptor manager
 const interceptors = new InterceptorManager();
 
-// 添加默认拦截器 - 自动添加认证头
+// Default interceptor - auto-add auth headers
 interceptors.use({
   request: async (config: RequestConfig) => {
-    // 可以在这里添加认证 token
+    // Add auth token here if present
     const token = localStorage.getItem('authToken');
     if (token) {
       config.headers = {
@@ -128,33 +128,33 @@ interceptors.use({
         'Authorization': `Bearer ${token}`
       };
     }
-    
-    // 添加通用请求头
+
+    // Add common request headers
     config.headers = {
       'X-Client-Version': '1.0.0',
       'X-Request-ID': Math.random().toString(36).substring(2),
       ...config.headers,
     };
-    
+
     return config;
   },
-  
+
   responseError: (error: RequestError) => {
-    // 处理 401 未授权错误
+    // Handle 401 unauthorized errors
     if (error.code === 401) {
       console.warn('Authentication failed, redirecting to login...');
-      // 可以在这里处理登录重定向
+      // Optionally handle login redirect here
       localStorage.removeItem('authToken');
     }
-    
+
     return error;
   }
 });
 
-// 将参数对象转换为查询字符串
+// Convert params object to query string
 function buildQueryString(params: Record<string, any>): string {
   const searchParams = new URLSearchParams();
-  
+
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
       if (typeof value === 'object') {
@@ -164,14 +164,14 @@ function buildQueryString(params: Record<string, any>): string {
       }
     }
   });
-  
+
   return searchParams.toString();
 }
 
-// 配置基础 URL（可选）
+// Base URL configuration (optional)
 let baseURL = '';
 
-// 通用请求函数
+// Core request function
 async function baseRequest<T = any>(
   url: string,
   config: RequestConfig = {}
@@ -184,7 +184,7 @@ async function baseRequest<T = any>(
   } = processedConfig;
 
   try {
-    // 处理请求拦截器
+    // Apply request interceptors
     if (!skipInterceptors) {
       processedConfig = await interceptors.processRequest(processedConfig);
     }
@@ -195,14 +195,14 @@ async function baseRequest<T = any>(
       headers = {},
     } = processedConfig;
 
-    // 构建完整URL
+    // Build full URL
     let fullUrl = baseURL && !url.startsWith('http') ? baseURL + url : url;
     if (params && Object.keys(params).length > 0) {
       const queryString = buildQueryString(params);
       fullUrl += (fullUrl.includes('?') ? '&' : '?') + queryString;
     }
 
-    // 准备请求配置
+    // Prepare fetch config
     const fetchConfig: RequestInit = {
       method,
       headers: {
@@ -211,7 +211,7 @@ async function baseRequest<T = any>(
       },
     };
 
-    // 添加请求体（仅对非GET请求）
+    // Add request body (for non-GET requests)
     if (method !== 'GET' && data) {
       if (typeof data === 'object') {
         fetchConfig.body = JSON.stringify(data);
@@ -220,7 +220,7 @@ async function baseRequest<T = any>(
       }
     }
 
-    // 创建超时控制
+    // Create timeout controller
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
     fetchConfig.signal = controller.signal;
@@ -231,53 +231,53 @@ async function baseRequest<T = any>(
       headers: fetchConfig.headers
     });
 
-    // 发送请求
+    // Send request
     const response = await fetch(fullUrl, fetchConfig);
-    
-    // 清除超时
+
+    // Clear timeout
     clearTimeout(timeoutId);
 
-    // 检查响应状态
+    // Check HTTP status
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`[REQUEST ERROR] ${method} ${fullUrl} - ${response.status}`, errorText);
-      
+
       const requestError = new RequestError(
         `HTTP ${response.status}: ${response.statusText}`,
         response.status,
         errorText
       );
 
-      // 处理错误拦截器
+      // Process error interceptors
       if (!skipInterceptors) {
         await interceptors.processError(requestError);
       }
-      
+
       throw requestError;
     }
 
-    // 解析响应
+    // Parse response
     let responseData = await response.json();
-    
+
     console.log(`[RESPONSE] ${method} ${fullUrl}`, responseData);
 
-    // 检查业务状态码
+    // Check business status code
     if (responseData.code !== undefined && responseData.code !== 200 && responseData.code !== 0) {
       const requestError = new RequestError(
-        responseData.message || '请求失败',
+        responseData.message || 'Request failed',
         responseData.code,
         responseData
       );
 
-      // 处理错误拦截器
+      // Process error interceptors
       if (!skipInterceptors) {
         await interceptors.processError(requestError);
       }
-      
+
       throw requestError;
     }
 
-    // 处理响应拦截器
+    // Process response interceptors
     if (!skipInterceptors) {
       responseData = await interceptors.processResponse(responseData);
     }
@@ -291,38 +291,38 @@ async function baseRequest<T = any>(
 
     if (error instanceof Error && error.name === 'AbortError') {
       console.error(`[REQUEST TIMEOUT] ${method} ${url}`);
-      const timeoutError = new RequestError('请求超时', 408);
-      
-      // 处理错误拦截器
+      const timeoutError = new RequestError('Request timed out', 408);
+
+      // Process error interceptors
       if (!skipInterceptors) {
         await interceptors.processError(timeoutError);
       }
-      
+
       throw timeoutError;
     }
 
     console.error(`[REQUEST ERROR] ${method} ${url}`, error);
-    
-    // 网络错误或其他错误
+
+    // Network error or other errors
     const networkError = new RequestError(
-      error instanceof Error ? error.message : '网络请求失败',
+      error instanceof Error ? error.message : 'Network request failed',
       0,
       error
     );
 
-    // 处理错误拦截器
+    // Process error interceptors
     if (!skipInterceptors) {
       await interceptors.processError(networkError);
     }
-    
+
     throw networkError;
   }
 }
 
-// 主要请求函数
+// Primary request function
 export const request = baseRequest;
 
-// 便捷方法
+// Convenience helpers
 export const get = <T = any>(url: string, params?: Record<string, any>, config?: Omit<RequestConfig, 'method' | 'params'>) => {
   return request<T>(url, { ...config, method: 'GET', params });
 };
@@ -339,26 +339,26 @@ export const del = <T = any>(url: string, data?: any, config?: Omit<RequestConfi
   return request<T>(url, { ...config, method: 'DELETE', data });
 };
 
-// 拦截器管理接口
+// Interceptor management interface
 export const requestInterceptors = {
-  // 添加拦截器
+  // Add interceptor
   use: (interceptor: RequestInterceptor) => interceptors.use(interceptor),
-  
-  // 移除拦截器
+
+  // Remove interceptor
   eject: (id: number) => interceptors.eject(id),
-  
-  // 清空所有拦截器
+
+  // Clear all interceptors
   clear: () => interceptors.clear()
 };
 
-// 基础URL配置
+// Base URL helpers
 export const setBaseURL = (url: string) => {
   baseURL = url;
 };
 
 export const getBaseURL = () => baseURL;
 
-// 默认导出
+// Default export
 export default {
   request,
   get,
@@ -371,25 +371,25 @@ export default {
   getBaseURL
 };
 
-/* 
-使用示例:
+/*
+Usage example:
 
-// 基本使用
+// Basic usage
 import { request, get, post } from './utils/request';
 
-// GET 请求
+// GET request
 const prompts = await get('/api/prompts', { pageSize: 10 });
 
-// POST 请求
-const newPrompt = await post('/api/prompt', { 
+// POST request
+const newPrompt = await post('/api/prompt', {
   promptKey: 'test',
-  promptDescription: 'Test prompt' 
+  promptDescription: 'Test prompt'
 });
 
-// 使用拦截器
+// Use interceptors
 import { requestInterceptors } from './utils/request';
 
-// 添加请求拦截器
+// Add request interceptor
 const interceptorId = requestInterceptors.use({
   request: (config) => {
     config.headers = { ...config.headers, 'Custom-Header': 'value' };
@@ -401,10 +401,10 @@ const interceptorId = requestInterceptors.use({
   }
 });
 
-// 移除拦截器
+// Remove interceptor
 requestInterceptors.eject(interceptorId);
 
-// 设置基础URL
+// Set base URL
 import { setBaseURL } from './utils/request';
 setBaseURL('https://api.example.com');
 */

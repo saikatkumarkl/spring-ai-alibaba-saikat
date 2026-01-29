@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { 
-  Card, 
-  Button, 
-  Descriptions, 
-  Table, 
-  Tag, 
-  Spin, 
+import {
+  Card,
+  Button,
+  Descriptions,
+  Table,
+  Tag,
+  Spin,
   message,
   Tabs,
   Alert,
@@ -16,9 +16,9 @@ import {
   Input,
   Tooltip
 } from 'antd';
-import { 
-  ArrowLeftOutlined, 
-  EditOutlined, 
+import {
+  ArrowLeftOutlined,
+  EditOutlined,
   DeleteOutlined,
   EyeOutlined,
   DownloadOutlined,
@@ -34,12 +34,12 @@ import './index.css';
 const { TabPane } = Tabs;
 const { Title, Text } = Typography;
 
-// 格式化时间显示
+// Format date time display
 const formatDateTime = (dateTimeString: string) => {
     if (!dateTimeString) return '-';
     try {
         const date = new Date(dateTimeString);
-        return date.toLocaleString('zh-CN', {
+        return date.toLocaleString('en-US', {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
@@ -52,7 +52,7 @@ const formatDateTime = (dateTimeString: string) => {
     }
 };
 
-// 评测集详情接口
+// Dataset details interface
 interface DatasetDetail {
   id: number;
   name: string;
@@ -72,7 +72,7 @@ interface DatasetDetail {
   experiments: any;
 }
 
-// 数据项接口
+// Data item interface
 interface DataItem {
   id: number;
   datasetId: number;
@@ -90,37 +90,37 @@ const GatherDetail: React.FC = () => {
   const [dataItems, setDataItems] = useState<any[]>([]);
   const [dataLoading, setDataLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('data');
-  const [isEditing, setIsEditing] = useState(false); // 编辑模式状态
-  const [editForm] = Form.useForm(); // 编辑表单
-  const [saving, setSaving] = useState(false); // 保存状态
-  // 添加选中状态管理
+  const [isEditing, setIsEditing] = useState(false); // Edit mode state
+  const [editForm] = Form.useForm(); // Edit form
+  const [saving, setSaving] = useState(false); // Save state
+  // Add selection state management
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  // 添加版本数据和关联实验数据状态
+  // Add version data and related experiments data state
   const [versions, setVersions] = useState<any[]>([]);
   const [versionsLoading, setVersionsLoading] = useState(false);
   const [experiments, setExperiments] = useState<any[]>([]);
   const [experimentsLoading, setExperimentsLoading] = useState(false);
-  // 添加数据弹窗相关状态
+  // Add data modal related state
   const [addDataModalVisible, setAddDataModalVisible] = useState(false);
   const [addDataForm] = Form.useForm();
   const [addingData, setAddingData] = useState(false);
-  // 添加行内编辑相关状态
+  // Add inline editing related state
   const [editingRowId, setEditingRowId] = useState<number | null>(null);
   const [editingData, setEditingData] = useState<Record<string, any>>({});
   const [updatingData, setUpdatingData] = useState(false);
-  // 添加待提交数据状态
+  // Add pending data state
   const [pendingDataItems, setPendingDataItems] = useState<any[]>([]);
-  
-  // 为三个Tab分别创建独立的分页状态
+
+  // Create independent pagination state for three tabs
   const { pagination: dataPagination, setPagination: setDataPagination, onPaginationChange: onDataPaginationChange, onShowSizeChange: onDataShowSizeChange } = usePagination();
   const { pagination: versionsPagination, setPagination: setVersionsPagination, onPaginationChange: onVersionsPaginationChange, onShowSizeChange: onVersionsShowSizeChange } = usePagination();
   const { pagination: experimentsPagination, setPagination: setExperimentsPagination, onPaginationChange: onExperimentsPaginationChange, onShowSizeChange: onExperimentsShowSizeChange } = usePagination();
 
-  // 动态生成表格列
+  // Dynamically generate table columns
   const generateTableColumns = () => {
     const dynamicColumns: any[] = [];
-    
-    // 根据columnsConfig生成动态列
+
+    // Generate dynamic columns based on columnsConfig
     detail?.columnsConfig?.forEach((column, index) => {
       dynamicColumns.push({
         title: column.name,
@@ -134,7 +134,7 @@ const GatherDetail: React.FC = () => {
                 onChange={(e) => handleEditDataChange(column.name, e.target.value)}
                 rows={2}
                 maxLength={1000}
-                placeholder={`输入${column.description || column.name}`}
+                placeholder={`Enter ${column.description || column.name}`}
               />
             );
           }
@@ -144,39 +144,39 @@ const GatherDetail: React.FC = () => {
         }
       });
     });
-    
-    // 添加固定列：创建时间、更新时间、操作
+
+    // Add fixed columns: create time, update time, actions
     dynamicColumns.push(
-      { 
-        title: '创建时间', 
+      {
+        title: 'Created',
         dataIndex: 'createTime',
         render: (text: string) => formatDateTime(text)
       },
-      { 
-        title: '更新时间', 
+      {
+        title: 'Updated',
         dataIndex: 'updateTime',
         render: (text: string) => formatDateTime(text)
       },
       {
-        title: '操作',
+        title: 'Actions',
         width: '10%',
         render: (_: any, record: any) => {
           if (editingRowId === record.id) {
             return (
               <div className="flex space-x-1">
-                <Button 
-                  type="text" 
-                  icon={<CloseOutlined />} 
+                <Button
+                  type="text"
+                  icon={<CloseOutlined />}
                   size="small"
-                  title="取消"
+                  title="Cancel"
                   onClick={handleCancelEdit}
                   disabled={updatingData}
                 />
-                <Button 
-                  type="text" 
-                  icon={<CheckOutlined />} 
+                <Button
+                  type="text"
+                  icon={<CheckOutlined />}
                   size="small"
-                  title="确认"
+                  title="Confirm"
                   loading={updatingData}
                   onClick={() => handleConfirmEdit(record)}
                   style={{ color: '#52c41a' }}
@@ -186,19 +186,19 @@ const GatherDetail: React.FC = () => {
           }
           return (
             <div className="flex space-x-1">
-              <Button 
-                type="text" 
-                icon={<EditOutlined />} 
+              <Button
+                type="text"
+                icon={<EditOutlined />}
                 size="small"
-                title="编辑"
+                title="Edit"
                 onClick={() => handleEditRow(record)}
               />
-              <Button 
-                type="text" 
-                icon={<DeleteOutlined />} 
+              <Button
+                type="text"
+                icon={<DeleteOutlined />}
                 size="small"
                 danger
-                title="删除"
+                title="Delete"
                 onClick={() => handleDeleteRow(record)}
               />
             </div>
@@ -206,11 +206,11 @@ const GatherDetail: React.FC = () => {
         }
       }
     );
-    
+
     return dynamicColumns;
   };
 
-  // 选择处理
+  // Selection handling
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
   };
@@ -220,124 +220,124 @@ const GatherDetail: React.FC = () => {
     onChange: onSelectChange,
   };
 
-  // 添加数据
+  // Add data
   const handleAddData = () => {
     setAddDataModalVisible(true);
     addDataForm.resetFields();
   };
 
-  // 处理数据添加提交
+  // Handle data add submission
   const handleAddDataSubmit = async () => {
     try {
       setAddingData(true);
       const values = await addDataForm.validateFields();
-      
-      // 根据columnsConfig动态构造dataContent对象
+
+      // Dynamically construct dataContent object based on columnsConfig
       const dataContent: Record<string, any> = {};
-      
-      // 遍历columnsConfig中的每个字段，将表单值添加到dataContent中
+
+      // Iterate through each field in columnsConfig, add form values to dataContent
       detail?.columnsConfig?.forEach(column => {
         if (values[column.name] !== undefined) {
           dataContent[column.name] = values[column.name];
         }
       });
-      
-      // 添加备注字段（如果有的话）
+
+      // Add remark field (if any)
       if (values.remark) {
         dataContent.remark = values.remark;
       }
-      
-      // 创建临时数据项（不调用API，而是添加到本地列表）
+
+      // Create temporary data item (don't call API, add to local list)
       const newItem = {
-        id: `pending_${Date.now()}`, // 临时ID，使用特殊前缀标识
+        id: `pending_${Date.now()}`, // Temporary ID, use special prefix to identify
         ...dataContent,
         createTime: new Date().toISOString(),
         updateTime: new Date().toISOString()
       };
-      
-      // 添加到待提交数据列表
+
+      // Add to pending data list
       setPendingDataItems(prev => [...prev, newItem]);
-      
-      // 同时添加到显示列表中
+
+      // Also add to display list
       setDataItems(prev => [...prev, newItem]);
-      
-      // 更新分页信息 - 增加总数
+
+      // Update pagination info - increase total
       setDataPagination(prev => ({
         ...prev,
         total: prev.total + 1
       }));
-      
-      message.success('数据已添加到待提交列表，请提交新版本以保存更改');
+
+      message.success('Data added to pending list, please submit new version to save changes');
       setAddDataModalVisible(false);
       addDataForm.resetFields();
     } catch (error) {
-      console.error('数据添加失败:', error);
-      message.error('数据添加失败，请重试');
+      console.error('Data add failed:', error);
+      message.error('Data add failed, please try again');
     } finally {
       setAddingData(false);
     }
   };
 
-  // 取消添加数据
+  // Cancel add data
   const handleAddDataCancel = () => {
     setAddDataModalVisible(false);
     addDataForm.resetFields();
   };
 
-  // 开始编辑行
+  // Start editing row
   const handleEditRow = (record: any) => {
     setEditingRowId(record.id);
-    
-    // 初始化编辑数据，包含所有columnsConfig字段
+
+    // Initialize edit data, include all columnsConfig fields
     const editData: Record<string, any> = {};
     detail?.columnsConfig?.forEach(column => {
       editData[column.name] = record[column.name] || '';
     });
-    
+
     setEditingData(editData);
   };
 
-  // 取消编辑
+  // Cancel edit
   const handleCancelEdit = () => {
     setEditingRowId(null);
     setEditingData({});
   };
 
-  // 确认编辑
+  // Confirm edit
   const handleConfirmEdit = async (record: any) => {
     try {
       setUpdatingData(true);
-      
-      // 构造更新的dataContent，包含所有columnsConfig字段
+
+      // Construct updated dataContent, include all columnsConfig fields
       const dataContent: Record<string, any> = {};
       detail?.columnsConfig?.forEach(column => {
         dataContent[column.name] = editingData[column.name] || '';
       });
-      
-      // 调用API更新数据
+
+      // Call API to update data
       const response = await API.updateDatasetDataItem({
         id: record.id,
         dataContent: JSON.stringify(dataContent),
       });
-      
+
       if (response.code === 200) {
-        message.success('数据更新成功');
+        message.success('Data updated successfully');
         setEditingRowId(null);
         setEditingData({});
-        // 重新获取数据列表
+        // Refresh data list
         fetchDataItems();
       } else {
-        throw new Error(response.message || '数据更新失败');
+        throw new Error(response.message || 'Data update failed');
       }
     } catch (error) {
-      console.error('数据更新失败:', error);
-      message.error('数据更新失败，请重试');
+      console.error('Data update failed:', error);
+      message.error('Data update failed, please try again');
     } finally {
       setUpdatingData(false);
     }
   };
 
-  // 处理编辑数据变化
+  // Handle edit data change
   const handleEditDataChange = (field: string, value: string) => {
     setEditingData(prev => ({
       ...prev,
@@ -345,104 +345,104 @@ const GatherDetail: React.FC = () => {
     }));
   };
 
-  // 删除单行数据（前端删除）
+  // Delete single row data (frontend delete)
   const handleDeleteRow = (record: any) => {
     Modal.confirm({
-      title: '确认删除',
-      content: `确定要删除这条数据吗？此操作仅在前端生效，需要点击"提交新版本"才会保存到后端。`,
-      okText: '删除',
+      title: 'Confirm Delete',
+      content: `Are you sure you want to delete this data? This operation only takes effect on the frontend, you need to click "Submit New Version" to save to the backend.`,
+      okText: 'Delete',
       okType: 'danger',
-      cancelText: '取消',
+      cancelText: 'Cancel',
       onOk: () => {
-        // 检查是否是待提交的数据
+        // Check if it's pending data
         const isPendingData = pendingDataItems.some(item => item.id === record.id);
-        
+
         if (isPendingData) {
-          // 如果是待提交的数据，从待提交列表中移除
+          // If it's pending data, remove from pending list
           setPendingDataItems(prev => prev.filter(item => item.id !== record.id));
         }
-        
-        // 从前端列表中移除该数据
+
+        // Remove data from frontend list
         setDataItems(prev => prev.filter(item => item.id !== record.id));
-        
-        // 如果该数据在选中列表中，也要移除
+
+        // If data is in selected list, also remove it
         setSelectedRowKeys(prev => prev.filter(key => key !== record.id));
-        
-        // 更新分页信息 - 减少总数
+
+        // Update pagination info - decrease total
         setDataPagination(prev => ({
           ...prev,
           total: prev.total - 1
         }));
-        
-        message.success(isPendingData ? '待提交数据已删除' : '数据已删除（前端）');
+
+        message.success(isPendingData ? 'Pending data deleted' : 'Data deleted (frontend)');
       }
     });
   };
 
-  // 批量删除
+  // Batch delete
   const handleBatchDelete = () => {
     if (selectedRowKeys.length === 0) {
-      message.warning('请选择要删除的数据');
+      message.warning('Please select data to delete');
       return;
     }
     Modal.confirm({
-      title: '确认删除',
-      content: `确定要删除选中的 ${selectedRowKeys.length} 条数据吗？此操作仅在前端生效，需要点击"提交新版本"才会保存到后端。`,
-      okText: '删除',
+      title: 'Confirm Delete',
+      content: `Are you sure you want to delete the selected ${selectedRowKeys.length} items? This operation only takes effect on the frontend, you need to click "Submit New Version" to save to the backend.`,
+      okText: 'Delete',
       okType: 'danger',
-      cancelText: '取消',
+      cancelText: 'Cancel',
       onOk: () => {
-        // 从前端列表中移除选中的数据
+        // Remove selected data from frontend list
         const deletedCount = selectedRowKeys.length;
         setDataItems(prev => prev.filter(item => !selectedRowKeys.includes(item.id)));
-        
-        // 从待提交列表中移除选中的数据（如果有的话）
+
+        // Remove selected data from pending list (if any)
         setPendingDataItems(prev => prev.filter(item => !selectedRowKeys.includes(item.id)));
-        
-        // 更新分页信息 - 减少总数
+
+        // Update pagination info - decrease total
         setDataPagination(prev => ({
           ...prev,
           total: prev.total - deletedCount
         }));
-        
-        message.success(`已删除 ${deletedCount} 条数据（前端）`);
+
+        message.success(`${deletedCount} items deleted (frontend)`);
         setSelectedRowKeys([]);
       }
     });
   };
 
-  // 提交新版本
+  // Submit new version
   const handleSubmitVersion = async () => {
     Modal.confirm({
-      title: '提交新版本',
+      title: 'Submit New Version',
       content: (
         <div>
-          <p>确定要基于当前数据提交新版本吗？</p>
+          <p>Are you sure you want to submit a new version based on the current data?</p>
           <div className="text-sm text-gray-500 mt-3 p-3 bg-gray-50 rounded">
-            <div>评测集：{detail?.name}</div>
-            <div>数据量：{dataItems.length} 条</div>
-            <div>列配置：{detail?.columnsConfig?.length || 0} 个列</div>
+            <div>Dataset: {detail?.name}</div>
+            <div>Data Count: {dataItems.length} items</div>
+            <div>Column Config: {detail?.columnsConfig?.length || 0} columns</div>
             {pendingDataItems.length > 0 && (
               <div className="mt-2 text-orange-600">
-                注意：将同时提交 {pendingDataItems.length} 条新增数据
+                Note: Will also submit {pendingDataItems.length} new data items
               </div>
             )}
           </div>
         </div>
       ),
-      okText: '提交',
-      cancelText: '取消',
+      okText: 'Submit',
+      cancelText: 'Cancel',
       onOk: async () => {
         try {
-          // 收集当前页面上已存在的数据项ID（不包括待提交的数据）
+          // Collect existing data item IDs on current page (excluding pending data)
           const existingDatasetItemIds = dataItems
             .filter(item => !pendingDataItems.some(pending => pending.id === item.id))
             .map(item => item.id);
-          
-          // 如果有待提交的数据，先批量提交这些数据
+
+          // If there's pending data, batch submit it first
           let allDatasetItemIds = [...existingDatasetItemIds];
           if (pendingDataItems.length > 0) {
-            // 批量提交待提交的数据
+            // Batch submit pending data
             const dataContentArray = pendingDataItems.map(item => {
               const dataContent: Record<string, any> = {};
               detail?.columnsConfig?.forEach(column => {
@@ -455,87 +455,87 @@ const GatherDetail: React.FC = () => {
               }
               return JSON.stringify(dataContent);
             });
-            
+
             const response: any = await API.createDatasetDataItem({
               datasetId: Number(id),
-              dataContent: dataContentArray, // 现在传递数组
+              dataContent: dataContentArray, // now passing array
               columnsConfig: detail?.columnsConfig || []
             });
-            
+
             if (response.code !== 200) {
-              throw new Error(response.message || '数据提交失败');
+              throw new Error(response.message || 'Data submission failed');
             }
-            
-            // 获取新添加的数据项ID
+
+            // Get newly added data item IDs
             if (response.data) {
-              // 如果是批量提交，response.data应该是一个数组
+              // If batch submit, response.data should be an array
               if (Array.isArray(response.data)) {
                 const newIds = response.data.map((item: any) => item.id);
                 allDatasetItemIds = [...allDatasetItemIds, ...newIds];
               } else if (response.data.id) {
-                // 如果是单个提交，response.data应该是一个对象
+                // If single submit, response.data should be an object
                 allDatasetItemIds = [...allDatasetItemIds, response.data.id];
               }
             }
-            
-            message.success(`成功提交 ${pendingDataItems.length} 条新增数据`);
-            // 清空待提交数据列表
+
+            message.success(`Successfully submitted ${pendingDataItems.length} new data items`);
+            // Clear pending data list
             setPendingDataItems([]);
           }
-          
-          // 调用API提交版本，使用所有数据项ID（包括新添加的）
+
+          // Call API to submit version, use all data item IDs (including newly added)
           const versionResponse = await API.createDatasetVersion({
             datasetId: Number(id),
-            description: `基于当前数据创建的新版本 - ${new Date().toLocaleString()}`,
+            description: `New version created based on current data - ${new Date().toLocaleString()}`,
             columnsConfig: detail?.columnsConfig || [],
-            datasetItems: allDatasetItemIds, // 使用所有数据项ID
+            datasetItems: allDatasetItemIds, // Use all data item IDs
             status: 'draft'
           });
-          
-          console.log('创建新版本API返回数据:', versionResponse);
-          
+
+          console.log('Create new version API returned data:', versionResponse);
+
           if (versionResponse.code === 200) {
-            message.success('新版本提交成功');
-            
-            // 获取新版本ID
+            message.success('New version submitted successfully');
+
+            // Get new version ID
             const newVersionId = versionResponse.data?.id;
-            console.log('新创建的版本ID:', newVersionId);
-            
-            // 重新获取评测集详情以更新页面信息
+            console.log('Newly created version ID:', newVersionId);
+
+            // Refresh dataset detail to update page info
             await fetchDatasetDetail();
-            
-            // 使用新版本ID获取数据项
+
+            // Use new version ID to get data items
             if (newVersionId) {
               fetchDataItemsWithVersionId(newVersionId);
             } else {
-              // 如果没有获取到新版本ID，则使用常规方式刷新数据
+              // If new version ID not obtained, refresh data using regular method
               fetchDataItems(dataPagination.current, dataPagination.pageSize);
             }
-            
-            // 重新获取版本信息
+
+            // Refresh version info
             fetchVersions();
           } else {
-            throw new Error(versionResponse.message || '版本提交失败');
+            throw new Error(versionResponse.message || 'Version submission failed');
           }
         } catch (error) {
           const errMsg = error instanceof Error ? error.message : String(error);
-          message.error(`提交失败: ${errMsg || '请重试'}`);
-          // 如果是数据提交失败，不要继续执行版本提交
+          message.error(`Submission failed: ${errMsg || 'Please try again'}`);
+          // If data submission failed, don't continue with version submission
           return Promise.reject(error);
         }
       }
     });
   };
 
-  // 获取评测集详情
+  // Get dataset detail
   const fetchDatasetDetail = async () => {
     try {
       setLoading(true);
-      
+
       const response = await API.getDataset({ datasetId: Number(id) });
       if (response.code === 200) {
-        const apiData = response.data as any; // 使用any类型绕过类型检查
-        // 转换API数据为组件所需的类型
+        const apiData = response.data as any; // Use any type to bypass type checking
+        // Convert API data to component required type
         const detailData: DatasetDetail = {
           id: apiData.id,
           name: apiData.name,
@@ -548,21 +548,21 @@ const GatherDetail: React.FC = () => {
           versions: apiData.versions,
           experiments: apiData.experiments
         };
-        
-        // 解析columnsConfig字符串为对象
+
+        // Parse columnsConfig string to object
         try {
           detailData.columnsConfig = JSON.parse(apiData.columnsConfig || '[]');
         } catch {
           detailData.columnsConfig = [];
         }
-        
+
         setDetail(detailData);
       } else {
-        throw new Error(response.message || '获取详情失败');
+        throw new Error(response.message || 'Failed to get detail');
       }
     } catch (error) {
-      console.error('获取评测集详情失败:', error);
-      // 发生错误时设置为空状态
+      console.error('Failed to get dataset detail:', error);
+      // Set to empty state on error
       setDetail(null);
       setLoading(false);
     } finally {
@@ -570,77 +570,77 @@ const GatherDetail: React.FC = () => {
     }
   };
 
-  // 修改获取数据项列表函数，支持分页
+  // Modify get data items list function, support pagination
   const fetchDataItems = async (pageNumber: number = 1, pageSize: number = 10) => {
     try {
       setDataLoading(true);
-      
-      console.log('调用getDatasetDataItems接口，参数:', { 
+
+      console.log('Call getDatasetDataItems API, parameters:', {
         datasetVersionId: detail?.latestVersionId,
         pageNumber: pageNumber,
         pageSize: pageSize
       });
-      
-      const response = await API.getDatasetDataItems({ 
+
+      const response = await API.getDatasetDataItems({
         datasetVersionId: detail?.latestVersionId,
         pageNumber: pageNumber,
         pageSize: pageSize
       });
-      
-      console.log('getDatasetDataItems接口返回数据:', response);
-      
+
+      console.log('getDatasetDataItems API returned data:', response);
+
       if (response.code === 200 && response.data) {
         const dataResponse = response.data;
-        
-        console.log('解析后的dataResponse:', dataResponse);
-        
-        // 使用pageItems字段
+
+        console.log('Parsed dataResponse:', dataResponse);
+
+        // Use pageItems field
         if (dataResponse.pageItems && Array.isArray(dataResponse.pageItems)) {
-          console.log('获取到pageItems数组:', dataResponse.pageItems);
-          
-          // 转换API数据为组件需要的格式
+          console.log('Got pageItems array:', dataResponse.pageItems);
+
+          // Transform API data to component required format
           const transformedData = dataResponse.pageItems.map((item: any) => {
             try {
-              console.log('处理数据项:', item);
+              console.log('Processing data item:', item);
               const parsedContent = JSON.parse(item.dataContent);
-              console.log('解析后的dataContent:', parsedContent);
-              
-              // 根据columnsConfig动态构造数据对象
+              console.log('Parsed dataContent:', parsedContent);
+
+              // Dynamically construct data object based on columnsConfig
               const dataObject: any = {
                 id: item.id,
                 createTime: item.createTime,
                 updateTime: item.updateTime
               };
-              
-              // 添加动态字段
+
+              // Add dynamic fields
               detail?.columnsConfig?.forEach(column => {
                 dataObject[column.name] = parsedContent[column.name] || '';
               });
-              
-              console.log('转换后的数据对象:', dataObject);
+
+              console.log('Transformed data object:', dataObject);
               return dataObject;
             } catch (e) {
-              console.error('解析dataContent失败:', e, item.dataContent);
-              // 如果解析失败，返回基本数据结构
+              console.error('Failed to parse dataContent:', e, item.dataContent);
+              // If parsing fails, return basic data structure
               const dataObject: any = {
                 id: item.id,
                 createTime: item.createTime,
                 updateTime: item.updateTime
               };
-              
-              // 为所有配置字段设置默认值
+
+              // Set default values for all config fields
               detail?.columnsConfig?.forEach(column => {
                 dataObject[column.name] = '';
               });
-              
+
               return dataObject;
             }
           });
-          
-          console.log('最终转换后的数据项数组:', transformedData);
+
+          console.log('Final transformed data items array:', transformedData);
           setDataItems(transformedData);
-          
-          // 更新分页信息
+
+          // Update pagination info
           setDataPagination(prev => ({
             ...prev,
             current: dataResponse.pageNumber || pageNumber,
@@ -648,7 +648,7 @@ const GatherDetail: React.FC = () => {
             total: dataResponse.totalCount || 0
           }));
         } else {
-          console.warn('API返回数据中pageItems字段不是数组或不存在:', dataResponse);
+          console.warn('API returned data pageItems field is not array or does not exist:', dataResponse);
           setDataItems([]);
           setDataPagination(prev => ({
             ...prev,
@@ -657,12 +657,12 @@ const GatherDetail: React.FC = () => {
           }));
         }
       } else {
-        console.error('API返回错误:', response.code, response.message);
-        throw new Error(response.message || '获取数据项失败');
+        console.error('API returned error:', response.code, response.message);
+        throw new Error(response.message || 'Failed to get data items');
       }
     } catch (error) {
-      console.error('获取数据项失败:', error);
-      // 发生错误时设置为空数组
+      console.error('Failed to get data items:', error);
+      // Set to empty array on error
       setDataItems([]);
       setDataPagination(prev => ({
         ...prev,
@@ -674,109 +674,109 @@ const GatherDetail: React.FC = () => {
     }
   };
 
-  // 使用指定版本ID获取数据项列表
+  // Get data items list using specified version ID
   const fetchDataItemsWithVersionId = async (versionId: number) => {
     try {
       setDataLoading(true);
-      
-      console.log('使用新版本ID调用getDatasetDataItems接口，参数:', { 
+
+      console.log('Call getDatasetDataItems API with new version ID, parameters:', {
         datasetVersionId: versionId,
         pageNumber: 1,
         pageSize: 10
       });
-      
-      const response = await API.getDatasetDataItems({ 
+
+      const response = await API.getDatasetDataItems({
         datasetVersionId: versionId,
         pageNumber: 1,
         pageSize: 10
       });
-      
-      console.log('新版本getDatasetDataItems接口返回数据:', response);
-      
+
+      console.log('New version getDatasetDataItems API returned data:', response);
+
       if (response.code === 200 && response.data) {
         const dataResponse = response.data;
-        
-        console.log('新版本解析后的dataResponse:', dataResponse);
-        
-        // 使用pageItems字段
+
+        console.log('New version parsed dataResponse:', dataResponse);
+
+        // Use pageItems field
         if (dataResponse.pageItems && Array.isArray(dataResponse.pageItems)) {
-          console.log('新版本获取到pageItems数组:', dataResponse.pageItems);
-          
-          // 转换API数据为组件需要的格式
+          console.log('New version got pageItems array:', dataResponse.pageItems);
+
+          // Transform API data to component required format
           const transformedData = dataResponse.pageItems.map((item: any) => {
             try {
-              console.log('处理数据项:', item);
+              console.log('Processing data item:', item);
               const parsedContent = JSON.parse(item.dataContent);
-              console.log('解析后的dataContent:', parsedContent);
-              
-              // 根据columnsConfig动态构造数据对象
+              console.log('Parsed dataContent:', parsedContent);
+
+              // Dynamically construct data object based on columnsConfig
               const dataObject: any = {
                 id: item.id,
                 createTime: item.createTime,
                 updateTime: item.updateTime
               };
-              
-              // 添加动态字段
+
+              // Add dynamic fields
               detail?.columnsConfig?.forEach(column => {
                 dataObject[column.name] = parsedContent[column.name] || '';
               });
-              
-              console.log('转换后的数据对象:', dataObject);
+
+              console.log('Transformed data object:', dataObject);
               return dataObject;
             } catch (e) {
-              console.error('解析dataContent失败:', e, item.dataContent);
-              // 如果解析失败，返回基本数据结构
+              console.error('Failed to parse dataContent:', e, item.dataContent);
+              // If parsing fails, return basic data structure
               const dataObject: any = {
                 id: item.id,
                 createTime: item.createTime,
                 updateTime: item.updateTime
               };
-              
-              // 为所有配置字段设置默认值
+
+              // Set default values for all config fields
               detail?.columnsConfig?.forEach(column => {
                 dataObject[column.name] = '';
               });
-              
+
               return dataObject;
             }
           });
-          
-          console.log('新版本最终转换后的数据项数组:', transformedData);
+
+          console.log('New version final transformed data items array:', transformedData);
           setDataItems(transformedData);
         } else {
-          console.warn('新版本API返回数据中pageItems字段不是数组或不存在:', dataResponse);
+          console.warn('New version API returned data pageItems field is not array or does not exist:', dataResponse);
           setDataItems([]);
         }
       } else {
-        console.error('新版本API返回错误:', response.code, response.message);
-        throw new Error(response.message || '获取数据项失败');
+        console.error('New version API returned error:', response.code, response.message);
+        throw new Error(response.message || 'Failed to get data items');
       }
     } catch (error) {
-      console.error('使用新版本ID获取数据项失败:', error);
-      // 发生错误时设置为空数组
+      console.error('Failed to get data items using new version ID:', error);
+      // Set to empty array on error
       setDataItems([]);
     } finally {
       setDataLoading(false);
     }
   };
 
-  // 修改获取版本数据列表函数，支持分页
+  // Modify get version data list function, support pagination
   const fetchVersions = async (pageNumber: number = 1, pageSize: number = 10) => {
     try {
       setVersionsLoading(true);
-      
+
       const response = await API.getDatasetVersions({
         datasetId: Number(id),
         pageNumber: pageNumber,
         pageSize: pageSize
       });
-      
+
       if (response.code === 200 && response.data) {
         const dataResponse = response.data;
         const versionsData = dataResponse.pageItems || [];
         setVersions(versionsData);
-        
-        // 更新分页信息
+
+        // Update pagination info
         setVersionsPagination(prev => ({
           ...prev,
           current: dataResponse.pageNumber || pageNumber,
@@ -784,11 +784,11 @@ const GatherDetail: React.FC = () => {
           total: dataResponse.totalCount || 0
         }));
       } else {
-        throw new Error(response.message || '获取版本数据失败');
+        throw new Error(response.message || 'Failed to get version data');
       }
     } catch (error) {
-      console.error('获取版本数据失败:', error);
-      // 发生错误时设置为空数组
+      console.error('Failed to get version data:', error);
+      // Set to empty array on error
       setVersions([]);
       setVersionsPagination(prev => ({
         ...prev,
@@ -800,21 +800,21 @@ const GatherDetail: React.FC = () => {
     }
   };
 
-  // 修改获取关联实验列表函数，支持分页
+  // Modify get related experiments list function, support pagination
   const fetchExperiments = async (pageNumber: number = 1, pageSize: number = 10) => {
     try {
       setExperimentsLoading(true);
-      
+
       const response = await API.getDatasetExperiments({
         datasetId: Number(id),
         pageNumber: pageNumber,
         pageSize: pageSize
       });
-      
+
       if (response.code === 200 && response.data) {
         const dataResponse = response.data;
         const experimentsData = dataResponse.pageItems || [];
-        // 转换为组件需要的格式
+        // Transform to component required format
         const transformedExperiments = experimentsData.map((exp: any) => ({
           id: exp.id,
           name: exp.name,
@@ -823,8 +823,8 @@ const GatherDetail: React.FC = () => {
           createTime: exp.createTime
         }));
         setExperiments(transformedExperiments);
-        
-        // 更新分页信息
+
+        // Update pagination info
         setExperimentsPagination(prev => ({
           ...prev,
           current: dataResponse.pageNumber || pageNumber,
@@ -832,11 +832,11 @@ const GatherDetail: React.FC = () => {
           total: dataResponse.totalCount || 0
         }));
       } else {
-        throw new Error(response.message || '获取关联实验失败');
+        throw new Error(response.message || 'Failed to get related experiments');
       }
     } catch (error) {
-      console.error('获取关联实验失败:', error);
-      // 发生错误时设置为空数组
+      console.error('Failed to get related experiments:', error);
+      // Set to empty array on error
       setExperiments([]);
       setExperimentsPagination(prev => ({
         ...prev,
@@ -851,16 +851,16 @@ const GatherDetail: React.FC = () => {
   useEffect(() => {
     if (id) {
       fetchDatasetDetail();
-      // 页面加载时直接获取关联实验数据
+      // Load related experiments data directly on page load
       fetchExperiments(experimentsPagination.current, experimentsPagination.pageSize);
     }
   }, [id]);
 
   useEffect(() => {
     if (detail) {
-      // 详情加载完成后，立即获取版本数据
+      // After detail loading completes, immediately get version data
       fetchVersions(versionsPagination.current, versionsPagination.pageSize);
-      // 如果当前在数据管理tab，也获取数据项
+      // If currently on data management tab, also get data items
       if (activeTab === 'data') {
         fetchDataItems(dataPagination.current, dataPagination.pageSize);
       }
@@ -868,53 +868,53 @@ const GatherDetail: React.FC = () => {
   }, [detail]);
 
   useEffect(() => {
-    // 只有在切换到数据管理tab时才获取数据项
+    // Only get data items when switching to data management tab
     if (detail && activeTab === 'data') {
       fetchDataItems(dataPagination.current, dataPagination.pageSize);
     }
-    // 切换到版本记录tab时获取版本数据
+    // Get version data when switching to version records tab
     else if (detail && activeTab === 'version') {
       fetchVersions(versionsPagination.current, versionsPagination.pageSize);
     }
-    // 切换到关联实验tab时获取实验数据
+    // Get experiments data when switching to related experiments tab
     else if (detail && activeTab === 'experiment') {
-      // 直接获取关联实验数据
+      // Directly get related experiments data
       fetchExperiments(experimentsPagination.current, experimentsPagination.pageSize);
     }
   }, [activeTab]);
 
-  // 返回列表页面
+  // Return to list page
   const handleGoBack = () => {
     navigate('/evaluation-gather');
   };
 
-  // 进入编辑模式
+  // Enter edit mode
   const handleEdit = () => {
     setIsEditing(true);
-    // 设置表单初始值
+    // Set form initial values
     editForm.setFieldsValue({
       name: detail?.name,
       description: detail?.description
     });
   };
 
-  // 保存编辑
+  // Save edit
   const handleSave = async () => {
     try {
       setSaving(true);
       const values = await editForm.validateFields();
-      
-      // 调用API保存修改
+
+      // Call API to save changes
       const response = await API.updateDataset({
         datasetId: Number(id),
         name: values.name,
         description: values.description,
         columnsConfig: detail?.columnsConfig || []
       });
-      
+
       if (response.code === 200) {
-        message.success('保存成功');
-        // 更新本地数据
+        message.success('Saved successfully');
+        // Update local data
         setDetail(prev => prev ? {
           ...prev,
           name: values.name,
@@ -922,44 +922,44 @@ const GatherDetail: React.FC = () => {
         } : null);
         setIsEditing(false);
       } else {
-        throw new Error(response.message || '保存失败');
+        throw new Error(response.message || 'Save failed');
       }
     } catch (error) {
-      console.error('保存失败:', error);
-      message.error('保存失败，请重试');
+      console.error('Save failed:', error);
+      message.error('Save failed, please try again');
     } finally {
       setSaving(false);
     }
   };
 
-  // 取消编辑
+  // Cancel edit
   const handleCancel = () => {
     setIsEditing(false);
     editForm.resetFields();
   };
 
-  // 删除评测集
+  // Delete dataset
   const handleDelete = async () => {
     Modal.confirm({
-      title: '确认删除',
-      content: `确定要删除评测集「${detail?.name}」吗？此操作不可恢复。`,
-      okText: '删除',
+      title: 'Confirm Delete',
+      content: `Are you sure you want to delete dataset "${detail?.name}"? This action cannot be undone.`,
+      okText: 'Delete',
       okType: 'danger',
-      cancelText: '取消',
+      cancelText: 'Cancel',
       onOk: async () => {
         try {
           await API.deleteDataset({ datasetId: Number(id) });
-          message.success('评测集已删除');
+          message.success('Dataset deleted');
           navigate('/evaluation-gather');
         } catch (error) {
-          message.error('删除失败，请重试');
-          console.error('删除评测集失败:', error);
+          message.error('Delete failed, please try again');
+          console.error('Failed to delete dataset:', error);
         }
       }
     });
   };
 
-  // 渲染数据类型标签
+  // Render data type tag
   const renderDataTypeTag = (dataType: string) => {
     const colorMap: Record<string, string> = {
       'String': 'blue',
@@ -1005,8 +1005,8 @@ const GatherDetail: React.FC = () => {
           height: '100vh',
           width: '100%'
         }}>
-          <h3>评测集详情不存在</h3>
-          <Button onClick={handleGoBack}>返回列表</Button>
+          <h3>Dataset detail does not exist</h3>
+          <Button onClick={handleGoBack}>Back to List</Button>
         </div>
       </div>
     );
@@ -1014,45 +1014,45 @@ const GatherDetail: React.FC = () => {
 
   return (
     <div className="gather-detail-page p-8 fade-in">
-      {/* 页面头部 */}
+      {/* Page header */}
       <div className="flex mb-6">
-          <Button 
-            type="text" 
-            icon={<ArrowLeftOutlined />} 
+          <Button
+            type="text"
+            icon={<ArrowLeftOutlined />}
             onClick={handleGoBack}
             size="large"
           />
           <Title level={2} className="m-0">{detail?.name}</Title>
       </div>
 
-      {/* 评测集信息展示区域 */}
+      {/* Dataset info display area */}
       {detail && (
-        <Card 
-          title="评测集信息" 
+        <Card
+          title="Dataset Information"
           extra={
             !isEditing ? (
-              <Button 
+              <Button
                 type="primary"
                 icon={<EditOutlined />}
                 onClick={handleEdit}
               >
-                编辑
+                Edit
               </Button>
             ) : (
               <div className="flex gap-2">
-                <Button 
+                <Button
                   onClick={handleCancel}
                   icon={<CloseOutlined />}
                 >
-                  取消
+                  Cancel
                 </Button>
-                <Button 
+                <Button
                   type="primary"
                   loading={saving}
                   icon={<SaveOutlined />}
                   onClick={handleSave}
                 >
-                  保存
+                  Save
                 </Button>
               </div>
             )
@@ -1060,19 +1060,19 @@ const GatherDetail: React.FC = () => {
           className="mb-6"
         >
           {!isEditing ? (
-            // 展示模式
+            // Display mode
             <>
               <Descriptions column={2} labelStyle={{ fontWeight: 500 }}>
-                <Descriptions.Item label="名称">{detail.name || '-'}</Descriptions.Item>
-                {/* <Descriptions.Item label="创建人">{detail.creator}</Descriptions.Item> */}
-                <Descriptions.Item label="描述">{detail.description || '-'}</Descriptions.Item>
-                <Descriptions.Item label="数据量">{detail.dataCount || 0} 条</Descriptions.Item>
-                <Descriptions.Item label="创建时间">{formatDateTime(detail.createTime)}</Descriptions.Item>
-                <Descriptions.Item label="更新时间">{formatDateTime(detail.updateTime)}</Descriptions.Item>
+                <Descriptions.Item label="Name">{detail.name || '-'}</Descriptions.Item>
+                {/* <Descriptions.Item label="Creator">{detail.creator}</Descriptions.Item> */}
+                <Descriptions.Item label="Description">{detail.description || '-'}</Descriptions.Item>
+                <Descriptions.Item label="Data Count">{detail.dataCount || 0} items</Descriptions.Item>
+                <Descriptions.Item label="Created">{formatDateTime(detail.createTime)}</Descriptions.Item>
+                <Descriptions.Item label="Updated">{formatDateTime(detail.updateTime)}</Descriptions.Item>
               </Descriptions>
             </>
           ) : (
-            // 编辑模式
+            // Edit mode
             <Form
               form={editForm}
               layout="vertical"
@@ -1080,27 +1080,27 @@ const GatherDetail: React.FC = () => {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <Form.Item
-                  label="评测集名称"
+                  label="Dataset Name"
                   name="name"
                   rules={[
-                    { required: true, message: '请输入评测集名称' },
-                    { max: 100, message: '名称不能超过100个字符' }
+                    { required: true, message: 'Please enter dataset name' },
+                    { max: 100, message: 'Name cannot exceed 100 characters' }
                   ]}
                 >
-                  <Input placeholder="请输入评测集名称" />
+                  <Input placeholder="Please enter dataset name" />
                 </Form.Item>
               </div>
-              
+
               <Form.Item
-                label="描述"
+                label="Description"
                 name="description"
                 rules={[
-                  { max: 500, message: '描述不能超过500个字符' }
+                  { max: 500, message: 'Description cannot exceed 500 characters' }
                 ]}
               >
-                <Input.TextArea 
-                  rows={4} 
-                  placeholder="请输入评测集描述"
+                <Input.TextArea
+                  rows={4}
+                  placeholder="Please enter dataset description"
                   showCount
                   maxLength={500}
                 />
@@ -1110,39 +1110,39 @@ const GatherDetail: React.FC = () => {
         </Card>
       )}
 
-      {/* Tab导航区域 */}
+      {/* Tab navigation area */}
       <Card>
-        <Tabs 
-          activeKey={activeTab} 
+        <Tabs
+          activeKey={activeTab}
           onChange={setActiveTab}
           className="mb-6"
         >
-          <TabPane tab="数据管理" key="data">
-            {/* 操作按钮区域 */}
+          <TabPane tab="Data Management" key="data">
+            {/* Action buttons area */}
             <div className="mb-4 flex gap-4 justify-between items-center" style={{flexWrap: 'wrap'}}>
-              <Button 
-                type="primary" 
+              <Button
+                type="primary"
                 icon={<PlusOutlined />}
                 onClick={handleAddData}
               >
-                添加数据
+                Add Data
               </Button>
-              <Button 
+              <Button
                 onClick={handleBatchDelete}
                 disabled={selectedRowKeys.length === 0}
               >
-                批量删除
+                Batch Delete
               </Button>
               <div style={{flex: 1}}></div>
-              <Button 
+              <Button
                 type="primary"
                 onClick={handleSubmitVersion}
               >
-                提交新版本
+                Submit New Version
               </Button>
             </div>
 
-            {/* 数据表格 */}
+            {/* Data table */}
             <Table
                 rowSelection={rowSelection}
                 dataSource={dataItems}
@@ -1169,38 +1169,38 @@ const GatherDetail: React.FC = () => {
               />
           </TabPane>
 
-          <TabPane tab="版本记录" key="version">
+          <TabPane tab="Version Records" key="version">
             <Table
                 dataSource={versions}
                 rowKey="id"
                 loading={versionsLoading}
                 columns={[
-                  { 
-                    title: '版本号', 
+                  {
+                    title: 'Version',
                     dataIndex: 'version',
                     width: '15%',
                     render: (version: string) => (
                       <Tag color="blue">{version}</Tag>
                     )
                   },
-                  { 
-                    title: '描述', 
+                  {
+                    title: 'Description',
                     dataIndex: 'description',
                     width: '35%'
                   },
-                  { 
-                    title: '数据量', 
+                  {
+                    title: 'Data Count',
                     dataIndex: 'dataCount',
                     width: '15%',
-                    render: (count: number) => `${count} 条`
+                    render: (count: number) => `${count} items`
                   },
-                  // { 
-                  //   title: '创建人', 
+                  // {
+                  //   title: 'Creator',
                   //   dataIndex: 'creator',
                   //   width: '15%'
                   // },
-                  { 
-                    title: '创建时间', 
+                  {
+                    title: 'Created',
                     dataIndex: 'createTime',
                     width: '20%',
                     render: (text: string) => formatDateTime(text)
@@ -1224,38 +1224,38 @@ const GatherDetail: React.FC = () => {
                   }
                 }}
               />
-              
+
               {!versionsLoading && versions.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
-                  <div className="text-lg mb-2">暂无版本记录</div>
-                  <div>创建新版本后将在此显示</div>
+                  <div className="text-lg mb-2">No version records</div>
+                  <div>Will display here after creating a new version</div>
                 </div>
               )}
           </TabPane>
 
-          <TabPane tab="关联实验" key="experiment">
+          <TabPane tab="Related Experiments" key="experiment">
             <Table
                 dataSource={experiments}
                 rowKey="id"
                 loading={experimentsLoading}
                 columns={[
-                  { 
-                    title: '版本号', 
+                  {
+                    title: 'Version',
                     dataIndex: 'version',
                     width: '15%',
                     render: (version: string) => (
                       <Tag color="cyan">{version}</Tag>
                     )
                   },
-                  { 
-                    title: '实验名称', 
+                  {
+                    title: 'Experiment Name',
                     dataIndex: 'name',
                     width: '40%',
                     render: (name: string, record: any) => (
-                      <span 
+                      <span
                         className="text-blue-600 cursor-pointer hover:text-blue-800 hover:underline font-medium"
                         onClick={() => {
-                          // 跳转到实验详情页面
+                          // Navigate to experiment detail page
                           navigate(`/evaluation-experiment/detail/${record.id}`);
                         }}
                       >
@@ -1263,27 +1263,27 @@ const GatherDetail: React.FC = () => {
                       </span>
                     )
                   },
-                  { 
-                    title: '状态', 
+                  {
+                    title: 'Status',
                     dataIndex: 'status',
                     width: '15%',
                     render: (status: string) => {
                       const statusConfig = {
-                        'RUNNING': { color: 'processing', text: '运行中' },
-                        'COMPLETED': { color: 'success', text: '已完成' },
-                        'FAILED': { color: 'error', text: '已停止' },
-                        'WAITING': { color: 'default', text: '等待中' },
-                        '运行中': { color: 'processing', text: '运行中' },
-                        '已完成': { color: 'success', text: '已完成' },
-                        '已停止': { color: 'error', text: '已停止' },
-                        '等待中': { color: 'default', text: '等待中' }
+                        'RUNNING': { color: 'processing', text: 'Running' },
+                        'COMPLETED': { color: 'success', text: 'Completed' },
+                        'FAILED': { color: 'error', text: 'Stopped' },
+                        'WAITING': { color: 'default', text: 'Waiting' },
+                        'running': { color: 'processing', text: 'Running' },
+                        'completed': { color: 'success', text: 'Completed' },
+                        'stopped': { color: 'error', text: 'Stopped' },
+                        'waiting': { color: 'default', text: 'Waiting' }
                       };
-                      const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['等待中'];
+                      const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['waiting'];
                       return <Tag color={config.color}>{config.text}</Tag>;
                     }
                   },
-                  { 
-                    title: '创建时间', 
+                  {
+                    title: 'Created',
                     dataIndex: 'createTime',
                     width: '30%',
                     render: (text: string) => formatDateTime(text)
@@ -1307,33 +1307,33 @@ const GatherDetail: React.FC = () => {
                   }
                 }}
               />
-              
+
               {!experimentsLoading && experiments.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
-                  <div className="text-lg mb-2">暂无关联实验</div>
-                  <div>创建实验后将在此显示</div>
+                  <div className="text-lg mb-2">No related experiments</div>
+                  <div>Will display here after creating experiments</div>
                 </div>
               )}
           </TabPane>
         </Tabs>
       </Card>
 
-      {/* 添加数据弹窗 */}
+      {/* Add data modal */}
       <Modal
-        title="添加数据"
+        title="Add Data"
         open={addDataModalVisible}
         onCancel={handleAddDataCancel}
         footer={[
           <Button key="cancel" onClick={handleAddDataCancel}>
-            取消
+            Cancel
           </Button>,
-          <Button 
-            key="submit" 
-            type="primary" 
+          <Button
+            key="submit"
+            type="primary"
             loading={addingData}
             onClick={handleAddDataSubmit}
           >
-            确定
+            Confirm
           </Button>,
         ]}
         width={700}
@@ -1353,37 +1353,37 @@ const GatherDetail: React.FC = () => {
             form={addDataForm}
             layout="vertical"
           >
-            {/* 根据columnsConfig动态生成表单字段 */}
+            {/* Dynamically generate form fields based on columnsConfig */}
             {detail?.columnsConfig?.map((column, index) => (
               <Form.Item
                 key={column.name}
                 label={column.name}
                 name={column.name}
                 rules={[
-                  ...(column.required ? [{ required: true, message: `请输入${column.description || column.name}内容` }] : []),
-                  { max: 1000, message: `${column.description || column.name}内容不能超过1000个字符` }
+                  ...(column.required ? [{ required: true, message: `Please enter ${column.description || column.name} content` }] : []),
+                  { max: 1000, message: `${column.description || column.name} content cannot exceed 1000 characters` }
                 ]}
               >
-                <Input.TextArea 
-                  rows={4} 
-                  placeholder={`输入${column.description || column.name}内容`}
+                <Input.TextArea
+                  rows={4}
+                  placeholder={`Enter ${column.description || column.name} content`}
                   showCount
                   maxLength={1000}
                   style={{ resize: 'none' }}
                 />
               </Form.Item>
             ))}
-            
+
             <Form.Item
-              label="备注（可选）"
+              label="Remarks (Optional)"
               name="remark"
               rules={[
-                { max: 200, message: '备注不能超过200个字符' }
+                { max: 200, message: 'Remarks cannot exceed 200 characters' }
               ]}
             >
-              <Input.TextArea 
-                rows={2} 
-                placeholder="请输入备注信息（可选）"
+              <Input.TextArea
+                rows={2}
+                placeholder="Enter remarks (optional)"
                 showCount
                 maxLength={200}
               />

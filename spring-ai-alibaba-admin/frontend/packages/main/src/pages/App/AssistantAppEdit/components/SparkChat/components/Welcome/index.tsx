@@ -91,7 +91,7 @@ export default function Welcome(props: IProps) {
           {props.title ||
             $i18n.get({
               id: 'main.pages.App.AssistantAppEdit.components.SparkChat.components.Welcome.index.inputQuestion',
-              dm: '输入问题进行测试体验',
+              dm: 'Enter a question to test',
             })}
         </div>
       </Flex>

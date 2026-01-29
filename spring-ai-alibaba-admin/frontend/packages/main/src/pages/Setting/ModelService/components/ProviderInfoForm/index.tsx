@@ -28,7 +28,7 @@ const ProviderName: React.FC<ProviderNameProps> = ({
       <div className={styles.labelContent}>
         {$i18n.get({
           id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.modelServiceProviderName',
-          dm: '模型服务商名称',
+          dm: 'Model Service Provider Name',
         })}
 
         <div className={styles.required}>*</div>
@@ -43,11 +43,11 @@ const ProviderName: React.FC<ProviderNameProps> = ({
             {provider?.enable
               ? $i18n.get({
                   id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.started',
-                  dm: '已启动',
+                  dm: 'Started',
                 })
               : $i18n.get({
                   id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.stopped',
-                  dm: '已停用',
+                  dm: 'Stopped',
                 })}
           </span>
         </div>
@@ -55,11 +55,11 @@ const ProviderName: React.FC<ProviderNameProps> = ({
           {provider?.enable
             ? $i18n.get({
                 id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.stopService',
-                dm: '停止服务',
+                dm: 'Stop Service',
               })
             : $i18n.get({
                 id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.startService',
-                dm: '启动服务',
+                dm: 'Start Service',
               })}
         </Button>
       </div>
@@ -105,7 +105,7 @@ const ProviderInfoForm: React.FC<ProviderInfoFormProps> = ({
           message.success(
             $i18n.get({
               id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.configurationUpdated',
-              dm: '配置已更新',
+              dm: 'Configuration updated',
             }),
           );
           onRefresh?.();
@@ -123,20 +123,20 @@ const ProviderInfoForm: React.FC<ProviderInfoFormProps> = ({
       title: enable
         ? $i18n.get({
             id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.startService',
-            dm: '启动服务',
+            dm: 'Start Service',
           })
         : $i18n.get({
             id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.stopService',
-            dm: '停止服务',
+            dm: 'Stop Service',
           }),
       children: enable
         ? $i18n.get({
             id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.confirmStartService',
-            dm: '确定要启动当前服务吗？',
+            dm: 'Are you sure you want to start this service?',
           })
         : $i18n.get({
             id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.confirmStopService',
-            dm: '确定要停止当前服务吗？停止后将无法使用该服务的模型。',
+            dm: 'Are you sure you want to stop this service? You will not be able to use models from this provider after stopping.',
           }),
 
       onOk: () => {
@@ -149,7 +149,7 @@ const ProviderInfoForm: React.FC<ProviderInfoFormProps> = ({
             message.success(
               $i18n.get({
                 id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.stopServiceSuccess',
-                dm: '停止服务成功',
+                dm: 'Service stopped successfully',
               }),
             );
             onRefresh?.();
@@ -187,7 +187,7 @@ const ProviderInfoForm: React.FC<ProviderInfoFormProps> = ({
                   required: true,
                   message: $i18n.get({
                     id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.enterModelServiceProviderName',
-                    dm: '请输入模型服务商名称',
+                    dm: 'Please enter model service provider name',
                   }),
                 },
               ]}
@@ -197,7 +197,7 @@ const ProviderInfoForm: React.FC<ProviderInfoFormProps> = ({
               <Input
                 placeholder={$i18n.get({
                   id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.inputModelServiceProviderName',
-                  dm: '输入模型服务商名称',
+                  dm: 'Enter model service provider name',
                 })}
                 maxLength={30}
                 disabled={isPreset}
@@ -206,22 +206,13 @@ const ProviderInfoForm: React.FC<ProviderInfoFormProps> = ({
           </div>
           <Form.Item
             name="apiKey"
-            label="API-KEY"
-            rules={[
-              {
-                required: true,
-                message: $i18n.get({
-                  id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.apiKeyRequired',
-                  dm: '需要填写API-KEY验证凭证才能调用远程模型服务',
-                }),
-              },
-            ]}
-            required
+            label="API-KEY (Optional)"
+            tooltip="Leave empty for local services like Ollama"
           >
             <Input.Password
               placeholder={$i18n.get({
                 id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.enterApiKey',
-                dm: '输入您的API-KEY',
+                dm: 'Enter your API-KEY',
               })}
             />
           </Form.Item>
@@ -234,7 +225,7 @@ const ProviderInfoForm: React.FC<ProviderInfoFormProps> = ({
                 required: true,
                 message: $i18n.get({
                   id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.apiUrlRequired',
-                  dm: '需要填写API URL才能调用远程模型服务',
+                  dm: 'API URL is required to call remote model services',
                 }),
               },
             ]}
@@ -244,7 +235,7 @@ const ProviderInfoForm: React.FC<ProviderInfoFormProps> = ({
               rows={2}
               placeholder={$i18n.get({
                 id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.enterApiUrl',
-                dm: '输入您的API URL，请在服务商文档中获取，如https://dashscope.aliyuncs.com/compatible-mode',
+                dm: 'Enter your API URL from provider docs, e.g., https://dashscope.aliyuncs.com/compatible-mode',
               })}
             />
           </Form.Item>
@@ -252,7 +243,7 @@ const ProviderInfoForm: React.FC<ProviderInfoFormProps> = ({
             <TipBox
               title={$i18n.get({
                 id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.howToGetModelServiceApi',
-                dm: '如何获取模型服务API？',
+                dm: 'How to get Model Service API?',
               })}
               sections={API_KEY_TIP_SECTIONS}
             />
@@ -262,7 +253,7 @@ const ProviderInfoForm: React.FC<ProviderInfoFormProps> = ({
               <Button type="primary" htmlType="submit">
                 {$i18n.get({
                   id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.save',
-                  dm: '保存',
+                  dm: 'Save',
                 })}
               </Button>
               <Button
@@ -271,7 +262,7 @@ const ProviderInfoForm: React.FC<ProviderInfoFormProps> = ({
               >
                 {$i18n.get({
                   id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.cancel',
-                  dm: '取消',
+                  dm: 'Cancel',
                 })}
               </Button>
             </div>

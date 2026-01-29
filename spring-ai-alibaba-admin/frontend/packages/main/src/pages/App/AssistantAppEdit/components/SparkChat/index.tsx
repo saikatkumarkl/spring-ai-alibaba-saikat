@@ -64,14 +64,14 @@ export default forwardRef<ISparkChatRef, IProps>((props, ref) => {
     api.info({
       message: $i18n.get({
         id: 'main.pages.App.AssistantAppEdit.components.SparkChat.index.tip',
-        dm: '提示',
+        dm: 'Tip',
       }),
       description: (
         <div>
           <div>
             {$i18n.get({
               id: 'main.pages.App.AssistantAppEdit.components.SparkChat.index.configVariables',
-              dm: '您还未进行入参变量配置，可能会影响智能体效果，建议您进行完善！',
+              dm: 'You have not configured input variables, which may affect agent performance. Please complete the configuration!',
             })}
           </div>
           <Button
@@ -84,7 +84,7 @@ export default forwardRef<ISparkChatRef, IProps>((props, ref) => {
           >
             {$i18n.get({
               id: 'main.pages.App.AssistantAppEdit.components.SparkChat.index.configureNow',
-              dm: '立即配置',
+              dm: 'Configure Now',
             })}
           </Button>
         </div>
@@ -281,7 +281,7 @@ export default forwardRef<ISparkChatRef, IProps>((props, ref) => {
                 <Tooltip
                   title={$i18n.get({
                     id: 'main.pages.App.AssistantAppEdit.components.SparkChat.index.copy',
-                    dm: '复制',
+                    dm: 'Copy',
                   })}
                   trigger={'hover'}
                 >
@@ -298,7 +298,7 @@ export default forwardRef<ISparkChatRef, IProps>((props, ref) => {
                 message.success(
                   $i18n.get({
                     id: 'main.pages.App.AssistantAppEdit.components.SparkChat.index.copySuccess',
-                    dm: '复制成功',
+                    dm: 'Copy successful',
                   }),
                 );
               },
@@ -309,7 +309,7 @@ export default forwardRef<ISparkChatRef, IProps>((props, ref) => {
                     <Tooltip
                       title={$i18n.get({
                         id: 'main.pages.App.AssistantAppEdit.components.SparkChat.index.regenerate',
-                        dm: '重新生成',
+                        dm: 'Regenerate',
                       })}
                       trigger={'hover'}
                     >
@@ -336,7 +336,7 @@ export default forwardRef<ISparkChatRef, IProps>((props, ref) => {
                 <Tooltip
                   title={$i18n.get({
                     id: 'main.pages.App.AssistantAppEdit.components.SparkChat.index.clickCopyRequestId',
-                    dm: '点击复制Request ID',
+                    dm: 'Click to copy Request ID',
                   })}
                   trigger={'hover'}
                 >
@@ -350,7 +350,7 @@ export default forwardRef<ISparkChatRef, IProps>((props, ref) => {
                 message.success(
                   $i18n.get({
                     id: 'main.pages.App.AssistantAppEdit.components.SparkChat.index.copySuccess',
-                    dm: '复制成功',
+                    dm: 'Copied successfully',
                   }),
                 );
               },
@@ -361,7 +361,7 @@ export default forwardRef<ISparkChatRef, IProps>((props, ref) => {
                     <Tooltip
                       title={$i18n.get({
                         id: 'main.pages.App.AssistantAppEdit.components.SparkChat.index.viewTracingHistory',
-                        dm: '查看对话追踪历史',
+                        dm: 'View conversation tracing history',
                       })}
                       trigger={'hover'}
                     >
@@ -385,7 +385,7 @@ export default forwardRef<ISparkChatRef, IProps>((props, ref) => {
             [
               $i18n.get({
                 id: 'main.pages.App.AssistantAppEdit.components.SparkChat.index.wordCount',
-                dm: '字数',
+                dm: 'Words',
               }),
 
               sparkChatMessage.cards?.find((item) => item.code === 'Text')?.data
@@ -395,7 +395,7 @@ export default forwardRef<ISparkChatRef, IProps>((props, ref) => {
             [
               $i18n.get({
                 id: 'main.pages.App.AssistantAppEdit.components.SparkChat.index.inputToken',
-                dm: '输入token',
+                dm: 'Input tokens',
               }),
               // @ts-ignore
               sparkChatMessage.usage?.prompt_tokens,
@@ -403,7 +403,7 @@ export default forwardRef<ISparkChatRef, IProps>((props, ref) => {
             [
               $i18n.get({
                 id: 'main.pages.App.AssistantAppEdit.components.SparkChat.index.outputToken',
-                dm: '输出token',
+                dm: 'Output tokens',
               }),
               // @ts-ignore
               sparkChatMessage.usage?.completion_tokens,
@@ -427,7 +427,7 @@ export default forwardRef<ISparkChatRef, IProps>((props, ref) => {
         message.warning(
           $i18n.get({
             id: 'main.pages.App.AssistantAppEdit.components.SparkChat.index.generatingDialog',
-            dm: '对话正在生成中，请先停止再重置对话！',
+            dm: 'Dialog is generating, please stop before resetting!',
           }),
         );
         return;
@@ -440,7 +440,7 @@ export default forwardRef<ISparkChatRef, IProps>((props, ref) => {
         message.success(
           $i18n.get({
             id: 'main.pages.App.AssistantAppEdit.components.SparkChat.index.resetSuccess',
-            dm: '重置对话成功，请继续测试',
+            dm: 'Dialog reset successfully, please continue testing',
           }),
         );
       }
@@ -608,7 +608,7 @@ export default forwardRef<ISparkChatRef, IProps>((props, ref) => {
                 <Tooltip
                   title={$i18n.get({
                     id: 'main.pages.App.AssistantAppEdit.components.SparkChat.index.uploadImage',
-                    dm: '上传图片进行视觉理解或图片搜索',
+                    dm: 'Upload images for visual understanding or image search',
                   })}
                 >
                   <IconButton

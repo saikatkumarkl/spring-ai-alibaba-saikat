@@ -28,23 +28,23 @@ const modeSwitchOpts = [
   {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.Classifier.panel.fastMode',
-      dm: '快速模式',
+      dm: 'Fast Mode',
     }),
     value: 'efficient',
     desc: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.Classifier.panel.classificationModelAvoidsThinkingProcess',
-      dm: '分类模型会避免输出思考过程，提升速度，适用于简单场景',
+      dm: 'The classification model avoids outputting the thinking process, improving speed, suitable for simple scenarios',
     }),
   },
   {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.Classifier.panel.efficiencyMode',
-      dm: '效果模式',
+      dm: 'Advanced Mode',
     }),
     value: 'advanced',
     desc: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.Classifier.panel.classificationModelThinksStepByStep',
-      dm: '分类模型会一步一步的思考，更精准的匹配对应的分类',
+      dm: 'The classification model thinks step by step for more accurate matching of the corresponding classification',
     }),
   },
 ];
@@ -193,13 +193,13 @@ export default memo(function ClassifyPanel(props: {
             <span>
               {$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Classifier.panel.inputVariables',
-                dm: '输入变量',
+                dm: 'Input Variables',
               })}
             </span>
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Classifier.panel.inputContentForIntentionJudgment',
-                dm: '输入需要用做意图判断的内容。',
+                dm: 'Enter the content to be used for intent judgment.',
               })}
             />
           </div>
@@ -215,13 +215,13 @@ export default memo(function ClassifyPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Classifier.panel.modelSelection',
-              dm: '模型选择',
+              dm: 'Model Selection',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Classifier.panel.selectAppropriateModel',
-                dm: '按需选合适模型辅助识别。',
+                dm: 'Select an appropriate model to assist with recognition as needed.',
               })}
             />
           </div>
@@ -239,13 +239,13 @@ export default memo(function ClassifyPanel(props: {
             <span>
               {$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Classifier.panel.intentionClassification',
-                dm: '意图分类',
+                dm: 'Intent Classification',
               })}
             </span>
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Classifier.panel.configureIntentionBranches',
-                dm: '配置需要模型来判断的意图分支。',
+                dm: 'Configure intent branches for the model to determine.',
               })}
             />
           </div>
@@ -273,7 +273,7 @@ export default memo(function ClassifyPanel(props: {
             {$i18n.get(
               {
                 id: 'main.pages.App.Workflow.nodes.Classifier.panel.addIntention',
-                dm: '添加意图（{var1}/{var2}）',
+                dm: 'Add Intent ({var1}/{var2})',
               },
               {
                 var1: props.data.node_param.conditions.length - 1,
@@ -284,13 +284,13 @@ export default memo(function ClassifyPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Classifier.panel.otherIntention',
-              dm: '其他意图',
+              dm: 'Other Intents',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Classifier.panel.executeThisBranchWhenNoIntentionMatches',
-                dm: '当模型判断所有意图均不满足时执行该分支。',
+                dm: 'Execute this branch when the model determines that no intent is satisfied.',
               })}
             />
           </div>
@@ -299,7 +299,7 @@ export default memo(function ClassifyPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Classifier.panel.thinkingMode',
-              dm: '思考模式',
+              dm: 'Thinking Mode',
             })}
           </div>
           <SelectWithDesc
@@ -327,13 +327,13 @@ export default memo(function ClassifyPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Classifier.panel.prompt',
-              dm: '提示词',
+              dm: 'Prompt',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Classifier.panel.provideAdditionalRequirements',
-                dm: '为意图识别模型提供额外的要求或约束。',
+                dm: 'Provide additional requirements or constraints for the intent recognition model.',
               })}
             />
           </div>
@@ -355,13 +355,13 @@ export default memo(function ClassifyPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Classifier.panel.output',
-              dm: '输出',
+              dm: 'Output',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Classifier.panel.outputSpecificResult',
-                dm: '输出具体的识别结果，效果模式下会输出详细的思考过程。',
+                dm: 'Output the specific recognition result. In advanced mode, detailed thinking process will be output.',
               })}
             />
           </div>

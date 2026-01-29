@@ -53,7 +53,7 @@ export default function AppActions(props: {
       message.warning(
         $i18n.get({
           id: 'main.pages.App.AssistantAppEdit.components.AppActions.index.enterApplicationName',
-          dm: '请填写应用名称',
+          dm: 'Please enter application name',
         }),
       );
       return;
@@ -68,7 +68,7 @@ export default function AppActions(props: {
       message.warning(
         $i18n.get({
           id: 'main.pages.App.AssistantAppEdit.components.AppActions.index.selectModel',
-          dm: '请选择模型！',
+          dm: 'Please select a model!',
         }),
       );
       return;
@@ -81,7 +81,7 @@ export default function AppActions(props: {
         message.warning(
           $i18n.get({
             id: 'main.pages.App.AssistantAppEdit.components.AppActions.index.knowledgeRetrievalEnhancementFunctionNotFilledOrMultipleVariables',
-            dm: '您开启了【知识检索增强】功能，但在Prompt中未填写或者填写了多个${documents}变量，为了保证效果，请保证Prompt中只出现一次',
+            dm: 'You have enabled Knowledge Retrieval Enhancement, but the ${documents} variable is not filled in or is filled in multiple times in the Prompt. Please ensure it appears only once.',
           }),
         );
         return;
@@ -91,7 +91,7 @@ export default function AppActions(props: {
           visible: true,
           tip: $i18n.get({
             id: 'main.pages.App.AssistantAppEdit.components.AppActions.index.knowledgeRetrievalEnhancementNotAddedKnowledgeBase',
-            dm: '已开启知识检索增强，但未添加知识库，检索增强不会生效。是否确定发布？',
+            dm: 'Knowledge retrieval enhancement is enabled but no knowledge base is added. The enhancement will not take effect. Are you sure you want to publish?',
           }),
           code: 'no_select_knowledge_tip',
         });
@@ -115,7 +115,7 @@ export default function AppActions(props: {
     message.info(
       $i18n.get({
         id: 'main.pages.App.AssistantAppEdit.components.AppActions.index.notImplementedYet',
-        dm: '暂未实现',
+        dm: 'Not implemented yet',
       }),
     );
   };
@@ -140,11 +140,11 @@ export default function AppActions(props: {
               appState.flushing
                 ? $i18n.get({
                     id: 'main.pages.App.AssistantAppEdit.components.AppActions.index.dialogProcessingProhibitedSwitchVersion',
-                    dm: '对话进行中，禁止切换版本',
+                    dm: 'Dialog in progress, version switching is disabled',
                   })
                 : $i18n.get({
                     id: 'main.components.HistoryPanel.index.historyVersion',
-                    dm: '历史版本',
+                    dm: 'Version History',
                   })
             }
           >
@@ -161,7 +161,7 @@ export default function AppActions(props: {
             >
               {$i18n.get({
                 id: 'main.pages.App.AssistantAppEdit.components.AppActions.index.versionManagement',
-                dm: '版本管理',
+                dm: 'Version Management',
               })}
             </Button>
           </Tooltip>
@@ -171,7 +171,7 @@ export default function AppActions(props: {
                 disabled={appState.saveLoading}
                 onClick={handleExportSAA}
               >
-                导出SAA工程代码
+                Export SAA Project Code
               </Button>
               <Popover
                 onOpenChange={(val) => {
@@ -200,20 +200,20 @@ export default function AppActions(props: {
 
                         {$i18n.get({
                           id: 'main.pages.App.AssistantAppEdit.components.AppActions.index.dontPromptAgain',
-                          dm: '不再提示',
+                          dm: "Don't show again",
                         })}
                       </span>
                       <div className={styles.actions}>
                         <Button onClick={() => onClose()}>
                           {$i18n.get({
                             id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.cancel',
-                            dm: '取消',
+                            dm: 'Cancel',
                           })}
                         </Button>
                         <Button type="primary" onClick={() => publish()}>
                           {$i18n.get({
                             id: 'main.pages.App.Workflow.index.index.publish',
-                            dm: '发布',
+                            dm: 'Publish',
                           })}
                         </Button>
                       </div>
@@ -232,7 +232,7 @@ export default function AppActions(props: {
               >
                 {$i18n.get({
                   id: 'main.pages.App.Workflow.index.index.publish',
-                  dm: '发布',
+                  dm: 'Publish',
                 })}
               </Button>
             </Popover>
@@ -249,14 +249,14 @@ export default function AppActions(props: {
                 message.success(
                   $i18n.get({
                     id: 'main.pages.App.AssistantAppEdit.components.AppActions.index.returnedToCurrentVersion',
-                    dm: '已回到当前版本',
+                    dm: 'Returned to current version',
                   }),
                 );
               }}
             >
               {$i18n.get({
                 id: 'main.pages.App.AssistantAppEdit.components.AppActions.index.returnToCurrentVersion',
-                dm: '回到当前版本',
+                dm: 'Return to Current Version',
               })}
             </Button>
           )}

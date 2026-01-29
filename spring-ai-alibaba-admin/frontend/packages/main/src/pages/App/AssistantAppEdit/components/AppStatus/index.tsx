@@ -31,7 +31,7 @@ export default function AppStatusBar(props: IProps) {
             tooltip={$i18n.get(
               {
                 id: 'main.pages.App.AssistantAppEdit.components.AppStatus.index.autosavedOn',
-                dm: '已于{var1}自动保存',
+                dm: 'Auto-saved at {var1}',
               },
               { var1: autoSaveTime },
             )}
@@ -39,7 +39,7 @@ export default function AppStatusBar(props: IProps) {
             {$i18n.get(
               {
                 id: 'main.pages.App.AssistantAppEdit.components.AppStatus.index.autosavedOn',
-                dm: '已于{var1}自动保存',
+                dm: 'Auto-saved at {var1}',
               },
               { var1: autoSaveTime },
             )}

@@ -9,21 +9,21 @@ const menuItems: MenuProps['items'] = [
     key: '/setting/account',
     label: $i18n.get({
       id: 'main.layouts.SettingDropdown.accountManagement',
-      dm: '账号管理',
+      dm: 'Account Management',
     }),
   },
   {
     key: '/setting/modelService',
     label: $i18n.get({
       id: 'main.pages.Setting.ModelService.index.modelServiceManagement',
-      dm: '模型服务管理',
+      dm: 'Model Service Management',
     }),
   },
   {
     key: '/setting/apiKeys',
     label: $i18n.get({
       id: 'main.layouts.SettingDropdown.apiKeyManagement',
-      dm: 'API KEY管理',
+      dm: 'API Key Management',
     }),
   },
 ];

@@ -17,7 +17,7 @@ export default function () {
         >
           {$i18n.get({
             id: 'main.pages.Component.Plugin.List.index.createCustomPlugin',
-            dm: '创建自定义插件',
+            dm: 'Create Custom Plugin',
           })}
         </Button>,
       )}

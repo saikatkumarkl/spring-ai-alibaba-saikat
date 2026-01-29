@@ -16,7 +16,7 @@ export default function PluginCard(props: Plugin & { reload: () => void }) {
         {
           label: $i18n.get({
             id: 'main.pages.Component.Plugin.List.Card.pluginDescription',
-            dm: '描述',
+            dm: 'Description',
           }),
           content: props.description,
         },
@@ -34,7 +34,7 @@ export default function PluginCard(props: Plugin & { reload: () => void }) {
         <div className={styles['update-time']}>
           {$i18n.get({
             id: 'main.pages.Component.Plugin.List.Card.updatedAt',
-            dm: '更新于',
+            dm: 'Updated at ',
           })}
           {dayjs(props.gmt_modified).format('YYYY-MM-DD HH:mm:ss')}
         </div>
@@ -50,7 +50,7 @@ export default function PluginCard(props: Plugin & { reload: () => void }) {
           >
             {$i18n.get({
               id: 'main.pages.Component.Plugin.List.Card.viewTools',
-              dm: '查看工具',
+              dm: 'View Tools',
             })}
           </Button>
           <Button
@@ -61,7 +61,7 @@ export default function PluginCard(props: Plugin & { reload: () => void }) {
           >
             {$i18n.get({
               id: 'main.pages.Component.Plugin.List.Card.edit',
-              dm: '编辑',
+              dm: 'Edit',
             })}
           </Button>
 
@@ -72,18 +72,18 @@ export default function PluginCard(props: Plugin & { reload: () => void }) {
                 AlertDialog.warning({
                   title: $i18n.get({
                     id: 'main.pages.Component.Plugin.List.Card.deletePlugin',
-                    dm: '删除插件',
+                    dm: 'Delete Plugin',
                   }),
                   children: $i18n.get({
                     id: 'main.pages.Component.Plugin.List.Card.confirmDeletePlugin',
-                    dm: '确定删除该插件吗？',
+                    dm: 'Are you sure you want to delete this plugin?',
                   }),
                   onOk: () => {
                     removePlugin(props.plugin_id as string).then(() => {
                       message.success(
                         $i18n.get({
                           id: 'main.pages.Component.Plugin.List.Card.successDelete',
-                          dm: '删除成功',
+                          dm: 'Deleted successfully',
                         }),
                       );
                       props.reload();
@@ -95,7 +95,7 @@ export default function PluginCard(props: Plugin & { reload: () => void }) {
                 {
                   label: $i18n.get({
                     id: 'main.pages.Component.Plugin.List.Card.delete',
-                    dm: '删除',
+                    dm: 'Delete',
                   }),
                   key: 'delete',
                   danger: true,

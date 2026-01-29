@@ -23,7 +23,7 @@ const MessageArea: React.FC = () => {
   }, [currentSession?.messages, config.autoScroll]);
 
   const handleClearChat = () => {
-    if (currentSession && window.confirm('确定要清空当前对话吗？')) {
+    if (currentSession && window.confirm('Are you sure you want to clear the current conversation?')) {
       // Clear messages in current session
       // This would need to be implemented in the context
     }
@@ -33,7 +33,7 @@ const MessageArea: React.FC = () => {
     <>
       <div className={styles.chatHeader}>
         <h3 className={styles.chatTitle}>
-          {currentSession ? currentSession.title : '选择或创建一个对话'}
+          {currentSession ? currentSession.title : 'Select or create a conversation'}
         </h3>
         <div className={styles.headerActions}>
           <Button
@@ -41,14 +41,14 @@ const MessageArea: React.FC = () => {
             icon={<SettingOutlined />}
             onClick={toggleDebugInfo}
             size="small"
-            title="调试面板"
+            title="Debug Panel"
           />
           <Button
             type="text"
             icon={<ClearOutlined />}
             onClick={handleClearChat}
             size="small"
-            title="清空对话"
+            title="Clear Conversation"
             disabled={!currentSession || currentSession.messages.length === 0}
           />
         </div>
@@ -70,8 +70,8 @@ const MessageArea: React.FC = () => {
             color: '#999'
           }}>
             <div style={{ fontSize: 16, marginBottom: 8 }}>🤖</div>
-            <div>欢迎使用 Agent Chat UI</div>
-            <div style={{ fontSize: 12, marginTop: 4 }}>请创建或选择一个对话开始聊天</div>
+            <div>Welcome to Agent Chat UI</div>
+            <div style={{ fontSize: 12, marginTop: 4 }}>Please create or select a conversation to start chatting</div>
           </div>
         )}
       </div>

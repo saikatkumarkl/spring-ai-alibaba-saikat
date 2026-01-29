@@ -102,7 +102,7 @@ export default (props: IProps) => {
                     >
                       {$i18n.get({
                         id: 'main.pages.App.components.PluginSelector.PluginListItem.index.tool',
-                        dm: '工具',
+                        dm: 'Tool',
                       })}
 
                       {toolsList.length}

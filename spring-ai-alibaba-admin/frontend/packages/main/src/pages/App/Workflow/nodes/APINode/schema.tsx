@@ -14,7 +14,7 @@ export const API_OUTPUT_DEFAULT_PARAMS: INodeDataOutputParamItem[] = [
     type: 'String',
     desc: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.APINode.schema.outputResult',
-      dm: '输出结果',
+      dm: 'Output Result',
     }),
   },
 ];
@@ -25,11 +25,11 @@ const checkApiNodeDataValid = (data: IApiNodeData) => {
     errorMsg.push({
       label: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.APINode.schema.apiAddress',
-        dm: 'API地址',
+        dm: 'API Address',
       }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.APINode.schema.required',
-        dm: '不能为空',
+        dm: 'Cannot be empty',
       }),
     });
   }
@@ -59,12 +59,12 @@ export const APISchema: INodeSchema = {
   title: 'API',
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.APINode.schema.callCustomApiService',
-    dm: '通过Post或Get的方式，调用自定义API服务，输出API调用结果。',
+    dm: 'Call custom API service via Post or Get method, and output the API call result.',
   }),
   iconType: 'spark-api-line',
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.APINode.schema.tool',
-    dm: '工具',
+    dm: 'Tool',
   }),
   defaultParams: {
     input_params: [],

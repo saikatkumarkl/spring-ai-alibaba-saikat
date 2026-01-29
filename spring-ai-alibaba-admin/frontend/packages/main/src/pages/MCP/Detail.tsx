@@ -47,11 +47,11 @@ const McpDetail = () => {
     AlertDialog.warning({
       title: $i18n.get({
         id: 'main.pages.MCP.Detail.confirmDeleteThisMcpService',
-        dm: '确认删除此MCP服务吗',
+        dm: 'Confirm delete this MCP service?',
       }),
       children: $i18n.get({
         id: 'main.pages.MCP.Detail.deleteWillNotBeRecoverableAlreadyAddedServicesMayFailPleaseProceedWithCaution',
-        dm: '删除后将不可恢复，已经添加该服务的智能体可能会失效，请谨慎操作。',
+        dm: 'Deletion cannot be recovered. Agents that have added this service may fail. Please proceed with caution.',
       }),
 
       danger: true,
@@ -60,7 +60,7 @@ const McpDetail = () => {
           message.success(
             $i18n.get({
               id: 'main.pages.MCP.Detail.deletionSuccessful',
-              dm: '删除成功',
+              dm: 'Deleted successfully',
             }),
           );
           navigate('/mcp');
@@ -81,7 +81,7 @@ const McpDetail = () => {
                 danger: true,
                 label: $i18n.get({
                   id: 'main.pages.MCP.Detail.delete',
-                  dm: '删除',
+                  dm: 'Delete',
                 }),
                 key: 'delete',
               },
@@ -96,7 +96,7 @@ const McpDetail = () => {
         >
           {$i18n.get({
             id: 'main.pages.MCP.Detail.edit',
-            dm: '编辑',
+            dm: 'Edit',
           })}
         </Button>
       </>
@@ -107,7 +107,7 @@ const McpDetail = () => {
     {
       title: $i18n.get({
         id: 'main.pages.MCP.Detail.mcpManagement',
-        dm: 'MCP管理',
+        dm: 'MCP Management',
       }),
       path: `/mcp`,
     },
@@ -116,7 +116,7 @@ const McpDetail = () => {
         detail?.name ||
         $i18n.get({
           id: 'main.pages.MCP.Detail.mcpDetails',
-          dm: 'MCP详情',
+          dm: 'MCP Details',
         }),
     },
   ];
@@ -134,7 +134,7 @@ const McpDetail = () => {
           {
             label: $i18n.get({
               id: 'main.pages.MCP.Detail.overview',
-              dm: '概览',
+              dm: 'Overview',
             }),
             key: 'mcp_overview',
             children: renderOverview(),
@@ -142,7 +142,7 @@ const McpDetail = () => {
           {
             label: $i18n.get({
               id: 'main.pages.MCP.Detail.tools',
-              dm: '工具',
+              dm: 'Tools',
             }),
             key: 'mcp_tools',
             disabled: detail?.status === McpStatus.DISABLED,
@@ -163,12 +163,12 @@ const McpDetail = () => {
               <Tooltip
                 title={$i18n.get({
                   id: 'main.pages.MCP.Detail.comingSoon',
-                  dm: '敬请期待',
+                  dm: 'Coming soon',
                 })}
               >
                 {$i18n.get({
                   id: 'main.pages.MCP.Detail.resources',
-                  dm: '资源',
+                  dm: 'Resources',
                 })}
               </Tooltip>
             ),
@@ -180,12 +180,12 @@ const McpDetail = () => {
               <Tooltip
                 title={$i18n.get({
                   id: 'main.pages.MCP.Detail.comingSoon',
-                  dm: '敬请期待',
+                  dm: 'Coming soon',
                 })}
               >
                 {$i18n.get({
                   id: 'main.pages.MCP.Detail.promptWords',
-                  dm: '提示词',
+                  dm: 'Prompts',
                 })}
               </Tooltip>
             ),

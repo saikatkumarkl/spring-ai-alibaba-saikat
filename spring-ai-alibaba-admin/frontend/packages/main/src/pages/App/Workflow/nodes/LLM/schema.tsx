@@ -24,11 +24,11 @@ const checkLLMNodeDataValid = (data: ILLMNodeData) => {
     errorMsg.push({
       label: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.LLM.schema.prompt',
-        dm: '提示词',
+        dm: 'Prompt',
       }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.LLM.schema.requiredField',
-        dm: '不能为空',
+        dm: 'Cannot be empty',
       }),
     });
   }
@@ -37,11 +37,11 @@ const checkLLMNodeDataValid = (data: ILLMNodeData) => {
     errorMsg.push({
       label: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.LLM.schema.userPrompt',
-        dm: '用户提示词',
+        dm: 'User Prompt',
       }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.LLM.schema.requiredField',
-        dm: '不能为空',
+        dm: 'Cannot be empty',
       }),
     });
   }
@@ -71,12 +71,12 @@ export const LLMSchema: INodeSchema = {
   type: 'LLM',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.LLM.schema.largeModel',
-    dm: '大模型',
+    dm: 'Large Model',
   }),
   iconType: 'spark-modePlaza-line',
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.LLM.schema.callLargeModel',
-    dm: '调用大模型，依据配置项以及Prompt进行内容生成。',
+    dm: 'Call large language model to generate content based on configuration and prompt.',
   }),
   defaultParams: {
     input_params: [],
@@ -98,7 +98,7 @@ export const LLMSchema: INodeSchema = {
   disableConnectTarget: true,
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.LLM.schema.basic',
-    dm: '基础',
+    dm: 'Basic',
   }),
   bgColor: 'var(--ag-ant-color-purple-hover)',
   getRefVariables: (data) => getLLMNodeVariables(data as ILLMNodeData),

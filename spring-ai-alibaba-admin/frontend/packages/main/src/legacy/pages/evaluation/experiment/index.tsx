@@ -12,12 +12,12 @@ import './index.css';
 const { Option } = Select;
 const { Title } = Typography;
 
-// 格式化时间显示
+// Format date time display
 const formatDateTime = (dateTimeString: string) => {
     if (!dateTimeString) return '-';
     try {
         const date = new Date(dateTimeString);
-        return date.toLocaleString('zh-CN', {
+        return date.toLocaleString('en-US', {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
@@ -53,32 +53,32 @@ const Experiment = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [dataSource, setDataSource] = useState<ExperimentRecord[]>([]);
-    const [searchText, setSearchText] = useState(''); // 输入框中的文本
-    const [queryText, setQueryText] = useState(''); // 实际用于查询的文本
+    const [searchText, setSearchText] = useState(''); // Text in input box
+    const [queryText, setQueryText] = useState(''); // Actual text used for query
     const [statusFilter, setStatusFilter] = useState<string>('');
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-    const [showCreateDrawer, setShowCreateDrawer] = useState(false); // 侧滑面板状态
+    const [showCreateDrawer, setShowCreateDrawer] = useState(false); // Drawer state
     const { pagination, setPagination, onPaginationChange, onShowSizeChange } = usePagination();
 
-    // 获取实验列表
+    // Get experiments list
     const fetchExperiments = useCallback(async () => {
         try {
             setLoading(true);
             const params = {
                 pageNumber: pagination.current,
                 pageSize: pagination.pageSize,
-                name: queryText || undefined, // 使用查询文本而不是输入文本
+                name: queryText || undefined, // Use query text instead of input text
                 status: statusFilter || undefined,
             };
 
             const response = await API.getExperiments(params);
 
             if (response.code === 200) {
-                // 优先使用pageItems，如果不存在则使用records作为降级
+                // Prefer pageItems, fallback to records if not available
                 const responseData = response.data as any;
                 const dataItems = responseData.pageItems || responseData.records || [];
-                
-                // 使用真实数据
+
+                // Use real data
                 const experiments: ExperimentRecord[] = dataItems.map((item: any) => ({
                     id: item.id,
                     name: item.name,
@@ -103,11 +103,11 @@ const Experiment = () => {
                     current: responseData.pageNumber || pagination.current
                 }));
             } else {
-                throw new Error(response.message || '加载失败');
+                throw new Error(response.message || 'Loading failed');
             }
         } catch (error) {
-            handleApiError(error, '获取实验列表失败');
-            // 发生错误时设置为空列表
+            handleApiError(error, 'Failed to get experiment list');
+            // Set to empty list on error
             setDataSource([]);
             setPagination(prev => ({
                 ...prev,
@@ -116,143 +116,143 @@ const Experiment = () => {
         } finally {
             setLoading(false);
         }
-    }, [pagination.current, pagination.pageSize, queryText, statusFilter]); // 依赖查询文本而不是输入文本
+    }, [pagination.current, pagination.pageSize, queryText, statusFilter]); // Depend on query text instead of input text
 
     useEffect(() => {
         fetchExperiments();
     }, [fetchExperiments]);
 
-    // 处理搜索输入变化（仅更新输入框状态，不触发搜索）
+    // Handle search input change (only updates input box state, doesn't trigger search)
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchText(e.target.value);
     };
 
-    // 处理搜索（仅在点击搜索按钮或按下回车键时触发）
+    // Handle search (only triggered when clicking search button or pressing enter)
     const handleSearch = (value: string) => {
         setSearchText(value);
-        setQueryText(value); // 更新实际查询参数
+        setQueryText(value); // Update actual query parameter
         setPagination(prev => ({ ...prev, current: 1 }));
     };
 
-    // 处理状态筛选
+    // Handle status filter
     const handleStatusFilter = (value: string) => {
         setStatusFilter(value);
         setPagination(prev => ({ ...prev, current: 1 }));
     };
 
-    // 处理分页
+    // Handle pagination
     const handleTableChange = (page: number, pageSize: number) => {
         onPaginationChange(page, pageSize);
     };
 
-    // 处理选择
+    // Handle selection
     const handleSelectChange = (selectedKeys: React.Key[]) => {
         setSelectedRowKeys(selectedKeys);
     };
 
-    // 刷新数据
+    // Refresh data
     const handleRefresh = () => {
         fetchExperiments();
     };
 
-    // 创建新实验 - 打开侧滑面板
+    // Create new experiment - open drawer
     const handleCreateExperiment = () => {
         setShowCreateDrawer(true);
     };
 
-    // 关闭侧滑面板
+    // Close drawer
     const handleCloseCreateDrawer = () => {
         setShowCreateDrawer(false);
     };
 
-    // 查看实验详情
+    // View experiment details
     const handleViewExperiment = (record: ExperimentRecord) => {
-        // 跳转到实验详情页面，携带id参数和evaluatorConfig数据
+        // Navigate to experiment details page with id parameter and evaluatorConfig data
         navigate(getLegacyPath(`/evaluation/experiment/detail/${record.id}`), {
             state: { evaluatorConfig: record.evaluatorConfig }
         });
     };
 
-    // 停止实验
+    // Stop experiment
     const handleStopExperiment = async (record: ExperimentRecord) => {
         Modal.confirm({
-            title: '确认停止',
-            content: `确定要停止实验 "${record.name}" 吗？停止后实验状态将变为失败。`,
-            okText: '确认停止',
+            title: 'Confirm Stop',
+            content: `Are you sure you want to stop experiment "${record.name}"? The experiment status will become failed after stopping.`,
+            okText: 'Confirm Stop',
             okType: 'danger',
-            cancelText: '取消',
+            cancelText: 'Cancel',
             onOk: async () => {
                 try {
                     await API.stopExperiment({ experimentId: record.id });
-                    notifySuccess({ message: '实验已停止' });
+                    notifySuccess({ message: 'Experiment stopped' });
                     fetchExperiments();
                 } catch (error) {
-                    handleApiError(error, '停止实验失败');
+                    handleApiError(error, 'Failed to stop experiment');
                 }
             }
         });
     };
 
-    // 重新运行实验
+    // Rerun experiment
     const handleRerunExperiment = async (record: ExperimentRecord) => {
         try {
-            // 这里应该调用重新运行实验的API
+            // Should call rerun experiment API here
             // await API.rerunExperiment({ id: record.id });
-            message.info(`重新运行实验: ${record.name}`);
+            message.info(`Rerun experiment: ${record.name}`);
             // fetchExperiments();
         } catch (error) {
-            handleApiError(error, '重新运行实验失败');
+            handleApiError(error, 'Failed to rerun experiment');
         }
     };
 
-    // 查看实验结果
+    // View experiment results
     const handleViewResult = (record: ExperimentRecord) => {
-        // 跳转到实验详情页面，并默认展示出评测结果tab的内容，携带id参数和evaluatorConfig数据、activeTab
+        // Navigate to experiment details page, show evaluation results tab by default, carry id and evaluatorConfig data and activeTab
         navigate(`/evaluation-experiment/detail/${record.id}`, {
             state: { evaluatorConfig: record.evaluatorConfig, activeTab: 'results' }
         });
     };
 
-    // 删除实验
+    // Delete experiment
     const handleDeleteExperiment = async (record: ExperimentRecord) => {
         Modal.confirm({
-            title: '确认删除',
-            content: `确定要删除实验 "${record.name}" 吗？此操作不可恢复。`,
-            okText: '确认删除',
+            title: 'Confirm Delete',
+            content: `Are you sure you want to delete experiment "${record.name}"? This action cannot be undone.`,
+            okText: 'Confirm Delete',
             okType: 'danger',
-            cancelText: '取消',
+            cancelText: 'Cancel',
             onOk: async () => {
                 try {
                     await API.deleteExperiment({ experimentId: record.id });
-                    notifySuccess({ message: '实验删除成功' });
+                    notifySuccess({ message: 'Experiment deleted successfully' });
                     fetchExperiments();
                 } catch (error) {
-                    handleApiError(error, '删除实验失败');
+                    handleApiError(error, 'Failed to delete experiment');
                 }
             }
         });
     };
 
-    // 渲染状态标签
+    // Render status tag
     const renderStatus = (status: string, progress?: number) => {
         switch (status) {
             case 'WAITING':
-                return <Tag color="default">等待中</Tag>;
+                return <Tag color="default">Waiting</Tag>;
             case 'RUNNING':
                 return (
                     <div>
-                        <Tag color="blue">运行中</Tag>
+                        <Tag color="blue">Running</Tag>
                         <div style={{fontSize: '12px', color: 'rgb(102, 102, 102)', marginTop: '4px'}}>
-                            {progress !== undefined && <span>进度: {progress}%</span>}
+                            {progress !== undefined && <span>Progress: {progress}%</span>}
                         </div>
                     </div>
                 );
             case 'COMPLETED':
-                return <Tag color="green">已完成</Tag>;
+                return <Tag color="green">Completed</Tag>;
             case 'FAILED':
-                return <Tag color="red">失败</Tag>;
+                return <Tag color="red">Failed</Tag>;
             case 'STOPPED':
-                return <Tag color="orange">已停止</Tag>;
+                return <Tag color="orange">Stopped</Tag>;
             default:
                 return <Tag>{status}</Tag>;
         }
@@ -260,11 +260,11 @@ const Experiment = () => {
 
     const columns = [
         {
-            title: '实验名称',
+            title: 'Experiment Name',
             dataIndex: 'name',
             key: 'name',
             render: (text: string, record: ExperimentRecord) => (
-                <div 
+                <div
                     className="font-medium text-blue-600 cursor-pointer hover:text-blue-800 hover:underline"
                     onClick={() => handleViewExperiment(record)}
                 >
@@ -272,9 +272,9 @@ const Experiment = () => {
                 </div>
             )
         },
-        { 
-            title: '描述', 
-            dataIndex: 'description', 
+        {
+            title: 'Description',
+            dataIndex: 'description',
             ellipsis: true,
             render: (text: string) => (
                 <Tooltip title={text} placement="topLeft">
@@ -283,7 +283,7 @@ const Experiment = () => {
             )
         },
         {
-            title: '评测集',
+            title: 'Dataset',
             dataIndex: 'datasetVersion',
             key: 'datasetVersion',
             render: (text: string, record: ExperimentRecord) => (
@@ -294,31 +294,31 @@ const Experiment = () => {
             )
         },
         {
-            title: '评估器',
+            title: 'Evaluator',
             dataIndex: 'evaluatorConfig',
             key: 'evaluatorConfig',
             render: (evaluatorConfig: string, record: ExperimentRecord) => {
-                // 从evaluatorConfig字段解析评估器信息
+                // Parse evaluator info from evaluatorConfig field
                 let evaluatorNames: string[] = [];
                 try {
                     const evaluatorConfigs = JSON.parse(evaluatorConfig || '[]');
                     evaluatorNames = evaluatorConfigs.map((config: any) => config.evaluatorName || `ID: ${config.evaluatorId}`);
                 } catch (e) {
-                    // 如果解析失败，回退到使用evaluatorVersionIds
+                    // If parsing fails, fall back to using evaluatorVersionIds
                     if (record.evaluatorVersionIds && record.evaluatorVersionIds.length > 0) {
                         evaluatorNames = record.evaluatorVersionIds.map(id => `ID: ${id}`);
                     }
                 }
-                
+
                 if (evaluatorNames.length === 0) {
-                    return <span className="text-gray-400">无</span>;
+                    return <span className="text-gray-400">None</span>;
                 }
-                
-                // 将所有评估器名称用逗号连接
+
+                // Join all evaluator names with commas
                 const allEvaluatorNames = evaluatorNames.join('，');
-                
+
                 return (
-                    <Tooltip title={`全部评估器:\n${allEvaluatorNames}`} placement="topLeft">
+                    <Tooltip title={`All evaluators:\n${allEvaluatorNames}`} placement="topLeft">
                         <div className="text-sm text-gray-600 mt-1 truncate" style={{ maxWidth: '200px' }}>
                             {allEvaluatorNames}
                         </div>
@@ -327,40 +327,40 @@ const Experiment = () => {
             }
         },
         {
-            title: '状态',
+            title: 'Status',
             dataIndex: 'status',
             key: 'status',
             render: (status: string, record: ExperimentRecord) => renderStatus(status, record.progress)
         },
         // {
-        //     title: '创建人',
+        //     title: 'Created By',
         //     dataIndex: 'creator',
         //     key: 'creator'
         // },
         {
-            title: '创建时间',
+            title: 'Created At',
             dataIndex: 'createTime',
             key: 'createTime',
             render: (text: string) => formatDateTime(text)
         },
         {
-            title: '更新时间',
+            title: 'Updated At',
             dataIndex: 'updateTime',
             key: 'updateTime',
             render: (text: string) => formatDateTime(text)
         },
         {
-            title: '操作',
+            title: 'Actions',
             key: 'action',
             width: 160,
             fixed: 'right' as const,
             render: (_: any, record: ExperimentRecord) => {
-                // 渲染第二个操作按钮（根据状态不同）
+                // Render second action button (differs based on status)
                 const renderSecondAction = () => {
                     switch (record.status) {
                         case 'RUNNING':
                             return (
-                                <Tooltip title="停止">
+                                <Tooltip title="Stop">
                                     <Button
                                         type="link"
                                         icon={<StopOutlined />}
@@ -371,7 +371,7 @@ const Experiment = () => {
                             );
                         case 'COMPLETED':
                             return (
-                                <Tooltip title="查看结果">
+                                <Tooltip title="View Results">
                                     <Button
                                         type="link"
                                         icon={<BarChartOutlined />}
@@ -381,7 +381,7 @@ const Experiment = () => {
                             );
                         case 'FAILED':
                             return (
-                                <Tooltip title="重新运行">
+                                <Tooltip title="Rerun">
                                     <Button
                                         type="link"
                                         icon={<PlayCircleOutlined />}
@@ -390,11 +390,11 @@ const Experiment = () => {
                                 </Tooltip>
                             );
                         case 'WAITING':
-                            // 等待中状态暂时不确定，返回空
+                            // Not sure about waiting state yet, return null
                             return null;
                         case 'STOPPED':
                             return (
-                                <Tooltip title="重新运行">
+                                <Tooltip title="Rerun">
                                     <Button
                                         type="link"
                                         icon={<PlayCircleOutlined />}
@@ -409,7 +409,7 @@ const Experiment = () => {
 
                 return (
                     <Space size="middle">
-                        <Tooltip title="查看详情">
+                        <Tooltip title="View Details">
                             <Button
                                 type="link"
                                 icon={<EyeOutlined />}
@@ -417,7 +417,7 @@ const Experiment = () => {
                             />
                         </Tooltip>
                         {renderSecondAction()}
-                        <Tooltip title="删除">
+                        <Tooltip title="Delete">
                             <Button
                                 type="link"
                                 icon={<DeleteOutlined />}
@@ -438,16 +438,16 @@ const Experiment = () => {
 
     return (
         <div className="experiment-page p-8 fade-in">
-            {/* 页面标题 */}
+            {/* Page Title */}
             <div className="mb-8">
-                <Title level={2} style={{ marginBottom: 8 }}>实验管理</Title>
+                <Title level={2} style={{ marginBottom: 8 }}>Experiment Management</Title>
             </div>
 
-            {/* 搜索和筛选区域 */}
+            {/* Search and Filter Area */}
             <Card className='mb-4'>
                 <div className="flex gap-4 justify-between" style={{flexWrap: 'wrap'}}>
                     <Input.Search
-                        placeholder="搜索名称"
+                        placeholder="Search name"
                         allowClear
                         style={{ width: 280 }}
                         value={searchText}
@@ -455,36 +455,36 @@ const Experiment = () => {
                         onSearch={handleSearch}
                     />
                     <Select
-                        placeholder="状态 请选择"
+                        placeholder="Status: Select"
                         allowClear
                         style={{ width: 200 }}
                         value={statusFilter}
                         onChange={handleStatusFilter}
                     >
-                        <Option value="RUNNING">运行中</Option>
-                        <Option value="COMPLETED">已完成</Option>
-                        <Option value="FAILED">失败</Option>
-                        <Option value="WAITING">等待中</Option>
-                        <Option value="STOPPED">已停止</Option>
+                        <Option value="RUNNING">Running</Option>
+                        <Option value="COMPLETED">Completed</Option>
+                        <Option value="FAILED">Failed</Option>
+                        <Option value="WAITING">Waiting</Option>
+                        <Option value="STOPPED">Stopped</Option>
                     </Select>
                     <div style={{flex: 1}}></div>
-                    <Button 
-                        icon={<SyncOutlined />} 
+                    <Button
+                        icon={<SyncOutlined />}
                         onClick={handleRefresh}
                     >
-                        刷新
+                        Refresh
                     </Button>
-                    <Button 
-                        type="primary" 
+                    <Button
+                        type="primary"
                         icon={<PlusOutlined />}
                         onClick={handleCreateExperiment}
                     >
-                        新建实验
+                        Create Experiment
                     </Button>
                 </div>
             </Card>
 
-            {/* 数据表格 */}
+            {/* Data Table */}
             <Card>
                 <div className="experiment-table bg-white rounded-lg">
                     <Table
@@ -501,13 +501,13 @@ const Experiment = () => {
                         }}
                         scroll={{ x: 800 }}
                     />
-                    
+
                 </div>
             </Card>
 
-            {/* 创建实验侧滑面板 */}
+            {/* Create Experiment Drawer */}
             <Drawer
-                title="新建实验"
+                title="Create Experiment"
                 placement="right"
                 width="90%"
                 open={showCreateDrawer}
@@ -519,12 +519,12 @@ const Experiment = () => {
                 }}
             >
                 <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                    <ExperimentCreate 
-                      hideTitle={true} // 隐藏标题
+                    <ExperimentCreate
+                      hideTitle={true} // Hide title
                       onCancel={handleCloseCreateDrawer}
                       onSuccess={() => {
                         handleCloseCreateDrawer();
-                        fetchExperiments(); // 重新加载数据
+                        fetchExperiments(); // Reload data
                       }}
                     />
                 </div>

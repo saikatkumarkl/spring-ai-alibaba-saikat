@@ -61,7 +61,7 @@ const KnowledgeCard: React.FC<KnowledgeCardProps> = ({
         {
           label: $i18n.get({
             id: 'main.pages.Knowledge.List.components.Card.index.knowledgeBaseDescription',
-            dm: '描述',
+            dm: 'Description',
           }),
           content: (
             <div
@@ -72,7 +72,7 @@ const KnowledgeCard: React.FC<KnowledgeCardProps> = ({
               {description ||
                 $i18n.get({
                   id: 'main.pages.Knowledge.List.components.Card.index.nullName',
-                  dm: '暂无描述',
+                  dm: 'No description',
                 })}
             </div>
           ),
@@ -90,7 +90,7 @@ const KnowledgeCard: React.FC<KnowledgeCardProps> = ({
           <div className={styles['update-time']}>
             {$i18n.get({
               id: 'main.pages.Knowledge.List.components.Card.index.updatedAt',
-              dm: '更新于',
+              dm: 'Updated at ',
             })}
             {dayjs(gmt_modified).format('YYYY-MM-DD HH:mm:ss')}
           </div>
@@ -119,7 +119,7 @@ const KnowledgeCard: React.FC<KnowledgeCardProps> = ({
           >
             {$i18n.get({
               id: 'main.pages.Knowledge.List.components.Card.index.edit',
-              dm: '编辑',
+              dm: 'Edit',
             })}
           </Button>
           <Button
@@ -133,7 +133,7 @@ const KnowledgeCard: React.FC<KnowledgeCardProps> = ({
           >
             {$i18n.get({
               id: 'main.pages.Knowledge.List.components.Card.index.hitTest',
-              dm: '命中测试',
+              dm: 'Hit Test',
             })}
           </Button>
           <Dropdown
@@ -144,7 +144,7 @@ const KnowledgeCard: React.FC<KnowledgeCardProps> = ({
                   danger: true,
                   label: $i18n.get({
                     id: 'main.pages.Knowledge.List.components.Card.index.delete',
-                    dm: '删除',
+                    dm: 'Delete',
                   }),
                   key: 'delete',
                   onClick: () =>

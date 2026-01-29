@@ -55,7 +55,7 @@ export function KnowledgeSelectorItem(props: {
             {$i18n.get(
               {
                 id: 'main.pages.App.components.KnowledgeSelector.index.knowledgeCount',
-                dm: '{var1}个知识',
+                dm: '{var1} documents',
               },
               { var1: props.item.total_docs },
             )}
@@ -119,7 +119,7 @@ export default function KnowledgeSelector(props: IKnowledgeSelectorProps) {
         message.warning(
           $i18n.get({
             id: 'main.pages.App.components.KnowledgeSelector.index.maxTenKnowledge',
-            dm: '最多只能选择10个知识库',
+            dm: 'Maximum 10 knowledge bases can be selected',
           }),
         );
         return;
@@ -143,7 +143,7 @@ export default function KnowledgeSelector(props: IKnowledgeSelectorProps) {
           onSearch={handleSearch}
           placeholder={$i18n.get({
             id: 'main.pages.App.components.KnowledgeSelector.index.enterKnowledgeName',
-            dm: '请输入知识库名称',
+            dm: 'Please enter knowledge base name',
           })}
           onChange={(val) => setState({ name: val })}
           value={state.name}
@@ -156,7 +156,7 @@ export default function KnowledgeSelector(props: IKnowledgeSelectorProps) {
         >
           {$i18n.get({
             id: 'main.pages.App.components.KnowledgeSelector.index.createNewKnowledge',
-            dm: '创建新知识库',
+            dm: 'Create New Knowledge Base',
           })}
         </Button>
       </div>
@@ -172,22 +172,22 @@ export default function KnowledgeSelector(props: IKnowledgeSelectorProps) {
                 isSearchRef.current
                   ? $i18n.get({
                       id: 'main.pages.App.components.KnowledgeSelector.index.noSearchResult',
-                      dm: '未搜索出来符合条件的知识库',
+                      dm: 'No matching knowledge base found',
                     })
                   : $i18n.get({
                       id: 'main.pages.App.components.KnowledgeSelector.index.noKnowledge',
-                      dm: '暂无知识库',
+                      dm: 'No knowledge base available',
                     })
               }
               description={
                 isSearchRef.current
                   ? $i18n.get({
                       id: 'main.pages.App.components.KnowledgeSelector.index.tryAnotherSearch',
-                      dm: '换个搜索条件试试',
+                      dm: 'Try different search criteria',
                     })
                   : $i18n.get({
                       id: 'main.pages.App.components.KnowledgeSelector.index.goCreateFirst',
-                      dm: '请先前往知识库管理创建知识库',
+                      dm: 'Please go to Knowledge Base Management to create one first',
                     })
               }
             >
@@ -199,7 +199,7 @@ export default function KnowledgeSelector(props: IKnowledgeSelectorProps) {
                 >
                   {$i18n.get({
                     id: 'main.pages.App.components.KnowledgeSelector.index.goCreate',
-                    dm: '前往创建',
+                    dm: 'Go Create',
                   })}
                 </Button>
               )}
@@ -248,7 +248,7 @@ export function KnowledgeSelectorModal(props: IKnowledgeSelectorModalProps) {
     <Modal
       title={$i18n.get({
         id: 'main.pages.App.components.KnowledgeSelector.index.selectKnowledge',
-        dm: '选择知识库',
+        dm: 'Select Knowledge Base',
       })}
       onOk={() => props.onOk(value)}
       open
@@ -270,7 +270,7 @@ export function KnowledgeSelectorDrawer(props: IKnowledgeSelectorModalProps) {
     <Drawer
       title={$i18n.get({
         id: 'main.pages.App.components.KnowledgeSelector.index.selectKnowledge',
-        dm: '选择知识库',
+        dm: 'Select Knowledge Base',
       })}
       footer={
         <div
@@ -293,7 +293,7 @@ export function KnowledgeSelectorDrawer(props: IKnowledgeSelectorModalProps) {
               $i18n.get(
                 {
                   id: 'main.pages.App.components.KnowledgeSelector.index.addedKnowledgeBase',
-                  dm: '已添加知识库{var1}/{var2}个',
+                  dm: 'Added {var1}/{var2} knowledge bases',
                 },
                 { var1: value?.length, var2: MAX_LEN },
               )}
@@ -308,13 +308,13 @@ export function KnowledgeSelectorDrawer(props: IKnowledgeSelectorModalProps) {
             <Button onClick={props.onClose}>
               {$i18n.get({
                 id: 'main.pages.App.components.KnowledgeSelector.index.cancel',
-                dm: '取消',
+                dm: 'Cancel',
               })}
             </Button>
             <Button type="primary" onClick={() => props.onOk(value)}>
               {$i18n.get({
                 id: 'main.pages.App.components.KnowledgeSelector.index.confirm',
-                dm: '确定',
+                dm: 'Confirm',
               })}
             </Button>
           </div>

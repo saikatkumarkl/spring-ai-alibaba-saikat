@@ -27,25 +27,25 @@ const BatchOperation: React.FC<BatchOperationProps> = ({
       <span className={styles['selected-count']}>
         {$i18n.get({
           id: 'main.pages.Knowledge.Detail.components.BatchOperation.index.selected',
-          dm: '已选',
+          dm: 'Selected',
         })}
         &nbsp;{selectedCount}&nbsp;
         {$i18n.get({
           id: 'main.pages.Knowledge.Detail.components.BatchOperation.index.items',
-          dm: '项',
+          dm: 'items',
         })}
       </span>
       <span className={styles['cancel-select']} onClick={onCancelSelect}>
         {$i18n.get({
           id: 'main.pages.Knowledge.Detail.components.BatchOperation.index.cancelSelection',
-          dm: '取消选择',
+          dm: 'Cancel Selection',
         })}
       </span>
       <div className={styles['button-group']}>
         <Button type="default" onClick={onBatchDelete}>
           {$i18n.get({
             id: 'main.pages.Knowledge.Detail.components.BatchOperation.index.batchDelete',
-            dm: '批量删除',
+            dm: 'Batch Delete',
           })}
         </Button>
 
@@ -53,7 +53,7 @@ const BatchOperation: React.FC<BatchOperationProps> = ({
           <IconFont type="spark-escape-line" />
           {$i18n.get({
             id: 'main.pages.Knowledge.Detail.components.BatchOperation.index.exitOperation',
-            dm: '退出操作',
+            dm: 'Exit Operation',
           })}
         </Button>
       </div>

@@ -44,7 +44,7 @@ export default function StepTwo({
           label={
             $i18n.get({
               id: 'main.pages.Knowledge.components.StepTwo.index.dataUpload',
-              dm: '数据上传',
+              dm: 'Data Upload',
             }) + `(${fileList?.length}/50)`
           }
           valuePropName="upload"
@@ -89,7 +89,7 @@ export default function StepTwo({
                   message.error(
                     $i18n.get({
                       id: 'main.pages.Knowledge.components.StepTwo.index.maxUpload50Files',
-                      dm: '最多只能上传 50 个文件',
+                      dm: 'You can upload a maximum of 50 files',
                     }),
                   );
                   isLimitReachedRef.current = true;
@@ -107,7 +107,7 @@ export default function StepTwo({
                 message.error(
                   $i18n.get({
                     id: 'main.pages.Knowledge.Detail.components.UploadModal.index.supportedFormats',
-                    dm: '仅支持上传.pdf、.doc、.txt、.md、.ppt、.docx、.pptx等格式的文件',
+                    dm: 'Only .pdf, .doc, .txt, .md, .ppt, .docx, .pptx format files are supported',
                   }),
                 );
                 return Upload.LIST_IGNORE;
@@ -117,7 +117,7 @@ export default function StepTwo({
                 message.error(
                   $i18n.get({
                     id: 'main.pages.Knowledge.components.StepTwo.index.singleFileSizeLimit100MB',
-                    dm: '单个文件大小不能超过100MB',
+                    dm: 'Single file size cannot exceed 100MB',
                   }),
                 );
                 return Upload.LIST_IGNORE;
@@ -127,7 +127,7 @@ export default function StepTwo({
                 message.error(
                   $i18n.get({
                     id: 'main.pages.Knowledge.components.StepTwo.index.singleImageSizeLimit20MB',
-                    dm: '单个图片大小不能超过20MB',
+                    dm: 'Single image size cannot exceed 20MB',
                   }),
                 );
                 return Upload.LIST_IGNORE;
@@ -175,19 +175,19 @@ export default function StepTwo({
               <div className={styles['upload-dragger-title']}>
                 {$i18n.get({
                   id: 'main.pages.Knowledge.components.StepTwo.index.clickOrDragToUploadLocalFile',
-                  dm: '点击或拖拽上传本地文件',
+                  dm: 'Click or drag to upload local file',
                 })}
               </div>
               <div className={styles['upload-dragger-desc']}>
                 {$i18n.get({
                   id: 'main.pages.Knowledge.components.StepTwo.index.supportedFileFormats',
-                  dm: '支持.pdf、.doc、.txt、.md、.ppt、.docx、.pptx等格式的文件，',
+                  dm: 'Supports .pdf, .doc, .txt, .md, .ppt, .docx, .pptx format files,',
                 })}
               </div>
               <div className={styles['upload-dragger-desc']}>
                 {$i18n.get({
                   id: 'main.pages.Knowledge.components.StepTwo.index.singleFileMax100MBOr1000PagesSingleImageMax20MB',
-                  dm: '单个文件最大100MB或1000页，单个图片最大限制20MB',
+                  dm: 'Single file max 100MB or 1000 pages, single image max 20MB',
                 })}
               </div>
             </Flex>

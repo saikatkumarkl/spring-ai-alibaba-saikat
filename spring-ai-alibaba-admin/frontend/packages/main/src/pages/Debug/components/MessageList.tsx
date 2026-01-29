@@ -16,7 +16,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   const { config } = useConfigContext();
 
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('zh-CN', {
+    return date.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
     });
@@ -42,16 +42,16 @@ const MessageList: React.FC<MessageListProps> = ({ messages }) => {
     return (
       <div className={styles.messageToolCalls}>
         <Collapse size="small" ghost>
-          <Panel header="🔧 工具调用详情" key="1">
+          <Panel header="🔧 Tool Call Details" key="1">
             {toolCalls.map((call, index) => (
               <div key={index} style={{ marginBottom: 8 }}>
-                <Text strong>函数: {call.name}</Text>
+                <Text strong>Function: {call.name}</Text>
                 <pre style={{ margin: '4px 0', fontSize: 11 }}>
-                  参数: {JSON.stringify(call.arguments, null, 2)}
+                  Arguments: {JSON.stringify(call.arguments, null, 2)}
                 </pre>
                 {call.result && (
                   <pre style={{ margin: '4px 0', fontSize: 11 }}>
-                    结果: {JSON.stringify(call.result, null, 2)}
+                    Result: {JSON.stringify(call.result, null, 2)}
                   </pre>
                 )}
               </div>

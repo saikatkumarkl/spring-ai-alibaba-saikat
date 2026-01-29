@@ -5,16 +5,16 @@ export const IteratorEndSchema: INodeSchema = {
   type: 'IteratorEnd',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.IteratorEnd.schema.iterationEnd',
-    dm: '迭代结束',
+    dm: 'Iteration End',
   }),
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.IteratorEnd.schema.iterationEndNode',
-    dm: '迭代结束节点',
+    dm: 'Iteration end node',
   }),
   iconType: 'spark-flag-line',
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.IteratorEnd.schema.logic',
-    dm: '逻辑',
+    dm: 'Logic',
   }),
   defaultParams: {
     input_params: [],

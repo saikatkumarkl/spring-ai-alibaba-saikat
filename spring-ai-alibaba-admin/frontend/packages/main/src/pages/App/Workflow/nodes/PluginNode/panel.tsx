@@ -126,11 +126,11 @@ export default memo(function PluginNodePanel(props: {
         <Empty
           title={$i18n.get({
             id: 'main.pages.App.Workflow.nodes.PluginNode.panel.toolNotFound',
-            dm: '未找到工具',
+            dm: 'Tool Not Found',
           })}
           description={$i18n.get({
             id: 'main.pages.App.Workflow.nodes.PluginNode.panel.toolNotExist',
-            dm: '工具不存在，请删除后重新添加',
+            dm: 'Tool does not exist, please delete and re-add',
           })}
         />
       </div>
@@ -143,13 +143,13 @@ export default memo(function PluginNodePanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.PluginNode.panel.input',
-              dm: '输入',
+              dm: 'Input',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.PluginNode.panel.inputVariables',
-                dm: '输入本节点需要处理的变量，用于识别需要处理的内容，支持引用前置。',
+                dm: 'Input variables that this node needs to process, used to identify the content to process, supports referencing preceding nodes.',
               })}
             />
           </div>
@@ -174,13 +174,13 @@ export default memo(function PluginNodePanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.PluginNode.panel.output',
-              dm: '输出',
+              dm: 'Output',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.PluginNode.panel.outputVariables',
-                dm: '输出本节点处理结果的变量，用于后续节点识别和处理本节点的处理结果。',
+                dm: 'Output variables for this node\'s processing results, used by subsequent nodes to identify and process this node\'s results.',
               })}
             />
           </div>

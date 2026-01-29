@@ -94,7 +94,7 @@ export default (props: IProps) => {
         newValidateInfo[index]['name'].validateStatus = 'error';
         newValidateInfo[index]['name'].help = $i18n.get({
           id: 'main.pages.App.AssistantAppEdit.components.AssistantPromptEditor.Variables.index.variableNameOnlyContainsEnglishAndNumbers',
-          dm: '变量名只能包含英文和数字',
+          dm: 'Variable name can only contain letters and numbers',
         });
         setValidateInfo(newValidateInfo);
         return;
@@ -107,7 +107,7 @@ export default (props: IProps) => {
         newValidateInfo[index]['name'].validateStatus = 'error';
         newValidateInfo[index]['name'].help = $i18n.get({
           id: 'main.pages.App.AssistantAppEdit.components.AssistantPromptEditor.Variables.index.variableNameCannotBeEmpty',
-          dm: '变量名不能为空',
+          dm: 'Variable name cannot be empty',
         });
         setValidateInfo(newValidateInfo);
       } else {
@@ -123,7 +123,7 @@ export default (props: IProps) => {
           newValidateInfo[index]['name'].validateStatus = 'error';
           newValidateInfo[index]['name'].help = $i18n.get({
             id: 'main.pages.App.AssistantAppEdit.components.AssistantPromptEditor.Variables.index.variableNameCannotRepeat',
-            dm: '变量名不能重复',
+            dm: 'Variable name cannot be duplicated',
           });
           setValidateInfo(newValidateInfo);
         } else {
@@ -168,7 +168,7 @@ export default (props: IProps) => {
           >
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.VariableHandle.schema.variable',
-              dm: '变量',
+              dm: 'Variables',
             })}
           </span>
         </Flex>
@@ -203,7 +203,7 @@ export default (props: IProps) => {
             >
               {$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Start.panel.customVariables',
-                dm: '自定义变量',
+                dm: 'Custom Variables',
               })}
             </Button>
             <Divider type="vertical"></Divider>
@@ -228,7 +228,7 @@ export default (props: IProps) => {
           >
             {$i18n.get({
               id: 'main.pages.App.AssistantAppEdit.components.AssistantPromptEditor.Variables.index.canBeFilledThroughParameterFormOr',
-              dm: '可通过入参变量表单填写，或',
+              dm: 'Can be filled through the input parameter form, or',
             })}
             <Tag
               color="mauve"
@@ -238,7 +238,7 @@ export default (props: IProps) => {
             </Tag>
             {$i18n.get({
               id: 'main.pages.App.AssistantAppEdit.components.AssistantPromptEditor.Variables.index.fieldPassage',
-              dm: '字段传递，传入变量值将替换提示词中对应的变量位置。',
+              dm: 'field to pass. The passed variable value will replace the corresponding variable position in the prompt.',
             })}
           </div>
           <div className={styles.variablesWrapper}>
@@ -253,7 +253,7 @@ export default (props: IProps) => {
                 >
                   {$i18n.get({
                     id: 'main.pages.App.Workflow.components.IteratorVariableForm.index.variableName',
-                    dm: '变量名',
+                    dm: 'Variable Name',
                   })}
                 </div>
                 <div
@@ -265,7 +265,7 @@ export default (props: IProps) => {
                 >
                   {$i18n.get({
                     id: 'main.pages.App.Workflow.components.ExtractParamEditModal.index.description',
-                    dm: '描述',
+                    dm: 'Description',
                   })}
                 </div>
                 <div
@@ -277,7 +277,7 @@ export default (props: IProps) => {
                 >
                   {$i18n.get({
                     id: 'main.pages.Component.AppComponent.components.InputParamsComp.index.defaultValue',
-                    dm: '默认值',
+                    dm: 'Default Value',
                   })}
                 </div>
               </Flex>

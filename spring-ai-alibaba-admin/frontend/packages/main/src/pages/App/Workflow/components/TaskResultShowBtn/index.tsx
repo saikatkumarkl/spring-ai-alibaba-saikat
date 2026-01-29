@@ -13,7 +13,7 @@ export default memo(function TaskResultShowBtn() {
     <Tooltip
       title={$i18n.get({
         id: 'main.pages.App.Workflow.components.TaskResultShowBtn.index.showTestResult',
-        dm: '展示测试结果',
+        dm: 'Show Test Results',
       })}
     >
       <IconButton

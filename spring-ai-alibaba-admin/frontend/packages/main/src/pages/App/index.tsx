@@ -69,19 +69,19 @@ const HomePage: React.FC = () => {
         {
           title: $i18n.get({
             id: 'main.pages.App.index.home',
-            dm: '首页',
+            dm: 'Home',
           }),
         },
       ]}
     >
       <div className={styles.homeContainer}>
-        {/* 第一栏：创建智能体 */}
+        {/* Section 1: Create Agent */}
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>创建智能体</h2>
+          <h2 className={styles.sectionTitle}>Create Agent</h2>
           <div className={styles.cardGrid}>
             <div className={styles.cardItem}>
               <ProCard
-                title="低代码平台开发智能体"
+                title="Low-Code Platform Agent Development"
                 logo={
                   <div className={styles.cardIcon}>
                     <img
@@ -95,7 +95,7 @@ const HomePage: React.FC = () => {
                   {
                     content: $i18n.get({
                       id: 'main.pages.App.index.platformDescription',
-                      dm: '提供可视化的智能体开发、调试、部署、导出能力，支持聊天助手、工作流等模式。',
+                      dm: 'Provides visual agent development, debugging, deployment, and export capabilities, supporting chat assistant, workflow, and other modes.',
                     }),
                   },
                 ]}
@@ -106,7 +106,7 @@ const HomePage: React.FC = () => {
 
             <div className={styles.cardItem}>
               <ProCard
-                title="DIFY 应用转换为 SAA 工程"
+                title="Convert DIFY App to SAA Project"
                 logo={
                   <div className={styles.cardIcon}>
                     <img
@@ -120,7 +120,7 @@ const HomePage: React.FC = () => {
                   {
                     content: $i18n.get({
                       id: 'main.pages.App.index.difyDescription',
-                      dm: '将 Dify 平台上开发的智能体转换成 Spring AI Alibaba 应用，进而导入 IDE 开发维护。',
+                      dm: 'Convert agents developed on Dify platform to Spring AI Alibaba applications, and then import them into IDE for development and maintenance.',
                     }),
                   },
                 ]}
@@ -131,7 +131,7 @@ const HomePage: React.FC = () => {
 
             <div className={styles.cardItem}>
               <ProCard
-                title="使用 Copilot 创建智能体"
+                title="Create Agent with Copilot"
                 logo={
                   <div className={styles.cardIcon}>
                     <img
@@ -143,7 +143,7 @@ const HomePage: React.FC = () => {
                 }
                 info={[
                   {
-                    content: '通过 AI Copilot 助手智能引导，快速创建和配置智能体，提供自然语言交互的智能体开发体验',
+                    content: 'Quickly create and configure agents through AI Copilot intelligent guidance, providing natural language interaction for agent development experience',
                   },
                 ]}
                 onClick={handleCopilotCardClick}
@@ -153,7 +153,7 @@ const HomePage: React.FC = () => {
 
             <div className={styles.cardItem}>
               <ProCard
-                title="Agent Schema 方式创建智能体"
+                title="Create Agent via Agent Schema"
                 logo={
                   <div className={styles.cardIcon}>
                     <img
@@ -165,7 +165,7 @@ const HomePage: React.FC = () => {
                 }
                 info={[
                   {
-                    content: '通过 Agent Schema 方式，快速创建和配置智能体',
+                    content: 'Quickly create and configure agents through Agent Schema',
                   },
                 ]}
                 onClick={handleAgentSchemaCardClick}
@@ -175,7 +175,7 @@ const HomePage: React.FC = () => {
 
             <div className={styles.cardItem}>
               <ProCard
-                title="从 GitHub 导入智能体"
+                title="Import Agent from GitHub"
                 logo={
                   <div className={styles.cardIconDisabled}>
                     <img
@@ -189,7 +189,7 @@ const HomePage: React.FC = () => {
                   {
                     content: $i18n.get({
                       id: 'main.pages.App.index.githubImportDescription',
-                      dm: '从 GitHub 仓库导入已有的智能体项目，支持多种项目结构和配置文件的自动识别。',
+                      dm: 'Import existing agent projects from GitHub repositories, supporting automatic recognition of various project structures and configuration files.',
                     }),
                   },
                 ]}
@@ -200,9 +200,9 @@ const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* 第二栏：调试智能体 */}
+        {/* Section 2: Debug Agent */}
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>调试智能体</h2>
+          <h2 className={styles.sectionTitle}>Debug Agent</h2>
           <div className={styles.cardGrid}>
             <div className={styles.cardItem}>
               <ProCard
@@ -220,7 +220,7 @@ const HomePage: React.FC = () => {
                   {
                     content: $i18n.get({
                       id: 'main.pages.App.index.debugDescription',
-                      dm: '兼容 AG-UI 规范的交互式的 UI 聊天界面，支持与智能体进行对话、和调试。',
+                      dm: 'Interactive UI chat interface compatible with AG-UI specification, supporting conversation and debugging with agents.',
                     }),
                   },
                 ]}
@@ -231,7 +231,7 @@ const HomePage: React.FC = () => {
 
             <div className={styles.cardItem}>
               <ProCard
-                title="Graph 可视化调试"
+                title="Graph Visual Debugging"
                 logo={
                   <div className={styles.cardIcon}>
                     <img
@@ -243,7 +243,7 @@ const HomePage: React.FC = () => {
                 }
                 info={[
                   {
-                    content: '可视化展示 Graph 工作流的执行过程，提供节点状态监控、数据流追踪等功能。',
+                    content: 'Visually display the execution process of Graph workflows, providing node status monitoring, data flow tracking, and other features.',
                   },
                 ]}
                 onClick={handleGraphDebugCardClick}
@@ -265,7 +265,7 @@ const HomePage: React.FC = () => {
                 }
                 info={[
                   {
-                    content: '全链路追踪智能体执行过程，提供详细的调用链路分析和性能监控',
+                    content: 'Full-chain tracing of agent execution process, providing detailed call chain analysis and performance monitoring',
                   },
                 ]}
                 onClick={handleTracingCardClick}
@@ -287,7 +287,7 @@ const HomePage: React.FC = () => {
                 }
                 info={[
                   {
-                    content: '智能体效果评估和测试框架，支持多维度评估指标和自动化测试',
+                    content: 'Agent effectiveness evaluation and testing framework, supporting multi-dimensional evaluation metrics and automated testing',
                   },
                 ]}
                 onClick={handleEvaluationCardClick}
@@ -309,7 +309,7 @@ const HomePage: React.FC = () => {
                 }
                 info={[
                   {
-                    content: '提示词工程和优化工具，支持提示词模板管理、测试和效果分析',
+                    content: 'Prompt engineering and optimization tools, supporting prompt template management, testing, and effectiveness analysis',
                   },
                 ]}
                 onClick={handlePromptEngineeringCardClick}
@@ -319,13 +319,13 @@ const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* 第三栏：智能体管理 */}
+        {/* Section 3: Agent Management */}
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>智能体管理</h2>
+          <h2 className={styles.sectionTitle}>Agent Management</h2>
           <div className={styles.cardGrid}>
             <div className={styles.cardItem}>
               <ProCard
-                title="智能体管理"
+                title="Agent Management"
                 logo={
                   <div className={styles.cardIconDisabled}>
                     <img
@@ -337,7 +337,7 @@ const HomePage: React.FC = () => {
                 }
                 info={[
                   {
-                    content: '集中管理智能体生命周期，包括创建、配置、部署、监控和版本控制等功能',
+                    content: 'Centrally manage agent lifecycle, including creation, configuration, deployment, monitoring, and version control features',
                   },
                 ]}
                 onClick={handleAgentManagementCardClick}

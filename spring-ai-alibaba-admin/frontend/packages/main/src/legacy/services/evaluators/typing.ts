@@ -41,8 +41,8 @@ declare namespace EvaluatorsAPI {
       columnsConfig: string;
       createTime: string;
       updateTime: string;
-      dataCount?: number; // 数据量（可能需要从其他地方获取）
-      version?: string; // 版本信息（可能需要从其他地方获取）
+      dataCount?: number; // Data count (may need to be fetched from elsewhere)
+      version?: string; // Version info (may need to be fetched from elsewhere)
     }[]
   }
 
@@ -120,7 +120,7 @@ declare namespace EvaluatorsAPI {
 
   interface CreateDatasetDataItemParams {
     datasetId: number;
-    dataContent: string | string[]; // 支持单个字符串或字符串数组
+    dataContent: string | string[]; // Supports single string or string array
     remark?: string;
     columnsConfig?: Array<{
       name: string;
@@ -141,7 +141,7 @@ declare namespace EvaluatorsAPI {
     deleted: boolean;
   }
 
-  // 批量创建数据项的返回结果
+  // Batch create data item results
   interface BatchCreateDatasetDataItemResult {
     code: number;
     message: string;
@@ -217,7 +217,7 @@ declare namespace EvaluatorsAPI {
     message: string;
   }
 
-  // 从Trace添加数据项到数据集
+  // Add data item from Trace to dataset
   interface CreateDatasetDataItemFromTraceParams {
     datasetId: number;
     datasetVersionId: number;
@@ -610,7 +610,7 @@ declare namespace EvaluatorsAPI {
       evaluatorVersionId: number;
       progress: number;
       completeItemsCount: number;
-      totalItemsCount: number; // 添加总数据项数量字段
+      totalItemsCount: number; // Total number of data items
     }[];
   }
 

@@ -97,7 +97,7 @@ export default function () {
           message.success(
             $i18n.get({
               id: 'main.pages.Component.Plugin.Tools.Edit.successSave',
-              dm: '保存成功',
+              dm: 'Saved successfully',
             }),
           );
         });
@@ -105,7 +105,7 @@ export default function () {
     >
       {$i18n.get({
         id: 'main.pages.Component.Plugin.Tools.Edit.save',
-        dm: '保存',
+        dm: 'Save',
       })}
     </Button>
   );
@@ -119,7 +119,7 @@ export default function () {
           message.success(
             $i18n.get({
               id: 'main.pages.Component.Plugin.Tools.Edit.successPublish',
-              dm: '发布成功',
+              dm: 'Published successfully',
             }),
           );
         });
@@ -127,7 +127,7 @@ export default function () {
     >
       {$i18n.get({
         id: 'main.pages.Component.Plugin.Tools.Edit.saveAndPublish',
-        dm: '保存并发布',
+        dm: 'Save and Publish',
       })}
     </Button>
   );
@@ -140,7 +140,7 @@ export default function () {
     >
       {$i18n.get({
         id: 'main.pages.Component.Plugin.Tools.Edit.cancel',
-        dm: '取消',
+        dm: 'Cancel',
       })}
     </Button>
   );
@@ -151,7 +151,7 @@ export default function () {
         {
           title: $i18n.get({
             id: 'main.pages.Component.Plugin.Tools.Edit.componentManagement',
-            dm: '组件管理',
+            dm: 'Component Management',
           }),
         },
         {
@@ -161,7 +161,7 @@ export default function () {
         {
           title: $i18n.get({
             id: 'main.pages.Component.Plugin.Tools.Edit.editTool',
-            dm: '编辑工具',
+            dm: 'Edit Tool',
           }),
         },
       ]}
@@ -187,7 +187,7 @@ export default function () {
                 <div className={styles.title}>
                   {$i18n.get({
                     id: 'main.pages.Component.Plugin.Tools.Edit.toolInfo',
-                    dm: '工具信息',
+                    dm: 'Tool Info',
                   })}
                 </div>
                 <Form.Item
@@ -197,19 +197,19 @@ export default function () {
                       required: true,
                       message: $i18n.get({
                         id: 'main.pages.Component.Plugin.Tools.Edit.enterToolName',
-                        dm: '请输入工具名称',
+                        dm: 'Please enter tool name',
                       }),
                     },
                   ]}
                   label={$i18n.get({
                     id: 'main.pages.Component.Plugin.Tools.Edit.toolName',
-                    dm: '工具名称',
+                    dm: 'Tool Name',
                   })}
                 >
                   <Input
                     placeholder={$i18n.get({
                       id: 'main.pages.Component.Plugin.Tools.Edit.enterToolName',
-                      dm: '请输入工具名称',
+                      dm: 'Please enter tool name',
                     })}
                     showCount
                     maxLength={128}
@@ -223,13 +223,13 @@ export default function () {
                       required: true,
                       message: $i18n.get({
                         id: 'main.pages.Component.Plugin.Tools.Edit.enterToolDescription',
-                        dm: '请输入工具描述，帮助用户更好的理解工具功能和使用场景',
+                        dm: 'Please enter tool description to help users understand its functionality and use cases',
                       }),
                     },
                   ]}
                   label={$i18n.get({
                     id: 'main.pages.Component.Plugin.Tools.Edit.toolDescription',
-                    dm: '工具描述',
+                    dm: 'Tool Description',
                   })}
                 >
                   <Input.TextArea
@@ -241,7 +241,7 @@ export default function () {
                     maxLength={200}
                     placeholder={$i18n.get({
                       id: 'main.pages.Component.Plugin.Tools.Edit.enterToolDescription',
-                      dm: '请输入工具描述，帮助用户更好的理解工具功能和使用场景',
+                      dm: 'Please enter tool description to help users understand its functionality and use cases',
                     })}
                   />
                 </Form.Item>
@@ -253,13 +253,13 @@ export default function () {
                       required: true,
                       message: $i18n.get({
                         id: 'main.pages.Component.Plugin.Tools.Edit.enterToolPath',
-                        dm: '请输入工具路径',
+                        dm: 'Please enter tool path',
                       }),
                     },
                   ]}
                   label={$i18n.get({
                     id: 'main.pages.Component.Plugin.Tools.Edit.toolPath',
-                    dm: '工具路径',
+                    dm: 'Tool Path',
                   })}
                 >
                   <Input addonBefore={data?.data.config?.server} />
@@ -272,13 +272,13 @@ export default function () {
                       required: true,
                       message: $i18n.get({
                         id: 'main.pages.Component.Plugin.Tools.Edit.selectRequestMethod',
-                        dm: '请选择请求方法',
+                        dm: 'Please select request method',
                       }),
                     },
                   ]}
                   label={$i18n.get({
                     id: 'main.pages.Component.Plugin.Tools.Edit.requestMethod',
-                    dm: '请求方法',
+                    dm: 'Request Method',
                   })}
                 >
                   <Select
@@ -297,13 +297,13 @@ export default function () {
                         required: true,
                         message: $i18n.get({
                           id: 'main.pages.Component.Plugin.Tools.Edit.selectSubmitMethod',
-                          dm: '请选择提交方式',
+                          dm: 'Please select submit method',
                         }),
                       },
                     ]}
                     label={$i18n.get({
                       id: 'main.pages.Component.Plugin.Tools.Edit.submitMethod',
-                      dm: '提交方式',
+                      dm: 'Submit Method',
                     })}
                     style={{ marginBottom: 0 }}
                   >
@@ -326,7 +326,7 @@ export default function () {
                 <div className={classNames(styles.title, styles.required)}>
                   {$i18n.get({
                     id: 'main.pages.Component.Plugin.Tools.Edit.configureInputParameters',
-                    dm: '配置输入参数',
+                    dm: 'Configure Input Parameters',
                   })}
                 </div>
                 <InputParamsConfig
@@ -347,7 +347,7 @@ export default function () {
                 <div className={classNames(styles.title, styles.required)}>
                   {$i18n.get({
                     id: 'main.pages.Component.Plugin.Tools.Edit.configureOutputParameters',
-                    dm: '配置输出参数',
+                    dm: 'Configure Output Parameters',
                   })}
                 </div>
                 <OutputParamsConfig
@@ -368,14 +368,14 @@ export default function () {
                   <span className={styles.title}>
                     {$i18n.get({
                       id: 'main.pages.Component.Plugin.Tools.Edit.advancedConfiguration',
-                      dm: '高级配置',
+                      dm: 'Advanced Configuration',
                     })}
                   </span>
                 </Flex>
                 <div className={styles.tip}>
                   {$i18n.get({
                     id: 'main.pages.Component.Plugin.Tools.Edit.addCallExamples',
-                    dm: '（可选）为大模型增加调用示例，提升大模型调用插件的准确性',
+                    dm: '(Optional) Add call examples for the model to improve plugin invocation accuracy',
                   })}
                 </div>
                 <ExampleConfigForm
@@ -406,19 +406,19 @@ export default function () {
               menus={[
                 $i18n.get({
                   id: 'main.pages.Component.Plugin.Tools.Edit.toolInfo',
-                  dm: '工具信息',
+                  dm: 'Tool Info',
                 }),
                 $i18n.get({
                   id: 'main.pages.Component.Plugin.Tools.Edit.inputParameters',
-                  dm: '输入参数',
+                  dm: 'Input Parameters',
                 }),
                 $i18n.get({
                   id: 'main.pages.Component.Plugin.Tools.Edit.outputParameters',
-                  dm: '输出参数',
+                  dm: 'Output Parameters',
                 }),
                 $i18n.get({
                   id: 'main.pages.Component.Plugin.Tools.Edit.advancedConfiguration',
-                  dm: '高级配置',
+                  dm: 'Advanced Configuration',
                 }),
               ]}
             />

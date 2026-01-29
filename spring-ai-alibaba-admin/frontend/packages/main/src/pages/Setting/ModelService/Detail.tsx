@@ -83,7 +83,7 @@ const ModelServiceDetail: React.FC = () => {
     {
       title: $i18n.get({
         id: 'main.pages.Setting.ModelService.Detail.modelName',
-        dm: '模型名称',
+        dm: 'Model Name',
       }),
       dataIndex: 'name',
       key: 'name',
@@ -96,7 +96,7 @@ const ModelServiceDetail: React.FC = () => {
     {
       title: $i18n.get({
         id: 'main.pages.Setting.ModelService.Detail.modelType',
-        dm: '模型类型',
+        dm: 'Model Type',
       }),
       dataIndex: 'type',
       key: 'type',
@@ -104,7 +104,7 @@ const ModelServiceDetail: React.FC = () => {
     {
       title: $i18n.get({
         id: 'main.pages.Setting.ModelService.Detail.modelAbility',
-        dm: '模型能力',
+        dm: 'Model Capabilities',
       }),
       dataIndex: 'tags',
       key: 'tags',
@@ -124,7 +124,7 @@ const ModelServiceDetail: React.FC = () => {
     {
       title: $i18n.get({
         id: 'main.pages.Setting.ModelService.Detail.enable',
-        dm: '启用',
+        dm: 'Enable',
       }),
       dataIndex: 'enable',
       key: 'enable',
@@ -140,7 +140,7 @@ const ModelServiceDetail: React.FC = () => {
     {
       title: $i18n.get({
         id: 'main.pages.Setting.ModelService.Detail.operation',
-        dm: '操作',
+        dm: 'Actions',
       }),
       key: 'action',
       render: (_: any, record: IModel) => {
@@ -150,7 +150,7 @@ const ModelServiceDetail: React.FC = () => {
             <a onClick={() => handleConfigModel(record)}>
               {$i18n.get({
                 id: 'main.pages.Setting.ModelService.Detail.setting',
-                dm: '设置',
+                dm: 'Settings',
               })}
             </a>
             <a
@@ -159,7 +159,7 @@ const ModelServiceDetail: React.FC = () => {
             >
               {$i18n.get({
                 id: 'main.pages.Setting.ModelService.Detail.delete',
-                dm: '删除',
+                dm: 'Delete',
               })}
             </a>
           </div>
@@ -177,12 +177,12 @@ const ModelServiceDetail: React.FC = () => {
     AlertDialog.warning({
       title: $i18n.get({
         id: 'main.pages.Setting.ModelService.Detail.deleteModel',
-        dm: '删除模型',
+        dm: 'Delete Model',
       }),
       children: $i18n.get(
         {
           id: 'main.pages.Setting.ModelService.Detail.confirmDeleteModel',
-          dm: '确定要删除模型{var1}吗？此操作不可恢复。',
+          dm: 'Are you sure you want to delete model {var1}? This action cannot be undone.',
         },
         { var1: record.name },
       ),
@@ -191,7 +191,7 @@ const ModelServiceDetail: React.FC = () => {
           message.error(
             $i18n.get({
               id: 'main.pages.Setting.ModelService.Detail.modelIdNotExist',
-              dm: '模型ID不存在',
+              dm: 'Model ID does not exist',
             }),
           );
           return;
@@ -200,7 +200,7 @@ const ModelServiceDetail: React.FC = () => {
           message.error(
             $i18n.get({
               id: 'main.pages.Setting.ModelService.Detail.providerIdNotExist',
-              dm: '提供商ID不存在',
+              dm: 'Provider ID does not exist',
             }),
           );
           return;
@@ -210,7 +210,7 @@ const ModelServiceDetail: React.FC = () => {
             message.success(
               $i18n.get({
                 id: 'main.pages.Setting.ModelService.Detail.deleteModelSuccess',
-                dm: '删除模型成功',
+                dm: 'Model deleted successfully',
               }),
             );
             fetchModels();
@@ -230,7 +230,7 @@ const ModelServiceDetail: React.FC = () => {
       message.error(
         $i18n.get({
           id: 'main.pages.Setting.ModelService.Detail.providerIdNotExist',
-          dm: '提供商ID不存在',
+          dm: 'Provider ID does not exist',
         }),
       );
       return;
@@ -240,7 +240,7 @@ const ModelServiceDetail: React.FC = () => {
       message.error(
         $i18n.get({
           id: 'main.pages.Setting.ModelService.Detail.modelIdNotExist',
-          dm: '模型ID不存在',
+          dm: 'Model ID does not exist',
         }),
       );
       return;
@@ -256,7 +256,7 @@ const ModelServiceDetail: React.FC = () => {
       message.success(
         $i18n.get({
           id: 'main.pages.Setting.ModelService.Detail.updateModelSuccess',
-          dm: '更新模型成功',
+          dm: 'Model updated successfully',
         }),
       );
       setIsModelConfigModalVisible(false);
@@ -269,7 +269,7 @@ const ModelServiceDetail: React.FC = () => {
       message.error(
         $i18n.get({
           id: 'main.pages.Setting.ModelService.Detail.providerIdNotExist',
-          dm: '提供商ID不存在',
+          dm: 'Provider ID does not exist',
         }),
       );
       return;
@@ -285,7 +285,7 @@ const ModelServiceDetail: React.FC = () => {
       message.success(
         $i18n.get({
           id: 'main.pages.Setting.ModelService.Detail.addModelSuccess',
-          dm: '添加模型成功',
+          dm: 'Model added successfully',
         }),
       );
       setIsModelConfigModalVisible(false);
@@ -298,7 +298,7 @@ const ModelServiceDetail: React.FC = () => {
       message.error(
         $i18n.get({
           id: 'main.pages.Setting.ModelService.Detail.providerIdNotExist',
-          dm: '提供商ID不存在',
+          dm: 'Provider ID does not exist',
         }),
       );
       return;
@@ -318,14 +318,14 @@ const ModelServiceDetail: React.FC = () => {
           {
             title: $i18n.get({
               id: 'main.pages.Setting.ModelService.Detail.modelServiceManagement',
-              dm: '模型服务管理',
+              dm: 'Model Service Management',
             }),
             path: `/setting/modelService`,
           },
           {
             title: $i18n.get({
               id: 'main.pages.Setting.ModelService.Detail.modelServiceDetail',
-              dm: '模型服务详情',
+              dm: 'Model Service Details',
             }),
           },
         ]}
@@ -336,7 +336,7 @@ const ModelServiceDetail: React.FC = () => {
             size="large"
             tip={$i18n.get({
               id: 'main.pages.Setting.ModelService.Detail.loading',
-              dm: '加载中...',
+              dm: 'Loading...',
             })}
           >
             <div style={{ minHeight: '400px' }}></div>
@@ -352,7 +352,7 @@ const ModelServiceDetail: React.FC = () => {
         {
           title: $i18n.get({
             id: 'main.pages.Setting.ModelService.Detail.modelServiceManagement',
-            dm: '模型服务管理',
+            dm: 'Model Service Management',
           }),
           path: `/setting/modelService`,
         },
@@ -361,7 +361,7 @@ const ModelServiceDetail: React.FC = () => {
             provider?.name ||
             $i18n.get({
               id: 'main.pages.Setting.ModelService.Detail.modelServiceDetail',
-              dm: '模型服务详情',
+              dm: 'Model Service Details',
             }),
         },
       ]}
@@ -371,7 +371,7 @@ const ModelServiceDetail: React.FC = () => {
           <Button onClick={() => navigate('/setting/modelService')}>
             {$i18n.get({
               id: 'main.pages.Setting.ModelService.Detail.cancel',
-              dm: '取消',
+              dm: 'Cancel',
             })}
           </Button>
         </div>
@@ -382,7 +382,7 @@ const ModelServiceDetail: React.FC = () => {
           <div className={styles.title}>
             {$i18n.get({
               id: 'main.pages.Setting.ModelService.Detail.serviceConfiguration',
-              dm: '服务配置',
+              dm: 'Service Configuration',
             })}
           </div>
           <ProviderInfoForm
@@ -397,14 +397,14 @@ const ModelServiceDetail: React.FC = () => {
               <span>
                 {$i18n.get({
                   id: 'main.pages.Setting.ModelService.Detail.modelConfiguration',
-                  dm: '模型配置',
+                  dm: 'Model Configuration',
                 })}
               </span>
               <span className={styles.count}>
                 （{models.length}
                 {$i18n.get({
                   id: 'main.pages.Setting.ModelService.Detail.models',
-                  dm: '个模型',
+                  dm: ' models',
                 })}
                 ）
               </span>
@@ -412,7 +412,7 @@ const ModelServiceDetail: React.FC = () => {
             <Button type="link" onClick={handleAddModel}>
               {$i18n.get({
                 id: 'main.pages.Setting.ModelService.Detail.addModel',
-                dm: '新增模型',
+                dm: 'Add Model',
               })}
             </Button>
           </div>
@@ -428,7 +428,7 @@ const ModelServiceDetail: React.FC = () => {
             <Empty
               description={$i18n.get({
                 id: 'main.pages.Setting.ModelService.Detail.noModel',
-                dm: '暂无模型',
+                dm: 'No models yet',
               })}
             />
           )}
@@ -440,6 +440,7 @@ const ModelServiceDetail: React.FC = () => {
         onCancel={() => setIsModelConfigModalVisible(false)}
         onOk={handleModelConfigSubmit}
         model={currentModel}
+        provider={provider || undefined}
       />
     </InnerLayout>
   );

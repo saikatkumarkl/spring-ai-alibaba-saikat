@@ -52,7 +52,7 @@ const ChunkItem: React.FC<ChunkItemProps> = ({
         <div className={styles['chunk-source']}>
           {$i18n.get({
             id: 'main.pages.Knowledge.Detail.components.ChunkItem.index.document',
-            dm: '文档：',
+            dm: 'Document: ',
           })}
           {doc_name}
         </div>

@@ -36,7 +36,7 @@ export default function AuthConfigFormModal(props: IProps) {
       message.error(
         $i18n.get({
           id: 'main.pages.App.Workflow.components.AuthConfigFormModal.index.enterToken',
-          dm: '请输入TOKEN值',
+          dm: 'Please enter TOKEN value',
         }),
       );
       return;
@@ -45,7 +45,7 @@ export default function AuthConfigFormModal(props: IProps) {
       message.error(
         $i18n.get({
           id: 'main.pages.App.Workflow.components.AuthConfigFormModal.index.enterKey',
-          dm: '请输入KEY',
+          dm: 'Please enter KEY',
         }),
       );
       return;
@@ -62,7 +62,7 @@ export default function AuthConfigFormModal(props: IProps) {
       onOk={handleOk}
       title={$i18n.get({
         id: 'main.pages.App.Workflow.components.AuthConfigFormModal.index.auth',
-        dm: '鉴权',
+        dm: 'Authentication',
       })}
     >
       <Form className={styles.form} layout="vertical">
@@ -73,13 +73,13 @@ export default function AuthConfigFormModal(props: IProps) {
               required: true,
               message: $i18n.get({
                 id: 'main.pages.App.Workflow.components.AuthConfigFormModal.index.selectAuthMethod',
-                dm: '请选择鉴权方式',
+                dm: 'Please select auth method',
               }),
             },
           ]}
           label={$i18n.get({
             id: 'main.pages.App.Workflow.components.AuthConfigFormModal.index.authMethod',
-            dm: '鉴权方式',
+            dm: 'Auth Method',
           })}
         >
           <Radio.Group
@@ -130,7 +130,7 @@ export default function AuthConfigFormModal(props: IProps) {
                 value={value.auth_config?.key}
                 placeholder={$i18n.get({
                   id: 'main.pages.App.Workflow.components.AuthConfigFormModal.index.enterKey',
-                  dm: '请输入KEY',
+                  dm: 'Please enter KEY',
                 })}
               />
             </Form.Item>
@@ -147,7 +147,7 @@ export default function AuthConfigFormModal(props: IProps) {
               <Select
                 placeholder={$i18n.get({
                   id: 'main.pages.App.Workflow.components.AuthConfigFormModal.index.select',
-                  dm: '请选择',
+                  dm: 'Please select',
                 })}
                 popupMatchSelectWidth={false}
                 style={{ width: '100%' }}

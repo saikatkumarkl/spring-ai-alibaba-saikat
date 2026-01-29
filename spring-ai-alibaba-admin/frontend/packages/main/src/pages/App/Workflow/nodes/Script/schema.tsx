@@ -23,18 +23,18 @@ const checkScriptNodeValid = (data: IScriptNodeData) => {
     errMsgs.push({
       label: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.Script.schema.scriptContent',
-        dm: '脚本内容',
+        dm: 'Script Content',
       }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.Script.schema.requiredField',
-        dm: '不能为空',
+        dm: 'Cannot be empty',
       }),
     });
   }
   checkInputParams(data.output_params, errMsgs, {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.Script.schema.output',
-      dm: '输出',
+      dm: 'Output',
     }),
   });
   return errMsgs;
@@ -44,16 +44,16 @@ export const ScriptSchema: INodeSchema = {
   type: 'Script',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Script.schema.script',
-    dm: '脚本',
+    dm: 'Script',
   }),
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Script.schema.2',
-    dm: '提供自定义逻辑扩展，用脚本规则处理数据。',
+    dm: 'Provides custom logic extension for processing data with script rules.',
   }),
   iconType: 'spark-fileCode-line',
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Script.schema.logic',
-    dm: '逻辑',
+    dm: 'Logic',
   }),
   defaultParams: {
     input_params: SCRIPT_NODE_INPUT_PARAMS_DEFAULT,

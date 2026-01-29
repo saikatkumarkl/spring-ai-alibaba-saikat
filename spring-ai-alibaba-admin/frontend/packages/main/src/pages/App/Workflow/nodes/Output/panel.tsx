@@ -53,7 +53,7 @@ export default memo((props: { id: string; data: IOutputNodeData }) => {
         <div className="spark-flow-panel-form-title">
           {$i18n.get({
             id: 'main.pages.App.Workflow.nodes.Output.panel.outputContent',
-            dm: '输出内容',
+            dm: 'Output Content',
           })}
         </div>
         <VarInputTextArea
@@ -68,13 +68,13 @@ export default memo((props: { id: string; data: IOutputNodeData }) => {
         <div className="spark-flow-panel-form-title">
           {$i18n.get({
             id: 'main.pages.App.Workflow.nodes.Output.panel.streamOutput',
-            dm: '流式输出',
+            dm: 'Stream Output',
           })}
 
           <InfoIcon
             tip={$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Output.panel.streamMode',
-              dm: '开启后，节点的来源于大模型的输出内容将用流式呈现。',
+              dm: 'When enabled, the output content from the large model will be presented in streaming mode.',
             })}
           />
         </div>

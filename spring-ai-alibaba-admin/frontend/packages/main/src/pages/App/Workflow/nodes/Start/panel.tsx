@@ -19,13 +19,13 @@ export default memo((props: { id: string; data: IStartNodeData }) => {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Start.panel.input',
-              dm: '输入',
+              dm: 'Input',
             })}
           </div>
           <div className="spark-flow-panel-form-second-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Start.panel.customVariables',
-              dm: '自定义变量',
+              dm: 'Custom Variables',
             })}
           </div>
           <CustomOutputsFormWrap
@@ -47,7 +47,7 @@ export default memo((props: { id: string; data: IStartNodeData }) => {
           <div className="spark-flow-panel-form-second-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Start.panel.predefinedVariables',
-              dm: '预置变量',
+              dm: 'Predefined Variables',
             })}
           </div>
           <CustomOutputsFormWrap
@@ -58,7 +58,7 @@ export default memo((props: { id: string; data: IStartNodeData }) => {
                 type: 'String',
                 desc: $i18n.get({
                   id: 'main.pages.App.Workflow.nodes.Start.panel.userQuery',
-                  dm: '用户的query',
+                  dm: 'User query',
                 }),
               },
             ]}

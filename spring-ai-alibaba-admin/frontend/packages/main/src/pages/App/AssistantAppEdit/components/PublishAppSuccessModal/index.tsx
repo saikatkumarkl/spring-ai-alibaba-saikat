@@ -56,7 +56,7 @@ export default function PublishAppSuccessModal(props: IProps) {
             {$i18n.get(
               {
                 id: 'main.components.PublishAppSuccessModal.index.notConfigureReturn',
-                dm: '暂不配置，返回应用列表（{var1}S）',
+                dm: 'Skip configuration for now, return to app list ({var1}s)',
               },
               { var1: count },
             )}
@@ -65,7 +65,7 @@ export default function PublishAppSuccessModal(props: IProps) {
       }
       title={$i18n.get({
         id: 'main.components.PublishAppSuccessModal.index.appPublished',
-        dm: '应用发布成功！',
+        dm: 'Application published successfully!',
       })}
       width={600}
     >
@@ -82,7 +82,7 @@ export default function PublishAppSuccessModal(props: IProps) {
           <Divider>
             {$i18n.get({
               id: 'main.components.PublishAppSuccessModal.index.quickActions',
-              dm: '你还可以进行以下操作',
+              dm: 'You can also perform the following actions',
             })}
           </Divider>
         </div>
@@ -100,13 +100,13 @@ export default function PublishAppSuccessModal(props: IProps) {
               <div className={styles.title}>
                 {$i18n.get({
                   id: 'main.components.PublishAppSuccessModal.index.publishAppComponent',
-                  dm: '发布应用组件',
+                  dm: 'Publish Application Component',
                 })}
               </div>
               <div className={styles.desc}>
                 {$i18n.get({
                   id: 'main.components.PublishAppSuccessModal.index.publishAsAppComponent',
-                  dm: '发布为应用组件，方便在智能体或工作流中直接调用！',
+                  dm: 'Publish as an application component for direct invocation in agents or workflows!',
                 })}
               </div>
             </div>
@@ -118,7 +118,7 @@ export default function PublishAppSuccessModal(props: IProps) {
               <span>
                 {$i18n.get({
                   id: 'main.components.PublishAppSuccessModal.index.immediatelyPublish',
-                  dm: '立即发布',
+                  dm: 'Publish Now',
                 })}
               </span>
               <IconFont type="spark-rightArrow-line" />

@@ -26,11 +26,11 @@ const getFileSize = (size: number): string => {
 const sourceLabelMap = {
   localFile: $i18n.get({
     id: 'main.components.VariableBaseInput.FileInput.local',
-    dm: '本地',
+    dm: 'Local',
   }),
   remoteUrl: $i18n.get({
     id: 'main.components.VariableBaseInput.FileInput.link',
-    dm: '链接',
+    dm: 'Link',
   }),
 };
 
@@ -103,13 +103,13 @@ export const FileRemoteUrlInputForm = memo(
         <div className={styles['remote-url-input-form-title']}>
           {$i18n.get({
             id: 'main.components.VariableBaseInput.FileInput.link',
-            dm: '链接',
+            dm: 'Link',
           })}
         </div>
         <Input
           placeholder={$i18n.get({
             id: 'main.components.VariableBaseInput.FileInput.enterLink',
-            dm: '请输入链接',
+            dm: 'Enter link',
           })}
           value={url}
           onChange={(e) => setUrl(e.target.value)}
@@ -119,13 +119,13 @@ export const FileRemoteUrlInputForm = memo(
           <Button disabled={props.disabled} onClick={onSubmit} type="primary">
             {$i18n.get({
               id: 'main.components.VariableBaseInput.FileInput.submit',
-              dm: '提交',
+              dm: 'Submit',
             })}
           </Button>
           <Button>
             {$i18n.get({
               id: 'main.components.VariableBaseInput.FileInput.cancel',
-              dm: '取消',
+              dm: 'Cancel',
             })}
           </Button>
         </Flex>
@@ -241,7 +241,7 @@ export const FileInput = memo(
             >
               {$i18n.get({
                 id: 'main.components.VariableBaseInput.FileInput.local',
-                dm: '本地',
+                dm: 'Local',
               })}
             </Button>
           </Upload>
@@ -271,7 +271,7 @@ export const FileInput = memo(
             >
               {$i18n.get({
                 id: 'main.components.VariableBaseInput.FileInput.link',
-                dm: '链接',
+                dm: 'Link',
               })}
             </Button>
           </Popover>
@@ -323,7 +323,7 @@ export const FileInput = memo(
                     <div className={styles['file-progress']}>
                       {$i18n.get({
                         id: 'main.components.VariableBaseInput.FileInput.uploadProgress',
-                        dm: '上传进度&nbsp;',
+                        dm: 'Upload progress&nbsp;',
                       })}
                       {parseInt(`${file.percent * 100}`)}%
                     </div>

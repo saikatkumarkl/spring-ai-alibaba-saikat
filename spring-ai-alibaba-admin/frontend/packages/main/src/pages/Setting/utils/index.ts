@@ -6,13 +6,13 @@ export const API_KEY_TIP_SECTIONS = [
   {
     title: $i18n.get({
       id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.modelServiceProvider',
-      dm: '模型服务供应商',
+      dm: 'Model Service Provider',
     }),
     linkButtons: [
       {
         text: $i18n.get({
           id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.AliyunBailian',
-          dm: '阿里云百炼',
+          dm: 'Alibaba Cloud Bailian',
         }),
         url: 'https://bailian.console.aliyun.com/console?tab=home#/home',
       },
@@ -25,7 +25,7 @@ export const API_KEY_TIP_SECTIONS = [
     ],
     description: $i18n.get({
       id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.providerNameDescription',
-      dm: '您可以选择符合OpenAI API格式的模型服务供应商，注册API Key及API调用地址，如阿里云百炼（中国大陆）、ModelStudio（新加坡）、OpenAI、OpenRouter、硅基智能及其他同类型厂商。',
+      dm: 'You can choose model service providers that comply with the OpenAI API format, register API Keys and API addresses, such as Alibaba Cloud Bailian (Mainland China), ModelStudio (Singapore), OpenAI, OpenRouter, SiliconFlow and other similar providers.',
     }),
   },
 ];

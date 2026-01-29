@@ -12,16 +12,16 @@ export const InputSchema: INodeSchema = {
   type: 'Input',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.InputNode.schema.processInput',
-    dm: '流程输入',
+    dm: 'Process Input',
   }),
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.InputNode.schema.supplementInformationInProcess',
-    dm: '在流程中进行信息的补充。',
+    dm: 'Supplement information during the process.',
   }),
   iconType: 'spark-processInput-line',
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.InputNode.schema.interaction',
-    dm: '交互',
+    dm: 'Interaction',
   }),
   defaultParams: {
     input_params: [],

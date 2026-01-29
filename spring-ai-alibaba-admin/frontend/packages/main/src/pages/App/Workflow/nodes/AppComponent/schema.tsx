@@ -15,16 +15,16 @@ export const AppComponentSchema: INodeSchema = {
   type: 'AppComponent',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.AppComponent.schema.appComponent',
-    dm: '应用组件',
+    dm: 'App Component',
   }),
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.AppComponent.schema.referencePublishedWorkflowOrAgent',
-    dm: '引用发布为组件的工作流/智能体。',
+    dm: 'Reference workflows or agents published as components.',
   }),
   iconType: 'spark-osWidget-line',
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.AppComponent.schema.tool',
-    dm: '工具',
+    dm: 'Tool',
   }),
   defaultParams: {
     input_params: [],

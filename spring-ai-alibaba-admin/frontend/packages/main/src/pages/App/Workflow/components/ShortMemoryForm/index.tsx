@@ -12,23 +12,23 @@ const memoryOptions = [
   {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.components.ShortMemoryForm.index.nodeCache',
-      dm: '本节点缓存',
+      dm: 'Node Cache',
     }),
     value: 'self',
     desc: $i18n.get({
       id: 'main.pages.App.Workflow.components.ShortMemoryForm.index.contextualInfoOnlyInNode',
-      dm: '模型只会记得本节点内发生的上下文信息。',
+      dm: 'The model will only remember contextual information within this node.',
     }),
   },
   {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.components.ShortMemoryForm.index.customCache',
-      dm: '自定义缓存',
+      dm: 'Custom Cache',
     }),
     value: 'custom',
     desc: $i18n.get({
       id: 'main.pages.App.Workflow.components.ShortMemoryForm.index.globalContextualInfo',
-      dm: '模型会记得全局的上下文信息。',
+      dm: 'The model will remember global contextual information.',
     }),
   },
 ];
@@ -51,7 +51,7 @@ export default memo(function ShortMemoryForm({
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.components.ShortMemoryForm.index.memory',
-              dm: '记忆',
+              dm: 'Memory',
             })}
           </div>
           <Switch
@@ -75,7 +75,7 @@ export default memo(function ShortMemoryForm({
             <div className="spark-flow-panel-form-title">
               {$i18n.get({
                 id: 'main.pages.App.Workflow.components.ShortMemoryForm.index.contextVariables',
-                dm: '上下文变量',
+                dm: 'Context Variables',
               })}
             </div>
             <VariableSelector
@@ -99,13 +99,13 @@ export default memo(function ShortMemoryForm({
               <span>
                 {$i18n.get({
                   id: 'main.pages.App.Workflow.components.ShortMemoryForm.index.memoryRounds',
-                  dm: '记忆轮次',
+                  dm: 'Memory Rounds',
                 })}
               </span>
               <InfoIcon
                 tip={$i18n.get({
                   id: 'main.pages.App.Workflow.components.ShortMemoryForm.index.memoryRoundsDefinition',
-                  dm: '代表记忆的轮次，一次输入一次输出代表一轮。',
+                  dm: 'Represents the number of memory rounds, where one input and one output represent one round.',
                 })}
               />
             </div>

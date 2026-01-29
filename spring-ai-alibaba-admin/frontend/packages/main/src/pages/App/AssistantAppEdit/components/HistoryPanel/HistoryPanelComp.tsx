@@ -56,7 +56,7 @@ const TimelineItem = (props: ITimelineItem) => {
         <div style={{ position: 'relative' }}>
           {$i18n.get({
             id: 'main.components.HistoryPanel.index.currentDraft',
-            dm: '当前草稿',
+            dm: 'Current Draft',
           })}
         </div>
       ) : (
@@ -68,7 +68,7 @@ const TimelineItem = (props: ITimelineItem) => {
                   <div className={styles.timelineTitle}>
                     {$i18n.get({
                       id: 'main.components.HistoryPanel.index.liveVersion',
-                      dm: '线上版本',
+                      dm: 'Online Version',
                     })}
                   </div>
                 ) : (
@@ -76,7 +76,7 @@ const TimelineItem = (props: ITimelineItem) => {
                     {dayjs(versionConfig.gmt_modified).format('YYYY-MM-DD')}
                     {$i18n.get({
                       id: 'main.components.HistoryPanel.index.version',
-                      dm: '版本',
+                      dm: 'Version',
                     })}
                   </div>
                 )}
@@ -84,7 +84,7 @@ const TimelineItem = (props: ITimelineItem) => {
                   <div className={styles.timelineNew}>
                     {$i18n.get({
                       id: 'main.components.HistoryPanel.index.latest',
-                      dm: '最新',
+                      dm: 'Latest',
                     })}
                   </div>
                 )}
@@ -97,7 +97,7 @@ const TimelineItem = (props: ITimelineItem) => {
               <span style={{ whiteSpace: 'nowrap' }}>
                 {$i18n.get({
                   id: 'main.components.HistoryPanel.index.versionId',
-                  dm: '版本ID：',
+                  dm: 'Version ID: ',
                 })}
               </span>
               {versionConfig.version}
@@ -106,7 +106,7 @@ const TimelineItem = (props: ITimelineItem) => {
               <span style={{ whiteSpace: 'nowrap' }}>
                 {$i18n.get({
                   id: 'main.components.HistoryPanel.index.publisher',
-                  dm: '发布人：',
+                  dm: 'Published by: ',
                 })}
               </span>
               <Typography.Text
@@ -166,11 +166,11 @@ export default function HistoryPanelComp(props: IProps) {
     AlertDialog.warning({
       title: $i18n.get({
         id: 'main.components.HistoryPanel.index.confirmUseVersion',
-        dm: '是否确认使用此版本内容',
+        dm: 'Confirm using this version content?',
       }),
       children: $i18n.get({
         id: 'main.components.HistoryPanel.index.overwriteDraft',
-        dm: '确认后，会使用此版本覆盖当前草稿内容！',
+        dm: 'After confirmation, this version will overwrite the current draft!',
       }),
       onOk: async () => {
         if (!appDetail) {
@@ -198,12 +198,12 @@ export default function HistoryPanelComp(props: IProps) {
           const msg =
             $i18n.get({
               id: 'main.components.HistoryPanel.index.returnedTo',
-              dm: '已回到',
+              dm: 'Restored to ',
             }) +
             dayjs(item.gmt_modified).format('YYYY-MM-DD') +
             $i18n.get({
               id: 'main.components.HistoryPanel.index.version',
-              dm: '版本',
+              dm: 'Version',
             });
           message.success(msg);
         }
@@ -217,7 +217,7 @@ export default function HistoryPanelComp(props: IProps) {
         <div className={styles.title}>
           {$i18n.get({
             id: 'main.components.HistoryPanel.index.historyVersion',
-            dm: '历史版本',
+            dm: 'History Versions',
           })}
         </div>
         <IconFont
@@ -278,7 +278,7 @@ export default function HistoryPanelComp(props: IProps) {
         >
           {$i18n.get({
             id: 'main.components.HistoryPanel.index.overwriteDraft',
-            dm: '覆盖当前草稿',
+            dm: 'Overwrite Current Draft',
           })}
         </Button>
       </Flex>

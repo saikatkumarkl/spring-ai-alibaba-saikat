@@ -22,44 +22,44 @@ const DifyConverter: React.FC = () => {
   const handleFileChange = (info: any) => {
     const { status, file } = info;
 
-    // 由于我们在 beforeUpload 中返回 false，文件不会真正上传
-    // 所以我们需要在这里直接处理文件选择
+    // Since we return false in beforeUpload, the file won't actually be uploaded
+    // So we need to handle file selection directly here
     if (file) {
       setSelectedFile(file.originFileObj || file);
-      message.success(`${file.name} 文件选择成功`);
+      message.success(`${file.name} file selected successfully`);
     }
   };
 
   const handleBeforeUpload = (file: File) => {
-    // 检查文件类型
+    // Check file type
     const isYaml = file.type === 'application/x-yaml' ||
                    file.type === 'text/yaml' ||
                    file.name.endsWith('.yaml') ||
                    file.name.endsWith('.yml');
     if (!isYaml) {
-      message.error('只支持 YAML 格式的 Dify DSL 文件！');
+      message.error('Only YAML format Dify DSL files are supported!');
       return false;
     }
 
-    // 直接设置选中的文件，因为我们要阻止自动上传
+    // Directly set the selected file because we want to prevent automatic upload
     setSelectedFile(file);
-    message.success(`${file.name} 文件选择成功`);
+    message.success(`${file.name} file selected successfully`);
 
-    // 阻止自动上传，只做文件选择
+    // Prevent automatic upload, only do file selection
     return false;
   };
 
   const handleConvert = async () => {
     if (!selectedFile) {
-      message.warning('请先选择 Dify DSL 文件');
+      message.warning('Please select a Dify DSL file first');
       return;
     }
 
     try {
-      // 读取用户上传文件的原始内容
+      // Read the original content of the user uploaded file
       const fileContent = await readFileContent(selectedFile);
 
-      // 准备请求参数
+      // Prepare request parameters
       const params = {
         dependencies: 'spring-ai-alibaba-graph,web,spring-ai-alibaba-starter-dashscope',
         appMode: 'workflow',
@@ -78,10 +78,10 @@ const DifyConverter: React.FC = () => {
         dsl: fileContent,
       };
 
-      // 调用转换服务
+      // Call conversion service
       const response = await runAsync(params);
 
-      // 处理 zip 文件下载
+      // Handle zip file download
       const blob = response.data;
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -92,22 +92,22 @@ const DifyConverter: React.FC = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      message.success('转换成功！项目文件已开始下载');
+      message.success('Conversion successful! Project file download started');
       setConvertResult([
-        'Spring AI Alibaba 项目已生成',
-        '项目类型: Maven 项目',
-        '语言: Java 17',
-        '包含依赖: spring-ai-alibaba-graph, web, spring-ai-alibaba-starter-dashscope',
-        '应用模式: workflow'
+        'Spring AI Alibaba project generated',
+        'Project Type: Maven Project',
+        'Language: Java 17',
+        'Includes Dependencies: spring-ai-alibaba-graph, web, spring-ai-alibaba-starter-dashscope',
+        'Application Mode: workflow'
       ]);
 
     } catch (error) {
-      console.error('转换失败:', error);
-      message.error(`转换失败：${error.message || '请重试'}`);
+      console.error('Conversion failed:', error);
+      message.error(`Conversion failed: ${error.message || 'Please try again'}`);
     }
   };
 
-  // 读取文件内容的辅助函数
+  // Helper function to read file content
   const readFileContent = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -116,7 +116,7 @@ const DifyConverter: React.FC = () => {
         resolve(content);
       };
       reader.onerror = () => {
-        reject(new Error('文件读取失败'));
+        reject(new Error('File read failed'));
       };
       reader.readAsText(file, 'utf-8');
     });
@@ -132,46 +132,46 @@ const DifyConverter: React.FC = () => {
         {
           title: $i18n.get({
             id: 'main.pages.App.index.home',
-            dm: '首页',
+            dm: 'Home',
           }),
           path: '/',
         },
         {
-          title: 'DIFY 应用转换',
+          title: 'DIFY Application Conversion',
         },
       ]}
     >
       <div className={styles.container}>
         <div className={styles.header}>
-          <h2>DIFY 应用转换为 Spring AI Alibaba 工程</h2>
+          <h2>Convert DIFY Application to Spring AI Alibaba Project</h2>
         </div>
 
-        {/* 说明区域 */}
+        {/* Description area */}
         <div className={styles.description}>
-          <h3>操作说明</h3>
+          <h3>Instructions</h3>
           <div className={styles.instructionList}>
             <div className={styles.instruction}>
               <span className={styles.step}>1.</span>
-              <span>从 Dify 平台导出您的智能体应用的 DSL 配置文件（YAML 格式）</span>
+              <span>Export your agent application's DSL configuration file from the Dify platform (YAML format)</span>
             </div>
             <div className={styles.instruction}>
               <span className={styles.step}>2.</span>
-              <span>将 DSL 文件拖拽到下方文件选择区域，或点击选择文件</span>
+              <span>Drag and drop the DSL file to the file selection area below, or click to select file</span>
             </div>
             <div className={styles.instruction}>
               <span className={styles.step}>3.</span>
-              <span>点击"开始转换"按钮，系统将自动解析析 DSL 并生成 Spring AI Alibaba 项目</span>
+              <span>Click the "Start Conversion" button, the system will automatically parse the DSL and generate a Spring AI Alibaba project</span>
             </div>
             <div className={styles.instruction}>
               <span className={styles.step}>4.</span>
-              <span>转换完成后，您可以下载生成的项目源码并导入 IDE 进行开发</span>
+              <span>After conversion, you can download the generated project source code and import it into your IDE for development</span>
             </div>
           </div>
         </div>
 
-        {/* 文件选择区域 */}
+        {/* File selection area */}
         <div className={styles.uploadSection}>
-          <h3>选择 Dify DSL 文件</h3>
+          <h3>Select Dify DSL File</h3>
           <Dragger
             name="file"
             multiple={false}
@@ -183,21 +183,21 @@ const DifyConverter: React.FC = () => {
             <p className="ant-upload-drag-icon">
               <InboxOutlined />
             </p>
-            <p className="ant-upload-text">点击或拖拽 Dify DSL 文件到此区域</p>
+            <p className="ant-upload-text">Click or drag Dify DSL file to this area</p>
             <p className="ant-upload-hint">
-              支持 YAML 格式的 Dify DSL 配置文件（.yaml 或 .yml）
+              Supports YAML format Dify DSL configuration files (.yaml or .yml)
             </p>
           </Dragger>
 
           {selectedFile && (
             <div className={styles.selectedFile}>
-              <span>已选择文件：</span>
+              <span>Selected file: </span>
               <span className={styles.fileName}>{selectedFile.name}</span>
             </div>
           )}
         </div>
 
-        {/* 转换按钮 */}
+        {/* Convert button */}
         <div className={styles.actionSection}>
           <Button
             type="primary"
@@ -207,16 +207,16 @@ const DifyConverter: React.FC = () => {
             onClick={handleConvert}
             className={styles.convertButton}
           >
-            {converting ? '转换中...' : '开始转换'}
+            {converting ? 'Converting...' : 'Start Conversion'}
           </Button>
         </div>
 
-        {/* 结果显示区域 */}
+        {/* Result display area */}
         {convertResult.length > 0 && (
           <div className={styles.resultSection}>
-            <h3>转换结果</h3>
+            <h3>Conversion Result</h3>
             <div className={styles.resultContent}>
-              <p className={styles.successText}>✅ 转换成功！生成的文件如下：</p>
+              <p className={styles.successText}>✅ Conversion successful! Generated files:</p>
               <div className={styles.fileList}>
                 {convertResult.map((filePath, index) => (
                   <div key={index} className={styles.fileItem}>

@@ -84,7 +84,7 @@ export default function KnowledgeBaseSelectorComp() {
           <span>
             {$i18n.get({
               id: 'main.components.KnowledgeSelectorComp.index.knowledgeBase',
-              dm: '知识库',
+              dm: 'Knowledge Base',
             })}
           </span>
           <span
@@ -123,7 +123,7 @@ export default function KnowledgeBaseSelectorComp() {
           >
             {$i18n.get({
               id: 'main.components.KnowledgeSelectorComp.index.knowledgeBase',
-              dm: '知识库',
+              dm: 'Knowledge Base',
             })}
           </Button>
           <Divider type="vertical" className="ml-[16px] mr-[16px]"></Divider>
@@ -143,14 +143,14 @@ export default function KnowledgeBaseSelectorComp() {
           <div className={styles.desc}>
             {$i18n.get({
               id: 'main.components.KnowledgeSelectorComp.index.addVariable',
-              dm: '提示词中需要增加',
+              dm: 'You need to add',
             })}
             <Tag color="mauve" className="ml-[8px]">
               {'${documents}'}
             </Tag>
             {$i18n.get({
               id: 'main.components.KnowledgeSelectorComp.index.variableToEnable',
-              dm: '的变量，以实现基于知识库切片的大模型生成。',
+              dm: 'variable to the prompt to enable knowledge base-based LLM generation.',
             })}
           </div>
           <Flex vertical gap={8}>

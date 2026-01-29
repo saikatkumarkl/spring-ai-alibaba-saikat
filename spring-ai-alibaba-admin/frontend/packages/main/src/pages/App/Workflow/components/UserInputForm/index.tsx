@@ -61,7 +61,7 @@ export default memo(function UserInputForm(props: IUserInputFormProps) {
                 required: item.required,
                 message: $i18n.get({
                   id: 'main.pages.App.Workflow.components.UserInputForm.index.enter',
-                  dm: '请输入',
+                  dm: 'Please enter',
                 }),
               },
             ]}
@@ -69,7 +69,7 @@ export default memo(function UserInputForm(props: IUserInputFormProps) {
             <Input
               placeholder={$i18n.get({
                 id: 'main.pages.App.Workflow.components.UserInputForm.index.enter',
-                dm: '请输入',
+                dm: 'Please enter',
               })}
             />
           </Form.Item>
@@ -84,11 +84,11 @@ export default memo(function UserInputForm(props: IUserInputFormProps) {
         {props.nodeData.node_status === 'success'
           ? $i18n.get({
               id: 'main.pages.App.Workflow.components.UserInputForm.index.submitted',
-              dm: '已提交',
+              dm: 'Submitted',
             })
           : $i18n.get({
               id: 'main.pages.App.Workflow.components.UserInputForm.index.submit',
-              dm: '提交',
+              dm: 'Submit',
             })}
       </Button>
     </Form>

@@ -78,11 +78,11 @@ export default function ComponentSelectorDrawer(props: IProps) {
     return props.type === IAppType.AGENT
       ? $i18n.get({
           id: 'main.components.ComponentSelectorDrawer.index.selectAgent',
-          dm: '选择智能体',
+          dm: 'Select Agent',
         })
       : $i18n.get({
           id: 'main.components.ComponentSelectorDrawer.index.selectWorkflow',
-          dm: '选择工作流',
+          dm: 'Select Workflow',
         });
   }, [props.type]);
 
@@ -93,11 +93,11 @@ export default function ComponentSelectorDrawer(props: IProps) {
           {props.type === IAppType.AGENT
             ? $i18n.get({
                 id: 'main.components.ComponentSelectorDrawer.index.addedAgents',
-                dm: '已添加智能体数：',
+                dm: 'Agents added: ',
               })
             : $i18n.get({
                 id: 'main.components.ComponentSelectorDrawer.index.addedWorkflows',
-                dm: '已添加工作流数：',
+                dm: 'Workflows added: ',
               })}
           {selectedComps.length || 0} / {maxLength}
         </span>
@@ -105,13 +105,13 @@ export default function ComponentSelectorDrawer(props: IProps) {
           <Button onClick={props.onClose}>
             {$i18n.get({
               id: 'main.components.ComponentSelectorDrawer.index.cancel',
-              dm: '取消',
+              dm: 'Cancel',
             })}
           </Button>
           <Button type="primary" onClick={() => props.onSelect(selectedComps)}>
             {$i18n.get({
               id: 'main.components.ComponentSelectorDrawer.index.confirm',
-              dm: '确认',
+              dm: 'Confirm',
             })}
           </Button>
         </Flex>
@@ -161,7 +161,7 @@ export default function ComponentSelectorDrawer(props: IProps) {
           $i18n.get(
             {
               id: 'main.components.ComponentSelectorDrawer.index.agentLimit',
-              dm: '{var1}组件数量已达上限',
+              dm: '{var1} component limit reached',
             },
             { var1: typeName },
           ),
@@ -180,11 +180,11 @@ export default function ComponentSelectorDrawer(props: IProps) {
     return props.type === IAppType.AGENT
       ? $i18n.get({
           id: 'main.components.ComponentSelectorDrawer.index.agent',
-          dm: '智能体',
+          dm: 'Agent',
         })
       : $i18n.get({
           id: 'main.components.ComponentSelectorDrawer.index.workflow',
-          dm: '工作流',
+          dm: 'Workflow',
         });
   }, [props.type]);
 
@@ -202,7 +202,7 @@ export default function ComponentSelectorDrawer(props: IProps) {
             className={styles.search}
             placeholder={$i18n.get({
               id: 'main.components.ComponentSelectorDrawer.index.searchComponent',
-              dm: '搜索组件名称',
+              dm: 'Search component name',
             })}
             value={state.name}
             onChange={(e) => setState({ name: e.target.value })}
@@ -221,13 +221,13 @@ export default function ComponentSelectorDrawer(props: IProps) {
           >
             {$i18n.get({
               id: 'main.components.ComponentSelectorDrawer.index.create',
-              dm: '创建',
+              dm: 'Create',
             })}
 
             {typeName}
             {$i18n.get({
               id: 'main.components.ComponentSelectorDrawer.index.component',
-              dm: '组件',
+              dm: 'Component',
             })}
           </Button>
         </Flex>
@@ -242,14 +242,14 @@ export default function ComponentSelectorDrawer(props: IProps) {
                     ? $i18n.get(
                         {
                           id: 'main.components.ComponentSelectorDrawer.index.noSearchResult',
-                          dm: '未搜索到{var1}组件',
+                          dm: 'No {var1} component found',
                         },
                         { var1: typeName },
                       )
                     : $i18n.get(
                         {
                           id: 'main.components.ComponentSelectorDrawer.index.noComponents',
-                          dm: '暂无{var1}组件',
+                          dm: 'No {var1} components',
                         },
                         { var1: typeName },
                       )
@@ -258,11 +258,11 @@ export default function ComponentSelectorDrawer(props: IProps) {
                   isSearch.current
                     ? $i18n.get({
                         id: 'main.components.ComponentSelectorDrawer.index.tryAnotherSearch',
-                        dm: '换个搜索条件试试',
+                        dm: 'Try a different search term',
                       })
                     : $i18n.get({
                         id: 'main.pages.App.Workflow.components.ComponentSelectorModal.index.index.goToComponentManagementPageCreate',
-                        dm: '请前往组件管理页面进行组件创建',
+                        dm: 'Please go to the component management page to create components',
                       })
                 }
               >
@@ -280,7 +280,7 @@ export default function ComponentSelectorDrawer(props: IProps) {
                   >
                     {$i18n.get({
                       id: 'main.components.ComponentSelectorDrawer.index.goToCreate',
-                      dm: '前往创建',
+                      dm: 'Go to create',
                     })}
                   </Button>
                 )}

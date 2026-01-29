@@ -11,12 +11,12 @@ import usePagination from '../../../hooks/usePagination';
 
 const { Title } = Typography;
 
-// 格式化时间显示
+// Format time display
 const formatDateTime = (dateTimeString: string) => {
     if (!dateTimeString) return '-';
     try {
         const date = new Date(dateTimeString);
-        return date.toLocaleString('zh-CN', {
+        return date.toLocaleString('en-US', {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
@@ -33,8 +33,8 @@ interface DatasetRecord {
   id: number;
   name: string;
   description: string;
-  dataCount?: number; // 数据量（可选）
-  version?: string; // 版本信息（可选）
+  dataCount?: number; // Data count (optional)
+  version?: string; // Version info (optional)
   columnsConfig: string;
   createTime: string;
   updateTime: string;
@@ -46,35 +46,35 @@ const EvaluationGather = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [dataSource, setDataSource] = useState<DatasetRecord[]>([]);
-    const [searchText, setSearchText] = useState(''); // 输入框中的文本
-    const [queryText, setQueryText] = useState(''); // 实际用于查询的文本
-    const [showCreateDrawer, setShowCreateDrawer] = useState(false); // 侧滑面板状态
+    const [searchText, setSearchText] = useState(''); // Text in input field
+    const [queryText, setQueryText] = useState(''); // Actual text used for query
+    const [showCreateDrawer, setShowCreateDrawer] = useState(false); // Drawer state
     const { pagination, setPagination, onPaginationChange, onShowSizeChange } = usePagination();
 
-    // 获取评测集列表
+    // Fetch dataset list
     const fetchDatasets = useCallback(async () => {
         try {
             setLoading(true);
             const params = {
                 pageNumber: pagination.current,
                 pageSize: pagination.pageSize,
-                datasetName: queryText || undefined, // 使用查询文本而不是输入文本
+                datasetName: queryText || undefined, // Use query text instead of input text
             };
 
             const response = await API.getDatasets(params);
 
             if (response.code === 200) {
                 const responseData = response.data as any;
-                // 优先使用pageItems，如果不存在则使用records作为降级
+                // Prefer pageItems, fallback to records if not available
                 const dataItems = responseData.pageItems || responseData.records || [];
-                
-                // 使用真实数据，按照新的API结构进行映射
+
+                // Use real data, map according to new API structure
                 const datasets: DatasetRecord[] = dataItems.map((item: any, index: number) => ({
                     id: item.id,
                     name: item.name,
                     description: item.description || '',
-                    // 由于API暂时不返回dataCount和version，使用默认值
-                    // 后续可以通过单独的接口获取这些信息
+                    // API doesn't return dataCount and version yet, use default values
+                    // Later can fetch this info via separate interface
                     dataCount: item.dataCount || undefined,
                     version: item.version || 'v1.0.0',
                     columnsConfig: item.columnsConfig || '',
@@ -89,11 +89,11 @@ const EvaluationGather = () => {
                     current: responseData.pageNumber || pagination.current
                 }));
             } else {
-                throw new Error(response.message || '加载失败');
+                throw new Error(response.message || 'Loading failed');
             }
         } catch (error) {
-            handleApiError(error, '获取评测集列表失败');
-            // 发生错误时设置为空列表
+            handleApiError(error, 'Failed to get dataset list');
+            // Set empty list on error
             setDataSource([]);
             setPagination(prev => ({
                 ...prev,
@@ -102,60 +102,60 @@ const EvaluationGather = () => {
         } finally {
             setLoading(false);
         }
-    }, [pagination.current, pagination.pageSize, queryText]); // 依赖查询文本而不是输入文本
+    }, [pagination.current, pagination.pageSize, queryText]); // Depend on query text instead of input text
 
     useEffect(() => {
         fetchDatasets();
     }, [fetchDatasets]);
 
-    // 处理分页
+    // Handle pagination
     const handleTableChange = (page: number, pageSize: number) => {
         onPaginationChange(page, pageSize);
     };
 
-    // 处理搜索输入变化（仅更新输入框状态，不触发搜索）
+    // Handle search input change (only update input state, don't trigger search)
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchText(e.target.value);
     };
 
-    // 处理搜索（仅在点击搜索按钮或按下回车键时触发）
+    // Handle search (only triggered when search button is clicked or enter key is pressed)
     const handleSearch = (value: string) => {
         setSearchText(value);
-        setQueryText(value); // 更新实际查询参数
+        setQueryText(value); // Update actual query parameter
         setPagination(prev => ({ ...prev, current: 1 }));
     };
 
-    // 创建新评测集 - 打开侧滑面板
+    // Create new dataset - open drawer
     const handleCreateDataset = () => {
         setShowCreateDrawer(true);
     };
 
-    // 关闭侧滑面板
+    // Close drawer
     const handleCloseCreateDrawer = () => {
         setShowCreateDrawer(false);
     };
 
-    // 查看评测集详情
+    // View dataset details
     const handleViewDataset = (record: DatasetRecord) => {
-        // 跳转到评测集详情页面，携带id参数
+        // Navigate to dataset detail page with id parameter
         navigate(getLegacyPath(`/evaluation/gather/detail/${record.id}`));
     };
 
-    // 删除评测集
+    // Delete dataset
     const handleDeleteDataset = async (record: DatasetRecord) => {
         Modal.confirm({
-            title: '确认删除',
-            content: `确定要删除评测集 "${record.name}" 吗？此操作不可恢复。`,
-            okText: '确认删除',
+            title: 'Confirm Delete',
+            content: `Are you sure you want to delete dataset "${record.name}"? This action cannot be undone.`,
+            okText: 'Confirm Delete',
             okType: 'danger',
-            cancelText: '取消',
+            cancelText: 'Cancel',
             onOk: async () => {
                 try {
                     await API.deleteDataset({ datasetId: record.id });
-                    notifySuccess({ message: '评测集已删除' });
+                    notifySuccess({ message: 'Dataset deleted' });
                     fetchDatasets();
                 } catch (error) {
-                    handleApiError(error, '删除评测集失败');
+                    handleApiError(error, 'Failed to delete dataset');
                 }
             }
         });
@@ -163,11 +163,11 @@ const EvaluationGather = () => {
 
     const columns = [
         {
-            title: '评测集名称',
+            title: 'Dataset Name',
             dataIndex: 'name',
             key: 'name',
             render: (text: string, record: DatasetRecord) => (
-                <div 
+                <div
                     className="font-medium text-blue-600 cursor-pointer hover:text-blue-800 hover:underline"
                     onClick={() => handleViewDataset(record)}
                 >
@@ -176,7 +176,7 @@ const EvaluationGather = () => {
             )
         },
         {
-            title: '描述',
+            title: 'Description',
             dataIndex: 'description',
             key: 'description',
             ellipsis: {
@@ -189,7 +189,7 @@ const EvaluationGather = () => {
             ),
         },
         {
-            title: '版本',
+            title: 'Version',
             dataIndex: 'version',
             key: 'version',
             render: (version: string) => (
@@ -197,13 +197,13 @@ const EvaluationGather = () => {
             )
         },
         // {
-        //     title: '创建人',
+        //     title: 'Created By',
         //     dataIndex: 'creator',
         //     key: 'creator',
         //     width: 100
         // },
         {
-            title: '数据量',
+            title: 'Data Count',
             dataIndex: 'dataCount',
             key: 'dataCount',
             render: (count: number) => (
@@ -213,32 +213,32 @@ const EvaluationGather = () => {
             )
         },
         {
-            title: '创建时间',
+            title: 'Created At',
             dataIndex: 'createTime',
             key: 'createTime',
             render: (text: string) => formatDateTime(text)
         },
         {
-            title: '更新时间',
+            title: 'Updated At',
             dataIndex: 'updateTime',
             key: 'updateTime',
             render: (text: string) => formatDateTime(text)
         },
         {
-            title: '操作',
+            title: 'Actions',
             key: 'action',
             width: 120,
             fixed: 'right' as const,
             render: (_: any, record: DatasetRecord) => (
                 <Space size="middle">
-                    <Tooltip title="详情">
+                    <Tooltip title="Details">
                         <Button
                             type="link"
                             icon={<EyeOutlined />}
                             onClick={() => handleViewDataset(record)}
                         />
                     </Tooltip>
-                    <Tooltip title="删除">
+                    <Tooltip title="Delete">
                         <Button
                             type="link"
                             icon={<DeleteOutlined />}
@@ -255,16 +255,16 @@ const EvaluationGather = () => {
 
     return (
         <div className="evaluation-gather-page p-8 fade-in">
-            {/* 页面标题 */}
+            {/* Page Title */}
             <div className="mb-8">
-                <Title level={2} style={{ marginBottom: 8 }}>评测集管理</Title>
+                <Title level={2} style={{ marginBottom: 8 }}>Dataset Management</Title>
             </div>
 
-            {/* 搜索区域 */}
+            {/* Search Area */}
             <Card className='mb-4'>
                 <div className="flex gap-4 justify-between" style={{flexWrap: 'wrap'}}>
                     <Input.Search
-                        placeholder="搜索名称"
+                        placeholder="Search name"
                         allowClear
                         style={{ width: 280 }}
                         className='mr-4'
@@ -273,29 +273,29 @@ const EvaluationGather = () => {
                         onSearch={handleSearch}
                     />
                     {/* <Input
-                        placeholder="搜索创建人"
+                        placeholder="Search creator"
                         allowClear
                         style={{ width: 280 }}
                         value={searchCreator}
                         onChange={(e) => {
                             setSearchCreator(e.target.value);
-                            // 实时搜索，当输入框内容改变时触发搜索
+                            // Real-time search, trigger search when input changes
                             if (e.target.value !== searchCreator) {
                                 setPagination(prev => ({ ...prev, current: 1 }));
                             }
                         }}
                     /> */}
-                    <Button 
-                        type="primary" 
+                    <Button
+                        type="primary"
                         icon={<PlusOutlined />}
                         onClick={handleCreateDataset}
                     >
-                        创建评测集
+                        Create Dataset
                     </Button>
                 </div>
             </Card>
 
-            {/* 数据表格 */}
+            {/* Data Table */}
             <Card>
                 <div className="evaluation-gather-table bg-white rounded-lg">
                     <Table
@@ -311,13 +311,13 @@ const EvaluationGather = () => {
                         }}
                         scroll={{ x: 800 }}
                     />
-                    
+
                 </div>
             </Card>
 
-            {/* 创建评测集侧滑面板 */}
+            {/* Create Dataset Drawer */}
             <Drawer
-                title="创建评测集"
+                title="Create Dataset"
                 placement="right"
                 width="90%"
                 open={showCreateDrawer}
@@ -329,12 +329,12 @@ const EvaluationGather = () => {
                 }}
             >
                 <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                    <GatherCreate 
-                      hideTitle={true} // 隐藏标题
+                    <GatherCreate
+                      hideTitle={true} // Hide title
                       onCancel={handleCloseCreateDrawer}
                       onSuccess={() => {
                         handleCloseCreateDrawer();
-                        fetchDatasets(); // 重新加载数据
+                        fetchDatasets(); // Reload data
                       }}
                     />
                 </div>

@@ -27,17 +27,17 @@ export const safeJSONParse = <T>(jsonString: string, fallback: () => T = () => (
 };
 
 export function copyToClipboard(text: string) {
-  // 返回一个 Promise 对象
+  // Return a Promise object
   return new Promise((resolve, reject) => {
     if (navigator.clipboard && window.isSecureContext) {
-      // 使用 Clipboard API 写入剪切板
+      // Use Clipboard API to write to clipboard
       navigator.clipboard.writeText(text).then(resolve, reject);
     } else {
-      // 非安全环境下或不支持 Clipboard API 的浏览器的回退方法
+      // Fallback method for non-secure contexts or browsers that don't support Clipboard API
       const textArea = document.createElement('textarea');
       textArea.value = text;
 
-      // 避免出现滚动条
+      // Avoid scrollbars
       textArea.style.position = 'fixed';
       textArea.style.top = '0';
       textArea.style.left = '0';
@@ -57,7 +57,7 @@ export function copyToClipboard(text: string) {
         const successful = document.execCommand('copy');
         successful ? resolve(void 0) : reject();
       } catch (err) {
-        reject(err); // 如果执行失败，调用 reject
+        reject(err); // If execution fails, call reject
       }
       document.body.removeChild(textArea);
     }

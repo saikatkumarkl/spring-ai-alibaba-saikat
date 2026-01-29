@@ -13,7 +13,7 @@ interface ErrorDisplayProps {
 
 const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
   error,
-  title = '操作失败',
+  title = 'Operation Failed',
   showRetry = true,
   onRetry,
   type = 'page',
@@ -21,7 +21,7 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
 }) => {
   if (!error) return null;
 
-  const errorMessage = typeof error === 'string' ? error : error.message || '未知错误';
+  const errorMessage = typeof error === 'string' ? error : error.message || 'Unknown error';
 
   if (type === 'alert') {
     return (
@@ -38,7 +38,7 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
               icon={<ReloadOutlined />}
               onClick={onRetry}
             >
-              重试
+              Retry
             </Button>
           ) : undefined
         }
@@ -62,7 +62,7 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
                 onClick={onRetry}
                 className="text-red-600 hover:text-red-800 px-0 mt-2"
               >
-                重试
+                Retry
               </Button>
             )}
           </div>
@@ -85,7 +85,7 @@ const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
               icon={<ReloadOutlined />}
               onClick={onRetry}
             >
-              重试
+              Retry
             </Button>
           ) : undefined
         }

@@ -79,7 +79,7 @@ export default function Ceeate() {
         <span className={styles['confirm-title']}>
           {$i18n.get({
             id: 'main.pages.Knowledge.Create.index.confirmDiscardCreation',
-            dm: '确认放弃创建知识库吗',
+            dm: 'Confirm discard creating knowledge base?',
           })}
         </span>
       ),
@@ -88,18 +88,18 @@ export default function Ceeate() {
         <span className={styles['confirm-content']}>
           {$i18n.get({
             id: 'main.pages.Knowledge.Create.index.discardCreationDataWillNotBeSaved',
-            dm: '放弃创建后您刚刚填写的数据将不会被保存，请谨慎操作',
+            dm: 'After discarding, the data you just filled in will not be saved. Please proceed with caution.',
           })}
         </span>
       ),
 
       okText: $i18n.get({
         id: 'main.pages.Knowledge.Create.index.confirmDiscard',
-        dm: '确认放弃',
+        dm: 'Confirm Discard',
       }),
       cancelText: $i18n.get({
         id: 'main.pages.Knowledge.Create.index.continueEditing',
-        dm: '继续编辑',
+        dm: 'Continue Editing',
       }),
       onOk: () => {
         history.push('/knowledge');
@@ -129,7 +129,7 @@ export default function Ceeate() {
           reject(
             $i18n.get({
               id: 'main.pages.Knowledge.Create.index.pleaseEnterKnowledgeBaseName',
-              dm: '请先填写知识库名称',
+              dm: 'Please enter knowledge base name first',
             }),
           );
           return;
@@ -138,7 +138,7 @@ export default function Ceeate() {
           reject(
             $i18n.get({
               id: 'main.pages.Knowledge.Create.index.pleaseSelectEmbeddingModel',
-              dm: '请先选择Embedding模型',
+              dm: 'Please select Embedding model first',
             }),
           );
           return;
@@ -148,7 +148,7 @@ export default function Ceeate() {
           reject(
             $i18n.get({
               id: 'main.pages.Knowledge.Create.index.pleaseSelectRerankModel',
-              dm: '请先选择Rerank模型',
+              dm: 'Please select Rerank model first',
             }),
           );
           return;
@@ -229,20 +229,20 @@ export default function Ceeate() {
             >
               {$i18n.get({
                 id: 'main.pages.Knowledge.Create.index.nextStep',
-                dm: '下一步',
+                dm: 'Next',
               })}
             </Button>
             <Button onClick={handleCancel}>
               {$i18n.get({
                 id: 'main.pages.Knowledge.Create.index.cancel',
-                dm: '取消',
+                dm: 'Cancel',
               })}
             </Button>
             <div className={styles['divider']} />
             <Button type="default" onClick={() => handleSubmit('next')}>
               {$i18n.get({
                 id: 'main.pages.Knowledge.Create.index.directCreate',
-                dm: '直接创建',
+                dm: 'Create Directly',
               })}
             </Button>
           </div>
@@ -258,7 +258,7 @@ export default function Ceeate() {
             >
               {$i18n.get({
                 id: 'main.pages.Knowledge.Create.index.previousStep',
-                dm: '上一步',
+                dm: 'Previous',
               })}
             </Button>
             <Button
@@ -274,13 +274,13 @@ export default function Ceeate() {
             >
               {$i18n.get({
                 id: 'main.pages.Knowledge.Create.index.nextStep',
-                dm: '下一步',
+                dm: 'Next',
               })}
             </Button>
             <Button onClick={handleCancel}>
               {$i18n.get({
                 id: 'main.pages.Knowledge.Create.index.cancel',
-                dm: '取消',
+                dm: 'Cancel',
               })}
             </Button>
           </div>
@@ -295,19 +295,19 @@ export default function Ceeate() {
             >
               {$i18n.get({
                 id: 'main.pages.Knowledge.Create.index.previousStep',
-                dm: '上一步',
+                dm: 'Previous',
               })}
             </Button>
             <Button type="primary" onClick={() => handleSubmit('done')}>
               {$i18n.get({
                 id: 'main.pages.Knowledge.Create.index.complete',
-                dm: '完成',
+                dm: 'Complete',
               })}
             </Button>
             <Button onClick={handleCancel}>
               {$i18n.get({
                 id: 'main.pages.Knowledge.Create.index.cancel',
-                dm: '取消',
+                dm: 'Cancel',
               })}
             </Button>
           </div>
@@ -321,14 +321,14 @@ export default function Ceeate() {
         {
           title: $i18n.get({
             id: 'main.pages.Knowledge.Create.index.knowledgeBase',
-            dm: '知识库',
+            dm: 'Knowledge Base',
           }),
           path: '/knowledge',
         },
         {
           title: $i18n.get({
             id: 'main.pages.Knowledge.Create.index.createKnowledgeBase',
-            dm: '创建知识库',
+            dm: 'Create Knowledge Base',
           }),
         },
       ]}
@@ -346,7 +346,7 @@ export default function Ceeate() {
                   <span className={styles['steps-title']}>
                     {$i18n.get({
                       id: 'main.pages.Knowledge.Create.index.knowledgeBaseInformation',
-                      dm: '知识库信息',
+                      dm: 'Knowledge Base Information',
                     })}
                   </span>
                 ),
@@ -357,7 +357,7 @@ export default function Ceeate() {
                   <span className={styles['steps-title']}>
                     {$i18n.get({
                       id: 'main.pages.Knowledge.Create.index.selectData',
-                      dm: '选择数据',
+                      dm: 'Select Data',
                     })}
                   </span>
                 ),
@@ -368,7 +368,7 @@ export default function Ceeate() {
                   <span className={styles['steps-title']}>
                     {$i18n.get({
                       id: 'main.pages.Knowledge.Create.index.dataProcessing',
-                      dm: '数据处理',
+                      dm: 'Data Processing',
                     })}
                   </span>
                 ),
@@ -414,7 +414,7 @@ export default function Ceeate() {
           type="success"
           title={$i18n.get({
             id: 'main.pages.Knowledge.Create.index.knowledgeBaseCreatedSuccessfully',
-            dm: '知识库创建成功',
+            dm: 'Knowledge Base Created Successfully',
           })}
           open={true}
           footer={
@@ -428,7 +428,7 @@ export default function Ceeate() {
               {$i18n.get(
                 {
                   id: 'main.pages.Knowledge.Create.index.returnToKnowledgeBaseManagementVar1S',
-                  dm: '返回知识库管理 （{var1}S）',
+                  dm: 'Return to Knowledge Base Management ({var1}s)',
                 },
                 { var1: state.countdown },
               )}
@@ -437,7 +437,7 @@ export default function Ceeate() {
         >
           {$i18n.get({
             id: 'main.pages.Knowledge.Create.index.congratulationsYouHaveCompletedKnowledgeBaseCreationYouCanGoToConfigureApplication',
-            dm: '恭喜，您已完成知识库创建，可以去配置应用了',
+            dm: 'Congratulations! You have completed knowledge base creation. You can now configure your application.',
           })}
         </AlertDialog>
       )}

@@ -58,7 +58,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                 $i18n.get(
                   {
                     id: 'main.pages.MCP.components.ToolPanel.index.var1NeedsPureNumbers',
-                    dm: '{var1}需要输入纯数字',
+                    dm: '{var1} requires pure numbers',
                   },
                   { var1: key },
                 ),
@@ -73,7 +73,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
       message.warning(
         $i18n.get({
           id: 'main.pages.MCP.components.ToolPanel.index.parameterParsingFailedCheckParameterFormat',
-          dm: '参数解析失败，请检查参数格式',
+          dm: 'Parameter parsing failed, please check parameter format',
         }),
       );
       return;
@@ -109,7 +109,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
           placeholder={$i18n.get(
             {
               id: 'main.pages.MCP.components.ToolPanel.index.enterVar1',
-              dm: '请输入{var1}',
+              dm: 'Please enter {var1}',
             },
             { var1: key },
           )}
@@ -121,7 +121,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
         placeholder={$i18n.get(
           {
             id: 'main.pages.MCP.components.ToolPanel.index.enterVar1',
-            dm: '请输入{var1}',
+            dm: 'Please enter {var1}',
           },
           { var1: key },
         )}
@@ -165,7 +165,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
               message: $i18n.get(
                 {
                   id: 'main.pages.MCP.components.ToolPanel.index.enterVar1',
-                  dm: '请输入{var1}',
+                  dm: 'Please enter {var1}',
                 },
                 { var1: key },
               ),
@@ -221,7 +221,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                       btnDisabled
                         ? $i18n.get({
                             id: 'main.pages.MCP.components.ToolPanel.index.openServiceFirst',
-                            dm: '请先开通此MCP服务后测试',
+                            dm: 'Please enable this MCP service before testing',
                           })
                         : ''
                     }
@@ -234,7 +234,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                     >
                       {$i18n.get({
                         id: 'main.pages.MCP.components.ToolPanel.index.run',
-                        dm: '运行',
+                        dm: 'Run',
                       })}
                     </Button>
                   </Tooltip>
@@ -248,7 +248,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                       <span>
                         {$i18n.get({
                           id: 'main.pages.MCP.components.ToolPanel.index.runSuccess',
-                          dm: '运行成功',
+                          dm: 'Run successful',
                         })}
                       </span>
                     </div>

@@ -17,23 +17,23 @@ const TEST_OPTIONS = [
   {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.components.TestPanel.index.textChat',
-      dm: '文本对话',
+      dm: 'Text Conversation',
     }),
     value: 'chat',
     desc: $i18n.get({
       id: 'main.pages.App.Workflow.components.TestPanel.index.chatBasedInteraction',
-      dm: '基于LLM的对话型交互，适合进行复杂的多轮对话',
+      dm: 'LLM-based conversational interaction, suitable for complex multi-turn dialogues',
     }),
   },
   {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.components.TestPanel.index.textGeneration',
-      dm: '文本生成',
+      dm: 'Text Generation',
     }),
     value: 'task',
     desc: $i18n.get({
       id: 'main.pages.App.Workflow.components.TestPanel.index.singleRoundInteraction',
-      dm: '面向单轮任务的生成式交互，适合进行信息抽取和文本创作',
+      dm: 'Single-turn generative interaction, suitable for information extraction and text creation',
     }),
   },
 ];
@@ -51,7 +51,7 @@ export default function TestPanel() {
         <span>
           {$i18n.get({
             id: 'main.pages.App.Workflow.components.TestPanel.index.test',
-            dm: '测试',
+            dm: 'Test',
           })}
         </span>
         <SelectWithDesc
@@ -64,7 +64,7 @@ export default function TestPanel() {
               message.warning(
                 $i18n.get({
                   id: 'main.pages.App.Workflow.components.TestPanel.executingWorkflow',
-                  dm: '正在执行工作流，请先停止',
+                  dm: 'Workflow is running, please stop first',
                 }),
               );
               return;
@@ -88,7 +88,7 @@ export default function TestPanel() {
       message.warning(
         $i18n.get({
           id: 'main.pages.App.Workflow.components.TestPanel.executingWorkflow',
-          dm: '正在执行工作流，请先停止',
+          dm: 'Workflow is running, please stop first',
         }),
       );
       return;

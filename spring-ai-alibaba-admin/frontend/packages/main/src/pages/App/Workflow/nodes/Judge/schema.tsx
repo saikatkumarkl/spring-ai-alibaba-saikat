@@ -6,16 +6,16 @@ export const JudgeSchema: INodeSchema = {
   type: 'Judge',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Judge.schema.conditionJudgment',
-    dm: '条件判断',
+    dm: 'Condition Judgment',
   }),
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Judge.schema.decideBranchBasedOnConditions',
-    dm: '依据设定条件决定分支，若设定的条件成立则仅运行对应分支，若均不成立则运行“其他”分支。',
+    dm: 'Decide branch based on set conditions. If the set condition is met, only the corresponding branch runs; if none are met, the "Other" branch runs.',
   }),
   iconType: 'spark-conditionalJudgment-line',
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.Judge.schema.logic',
-    dm: '逻辑',
+    dm: 'Logic',
   }),
   defaultParams: {
     input_params: [],
@@ -26,7 +26,7 @@ export const JudgeSchema: INodeSchema = {
           id: 'default',
           label: $i18n.get({
             id: 'main.pages.App.Workflow.nodes.Judge.schema.defaultCondition',
-            dm: '默认条件',
+            dm: 'Default Condition',
           }),
         },
       ],

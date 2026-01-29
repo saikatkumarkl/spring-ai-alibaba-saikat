@@ -18,21 +18,21 @@ const options = [
   {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.Parallel.panel.terminateOnError',
-      dm: '错误时终止',
+      dm: 'Terminate on error',
     }),
     value: 'terminated',
   },
   {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.Parallel.panel.ignoreErrorContinue',
-      dm: '忽略错误并继续',
+      dm: 'Ignore error and continue',
     }),
     value: 'continueOnError',
   },
   {
     label: $i18n.get({
       id: 'main.pages.App.Workflow.nodes.Parallel.panel.removeErrorOutput',
-      dm: '移除错误输出',
+      dm: 'Remove error output',
     }),
     value: 'removeErrorOutput',
   },
@@ -100,7 +100,7 @@ export default memo(function ParallelPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Parallel.panel.batchSettings',
-              dm: '批处理设置',
+              dm: 'Batch Settings',
             })}
           </div>
           <ParallelConfigForm
@@ -114,13 +114,13 @@ export default memo(function ParallelPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Parallel.panel.batchArray',
-              dm: '批处理数组',
+              dm: 'Batch Array',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Parallel.panel.batchInput',
-                dm: '批处理的输入必须是数组（List）类型数据，流程会按照数组的索引顺序执行。',
+                dm: 'Batch input must be array (List) type data. The workflow will execute in array index order.',
               })}
             />
           </div>
@@ -144,7 +144,7 @@ export default memo(function ParallelPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Parallel.panel.outputVariable',
-              dm: '输出变量',
+              dm: 'Output Variable',
             })}
           </div>
           <CustomInputsControl
@@ -168,13 +168,13 @@ export default memo(function ParallelPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Parallel.panel.errorResponseMethod',
-              dm: '错误响应方法',
+              dm: 'Error Response Method',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.Parallel.panel.errorHandling',
-                dm: '当批处理中某一个子节点运行失败时，根据用户选择的方式进行处理。',
+                dm: 'When a sub-node fails during batch processing, handle according to the user-selected method.',
               })}
             />
           </div>
@@ -189,7 +189,7 @@ export default memo(function ParallelPanel(props: {
             options={options}
             placeholder={$i18n.get({
               id: 'main.pages.App.Workflow.nodes.Parallel.panel.selectErrorMethod',
-              dm: '请选择错误响应方法',
+              dm: 'Please select error response method',
             })}
           />
         </Flex>

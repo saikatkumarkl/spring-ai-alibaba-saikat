@@ -25,7 +25,7 @@ const ChunkList: React.FC<ChunkListProps> = ({ list = [], className }) => {
         <div className={styles['chunk-list-header']}>
           {$i18n.get({
             id: 'main.pages.Knowledge.Detail.SliceConfiguration.components.ChunkList.index.chunkPreview',
-            dm: '切片预览',
+            dm: 'Chunk Preview',
           })}
           <span className={styles['chunk-list-header-count']}>
             {list?.length}
@@ -53,13 +53,13 @@ const ChunkList: React.FC<ChunkListProps> = ({ list = [], className }) => {
                 <span className={styles['empty-title']}>
                   {$i18n.get({
                     id: 'main.pages.Knowledge.Detail.SliceConfiguration.components.ChunkList.index.noData',
-                    dm: '暂无数据',
+                    dm: 'No Data',
                   })}
                 </span>
                 <span className={styles['empty-desc']}>
                   {$i18n.get({
                     id: 'main.pages.Knowledge.Detail.SliceConfiguration.components.ChunkList.index.enterContentOnLeftClickToPreview',
-                    dm: '请在左侧输入内容，点击立即预览进行结果查看',
+                    dm: 'Enter content on the left and click Preview Now to view results',
                   })}
                 </span>
               </div>

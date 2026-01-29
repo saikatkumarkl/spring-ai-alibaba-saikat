@@ -38,7 +38,7 @@ export const LLM_NODE_OUTPUT_PARAMS_DEFAULT: INodeDataOutputParamItem[] = [
     type: 'String',
     desc: $i18n.get({
       id: 'main.pages.App.Workflow.constant.index.textOutput',
-      dm: '文本输出',
+      dm: 'Text Output',
     }),
   },
 ];
@@ -50,7 +50,7 @@ export const LLM_WITH_REASONING_NODE_OUTPUT_PARAMS_DEFAULT: INodeDataOutputParam
       type: 'String',
       desc: $i18n.get({
         id: 'main.pages.App.Workflow.constant.index.textOutput',
-        dm: '文本输出',
+        dm: 'Text Output',
       }),
     },
     {
@@ -58,7 +58,7 @@ export const LLM_WITH_REASONING_NODE_OUTPUT_PARAMS_DEFAULT: INodeDataOutputParam
       type: 'String',
       desc: $i18n.get({
         id: 'main.pages.App.Workflow.constant.index.depthThinkingContent',
-        dm: '深度思考内容',
+        dm: 'Deep Thinking Content',
       }),
     },
   ];
@@ -84,7 +84,7 @@ export const SCRIPT_NODE_OUTPUT_PARAMS_DEFAULT: INodeDataOutputParamItem[] = [
     type: 'Number',
     desc: $i18n.get({
       id: 'main.pages.App.Workflow.constant.index.twoNumbersSum',
-      dm: '两数相加的结果',
+      dm: 'Result of adding two numbers',
     }),
   },
 ];
@@ -144,56 +144,56 @@ export const OPERATOR_OPTS_MAP = {
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.equal',
-        dm: '等于',
+        dm: 'Equals',
       }),
       value: 'equals',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.notEqual',
-        dm: '不等于',
+        dm: 'Not Equal',
       }),
       value: 'notEquals',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.empty',
-        dm: '为空',
+        dm: 'Is Empty',
       }),
       value: 'isNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.notEmpty',
-        dm: '不为空',
+        dm: 'Not Empty',
       }),
       value: 'isNotNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.greaterThan',
-        dm: '大于',
+        dm: 'Greater Than',
       }),
       value: 'greater',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.greaterThanOrEqual',
-        dm: '大于等于',
+        dm: 'Greater Than or Equal',
       }),
       value: 'greaterAndEqual',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lessThan',
-        dm: '小于',
+        dm: 'Less Than',
       }),
       value: 'less',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lessThanOrEqual',
-        dm: '小于等于',
+        dm: 'Less Than or Equal',
       }),
       value: 'lessAndEqual',
     },
@@ -203,63 +203,63 @@ export const OPERATOR_OPTS_MAP = {
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.empty',
-        dm: '为空',
+        dm: 'Is Empty',
       }),
       value: 'isNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.notEmpty',
-        dm: '不为空',
+        dm: 'Not Empty',
       }),
       value: 'isNotNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthEqual',
-        dm: '长度等于',
+        dm: 'Length Equals',
       }),
       value: 'lengthEquals',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthGreaterThan',
-        dm: '长度大于',
+        dm: 'Length Greater Than',
       }),
       value: 'lengthGreater',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthGreaterThanOrEqual',
-        dm: '长度大于等于',
+        dm: 'Length Greater Than or Equal',
       }),
       value: 'lengthGreaterAndEqual',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthLessThan',
-        dm: '长度小于',
+        dm: 'Length Less Than',
       }),
       value: 'lengthLess',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthLessThanOrEqual',
-        dm: '长度小于等于',
+        dm: 'Length Less Than or Equal',
       }),
       value: 'lengthLessAndEqual',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.contains',
-        dm: '包含',
+        dm: 'Contains',
       }),
       value: 'contains',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.notContains',
-        dm: '不包含',
+        dm: 'Not Contains',
       }),
       value: 'notContains',
     },
@@ -269,42 +269,42 @@ export const OPERATOR_OPTS_MAP = {
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.equal',
-        dm: '等于',
+        dm: 'Equals',
       }),
       value: 'equals',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.notEqual',
-        dm: '不等于',
+        dm: 'Not Equal',
       }),
       value: 'notEquals',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.empty',
-        dm: '为空',
+        dm: 'Is Empty',
       }),
       value: 'isNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.notEmpty',
-        dm: '不为空',
+        dm: 'Not Empty',
       }),
       value: 'isNotNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.isTrue',
-        dm: '为true',
+        dm: 'Is True',
       }),
       value: 'isTrue',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.isFalse',
-        dm: '为false',
+        dm: 'Is False',
       }),
       value: 'isFalse',
     },
@@ -314,49 +314,49 @@ export const OPERATOR_OPTS_MAP = {
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.empty',
-        dm: '为空',
+        dm: 'Is Empty',
       }),
       value: 'isNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.notEmpty',
-        dm: '不为空',
+        dm: 'Not Empty',
       }),
       value: 'isNotNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthEqual',
-        dm: '长度等于',
+        dm: 'Length Equals',
       }),
       value: 'lengthEquals',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthGreaterThan',
-        dm: '长度大于',
+        dm: 'Length Greater Than',
       }),
       value: 'lengthGreater',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthGreaterThanOrEqual',
-        dm: '长度大于等于',
+        dm: 'Length Greater Than or Equal',
       }),
       value: 'lengthGreaterAndEqual',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthLessThan',
-        dm: '长度小于',
+        dm: 'Length Less Than',
       }),
       value: 'lengthLess',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthLessThanOrEqual',
-        dm: '长度小于等于',
+        dm: 'Length Less Than or Equal',
       }),
       value: 'lengthLessAndEqual',
     },
@@ -366,49 +366,49 @@ export const OPERATOR_OPTS_MAP = {
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.empty',
-        dm: '为空',
+        dm: 'Is Empty',
       }),
       value: 'isNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.notEmpty',
-        dm: '不为空',
+        dm: 'Not Empty',
       }),
       value: 'isNotNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthEqual',
-        dm: '长度等于',
+        dm: 'Length Equals',
       }),
       value: 'lengthEquals',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthGreaterThan',
-        dm: '长度大于',
+        dm: 'Length Greater Than',
       }),
       value: 'lengthGreater',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthGreaterThanOrEqual',
-        dm: '长度大于等于',
+        dm: 'Length Greater Than or Equal',
       }),
       value: 'lengthGreaterAndEqual',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthLessThan',
-        dm: '长度小于',
+        dm: 'Length Less Than',
       }),
       value: 'lengthLess',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthLessThanOrEqual',
-        dm: '长度小于等于',
+        dm: 'Length Less Than or Equal',
       }),
       value: 'lengthLessAndEqual',
     },
@@ -418,77 +418,77 @@ export const OPERATOR_OPTS_MAP = {
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.equal',
-        dm: '等于',
+        dm: 'Equals',
       }),
       value: 'equals',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.notEqual',
-        dm: '不等于',
+        dm: 'Not Equal',
       }),
       value: 'notEquals',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.empty',
-        dm: '为空',
+        dm: 'Is Empty',
       }),
       value: 'isNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.notEmpty',
-        dm: '不为空',
+        dm: 'Not Empty',
       }),
       value: 'isNotNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthEqual',
-        dm: '长度等于',
+        dm: 'Length Equals',
       }),
       value: 'lengthEquals',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthGreaterThan',
-        dm: '长度大于',
+        dm: 'Length Greater Than',
       }),
       value: 'lengthGreater',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthGreaterThanOrEqual',
-        dm: '长度大于等于',
+        dm: 'Length Greater Than or Equal',
       }),
       value: 'lengthGreaterAndEqual',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthLessThan',
-        dm: '长度小于',
+        dm: 'Length Less Than',
       }),
       value: 'lengthLess',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthLessThanOrEqual',
-        dm: '长度小于等于',
+        dm: 'Length Less Than or Equal',
       }),
       value: 'lengthLessAndEqual',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.contains',
-        dm: '包含',
+        dm: 'Contains',
       }),
       value: 'contains',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.notContains',
-        dm: '不包含',
+        dm: 'Not Contains',
       }),
       value: 'notContains',
     },
@@ -498,14 +498,14 @@ export const OPERATOR_OPTS_MAP = {
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.empty',
-        dm: '为空',
+        dm: 'Is Empty',
       }),
       value: 'isNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.notEmpty',
-        dm: '不为空',
+        dm: 'Not Empty',
       }),
       value: 'isNotNull',
     },
@@ -515,63 +515,63 @@ export const OPERATOR_OPTS_MAP = {
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.empty',
-        dm: '为空',
+        dm: 'Is Empty',
       }),
       value: 'isNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.notEmpty',
-        dm: '不为空',
+        dm: 'Not Empty',
       }),
       value: 'isNotNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthEqual',
-        dm: '长度等于',
+        dm: 'Length Equals',
       }),
       value: 'lengthEquals',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthGreaterThan',
-        dm: '长度大于',
+        dm: 'Length Greater Than',
       }),
       value: 'lengthGreater',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthGreaterThanOrEqual',
-        dm: '长度大于等于',
+        dm: 'Length Greater Than or Equal',
       }),
       value: 'lengthGreaterAndEqual',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthLessThan',
-        dm: '长度小于',
+        dm: 'Length Less Than',
       }),
       value: 'lengthLess',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthLessThanOrEqual',
-        dm: '长度小于等于',
+        dm: 'Length Less Than or Equal',
       }),
       value: 'lengthLessAndEqual',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.contains',
-        dm: '包含',
+        dm: 'Contains',
       }),
       value: 'contains',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.notContains',
-        dm: '不包含',
+        dm: 'Not Contains',
       }),
       value: 'notContains',
     },
@@ -581,63 +581,63 @@ export const OPERATOR_OPTS_MAP = {
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.empty',
-        dm: '为空',
+        dm: 'Is Empty',
       }),
       value: 'isNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.notEmpty',
-        dm: '不为空',
+        dm: 'Not Empty',
       }),
       value: 'isNotNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthEqual',
-        dm: '长度等于',
+        dm: 'Length Equals',
       }),
       value: 'lengthEquals',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthGreaterThan',
-        dm: '长度大于',
+        dm: 'Length Greater Than',
       }),
       value: 'lengthGreater',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthGreaterThanOrEqual',
-        dm: '长度大于等于',
+        dm: 'Length Greater Than or Equal',
       }),
       value: 'lengthGreaterAndEqual',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthLessThan',
-        dm: '长度小于',
+        dm: 'Length Less Than',
       }),
       value: 'lengthLess',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.lengthLessThanOrEqual',
-        dm: '长度小于等于',
+        dm: 'Length Less Than or Equal',
       }),
       value: 'lengthLessAndEqual',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.contains',
-        dm: '包含',
+        dm: 'Contains',
       }),
       value: 'contains',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.notContains',
-        dm: '不包含',
+        dm: 'Not Contains',
       }),
       value: 'notContains',
     },
@@ -647,28 +647,28 @@ export const OPERATOR_OPTS_MAP = {
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.empty',
-        dm: '为空',
+        dm: 'Is Empty',
       }),
       value: 'isNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.notEmpty',
-        dm: '不为空',
+        dm: 'Not Empty',
       }),
       value: 'isNotNull',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.contains',
-        dm: '包含',
+        dm: 'Contains',
       }),
       value: 'contains',
     },
     {
       label: $i18n.get({
         id: 'main.pages.App.Workflow.constant.notContains',
-        dm: '不包含',
+        dm: 'Not Contains',
       }),
       value: 'notContains',
     },

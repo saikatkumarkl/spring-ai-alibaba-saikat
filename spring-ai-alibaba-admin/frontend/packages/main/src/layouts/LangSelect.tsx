@@ -17,40 +17,13 @@ const menuItems: MenuProps['items'] = [
     key: 'zh',
     label: (
       <div className="flex items-center gap-[4px]">
-        <IconFont type="spark-chinese02-line" /> 简体中文
+        <IconFont type="spark-chinese02-line" /> Simplified Chinese
       </div>
     ),
   },
 ];
 
 export default function () {
-  const language = $i18n.getCurrentLanguage();
-
-  const icon = {
-    zh: 'spark-chinese02-line',
-    en: 'spark-english02-line',
-    ja: 'spark-japan-line',
-  }[language];
-
-  useMount(() => {
-    setWorkFlowLanguage(language);
-  });
-
-  const button = <IconButton bordered={false} icon={icon} shape="default" />;
-
-  return (
-    <Dropdown
-      menu={{
-        items: menuItems,
-        onClick: (e) => {
-          $i18n.setCurrentLanguage(e.key);
-          setWorkFlowLanguage(e.key);
-          location.reload();
-        },
-      }}
-      trigger={['click']}
-    >
-      {button}
-    </Dropdown>
-  );
+  // Language selector disabled - English only
+  return null;
 }

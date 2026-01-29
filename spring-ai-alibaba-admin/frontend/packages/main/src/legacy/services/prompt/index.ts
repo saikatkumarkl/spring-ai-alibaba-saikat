@@ -1,7 +1,7 @@
 import { request } from '../../utils/request';
 import { API_PATH } from '../const';
 
-// prompt 列表查询
+// Query prompt list
 export async function getPrompts(params: PromptAPI.GetPromptsParams) {
   return request<PromptAPI.GetPromptsResult>(`${API_PATH}/prompts`, {
     method: 'GET',
@@ -9,7 +9,7 @@ export async function getPrompts(params: PromptAPI.GetPromptsParams) {
   });
 }
 
-// 单个 prompt 查询
+// Query single prompt
 export async function getPrompt(params: { promptKey: string }) {
   return request<PromptAPI.GetPromptResult>(`${API_PATH}/prompt`, {
     method: 'GET',
@@ -17,7 +17,7 @@ export async function getPrompt(params: { promptKey: string }) {
   });
 }
 
-// prompt 发布
+// Publish prompt
 export async function publishPrompt(params: PromptAPI.PublishPromptParams) {
   return request<PromptAPI.PublishPromptResult>(`${API_PATH}/prompt`, {
     method: 'POST',
@@ -25,7 +25,7 @@ export async function publishPrompt(params: PromptAPI.PublishPromptParams) {
   });
 }
 
-// prompt 更新
+// Update prompt
 export async function updatePrompt(params: PromptAPI.UpdatePromptParams) {
   return request<PromptAPI.UpdatePromptResult>(`${API_PATH}/prompt`, {
     method: 'PUT',
@@ -33,7 +33,7 @@ export async function updatePrompt(params: PromptAPI.UpdatePromptParams) {
   });
 }
 
-// prompt 删除
+// Delete prompt
 export async function deletePrompt(params: PromptAPI.DeletePromptParams) {
   return request<boolean>(`${API_PATH}/prompt`, {
     method: 'DELETE',
@@ -41,8 +41,8 @@ export async function deletePrompt(params: PromptAPI.DeletePromptParams) {
   });
 }
 
-// prompt 版本列表
-// api/prompt/versions, 按发布时间倒序
+// Prompt version list
+// api/prompt/versions, sorted by publish time descending
 export async function getPromptVersions(params: PromptAPI.GetPromptVersionsParams) {
   return request<PromptAPI.GetPromptVersionsResult>(`${API_PATH}/prompt/versions`, {
     method: 'GET',
@@ -51,7 +51,7 @@ export async function getPromptVersions(params: PromptAPI.GetPromptVersionsParam
 }
 
 
-// prompt 版本查询
+// Query prompt version
 export async function getPromptVersion(params: PromptAPI.GetPromptVersionParams) {
   return request<PromptAPI.GetPromptVersionResult>(`${API_PATH}/prompt/version`, {
     method: 'GET',
@@ -59,7 +59,7 @@ export async function getPromptVersion(params: PromptAPI.GetPromptVersionParams)
   });
 }
 
-// prompt 版本发布
+// Publish prompt version
 export async function publishPromptVersion(params: PromptAPI.PublishPromptVersionParams) {
   return request<PromptAPI.PublishPromptVersionResult>(`${API_PATH}/prompt/version`, {
     method: 'POST',
@@ -67,10 +67,10 @@ export async function publishPromptVersion(params: PromptAPI.PublishPromptVersio
   });
 }
 
-// 交互式Prompt调试
-// 支持持续交互的Prompt调试，可以进行单次调试或多轮对话。接口返回结构化流式结果，支持会话管理。
+// Interactive Prompt debugging
+// Supports continuous interactive Prompt debugging, can perform single debugging or multi-turn dialogue. Interface returns structured streaming results, supports session management.
 // POST /api/prompt/run
-// 请求头： 
+// Request headers:
 //        Content-Type: application/json
 //        Accept: application/x-ndjson
 export async function runPrompt(params: PromptAPI.RunPromptParams) {
@@ -80,7 +80,7 @@ export async function runPrompt(params: PromptAPI.RunPromptParams) {
   });
 }
 
-// 获取会话详情
+// Get session details
 // GET /api/prompt/session/{sessionId}
 export async function getPromptSession(sessionId: string) {
   return request<PromptAPI.GetPromptSessionResult>(`${API_PATH}/prompt/session`, {
@@ -91,7 +91,7 @@ export async function getPromptSession(sessionId: string) {
   });
 }
 
-// 删除会话
+// Delete session
 // DELETE /api/prompt/session/{sessionId}
 export async function deletePromptSession(sessionId: string) {
   return request<PromptAPI.DeletePromptSessionResult>(`${API_PATH}/prompt/session`, {
@@ -103,7 +103,7 @@ export async function deletePromptSession(sessionId: string) {
 }
 
 
-// prompt 模板列表
+// Prompt templates list
 export async function getPromptTemplates(params: PromptAPI.GetPromptTemplatesParams) {
   return request<PromptAPI.GetPromptTemplatesResult>(`${API_PATH}/prompt/templates`, {
     method: 'GET',
@@ -111,7 +111,7 @@ export async function getPromptTemplates(params: PromptAPI.GetPromptTemplatesPar
   });
 }
 
-// prompt 模板详情
+// Prompt template details
 export async function getPromptTemplate(params: { promptTemplateKey: string }) {
   return request<PromptAPI.GetPromptTemplateResult>(`${API_PATH}/prompt/template`, {
     method: 'GET',
@@ -119,9 +119,9 @@ export async function getPromptTemplate(params: { promptTemplateKey: string }) {
   });
 }
 
-// 获取模型配置列表
-// 获取模型列表，已替换废弃的 getModelList 接口
-// 返回分页数据格式，支持搜索和过滤功能
+// Get model configuration list
+// Get model list, replaces deprecated getModelList interface
+// Returns paginated data format, supports search and filter functions
 export async function getModels(params?: PromptAPI.GetModelsParams) {
   // Use new ModelService API for enabled models
   const { getEnabledModels } = await import('@/services/modelService');
@@ -143,10 +143,10 @@ export async function getModels(params?: PromptAPI.GetModelsParams) {
   } catch (error) {
     console.error('Failed to get enabled models from ModelService, falling back to legacy API:', error);
   }
-  
+
   // Fallback to legacy API
   return request<PromptAPI.GetModelsResult>(`${API_PATH}/models`, {
     method: 'GET',
     params,
-  }); 
+  });
 }

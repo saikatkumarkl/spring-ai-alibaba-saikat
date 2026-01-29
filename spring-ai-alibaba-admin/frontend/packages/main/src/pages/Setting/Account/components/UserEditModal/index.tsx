@@ -61,7 +61,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
           message.success(
             $i18n.get({
               id: 'main.pages.Setting.Account.components.UserEditModal.index.updateSuccess',
-              dm: '更新成功',
+              dm: 'Updated successfully',
             }),
           );
         }
@@ -73,7 +73,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
         message.success(
           $i18n.get({
             id: 'main.pages.Setting.Account.components.UserEditModal.index.userCreateSuccess',
-            dm: '用户创建成功',
+            dm: 'User created successfully',
           }),
         );
       }
@@ -87,11 +87,11 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
   const modalTitle = isEditMode
     ? $i18n.get({
         id: 'main.pages.Setting.Account.components.UserEditModal.index.editUser',
-        dm: '编辑用户',
+        dm: 'Edit User',
       })
     : $i18n.get({
         id: 'main.pages.Setting.Account.components.UserEditModal.index.addUser',
-        dm: '新增用户',
+        dm: 'Add User',
       });
 
   return (
@@ -103,7 +103,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
         <Button key="cancel" onClick={onCancel}>
           {$i18n.get({
             id: 'main.pages.Setting.Account.components.UserEditModal.index.cancel',
-            dm: '取消',
+            dm: 'Cancel',
           })}
         </Button>,
         <Button
@@ -114,7 +114,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
         >
           {$i18n.get({
             id: 'main.pages.Setting.Account.components.UserEditModal.index.confirm',
-            dm: '确定',
+            dm: 'Confirm',
           })}
         </Button>,
       ]}
@@ -125,14 +125,14 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
           name="name"
           label={$i18n.get({
             id: 'main.pages.Setting.Account.components.UserEditModal.index.userName',
-            dm: '用户名称',
+            dm: 'Username',
           })}
           rules={[
             {
               required: true,
               message: $i18n.get({
                 id: 'main.pages.Setting.Account.components.UserEditModal.index.enterUserName',
-                dm: '请输入用户名称',
+                dm: 'Please enter username',
               }),
             },
           ]}
@@ -140,7 +140,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
           <Input
             placeholder={$i18n.get({
               id: 'main.pages.Setting.Account.components.UserEditModal.index.enterUserName',
-              dm: '请输入用户名称',
+              dm: 'Please enter username',
             })}
             maxLength={30}
             showCount
@@ -152,11 +152,11 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
           {isEditMode
             ? $i18n.get({
                 id: 'main.pages.Setting.Account.components.UserEditModal.index.changePassword',
-                dm: '更改密码',
+                dm: 'Change Password',
               })
             : $i18n.get({
                 id: 'main.pages.Setting.Account.components.UserEditModal.index.confirmPassword',
-                dm: '确认密码',
+                dm: 'Set Password',
               })}
         </div>
 
@@ -164,14 +164,14 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
           name="newPassword"
           label={$i18n.get({
             id: 'main.pages.Setting.Account.components.UserEditModal.index.newPassword',
-            dm: '新密码',
+            dm: 'New Password',
           })}
           rules={[
             {
               required: !isEditMode,
               message: $i18n.get({
                 id: 'main.pages.Login.components.Register.index.enterPassword',
-                dm: '请输入密码',
+                dm: 'Please enter password',
               }),
             },
           ]}
@@ -181,11 +181,11 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               isEditMode
                 ? $i18n.get({
                     id: 'main.pages.Setting.Account.components.UserEditModal.index.enterNewPassword',
-                    dm: '输入新密码以更改',
+                    dm: 'Enter new password to change',
                   })
                 : $i18n.get({
                     id: 'main.pages.Setting.Account.components.UserEditModal.index.enterPassword',
-                    dm: '输入密码',
+                    dm: 'Enter password',
                   })
             }
           />
@@ -195,7 +195,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
           name="confirmPassword"
           label={$i18n.get({
             id: 'main.pages.Setting.Account.components.UserEditModal.index.confirmPassword',
-            dm: '确认密码',
+            dm: 'Confirm Password',
           })}
           dependencies={['newPassword']}
           rules={[
@@ -203,7 +203,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               required: true,
               message: $i18n.get({
                 id: 'main.pages.Setting.Account.components.UserEditModal.index.confirmPassword',
-                dm: '请确认密码',
+                dm: 'Please confirm password',
               }),
             },
             ({ getFieldValue }) => ({
@@ -215,7 +215,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                     new Error(
                       $i18n.get({
                         id: 'main.pages.Setting.Account.components.UserEditModal.index.enterPasswordFirst',
-                        dm: '请先输入密码',
+                        dm: 'Please enter password first',
                       }),
                     ),
                   );
@@ -227,7 +227,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                       new Error(
                         $i18n.get({
                           id: 'main.pages.Setting.Account.components.UserEditModal.index.passwordNotMatch',
-                          dm: '两次输入的密码不一致',
+                          dm: 'The two passwords do not match',
                         }),
                       ),
                     );
@@ -240,11 +240,11 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
               isEditMode
                 ? $i18n.get({
                     id: 'main.pages.Setting.Account.components.UserEditModal.index.confirmNewPassword',
-                    dm: '确认新密码',
+                    dm: 'Confirm new password',
                   })
                 : $i18n.get({
                     id: 'main.pages.Setting.Account.components.UserEditModal.index.confirmPassword',
-                    dm: '确认密码',
+                    dm: 'Confirm password',
                   })
             }
           />

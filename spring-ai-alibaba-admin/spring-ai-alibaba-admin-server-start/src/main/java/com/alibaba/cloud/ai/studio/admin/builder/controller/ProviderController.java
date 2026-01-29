@@ -498,5 +498,49 @@ public class ProviderController {
 		List<String> protocols = Lists.newArrayList("OpenAI");
 		return Result.success(protocols);
 	}
-
+	/**
+	 * Fetches available models from an Ollama endpoint.
+	 *
+	 * This endpoint queries the Ollama API to retrieve a list of available models.
+	 * Useful for populating model dropdowns when configuring Ollama providers.
+	 * @param endpoint The Ollama API endpoint (e.g., http://localhost:11434)
+	 * @return Result containing a list of available model names
+	 */
+	@GetMapping("/ollama/models")
+	public Result<List<String>> getOllamaModels(@RequestParam String endpoint) {
+		try {
+			if (StringUtils.isBlank(endpoint)) {
+				throw new BizException(ErrorCode.INVALID_PARAMS.toError("endpoint", "Endpoint is required"));
+			}
+			
+			// Normalize endpoint - remove trailing slash and /v1
+			String baseUrl = endpoint.replaceAll("/$", "").replaceAll("/v1$", "");
+			String tagsUrl = baseUrl + "/api/tags";
+			
+			log.info("Fetching Ollama models from: {}", tagsUrl);
+			
+			// Use Spring's RestTemplate to call Ollama API
+			org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+			@SuppressWarnings("unchecked")
+			Map<String, Object> response = restTemplate.getForObject(tagsUrl, Map.class);
+			
+			if (response != null && response.containsKey("models")) {
+				@SuppressWarnings("unchecked")
+				List<Map<String, Object>> models = (List<Map<String, Object>>) response.get("models");
+				List<String> modelNames = models.stream()
+					.map(model -> (String) model.get("name"))
+					.filter(StringUtils::isNotBlank)
+					.sorted()
+					.collect(Collectors.toList());
+				
+				log.info("Found {} Ollama models", modelNames.size());
+				return Result.success(modelNames);
+			}
+			
+			return Result.success(Lists.newArrayList());
+		} catch (Exception e) {
+			log.error("Failed to fetch Ollama models from endpoint: {}", endpoint, e);
+			throw new BizException(ErrorCode.SYSTEM_ERROR.toError("Failed to connect to Ollama: " + e.getMessage()));
+		}
+	}
 }

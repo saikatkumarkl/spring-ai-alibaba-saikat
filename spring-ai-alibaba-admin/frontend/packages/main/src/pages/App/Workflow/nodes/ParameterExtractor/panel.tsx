@@ -80,7 +80,7 @@ export default memo(function ParameterExtractorPanel({
           type: 'Boolean' as IValueType,
           desc: $i18n.get({
             id: 'main.pages.App.Workflow.nodes.ParameterExtractor.panel.completeParsing',
-            dm: '是否完整解析',
+            dm: 'Whether parsing is complete',
           }),
         },
         {
@@ -88,7 +88,7 @@ export default memo(function ParameterExtractorPanel({
           type: 'String' as IValueType,
           desc: $i18n.get({
             id: 'main.pages.App.Workflow.nodes.ParameterExtractor.panel.unsuccessfulReason',
-            dm: '未成功解析的原因',
+            dm: 'Reason for unsuccessful parsing',
           }),
         },
       ];
@@ -232,13 +232,13 @@ export default memo(function ParameterExtractorPanel({
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.ParameterExtractor.panel.input',
-              dm: '输入',
+              dm: 'Input',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.ParameterExtractor.panel.enterText',
-                dm: '请输入需要进行参数提取的文本内容。',
+                dm: 'Please enter the text content for parameter extraction.',
               })}
             />
           </div>
@@ -254,13 +254,13 @@ export default memo(function ParameterExtractorPanel({
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.ParameterExtractor.panel.modelSelection',
-              dm: '模型选择',
+              dm: 'Model Selection',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.ParameterExtractor.panel.modelChoice',
-                dm: '用于参数提取的模型，根据业务情况自行选择即可。',
+                dm: 'Model for parameter extraction. Choose according to your business needs.',
               })}
             />
           </div>
@@ -278,13 +278,13 @@ export default memo(function ParameterExtractorPanel({
             <div className="spark-flow-panel-form-title">
               {$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.ParameterExtractor.panel.extractParameters',
-                dm: '提取参数',
+                dm: 'Extract Parameters',
               })}
 
               <InfoIcon
                 tip={$i18n.get({
                   id: 'main.pages.App.Workflow.nodes.ParameterExtractor.panel.parameterExtraction',
-                  dm: '模型将根据名称、类型以及描述从输入中提取参数。',
+                  dm: 'The model will extract parameters from the input based on name, type, and description.',
                 })}
               />
             </div>
@@ -298,7 +298,7 @@ export default memo(function ParameterExtractorPanel({
             >
               {$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.ParameterExtractor.panel.addVariable',
-                dm: '添加变量',
+                dm: 'Add Variable',
               })}
             </Button>
           </div>
@@ -316,13 +316,13 @@ export default memo(function ParameterExtractorPanel({
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.ParameterExtractor.panel.prompt',
-              dm: '提示词',
+              dm: 'Prompt',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.ParameterExtractor.panel.additionalRules',
-                dm: '用于辅助模型进行参数提取的额外规则。',
+                dm: 'Additional rules to assist the model in parameter extraction.',
               })}
             />
           </div>
@@ -348,13 +348,13 @@ export default memo(function ParameterExtractorPanel({
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.ParameterExtractor.panel.output',
-              dm: '输出',
+              dm: 'Output',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.ParameterExtractor.panel.outputParameters',
-                dm: '模型提取的参数将作为输出参数返回。',
+                dm: 'Parameters extracted by the model will be returned as output parameters.',
               })}
             />
           </div>

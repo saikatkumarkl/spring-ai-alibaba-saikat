@@ -24,20 +24,20 @@ export default memo(function InputPanel({
         <div className="spark-flow-panel-form-title">
           {$i18n.get({
             id: 'main.pages.App.Workflow.nodes.InputNode.panel.input',
-            dm: '输入',
+            dm: 'Input',
           })}
 
           <InfoIcon
             tip={$i18n.get({
               id: 'main.pages.App.Workflow.nodes.InputNode.panel.injectContentIntoProcess',
-              dm: '输入需要注入流程的内容。',
+              dm: 'Input the content to be injected into the process.',
             })}
           />
         </div>
         <div className="spark-flow-panel-form-second-title">
           {$i18n.get({
             id: 'main.pages.App.Workflow.nodes.InputNode.panel.customVariables',
-            dm: '自定义变量',
+            dm: 'Custom Variables',
           })}
         </div>
         <CustomOutputsFormWrap

@@ -12,7 +12,7 @@ import { Flex, theme } from 'antd';
 import enUS from 'antd/locale/en_US';
 import jaJP from 'antd/locale/ja_JP';
 import zhCN from 'antd/locale/zh_CN';
-import 'dayjs/locale/zh-cn';
+import 'dayjs/locale/en';
 import { ErrorBoundary } from 'react-error-boundary';
 import styles from './index.module.less';
 import { prefersColor } from './ThemeSelect';

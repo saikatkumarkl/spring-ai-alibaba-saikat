@@ -1,0 +1,4 @@
+rocketmq:
+  endpoints: "127.0.0.1:9876"
+  document-index-topic: "topic_saa_studio_document_index"
+  document_index_group: "group_saa_studio_document_index"

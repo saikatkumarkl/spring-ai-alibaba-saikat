@@ -96,11 +96,11 @@ export function checkShortMemory(
     list.push({
       label: $i18n.get({
         id: 'main.pages.App.Workflow.utils.index.memory',
-        dm: '记忆',
+        dm: 'Memory',
       }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.utils.index.contextVariableRequired',
-        dm: '上下文变量不能为空',
+        dm: 'Context variable cannot be empty',
       }),
     });
   }
@@ -117,11 +117,11 @@ export function checkTryCatchConfig(
     list.push({
       label: $i18n.get({
         id: 'main.pages.App.Workflow.utils.index.exceptionHandling',
-        dm: '异常处理',
+        dm: 'Exception Handling',
       }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.utils.index.defaultValueRequired',
-        dm: '默认值不能为空',
+        dm: 'Default value cannot be empty',
       }),
     });
   }
@@ -135,11 +135,11 @@ export function checkLLMData(
     list.push({
       label: $i18n.get({
         id: 'main.pages.App.Workflow.utils.index.modelSelection',
-        dm: '模型选择',
+        dm: 'Model Selection',
       }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.utils.index.notNull',
-        dm: '不能为空',
+        dm: 'Cannot be empty',
       }),
     });
   }
@@ -166,11 +166,11 @@ export function checkInputParams(
         options.label ||
         $i18n.get({
           id: 'main.pages.App.Workflow.utils.index.input',
-          dm: '输入',
+          dm: 'Input',
         }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.utils.index.notNull',
-        dm: '不能为空',
+        dm: 'Cannot be empty',
       }),
     });
   }
@@ -207,11 +207,11 @@ export function checkInputParams(
         options.label ||
         $i18n.get({
           id: 'main.pages.App.Workflow.utils.index.input',
-          dm: '输入',
+          dm: 'Input',
         }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.utils.index.variableNameDuplicate',
-        dm: '变量名不能重复',
+        dm: 'Variable name cannot be duplicated',
       }),
     });
   }
@@ -222,11 +222,11 @@ export function checkInputParams(
         options.label ||
         $i18n.get({
           id: 'main.pages.App.Workflow.utils.index.input',
-          dm: '输入',
+          dm: 'Input',
         }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.utils.index.valueNotNull',
-        dm: '值不能为空',
+        dm: 'Value cannot be empty',
       }),
     });
   }
@@ -238,11 +238,11 @@ export function checkInputParams(
         options.label ||
         $i18n.get({
           id: 'main.pages.App.Workflow.utils.index.input',
-          dm: '输入',
+          dm: 'Input',
         }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.utils.index.variableNameRequired',
-        dm: '变量名不能为空',
+        dm: 'Variable name cannot be empty',
       }),
     });
   }
@@ -253,11 +253,11 @@ export function checkInputParams(
         options.label ||
         $i18n.get({
           id: 'main.pages.App.Workflow.utils.index.input',
-          dm: '输入',
+          dm: 'Input',
         }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.utils.index.variableNameAlphanumeric',
-        dm: '变量名只能包含字母和数字',
+        dm: 'Variable name can only contain letters and numbers',
       }),
     });
   }

@@ -102,7 +102,7 @@ const FileList: React.FC<FileListProps> = ({
     {
       title: $i18n.get({
         id: 'main.pages.Knowledge.Detail.components.FileList.index.dataName',
-        dm: '数据名称',
+        dm: 'Data Name',
       }),
       dataIndex: 'name',
       key: 'name',
@@ -111,7 +111,7 @@ const FileList: React.FC<FileListProps> = ({
     {
       title: $i18n.get({
         id: 'main.pages.Knowledge.Detail.components.FileList.index.status',
-        dm: '状态',
+        dm: 'Status',
       }),
       dataIndex: 'index_status',
       key: 'index_status',
@@ -123,7 +123,7 @@ const FileList: React.FC<FileListProps> = ({
     {
       title: $i18n.get({
         id: 'main.pages.Knowledge.Detail.components.FileList.index.dataFormat',
-        dm: '数据格式',
+        dm: 'Data Format',
       }),
       dataIndex: 'format',
       key: 'format',
@@ -135,7 +135,7 @@ const FileList: React.FC<FileListProps> = ({
     {
       title: $i18n.get({
         id: 'main.pages.Knowledge.Detail.components.FileList.index.dataSize',
-        dm: '数据大小',
+        dm: 'Data Size',
       }),
       dataIndex: 'size',
       key: 'size',
@@ -152,7 +152,7 @@ const FileList: React.FC<FileListProps> = ({
     {
       title: $i18n.get({
         id: 'main.pages.Knowledge.Detail.components.FileList.index.operation',
-        dm: '操作',
+        dm: 'Actions',
       }),
       key: 'action',
       width: 300,
@@ -169,7 +169,7 @@ const FileList: React.FC<FileListProps> = ({
           >
             {$i18n.get({
               id: 'main.pages.Knowledge.Detail.components.FileList.index.sliceConfiguration',
-              dm: '切片配置',
+              dm: 'Slice Configuration',
             })}
           </Button>
           <Button
@@ -183,7 +183,7 @@ const FileList: React.FC<FileListProps> = ({
           >
             {$i18n.get({
               id: 'main.pages.Knowledge.Detail.components.FileList.index.sliceEdit',
-              dm: '切片编辑',
+              dm: 'Slice Editing',
             })}
           </Button>
           <Dropdown
@@ -193,7 +193,7 @@ const FileList: React.FC<FileListProps> = ({
                   key: 'delete',
                   label: $i18n.get({
                     id: 'main.pages.Knowledge.Detail.components.FileList.index.delete',
-                    dm: '删除',
+                    dm: 'Delete',
                   }),
                   danger: true,
                   onClick: () =>
@@ -207,7 +207,7 @@ const FileList: React.FC<FileListProps> = ({
             <Button type="link" className={styles['operation-btn']}>
               {$i18n.get({
                 id: 'main.pages.Knowledge.Detail.components.FileList.index.more',
-                dm: '更多',
+                dm: 'More',
               })}
             </Button>
           </Dropdown>
@@ -226,7 +226,7 @@ const FileList: React.FC<FileListProps> = ({
       return message.error(
         $i18n.get({
           id: 'main.pages.Knowledge.Detail.components.FileList.index.selectFileFirst',
-          dm: '请先选择文件',
+          dm: 'Please select a file first',
         }),
       );
     }
@@ -237,11 +237,11 @@ const FileList: React.FC<FileListProps> = ({
     AlertDialog.warning({
       title: $i18n.get({
         id: 'main.pages.Knowledge.Detail.components.FileList.index.confirmDisableThreeFiles',
-        dm: '确认禁用所选的3个文件吗',
+        dm: 'Confirm to disable the selected 3 files?',
       }),
       children: $i18n.get({
         id: 'main.pages.Knowledge.Detail.components.FileList.index.disabledFileNotRetrieved',
-        dm: '禁用后，文件将不再被检索到',
+        dm: 'After disabling, the files will no longer be retrieved',
       }),
     });
   };
@@ -251,7 +251,7 @@ const FileList: React.FC<FileListProps> = ({
       return message.error(
         $i18n.get({
           id: 'main.pages.Knowledge.Detail.components.FileList.index.selectFileFirst',
-          dm: '请先选择文件',
+          dm: 'Please select a file first',
         }),
       );
     }
@@ -262,19 +262,19 @@ const FileList: React.FC<FileListProps> = ({
     AlertDialog.warning({
       title: $i18n.get({
         id: 'main.pages.Knowledge.Detail.components.FileList.index.confirmEnableThreeFiles',
-        dm: '确认启用所选的3个文件吗',
+        dm: 'Confirm to enable the selected 3 files?',
       }),
       children: $i18n.get({
         id: 'main.pages.Knowledge.Detail.components.FileList.index.enabledFileRetrieved',
-        dm: '启用后，文件将开始被检索到',
+        dm: 'After enabling, the files will start to be retrieved',
       }),
       okText: $i18n.get({
         id: 'main.pages.Knowledge.Detail.components.FileList.index.confirm',
-        dm: '确认',
+        dm: 'Confirm',
       }),
       cancelText: $i18n.get({
         id: 'main.pages.Knowledge.Detail.components.FileList.index.cancel',
-        dm: '取消',
+        dm: 'Cancel',
       }),
     });
   };
@@ -284,7 +284,7 @@ const FileList: React.FC<FileListProps> = ({
       return message.error(
         $i18n.get({
           id: 'main.pages.Knowledge.Detail.components.FileList.index.selectFileFirst',
-          dm: '请先选择文件',
+          dm: 'Please select a file first',
         }),
       );
     }
@@ -292,22 +292,22 @@ const FileList: React.FC<FileListProps> = ({
       title: $i18n.get(
         {
           id: 'main.pages.Knowledge.Detail.components.FileList.index.confirmDeleteVar1Files',
-          dm: '确认删除所选的{var1}个文件吗',
+          dm: 'Confirm to delete the selected {var1} files?',
         },
         { var1: selectedRows?.length },
       ),
       danger: true,
       children: $i18n.get({
         id: 'main.pages.Knowledge.Detail.components.FileList.index.deletedFileCannotRecover',
-        dm: '删除后，文件将无法恢复',
+        dm: 'After deletion, files cannot be recovered',
       }),
       okText: $i18n.get({
         id: 'main.pages.Knowledge.Detail.components.FileList.index.confirmDelete',
-        dm: '确认删除',
+        dm: 'Confirm Delete',
       }),
       cancelText: $i18n.get({
         id: 'main.pages.Knowledge.Detail.components.FileList.index.cancel',
-        dm: '取消',
+        dm: 'Cancel',
       }),
       onOk: () => {
         if (!kb_id) return;
@@ -319,7 +319,7 @@ const FileList: React.FC<FileListProps> = ({
           message.success(
             $i18n.get({
               id: 'main.pages.Knowledge.Detail.components.FileList.index.successfullyDeleted',
-              dm: '删除成功',
+              dm: 'Successfully deleted',
             }),
           );
           refreshList();
@@ -370,7 +370,7 @@ const FileList: React.FC<FileListProps> = ({
           type="warning"
           title={$i18n.get({
             id: 'main.pages.Knowledge.Detail.components.FileList.index.confirmSelectedFiles',
-            dm: '请确认您选择的文件',
+            dm: 'Please confirm your selected files',
           })}
           open={true}
           footer={
@@ -382,14 +382,14 @@ const FileList: React.FC<FileListProps> = ({
             >
               {$i18n.get({
                 id: 'main.pages.Knowledge.Detail.components.FileList.index.close',
-                dm: '关闭',
+                dm: 'Close',
               })}
             </Button>
           }
         >
           {$i18n.get({
             id: 'main.pages.Knowledge.Detail.components.FileList.index.filesHaveMultipleStatuses',
-            dm: '您当前所选的文件包含多种状态，无法进行同一个批量操作，请确认！',
+            dm: 'The files you selected have multiple statuses and cannot perform the same batch operation. Please confirm!',
           })}
         </AlertDialog>
       )}

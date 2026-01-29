@@ -17,7 +17,7 @@ export default function () {
     >
       {$i18n.get({
         id: 'main.pages.Login.components.Login.index.useGithubLogin',
-        dm: '使用 GitHub 登录',
+        dm: 'Login with GitHub',
       })}
     </Button>
   );

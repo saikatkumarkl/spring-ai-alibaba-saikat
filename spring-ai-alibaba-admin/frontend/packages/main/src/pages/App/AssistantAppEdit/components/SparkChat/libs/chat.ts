@@ -154,7 +154,7 @@ export class Chat extends EventEmitter {
                   parsed.error?.message ||
                   $i18n.get({
                     id: 'main.pages.App.AssistantAppEdit.components.SparkChat.libs.chat.unknownError',
-                    dm: '未知错误',
+                    dm: 'Unknown error',
                   }),
               );
             } else {
@@ -224,7 +224,7 @@ export class Chat extends EventEmitter {
               'error',
               $i18n.get({
                 id: 'main.pages.App.AssistantAppEdit.components.SparkChat.libs.chat.messageParseError',
-                dm: '消息解析错误',
+                dm: 'Message parsing error',
               }),
               event.data,
             );

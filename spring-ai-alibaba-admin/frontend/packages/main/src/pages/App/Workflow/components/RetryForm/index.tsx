@@ -21,13 +21,13 @@ export default function RetryForm({
         <div className="spark-flow-panel-form-title">
           {$i18n.get({
             id: 'main.pages.App.Workflow.components.RetryForm.index.retryOnFailure',
-            dm: '失败时重试',
+            dm: 'Retry on Failure',
           })}
 
           <InfoIcon
             tip={$i18n.get({
               id: 'main.pages.App.Workflow.components.RetryForm.index.retryWhenError',
-              dm: '开启后，当发生错误时节点会尝试重新执行。',
+              dm: 'When enabled, the node will attempt to re-execute when an error occurs.',
             })}
           />
         </div>
@@ -48,7 +48,7 @@ export default function RetryForm({
             <span className={styles['panel-form-area-label']}>
               {$i18n.get({
                 id: 'main.pages.App.Workflow.components.RetryForm.index.maxRetryTimes',
-                dm: '最大重试次数',
+                dm: 'Max Retry Count',
               })}
             </span>
             <SliderSelector
@@ -71,7 +71,7 @@ export default function RetryForm({
             <span className={styles['panel-form-area-label']}>
               {$i18n.get({
                 id: 'main.pages.App.Workflow.components.RetryForm.index.retryInterval',
-                dm: '重试间隔',
+                dm: 'Retry Interval',
               })}
             </span>
             <SliderSelector

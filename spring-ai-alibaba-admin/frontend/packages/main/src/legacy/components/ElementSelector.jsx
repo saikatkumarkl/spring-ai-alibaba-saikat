@@ -90,17 +90,17 @@ const ElementSelector = ({
       ${text ? `<div style="color: #ccc; font-size: 11px;">Text: "${text}${text.length >= 50 ? '...' : ''}"</div>` : ''}
     `;
 
-    // 计算位置，避免超出屏幕
-    const tooltipRect = { width: 300, height: 60 }; // 估算大小
+    // Calculate position to avoid going off screen
+    const tooltipRect = { width: 300, height: 60 }; // Estimated size
     let left = x + 15;
     let top = y - tooltipRect.height - 10;
 
-    // 防止超出右边界
+    // Prevent exceeding right boundary
     if (left + tooltipRect.width > window.innerWidth) {
       left = x - tooltipRect.width - 15;
     }
 
-    // 防止超出上边界
+    // Prevent exceeding top boundary
     if (top < 0) {
       top = y + 15;
     }
@@ -119,7 +119,7 @@ const ElementSelector = ({
   const findSelectableElement = useCallback((element) => {
     let current = element;
 
-    // 向上遍历 DOM 树，查找第一个有 data-insp-path 属性的元素
+    // Traverse DOM tree upward to find first element with data-insp-path attribute
     while (current && current !== document.body) {
       if (current.hasAttribute && current.hasAttribute('data-insp-path')) {
         return current;
@@ -191,17 +191,17 @@ const ElementSelector = ({
     const target = event.target;
     const { clientX, clientY } = event;
 
-    // 更新鼠标位置
+    // Update mouse position
     setMousePosition({ x: clientX, y: clientY });
 
-    // 排除 overlay 和 tooltip 本身
+    // Exclude overlay and tooltip themselves
     if (target.id === 'element-selector-overlay' || target.id === 'element-selector-tooltip') return;
 
-    // 查找可选择的元素（有 data-insp-path 属性的）
+    // Find selectable element (has data-insp-path attribute)
     const selectableElement = findSelectableElement(target);
 
     if (selectableElement) {
-      // 如果有容器限制，检查可选择元素是否在容器内
+      // If there is a container restriction, check if the selectable element is within the container
       if (containerRef.current && !containerRef.current.contains(selectableElement)) {
         hideOverlay();
         hideTooltip();
@@ -212,7 +212,7 @@ const ElementSelector = ({
       updateOverlay(selectableElement);
       updateTooltip(selectableElement, clientX, clientY);
     } else {
-      // 没有找到可选择的元素，隐藏高亮和浮窗
+      // No selectable element found, hide highlight and tooltip
       hideOverlay();
       hideTooltip();
       setHoveredElement(null);
@@ -227,14 +227,14 @@ const ElementSelector = ({
 
     const target = event.target;
 
-    // 排除 overlay 和 tooltip 本身
+    // Exclude overlay and tooltip themselves
     if (target.id === 'element-selector-overlay' || target.id === 'element-selector-tooltip') return;
 
-    // 查找可选择的元素（有 data-insp-path 属性的）
+    // Find selectable element (has data-insp-path attribute)
     const selectableElement = findSelectableElement(target);
 
     if (selectableElement) {
-      // 如果有容器限制，检查可选择元素是否在容器内
+      // If there is a container restriction, check if the selectable element is within the container
       if (containerRef.current && containerRef.current.contains(selectableElement)) {
         const elementInfo = {
           element: selectableElement,
@@ -274,7 +274,7 @@ const ElementSelector = ({
     if (isSelecting) {
       createOverlay();
       createTooltip();
-      // 添加到 document 上以确保能捕获所有鼠标移动
+      // Add to document to ensure capturing all mouse movements
       document.addEventListener('mousemove', handleMouseMove, true);
       document.addEventListener('click', handleClick, true);
       document.body.style.cursor = 'crosshair';
@@ -318,7 +318,7 @@ const ElementSelector = ({
       setIsLoading(true);
 
       try {
-        // 调用 AI Coding API
+        // Call AI Coding API
         const response = await fetch('/_ai_coding', {
           method: 'POST',
           headers: {
@@ -338,19 +338,19 @@ const ElementSelector = ({
 
         } else {
           console.error('❌ Claude execution failed:', result.error);
-          setErrorMessage('执行失败: ' + result.error);
+          setErrorMessage('Execution failed: ' + result.error);
           setShowErrorModal(true);
         }
 
       } catch (error) {
         console.error('❌ Failed to call AI Coding API:', error);
-        setErrorMessage('请求失败: ' + error.message);
+        setErrorMessage('Request failed: ' + error.message);
         setShowErrorModal(true);
       } finally {
         setIsLoading(false);
       }
 
-      // 调用原始的 onSelect 回调
+      // Call original onSelect callback
       onSelect(selectedElementInfo.element, selectedElementInfo);
     }
 
@@ -398,7 +398,7 @@ const ElementSelector = ({
   };
 
   const getDiff = async () => {
-    // 获取 git diff 结果
+    // Get git diff results
     const diffResponse = await fetch('/_ai_coding/diff', {
       method: 'GET',
     });
@@ -410,7 +410,7 @@ const ElementSelector = ({
       setShowDiffModal(true);
     } else {
       console.error('❌ Failed to get git diff:', diffData.error);
-      setErrorMessage('获取文件变更信息失败: ' + diffData.error);
+      setErrorMessage('Failed to get file changes: ' + diffData.error);
       setShowErrorModal(true);
     }
   }
@@ -457,7 +457,7 @@ const ElementSelector = ({
 
       {children}
 
-      {/* 元素信息弹窗 */}
+      {/* Element Info Popup */}
       {showModal && selectedElementInfo && (
         <div
           style={{
@@ -488,13 +488,13 @@ const ElementSelector = ({
             onClick={(e) => e.stopPropagation()}
           >
             <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: 'bold' }}>
-              AI 提示词输入
+              AI Prompt Input
             </h3>
 
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="请输入给 AI 的提示词..."
+              placeholder="Enter prompt for AI..."
               style={{
                 width: '100%',
                 height: '100px',
@@ -519,7 +519,7 @@ const ElementSelector = ({
 
             <div style={{ marginBottom: '20px' }}>
               <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
-                元素信息
+                Element Information
               </h4>
               <div style={{
                 backgroundColor: '#f9fafb',
@@ -530,7 +530,7 @@ const ElementSelector = ({
                 border: '1px solid #e5e7eb'
               }}>
                 <div style={{ marginBottom: '8px' }}>
-                  <strong style={{ color: '#374151' }}>选择器:</strong>{' '}
+                  <strong style={{ color: '#374151' }}>Selector:</strong>{' '}
                   <span style={{ color: '#1f2937' }}>
                     {selectedElementInfo.tagName.toLowerCase()}
                     {selectedElementInfo.id ? `#${selectedElementInfo.id}` : ''}
@@ -538,12 +538,12 @@ const ElementSelector = ({
                   </span>
                 </div>
                 <div style={{ marginBottom: '8px' }}>
-                  <strong style={{ color: '#374151' }}>路径:</strong>{' '}
+                  <strong style={{ color: '#374151' }}>Path:</strong>{' '}
                   <span style={{ color: '#059669' }}>{selectedElementInfo.inspPath}</span>
                 </div>
                 {selectedElementInfo.textContent && (
                   <div>
-                    <strong style={{ color: '#374151' }}>文本:</strong>{' '}
+                    <strong style={{ color: '#374151' }}>Text:</strong>{' '}
                     <span style={{ color: '#6b7280' }}>"{selectedElementInfo.textContent}"</span>
                   </div>
                 )}
@@ -570,7 +570,7 @@ const ElementSelector = ({
                   e.target.style.backgroundColor = 'white';
                 }}
               >
-                取消
+                Cancel
               </button>
               <button
                 onClick={handleModalConfirm}
@@ -609,14 +609,14 @@ const ElementSelector = ({
                     animation: 'spin 1s linear infinite'
                   }} />
                 )}
-                {isLoading ? '执行中...' : '确认'}
+                {isLoading ? 'Executing...' : 'Confirm'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Git Diff 结果展示弹窗 */}
+      {/* Git Diff results display modal */}
       {showDiffModal && diffResult.hasChanges && diffResult.needCheckDiff !== false && (
         <div
           style={{
@@ -648,7 +648,7 @@ const ElementSelector = ({
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold' }}>
-                📊 文件变更详情
+                📊 File Change Details
               </h3>
               <button
                 onClick={() => setShowDiffModal(false)}
@@ -666,7 +666,7 @@ const ElementSelector = ({
 
             {diffResult.hasChanges && diffResult.needCheckDiff !== false ? (
               <>
-                {/* 变更摘要 */}
+                {/* Change summary */}
                 <div style={{
                   backgroundColor: '#f0f9ff',
                   padding: '16px',
@@ -674,26 +674,26 @@ const ElementSelector = ({
                   marginBottom: '20px',
                   border: '1px solid #e0f2fe'
                 }}>
-                  <h4 style={{ margin: '0 0 12px 0', color: '#0369a1' }}>变更摘要</h4>
+                  <h4 style={{ margin: '0 0 12px 0', color: '#0369a1' }}>Change Summary</h4>
                   <div style={{ display: 'flex', gap: '20px', fontSize: '14px' }}>
-                    <span>📁 总文件数: <strong>{diffResult.summary.totalFiles}</strong></span>
+                    <span>📁 Total Files: <strong>{diffResult.summary.totalFiles}</strong></span>
                     {diffResult.summary.modified > 0 && (
-                      <span style={{ color: '#f59e0b' }}>✏️ 修改: <strong>{diffResult.summary.modified}</strong></span>
+                      <span style={{ color: '#f59e0b' }}>✏️ Modified: <strong>{diffResult.summary.modified}</strong></span>
                     )}
                     {diffResult.summary.added > 0 && (
-                      <span style={{ color: '#10b981' }}>➕ 新增: <strong>{diffResult.summary.added}</strong></span>
+                      <span style={{ color: '#10b981' }}>➕ Added: <strong>{diffResult.summary.added}</strong></span>
                     )}
                     {diffResult.summary.deleted > 0 && (
-                      <span style={{ color: '#ef4444' }}>🗑️ 删除: <strong>{diffResult.summary.deleted}</strong></span>
+                      <span style={{ color: '#ef4444' }}>🗑️ Deleted: <strong>{diffResult.summary.deleted}</strong></span>
                     )}
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', border: '1px solid #e5e7eb', borderRadius: '8px', height: '60vh' }}>
-                  {/* 文件列表 */}
+                  {/* File list */}
                   <div style={{ width: '300px', borderRight: '1px solid #e5e7eb', overflowY: 'auto', background: '#f9fafb' }}>
                     <h4 style={{ margin: 0, padding: '12px 16px', fontSize: '16px', fontWeight: '600', borderBottom: '1px solid #e5e7eb', background: 'white', position: 'sticky', top: 0 }}>
-                      变更文件列表
+                      Changed Files
                     </h4>
                     {diffResult.files.map((file, index) => (
                       <div
@@ -734,7 +734,7 @@ const ElementSelector = ({
                     ))}
                   </div>
 
-                  {/* 详细 Diff */}
+                  {/* Detailed Diff */}
                   <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
                     {selectedFile && (
                       <>
@@ -791,8 +791,8 @@ const ElementSelector = ({
                 color: '#6b7280'
               }}>
                 <div style={{ fontSize: '48px', marginBottom: '16px' }}>✨</div>
-                <h4 style={{ margin: '0 0 8px 0', color: '#374151' }}>没有检测到文件变更</h4>
-                <p style={{ margin: 0 }}>AI 执行完成，但没有修改任何文件</p>
+                <h4 style={{ margin: '0 0 8px 0', color: '#374151' }}>No file changes detected</h4>
+                <p style={{ margin: 0 }}>AI execution completed, but no files were modified</p>
               </div>
             )}
 
@@ -816,14 +816,14 @@ const ElementSelector = ({
                   e.target.style.backgroundColor = 'white';
                 }}
               >
-                关闭
+                Close
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 错误提示弹窗 */}
+      {/* Error prompt modal */}
       {showErrorModal && (
         <div
           style={{
@@ -865,7 +865,7 @@ const ElementSelector = ({
                 <span style={{ color: '#dc2626', fontSize: '20px' }}>⚠️</span>
               </div>
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: '#dc2626' }}>
-                操作失败
+                Operation Failed
               </h3>
             </div>
 
@@ -897,7 +897,7 @@ const ElementSelector = ({
                   e.target.style.backgroundColor = 'white';
                 }}
               >
-                知道了
+                Got it
               </button>
             </div>
           </div>

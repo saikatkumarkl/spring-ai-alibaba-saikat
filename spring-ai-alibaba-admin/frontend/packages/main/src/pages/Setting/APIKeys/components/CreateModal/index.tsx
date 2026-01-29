@@ -27,7 +27,7 @@ const CreateModal: React.FC<CreateModalProps> = ({
         message.success(
           $i18n.get({
             id: 'main.pages.Setting.APIKeys.components.CreateModal.index.createSuccess',
-            dm: '创建成功',
+            dm: 'Created successfully',
           }),
         );
         form.resetFields();
@@ -51,7 +51,7 @@ const CreateModal: React.FC<CreateModalProps> = ({
     <Modal
       title={$i18n.get({
         id: 'main.pages.Setting.APIKeys.components.CreateModal.index.createApiKey',
-        dm: '创建API KEY',
+        dm: 'Create API KEY',
       })}
       open={open}
       onCancel={handleCancel}
@@ -64,14 +64,14 @@ const CreateModal: React.FC<CreateModalProps> = ({
           name="description"
           label={$i18n.get({
             id: 'main.pages.Setting.APIKeys.components.CreateModal.index.description',
-            dm: '描述',
+            dm: 'Description',
           })}
           rules={[
             {
               required: true,
               message: $i18n.get({
                 id: 'main.pages.Setting.APIKeys.components.CreateModal.index.enterDescription',
-                dm: '请输入API KEY描述',
+                dm: 'Please enter API KEY description',
               }),
             },
           ]}
@@ -79,7 +79,7 @@ const CreateModal: React.FC<CreateModalProps> = ({
           <Input.TextArea
             placeholder={$i18n.get({
               id: 'main.pages.Setting.APIKeys.components.CreateModal.index.enterDescription',
-              dm: '请输入API KEY描述',
+              dm: 'Please enter API KEY description',
             })}
             rows={4}
           />

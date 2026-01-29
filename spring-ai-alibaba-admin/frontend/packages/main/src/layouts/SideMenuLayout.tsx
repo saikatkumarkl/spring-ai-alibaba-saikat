@@ -32,64 +32,64 @@ import PromptAPI from '@/legacy/services';
 
 const { Sider, Content } = AntLayout;
 
-// 获取应该高亮的菜单项 key
+// Get the menu item key that should be highlighted
 const getSelectedMenuKey = (pathname: string): string => {
-  // 应用相关页面
+  // App-related pages
   if (pathname.startsWith('/app')) {
     return '/app';
   }
 
-  // MCP 相关页面
+  // MCP-related pages
   if (pathname.startsWith('/mcp')) {
     return '/mcp';
   }
 
-  // 组件相关页面
+  // Component-related pages
   if (pathname.startsWith('/component')) {
     return '/component';
   }
 
-  // 知识库相关页面
+  // Knowledge base related pages
   if (pathname.startsWith('/knowledge')) {
     return '/knowledge';
   }
 
-  // 设置相关页面
+  // Settings-related pages
   if (pathname.startsWith('/setting')) {
     return '/setting';
   }
 
-  // 调试页面
+  // Debug pages
   if (pathname.startsWith('/debug')) {
     return '/debug';
   }
 
-  // Dify 转换页面
+  // Dify conversion pages
   if (pathname.startsWith('/dify')) {
     return '/dify';
   }
 
-  // Agent Schema 页面
+  // Agent Schema pages
   if (pathname.startsWith('/agent-schema')) {
     return '/agent-schema';
   }
 
-  // 评测集相关页面
+  // Dataset-related pages
   if (pathname.startsWith('/admin/evaluation/gather')) {
     return '/admin/evaluation/gather';
   }
 
-  // 评估器相关页面
+  // Evaluator-related pages
   if (pathname.startsWith('/admin/evaluation/evaluator') || pathname === '/admin/evaluation/debug') {
     return '/admin/evaluation/evaluator';
   }
 
-  // 实验相关页面
+  // Experiment-related pages
   if (pathname.startsWith('/admin/evaluation/experiment')) {
     return '/admin/evaluation/experiment';
   }
 
-  // Prompt 相关页面
+  // Prompt-related pages
   if (
     pathname.startsWith('/admin/prompt') ||
     pathname === '/admin/prompts' ||
@@ -102,12 +102,12 @@ const getSelectedMenuKey = (pathname: string): string => {
     return '/admin/prompts';
   }
 
-  // Tracing 页面
+  // Tracing pages
   if (pathname.startsWith('/admin/tracing')) {
     return '/admin/tracing';
   }
 
-  // 默认情况，直接返回当前路径
+  // Default case, return current path directly
   return pathname;
 };
 
@@ -118,7 +118,7 @@ export default function SideMenuLayout({ children }: { children: React.ReactNode
   const [models, setModels] = useState<any[]>([]);
   const [modelNameMap, setModelNameMap] = useState<Record<number, string>>({});
 
-  // 加载模型列表（用于 legacy 页面）
+  // Load model list (for legacy pages)
   useEffect(() => {
     PromptAPI.getModels()
       .then((res) => {
@@ -134,10 +134,10 @@ export default function SideMenuLayout({ children }: { children: React.ReactNode
       });
   }, []);
 
-  // 获取应该高亮的菜单项 key
+  // Get the menu item key that should be highlighted
   const selectedKey = useMemo(() => getSelectedMenuKey(location.pathname), [location.pathname]);
 
-  // 构建菜单项
+  // Build menu items
   const menuItems = useMemo(
     () => [
       {
@@ -152,7 +152,7 @@ export default function SideMenuLayout({ children }: { children: React.ReactNode
             key: '/app',
             label: $i18n.get({
               id: 'main.layouts.MenuList.application',
-              dm: '应用',
+              dm: 'Applications',
             }),
             icon: <AppstoreOutlined />,
           },
@@ -165,7 +165,7 @@ export default function SideMenuLayout({ children }: { children: React.ReactNode
             key: '/component',
             label: $i18n.get({
               id: 'main.pages.Component.AppComponent.index.component',
-              dm: '组件',
+              dm: 'Components',
             }),
             icon: <ToolOutlined />,
           },
@@ -173,7 +173,7 @@ export default function SideMenuLayout({ children }: { children: React.ReactNode
             key: '/knowledge',
             label: $i18n.get({
               id: 'main.pages.Knowledge.Test.index.knowledgeBase',
-              dm: '知识库',
+              dm: 'Knowledge Base',
             }),
             icon: <DatabaseOutlined />,
           },
@@ -189,7 +189,7 @@ export default function SideMenuLayout({ children }: { children: React.ReactNode
       },
       {
         key: 'prompt',
-        label: 'Prompt工程',
+        label: 'Prompt Engineering',
         icon: <BulbOutlined />,
         children: [
           {
@@ -206,29 +206,29 @@ export default function SideMenuLayout({ children }: { children: React.ReactNode
       },
       {
         key: 'evaluation',
-        label: '评测',
+        label: 'Evaluation',
         icon: <ExperimentOutlined />,
         children: [
           {
             key: '/admin/evaluation/gather',
-            label: '评测集',
+            label: 'Dataset',
             icon: <UnorderedListOutlined />,
           },
           {
             key: '/admin/evaluation/evaluator',
-            label: '评估器',
+            label: 'Evaluator',
             icon: <BarChartOutlined />,
           },
           {
             key: '/admin/evaluation/experiment',
-            label: '实验',
+            label: 'Experiment',
             icon: <ExperimentOutlined />,
           },
         ],
       },
       {
         key: 'observability',
-        label: '可观测',
+        label: 'Observability',
         icon: <LineChartOutlined />,
         children: [
           {
@@ -242,7 +242,7 @@ export default function SideMenuLayout({ children }: { children: React.ReactNode
         key: '/setting',
         label: $i18n.get({
           id: 'main.pages.Setting.ModelService.Detail.setting',
-          dm: '设置',
+          dm: 'Settings',
         }),
         icon: <SettingOutlined />,
       },
@@ -254,7 +254,7 @@ export default function SideMenuLayout({ children }: { children: React.ReactNode
     navigate(key);
   };
 
-  // 判断是否应该隐藏侧边栏（登录页、首页等）
+  // Determine whether to hide sidebar (login page, home page, etc.)
   const shouldHideSidebar = ['/login', '/', '/home'].includes(location.pathname);
 
   if (shouldHideSidebar) {
@@ -323,7 +323,7 @@ export default function SideMenuLayout({ children }: { children: React.ReactNode
                   ) : (
                     <MenuFoldOutlined className="text-gray-600 text-lg" />
                   )}
-                  {!collapsed && <span className="ml-2 text-gray-600">收起菜单</span>}
+                  {!collapsed && <span className="ml-2 text-gray-600">Collapse Menu</span>}
                 </div>
               </div>
             </Sider>

@@ -68,16 +68,16 @@ const SliceEditing: React.FC<ChunkListProps> = ({ className }) => {
     AlertDialog.warning({
       title: $i18n.get({
         id: 'main.pages.Knowledge.Detail.SliceEditing.index.deleteData',
-        dm: '删除数据',
+        dm: 'Delete Data',
       }),
       children: $i18n.get({
         id: 'main.pages.Knowledge.Detail.SliceEditing.index.confirmDeleteData',
-        dm: '确定删除该数据吗？',
+        dm: 'Are you sure you want to delete this data?',
       }),
       danger: true,
       okText: $i18n.get({
         id: 'main.pages.Knowledge.Detail.SliceEditing.index.confirmDelete',
-        dm: '确认删除',
+        dm: 'Confirm Delete',
       }),
       onOk: () => {
         deleteChunks({ doc_id, chunk_id }).then(() => {
@@ -120,14 +120,14 @@ const SliceEditing: React.FC<ChunkListProps> = ({ className }) => {
         {
           title: $i18n.get({
             id: 'main.pages.Knowledge.Detail.SliceEditing.index.fileList',
-            dm: '文件列表',
+            dm: 'File List',
           }),
           path: `/knowledge/${kb_id}`,
         },
         {
           title: $i18n.get({
             id: 'main.pages.Knowledge.Detail.SliceEditing.index.chunkEditing',
-            dm: '切片编辑',
+            dm: 'Chunk Editing',
           }),
         },
       ]}
@@ -187,7 +187,7 @@ const SliceEditing: React.FC<ChunkListProps> = ({ className }) => {
             <Empty
               description={$i18n.get({
                 id: 'main.pages.Knowledge.Detail.SliceEditing.index.noData',
-                dm: '暂无数据',
+                dm: 'No data',
               })}
             />
           </div>

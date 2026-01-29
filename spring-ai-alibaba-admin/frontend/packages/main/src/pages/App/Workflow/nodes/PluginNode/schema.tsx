@@ -14,16 +14,16 @@ export const PluginSchema: INodeSchema = {
   type: 'Plugin',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.PluginNode.schema.plugin',
-    dm: '插件',
+    dm: 'Plugin',
   }),
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.PluginNode.schema.extendFunctionality',
-    dm: '通过添加插件扩展应用能力，执行外部操作。',
+    dm: 'Extend application capabilities by adding plugins to perform external operations.',
   }),
   iconType: 'spark-plugin-line',
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.PluginNode.schema.tool',
-    dm: '工具',
+    dm: 'Tool',
   }),
   defaultParams: {
     input_params: [],

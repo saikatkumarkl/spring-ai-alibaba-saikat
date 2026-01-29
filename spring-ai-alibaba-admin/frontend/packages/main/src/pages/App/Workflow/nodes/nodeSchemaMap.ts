@@ -27,12 +27,12 @@ export const SystemSchema: INodeSchema = {
   type: 'sys',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.constant.NodeSchema.index.system',
-    dm: '系统',
+    dm: 'System',
   }),
   iconType: 'spark-summary-line',
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.constant.NodeSchema.index.system',
-    dm: '系统',
+    dm: 'System',
   }),
   defaultParams: {
     input_params: [],
@@ -47,12 +47,12 @@ export const ConversationSchema: INodeSchema = {
   type: 'conversation',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.constant.NodeSchema.index.conversation',
-    dm: '会话',
+    dm: 'Session',
   }),
   iconType: 'spark-summary-line',
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.constant.NodeSchema.index.conversationVariable',
-    dm: '会话变量',
+    dm: 'Session Variables',
   }),
   defaultParams: {
     input_params: [],

@@ -51,13 +51,13 @@ export default function AgentSelectorComp() {
             <span>
               {$i18n.get({
                 id: 'main.pages.Component.index.intelligentAgent',
-                dm: '智能体',
+                dm: 'Agent',
               })}
             </span>
             <HelpIcon
               content={$i18n.get({
                 id: 'main.pages.App.AssistantAppEdit.components.AgentCompSelector.index.configuredAgentApplicationCanBePublishedAsAgentComponent',
-                dm: '配置好的智能体应用可发布为智能体组件，从而实现特定场景下的智能处理。',
+                dm: 'Configured agent applications can be published as agent components to achieve intelligent processing in specific scenarios.',
               })}
             ></HelpIcon>
           </Flex>
@@ -78,7 +78,7 @@ export default function AgentSelectorComp() {
           >
             {$i18n.get({
               id: 'main.pages.Component.index.intelligentAgent',
-              dm: '智能体',
+              dm: 'Agent',
             })}
           </Button>
           <Divider type="vertical" className="ml-[16px] mr-[16px]"></Divider>

@@ -42,23 +42,23 @@ export default function EditDrawer(props: IProps) {
     const componentNameMap = {
       [IAppType.AGENT]: $i18n.get({
         id: 'main.pages.Component.AppComponent.components.EditDrawer.index.smartAgent',
-        dm: '智能体',
+        dm: 'Agent',
       }),
       [IAppType.WORKFLOW]: $i18n.get({
         id: 'main.pages.Component.AppComponent.components.EditDrawer.index.workflow',
-        dm: '工作流',
+        dm: 'Workflow',
       }),
     };
     if (props.data.code)
       return $i18n.get({
         id: 'main.pages.Component.AppComponent.components.EditDrawer.index.editComponent',
-        dm: '编辑组件',
+        dm: 'Edit Component',
       });
     const componentName = componentNameMap[props.data.type as IAppType];
     return $i18n.get(
       {
         id: 'main.pages.Component.AppComponent.components.EditDrawer.index.publishAsVar1Component',
-        dm: '发布为{var1}组件',
+        dm: 'Publish as {var1} Component',
       },
       { var1: componentName },
     );
@@ -75,7 +75,7 @@ export default function EditDrawer(props: IProps) {
         message.warning(
           $i18n.get({
             id: 'main.pages.Component.AppComponent.components.EditDrawer.index.parameterAliasRequiredCheck',
-            dm: '参数别名必填，请检查',
+            dm: 'Parameter alias is required. Please check.',
           }),
         );
         return;
@@ -87,7 +87,7 @@ export default function EditDrawer(props: IProps) {
             message.warning(
               $i18n.get({
                 id: 'main.pages.Component.AppComponent.components.EditDrawer.index.parameterAliasCannotRepeatCheck',
-                dm: '参数别名不能重复，请检查',
+                dm: 'Parameter alias cannot be duplicated. Please check.',
               }),
             );
             return;
@@ -115,11 +115,11 @@ export default function EditDrawer(props: IProps) {
             props.data.code
               ? $i18n.get({
                   id: 'main.pages.Component.AppComponent.components.EditDrawer.index.updateSuccess',
-                  dm: '更新成功',
+                  dm: 'Updated successfully',
                 })
               : $i18n.get({
                   id: 'main.pages.Component.AppComponent.components.EditDrawer.index.createSuccess',
-                  dm: '创建成功',
+                  dm: 'Created successfully',
                 }),
           );
           props.onOk();
@@ -143,17 +143,17 @@ export default function EditDrawer(props: IProps) {
           {state.saveLoading
             ? $i18n.get({
                 id: 'main.pages.Component.AppComponent.components.EditDrawer.index.publishing',
-                dm: '发布中...',
+                dm: 'Publishing...',
               })
             : $i18n.get({
                 id: 'main.pages.Component.AppComponent.components.EditDrawer.index.confirmPublish',
-                dm: '确定发布',
+                dm: 'Confirm Publish',
               })}
         </Button>
         <Button onClick={props.onClose}>
           {$i18n.get({
             id: 'main.pages.Component.AppComponent.components.EditDrawer.index.cancel',
-            dm: '取消',
+            dm: 'Cancel',
           })}
         </Button>
       </Flex>
@@ -211,11 +211,11 @@ export default function EditDrawer(props: IProps) {
           <Empty
             title={$i18n.get({
               id: 'main.pages.Component.AppComponent.components.EditDrawer.index.configurationInformationNotExists',
-              dm: '配置信息不存在',
+              dm: 'Configuration information does not exist',
             })}
             description={$i18n.get({
               id: 'main.pages.Component.AppComponent.components.EditDrawer.index.componentAssociatedApplicationHasBeenDeletedDeleteAndRecreate',
-              dm: '该组件关联的应用已被删除，请删除重建',
+              dm: 'The associated application has been deleted. Please delete and recreate the component.',
             })}
           />
         </div>
@@ -230,13 +230,13 @@ export default function EditDrawer(props: IProps) {
             <div className={styles['form-title']}>
               {$i18n.get({
                 id: 'main.pages.Component.AppComponent.components.EditDrawer.index.basicInformation',
-                dm: '基础信息',
+                dm: 'Basic Info',
               })}
             </div>
             <Form.Item
               label={$i18n.get({
                 id: 'main.pages.Component.AppComponent.components.EditDrawer.index.componentName',
-                dm: '组件名称',
+                dm: 'Component Name',
               })}
               required
               name="name"
@@ -245,7 +245,7 @@ export default function EditDrawer(props: IProps) {
                   required: true,
                   message: $i18n.get({
                     id: 'main.pages.Component.AppComponent.components.EditDrawer.index.enterComponentName',
-                    dm: '请输入组件名称',
+                    dm: 'Please enter component name',
                   }),
                 },
               ]}
@@ -255,14 +255,14 @@ export default function EditDrawer(props: IProps) {
                 showCount
                 placeholder={$i18n.get({
                   id: 'main.pages.Component.AppComponent.components.EditDrawer.index.enterComponentName',
-                  dm: '请输入组件名称',
+                  dm: 'Please enter component name',
                 })}
               />
             </Form.Item>
             <Form.Item
               label={$i18n.get({
                 id: 'main.pages.Component.AppComponent.components.EditDrawer.index.componentDescription',
-                dm: '组件描述',
+                dm: 'Component Description',
               })}
               name="description"
               rules={[
@@ -270,7 +270,7 @@ export default function EditDrawer(props: IProps) {
                   required: true,
                   message: $i18n.get({
                     id: 'main.pages.Component.AppComponent.components.EditDrawer.index.enterComponentDescription',
-                    dm: '请输入组件描述',
+                    dm: 'Please enter component description',
                   }),
                 },
               ]}
@@ -281,7 +281,7 @@ export default function EditDrawer(props: IProps) {
                 showCount
                 placeholder={$i18n.get({
                   id: 'main.pages.Component.AppComponent.components.EditDrawer.index.enterComponentDescription',
-                  dm: '请输入组件描述',
+                  dm: 'Please enter component description',
                 })}
               />
             </Form.Item>
@@ -296,7 +296,7 @@ export default function EditDrawer(props: IProps) {
               <span>
                 {$i18n.get({
                   id: 'main.pages.Component.AppComponent.components.EditDrawer.index.inputInformation',
-                  dm: '输入信息',
+                  dm: 'Input Info',
                 })}
               </span>
               <img src="/images/require.svg" alt="" />
@@ -323,7 +323,7 @@ export default function EditDrawer(props: IProps) {
               <span>
                 {$i18n.get({
                   id: 'main.pages.Component.AppComponent.components.EditDrawer.index.outputInformation',
-                  dm: '输出信息',
+                  dm: 'Output Info',
                 })}
               </span>
               <img src="/images/require.svg" alt="" />

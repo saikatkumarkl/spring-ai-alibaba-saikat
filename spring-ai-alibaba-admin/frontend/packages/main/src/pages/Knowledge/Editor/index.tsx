@@ -92,7 +92,7 @@ export default function Editor() {
           message.success(
             $i18n.get({
               id: 'main.pages.Knowledge.Editor.index.saveSuccess',
-              dm: '保存成功',
+              dm: 'Saved successfully',
             }),
           );
           history.push('/knowledge');
@@ -108,7 +108,7 @@ export default function Editor() {
         reject(
           $i18n.get({
             id: 'main.pages.Knowledge.Create.index.pleaseEnterKnowledgeBaseName',
-            dm: '请先填写知识库名称',
+            dm: 'Please enter knowledge base name',
           }),
         );
         return;
@@ -117,7 +117,7 @@ export default function Editor() {
         reject(
           $i18n.get({
             id: 'main.pages.Knowledge.Create.index.pleaseSelectEmbeddingModel',
-            dm: '请先选择Embedding模型',
+            dm: 'Please select Embedding model',
           }),
         );
         return;
@@ -127,7 +127,7 @@ export default function Editor() {
         reject(
           $i18n.get({
             id: 'main.pages.Knowledge.Create.index.pleaseSelectRerankModel',
-            dm: '请先选择Rerank模型',
+            dm: 'Please select Rerank model',
           }),
         );
         return;
@@ -141,7 +141,7 @@ export default function Editor() {
         <span className={styles['confirm-title']}>
           {$i18n.get({
             id: 'main.pages.Knowledge.Editor.index.confirmDiscardEditing',
-            dm: '确认放弃编辑知识库吗',
+            dm: 'Confirm to discard editing knowledge base?',
           })}
         </span>
       ),
@@ -157,18 +157,18 @@ export default function Editor() {
         <span className={styles['confirm-content']}>
           {$i18n.get({
             id: 'main.pages.Knowledge.Editor.index.discardChangesDataNotSaved',
-            dm: '放弃编辑后您刚刚填写的数据将不会被保存，请谨慎操作',
+            dm: 'After discarding, the data you just filled in will not be saved. Please proceed with caution.',
           })}
         </span>
       ),
 
       okText: $i18n.get({
         id: 'main.pages.Knowledge.Editor.index.confirmDiscard',
-        dm: '确认放弃',
+        dm: 'Confirm Discard',
       }),
       cancelText: $i18n.get({
         id: 'main.pages.Knowledge.Editor.index.continueEditing',
-        dm: '继续编辑',
+        dm: 'Continue Editing',
       }),
       onOk: () => {
         history.push('/knowledge');
@@ -181,14 +181,14 @@ export default function Editor() {
         {
           title: $i18n.get({
             id: 'main.pages.Knowledge.Editor.index.knowledgeBase',
-            dm: '知识库',
+            dm: 'Knowledge Base',
           }),
           path: '/knowledge',
         },
         {
           title: $i18n.get({
             id: 'main.pages.Knowledge.Editor.index.editKnowledgeBase',
-            dm: '编辑知识库',
+            dm: 'Edit Knowledge Base',
           }),
         },
       ]}
@@ -207,13 +207,13 @@ export default function Editor() {
             >
               {$i18n.get({
                 id: 'main.pages.Knowledge.Editor.index.save',
-                dm: '保存',
+                dm: 'Save',
               })}
             </Button>
             <Button onClick={handleCancel}>
               {$i18n.get({
                 id: 'main.pages.Knowledge.Editor.index.cancel',
-                dm: '取消',
+                dm: 'Cancel',
               })}
             </Button>
           </div>
@@ -225,14 +225,14 @@ export default function Editor() {
           <Form.Item
             label={$i18n.get({
               id: 'main.pages.Knowledge.Editor.index.knowledgeBaseName',
-              dm: '知识库名称',
+              dm: 'Knowledge Base Name',
             })}
             required
           >
             <Input
               placeholder={$i18n.get({
                 id: 'main.pages.Knowledge.Editor.index.enterKnowledgeBaseName',
-                dm: '请输入知识库名称',
+                dm: 'Please enter knowledge base name',
               })}
               value={state.name}
               onChange={(e) => {
@@ -243,13 +243,13 @@ export default function Editor() {
           <Form.Item
             label={$i18n.get({
               id: 'main.pages.Knowledge.Editor.index.knowledgeBaseDescription',
-              dm: '知识库描述',
+              dm: 'Knowledge Base Description',
             })}
           >
             <Input.TextArea
               placeholder={$i18n.get({
                 id: 'main.pages.Knowledge.Editor.index.enterKnowledgeBaseDescription',
-                dm: '请输入知识库描述',
+                dm: 'Please enter knowledge base description',
               })}
               value={state.description}
               onChange={(e) => {
@@ -263,13 +263,13 @@ export default function Editor() {
                 <span>
                   {$i18n.get({
                     id: 'main.pages.Knowledge.Editor.index.embeddingModel',
-                    dm: 'Embedding模型',
+                    dm: 'Embedding Model',
                   })}
                 </span>
                 <Tooltip
                   title={$i18n.get({
                     id: 'main.pages.Knowledge.Editor.index.modelConvertTextToVector',
-                    dm: '用于将文本转换为向量表示的模型，能把文本信息映射到低维稠密向量空间，便于计算机理解文本语义，支持后续的相似性计算等操作',
+                    dm: 'A model that converts text into vector representations, mapping text information to low-dimensional dense vector spaces for computer understanding of text semantics, supporting subsequent similarity calculations.',
                   })}
                 >
                   <IconFont
@@ -299,13 +299,13 @@ export default function Editor() {
                 <span>
                   {$i18n.get({
                     id: 'main.pages.Knowledge.Editor.index.rerankModel',
-                    dm: 'Rerank模型',
+                    dm: 'Rerank Model',
                   })}
                 </span>
                 <Tooltip
                   title={$i18n.get({
                     id: 'main.pages.Knowledge.Editor.index.rerankModelReorderResults',
-                    dm: 'Rerank模型在检索出相关结果后，对结果进行重新排序，通过更精准的算法调整结果顺序，使相关性更高的内容排在前列，提升检索结果质量。',
+                    dm: 'The Rerank model reorders search results after retrieval, adjusting result order with more precise algorithms to place more relevant content at the top, improving search result quality.',
                   })}
                 >
                   <IconFont
@@ -335,13 +335,13 @@ export default function Editor() {
                 <span>
                   {$i18n.get({
                     id: 'main.pages.Knowledge.Editor.index.similarityThreshold',
-                    dm: '相似度阈值',
+                    dm: 'Similarity Threshold',
                   })}
                 </span>
                 <Tooltip
                   title={$i18n.get({
                     id: 'main.pages.Knowledge.Editor.index.thresholdMeasureSimilarity',
-                    dm: '用于衡量文本或数据间相似程度的临界值,当计算出的文本相似度达到或超过该值时，会返回该文本 。',
+                    dm: 'A threshold value used to measure the degree of similarity between texts or data. When the calculated text similarity reaches or exceeds this value, the text will be returned.',
                   })}
                 >
                   <IconFont
@@ -370,7 +370,7 @@ export default function Editor() {
                 <Tooltip
                   title={$i18n.get({
                     id: 'main.pages.Knowledge.Editor.index.topKReturnObjects',
-                    dm: 'top-k代表重排后返回的符合相似度要求的对象个数',
+                    dm: 'Top-k represents the number of objects that meet similarity requirements returned after reranking',
                   })}
                 >
                   <IconFont

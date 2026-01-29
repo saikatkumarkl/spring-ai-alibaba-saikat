@@ -73,22 +73,22 @@ export default function AppSelector(props: IProps) {
             props.isSearch
               ? $i18n.get({
                   id: 'main.pages.Component.AppComponent.components.AppSelector.index.noSearchResult',
-                  dm: '未搜索出来符合条件的应用',
+                  dm: 'No applications matching search',
                 })
               : $i18n.get({
                   id: 'main.pages.Component.AppComponent.components.AppSelector.index.noApplication',
-                  dm: '暂无应用',
+                  dm: 'No applications',
                 })
           }
           description={
             props.isSearch
               ? $i18n.get({
                   id: 'main.pages.Component.AppComponent.components.AppSelector.index.tryAnotherSearchCondition',
-                  dm: '换个搜索条件试试',
+                  dm: 'Try different search terms',
                 })
               : $i18n.get({
                   id: 'main.pages.Component.AppComponent.components.AppSelector.index.goToCreateApplicationFirst',
-                  dm: '请先前往应用管理创建应用',
+                  dm: 'Please go to App Management to create an app first',
                 })
           }
         >
@@ -100,7 +100,7 @@ export default function AppSelector(props: IProps) {
             >
               {$i18n.get({
                 id: 'main.pages.Component.AppComponent.components.AppSelector.index.goToCreate',
-                dm: '前往创建',
+                dm: 'Go to Create',
               })}
             </Button>
           )}
@@ -204,7 +204,7 @@ export function AppSelectorModalByAppComponent(props: IAppModalProps) {
       message.warning(
         $i18n.get({
           id: 'main.pages.Component.AppComponent.components.AppSelector.index.selectApplication',
-          dm: '请选择应用',
+          dm: 'Please select an application',
         }),
       );
       return;
@@ -254,7 +254,7 @@ export function AppSelectorModalByAppComponent(props: IAppModalProps) {
       open
       title={$i18n.get({
         id: 'main.pages.Component.AppComponent.components.AppSelector.index.selectApplication',
-        dm: '选择应用',
+        dm: 'Select Application',
       })}
     >
       <Flex vertical gap={12}>
@@ -266,7 +266,7 @@ export function AppSelectorModalByAppComponent(props: IAppModalProps) {
             onSearch={handleSearch}
             placeholder={$i18n.get({
               id: 'main.pages.Component.AppComponent.components.AppSelector.index.searchApplicationName',
-              dm: '搜索应用名称',
+              dm: 'Search application name',
             })}
           />
 
@@ -276,17 +276,17 @@ export function AppSelectorModalByAppComponent(props: IAppModalProps) {
           >
             {$i18n.get({
               id: 'main.pages.Component.AppComponent.components.AppSelector.index.create',
-              dm: '创建',
+              dm: 'Create',
             })}
 
             {props.type === IAppType.AGENT
               ? $i18n.get({
                   id: 'main.pages.Component.AppComponent.components.AppSelector.index.smartAgent',
-                  dm: '智能体',
+                  dm: 'Agent',
                 })
               : $i18n.get({
                   id: 'main.pages.Component.AppComponent.components.AppSelector.index.workflow',
-                  dm: '工作流',
+                  dm: 'Workflow',
                 })}
           </Button>
         </Flex>

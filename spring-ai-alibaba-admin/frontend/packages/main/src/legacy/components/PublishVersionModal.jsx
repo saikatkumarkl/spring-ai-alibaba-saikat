@@ -55,71 +55,71 @@ const PublishVersionModal = ({ prompt, newContent, modelConfig, models = [], onC
   };
 
 
-  // 计算新版本号的函数
+  // Function to calculate next version number
   const calculateNextVersion = (currentVersion) => {
     if (!currentVersion) return '1.0.0';
 
-    // 尝试解析版本号
+    // Try to parse version number
     let versionStr = String(currentVersion).trim();
 
-    // 处理版本号前缀 (如 v1.5.0)
+    // Handle version prefix (e.g., v1.5.0)
     if (versionStr.toLowerCase().startsWith('v')) {
       versionStr = versionStr.substring(1);
     }
 
-    // 处理常见的版本号格式
+    // Handle common version number formats
     if (versionStr.includes('.')) {
       const parts = versionStr.split('.');
 
       if (parts.length >= 3) {
-        // 三位版本号格式 (如 1.5.0, 2.1.3)
+        // Three-digit version format (e.g., 1.5.0, 2.1.3)
         const major = parseInt(parts[0]) || 0;
         const minor = parseInt(parts[1]) || 0;
         const patch = parseInt(parts[2]) || 0;
         return `${major}.${minor}.${patch + 1}`;
       } else if (parts.length === 2) {
-        // 两位版本号格式 (如 1.5, 2.1) - 转换为三位并递增补丁号
+        // Two-digit version format (e.g., 1.5, 2.1) - convert to three digits and increment patch
         const major = parseInt(parts[0]) || 0;
         const minor = parseInt(parts[1]) || 0;
         return `${major}.${minor}.1`;
       } else if (parts.length === 1) {
-        // 单版本号格式，但有小数点 (如 "1.")
+        // Single version with decimal point (e.g., "1.")
         const major = parseInt(parts[0]) || 0;
         return `${major}.0.1`;
       }
     }
 
-    // 如果是纯数字，当作主版本号处理，默认递增补丁版本
+    // If pure number, treat as major version and default increment patch version
     const num = parseInt(versionStr);
     if (!isNaN(num)) {
       return `${num}.0.1`;
     }
 
-    // 默认情况
+    // Default case
     return '0.0.1';
   };
 
   const [formData, setFormData] = useState({
     version: calculateNextVersion(prompt.latestVersion),
     description: '',
-    status: 'release' // 默认发布正式版本
+    status: 'release' // Default to publish release version
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // 从传入的内容中提取参数
+  // Extract parameters from passed content
   const parameters = Object.entries(variables).map(([key, value]) => ({ key, value }));
 
   const handleSubmit = async () => {
     if (!formData.version.trim()) {
-      handleValidationError('请填写版本号');
+      handleValidationError('Please enter version number');
       return;
     }
 
     if (!newContent || !newContent.trim()) {
-      handleValidationError('请在编辑区填写 Prompt 内容');
+      handleValidationError('Please fill in Prompt content in the editor');
       return;
     }
 
@@ -128,7 +128,7 @@ const PublishVersionModal = ({ prompt, newContent, modelConfig, models = [], onC
 
     try {
 
-      // 调用发布版本 API
+      // Call publish version API
       const response = await API.publishPromptVersion({
         promptKey: prompt.promptKey,
         version: formData.version,
@@ -141,17 +141,17 @@ const PublishVersionModal = ({ prompt, newContent, modelConfig, models = [], onC
 
       if (response.code === 200) {
         notifySuccess({
-          message: '版本发布成功',
-          description: `已成功发布${formData.status === 'release' ? '正式' : 'PRE'}版本 ${formData.version}`
+          message: 'Version published successfully',
+          description: `Successfully published ${formData.status === 'release' ? 'release' : 'PRE'} version ${formData.version}`
         });
         setShowSuccessModal(true);
       } else {
-        throw new Error(response.message || '发布失败');
+        throw new Error(response.message || 'Publication failed');
       }
     } catch (err) {
-      console.error('发布版本失败:', err);
-      handleApiError(err, '发布版本');
-      setError(err.message || '发布失败，请稍后重试');
+      console.error('Failed to publish version:', err);
+      handleApiError(err, 'Publish version');
+      setError(err.message || 'Publication failed, please try again later');
     } finally {
       setLoading(false);
     }
@@ -172,7 +172,7 @@ const PublishVersionModal = ({ prompt, newContent, modelConfig, models = [], onC
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <RocketOutlined />
-            <span>发布新版本</span>
+            <span>Publish New Version</span>
           </div>
         }
         open={true}
@@ -191,7 +191,7 @@ const PublishVersionModal = ({ prompt, newContent, modelConfig, models = [], onC
       >
         {error && (
           <Alert
-            message="发布失败"
+            message="Publication Failed"
             description={error}
             type="error"
             showIcon
@@ -201,12 +201,12 @@ const PublishVersionModal = ({ prompt, newContent, modelConfig, models = [], onC
 
         <div style={{ padding: 24, paddingBottom: 0 }}>
           <Space direction="vertical" style={{ width: '100%' }} size="middle">
-            {/* 当前 Prompt 信息 */}
+            {/* Current Prompt Information */}
             <Card size="small">
               <Row gutter={[16, 16]}>
                 <Col span={12}>
                   <div>
-                    <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase' }}>当前 Prompt</Text>
+                    <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase' }}>Current Prompt</Text>
                     <div style={{ marginTop: 4 }}>
                       <Text strong>{prompt.promptKey}</Text>
                     </div>
@@ -214,12 +214,12 @@ const PublishVersionModal = ({ prompt, newContent, modelConfig, models = [], onC
                 </Col>
                 <Col span={12}>
                   <div>
-                    <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase' }}>当前版本</Text>
+                    <Text type="secondary" style={{ fontSize: '12px', textTransform: 'uppercase' }}>Current Version</Text>
                     <div style={{ marginTop: 4 }}>
                       {prompt.latestVersion ? (
                         <Tag color="blue">{prompt.latestVersion}</Tag>
                       ) : (
-                        <Tag color="default">暂无版本</Tag>
+                        <Tag color="default">No Version</Tag>
                       )}
                     </div>
                   </div>
@@ -227,12 +227,12 @@ const PublishVersionModal = ({ prompt, newContent, modelConfig, models = [], onC
               </Row>
             </Card>
 
-            {/* 版本配置 */}
-            <Card title="版本配置" size="small">
+            {/* Version Configuration */}
+            <Card title="Version Configuration" size="small">
               <Row gutter={[16, 16]}>
                 <Col span={12}>
                   <div>
-                    <Text strong style={{ marginBottom: 8, display: 'block' }}>新版本号 *</Text>
+                    <Text strong style={{ marginBottom: 8, display: 'block' }}>New Version Number *</Text>
                     <Input
                       value={formData.version}
                       onChange={(e) => setFormData(prev => ({ ...prev, version: e.target.value }))}
@@ -242,22 +242,22 @@ const PublishVersionModal = ({ prompt, newContent, modelConfig, models = [], onC
                 </Col>
                 <Col span={12}>
                   <div>
-                    <Text strong style={{ marginBottom: 8, display: 'block' }}>版本类型 *</Text>
+                    <Text strong style={{ marginBottom: 8, display: 'block' }}>Version Type *</Text>
                     <Select
                       value={formData.status}
                       onChange={(value) => setFormData(prev => ({ ...prev, status: value }))}
                       style={{ width: '100%' }}
                     >
-                      <Option value="release">正式版本</Option>
-                      <Option value="pre">PRE版本</Option>
+                      <Option value="release">Release Version</Option>
+                      <Option value="pre">PRE Version</Option>
                     </Select>
                   </div>
                 </Col>
               </Row>
             </Card>
 
-            {/* 内容预览 */}
-            <Card title="版本内容预览" size="small">
+            {/* Content Preview */}
+            <Card title="Version Content Preview" size="small">
               {newContent && newContent.trim() ? (
                 <div style={{
                   padding: 12,
@@ -274,7 +274,7 @@ const PublishVersionModal = ({ prompt, newContent, modelConfig, models = [], onC
                 </div>
               ) : (
                 <Alert
-                  message="请在编辑区填写Prompt内容"
+                  message="Please fill in Prompt content in the editor"
                   type="warning"
                   showIcon
                   icon={<ExclamationCircleOutlined />}
@@ -282,9 +282,9 @@ const PublishVersionModal = ({ prompt, newContent, modelConfig, models = [], onC
               )}
             </Card>
 
-            {/* 参数预览 */}
+            {/* Parameter Preview */}
             {parameters.length > 0 && (
-              <Card title="检测到的参数: 键值对" size="small">
+              <Card title="Detected Parameters: Key-Value Pairs" size="small">
                 <Space size={[8, 8]} wrap>
                   {parameters.map((param, index) => (
                     <Tag key={index} color="blue">
@@ -295,19 +295,19 @@ const PublishVersionModal = ({ prompt, newContent, modelConfig, models = [], onC
               </Card>
             )}
 
-            {/* 模型配置预览 */}
+            {/* Model Configuration Preview */}
             {modelConfig && (
-              <Card title="模型配置" size="small">
+              <Card title="Model Configuration" size="small">
                 <Row gutter={[16, 8]}>
-                  {/* 显示模型名称而非ID */}
+                  {/* Display model name instead of ID */}
                   <Col span={24} style={{ marginBottom: 8 }}>
                     <Space>
-                      <Text strong>模型：</Text>
+                      <Text strong>Model：</Text>
                       <Text code>{getModelName(modelConfig.modelId)}</Text>
                     </Space>
                   </Col>
 
-                  {/* 动态显示模型参数 */}
+                  {/* Dynamically display model parameters */}
                   {(() => {
                     const displayParams = getDisplayModelParams(modelConfig);
                     const paramEntries = Object.entries(displayParams);
@@ -316,7 +316,7 @@ const PublishVersionModal = ({ prompt, newContent, modelConfig, models = [], onC
                       return (
                         <Col span={24}>
                           <Text type="secondary" style={{ fontStyle: 'italic' }}>
-                            暂无模型参数配置
+                            No model parameters configured
                           </Text>
                         </Col>
                       );
@@ -338,18 +338,18 @@ const PublishVersionModal = ({ prompt, newContent, modelConfig, models = [], onC
               </Card>
             )}
 
-            {/* 版本类型说明 */}
+            {/* Version Type Description */}
             <Alert
-              message="版本类型说明"
+              message="Version Type Description"
               description={
                 <div style={{ marginTop: 8 }}>
                   <div style={{ marginBottom: 4 }}>
-                    <Text strong>正式版本：</Text>
-                    <Text style={{ marginLeft: 8 }}>稳定的生产环境版本，会更新当前版本指针</Text>
+                    <Text strong>Release Version:</Text>
+                    <Text style={{ marginLeft: 8 }}>Stable production version, will update current version pointer</Text>
                   </div>
                   <div>
-                    <Text strong>PRE版本：</Text>
-                    <Text style={{ marginLeft: 8 }}>预发布版本，用于测试和验证</Text>
+                    <Text strong>PRE Version:</Text>
+                    <Text style={{ marginLeft: 8 }}>Pre-release version for testing and validation</Text>
                   </div>
                 </div>
               }
@@ -358,19 +358,19 @@ const PublishVersionModal = ({ prompt, newContent, modelConfig, models = [], onC
               icon={<InfoCircleOutlined />}
             />
 
-            {/* 版本说明 */}
-            <Card title="版本说明" size="small">
+            {/* Version Description */}
+            <Card title="Version Description" size="small">
               <TextArea
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="描述此版本的变更内容..."
+                placeholder="Describe the changes in this version..."
                 rows={3}
               />
             </Card>
           </Space>
         </div>
 
-        {/* 底部按钮 */}
+        {/* Bottom Buttons */}
         <div style={{
           padding: 24,
           paddingTop: 16,
@@ -383,7 +383,7 @@ const PublishVersionModal = ({ prompt, newContent, modelConfig, models = [], onC
         }}>
           <Space>
             <Button onClick={onClose}>
-              取消
+              Cancel
             </Button>
             <Button
               type="primary"
@@ -396,15 +396,15 @@ const PublishVersionModal = ({ prompt, newContent, modelConfig, models = [], onC
               }}
             >
               {loading
-                ? '发布中...'
-                : `发布${formData.status === 'release' ? '正式' : 'PRE'}版本`
+                ? 'Publishing...'
+                : `Publish ${formData.status === 'release' ? 'Release' : 'PRE'} Version`
               }
             </Button>
           </Space>
         </div>
       </Modal>
 
-      {/* 发布成功模态框 */}
+      {/* Publish Success Modal */}
       {showSuccessModal && (
         <PublishSuccessModal
           prompt={{

@@ -29,14 +29,14 @@ const AppComponentCard: React.FC<AppComponentCardProps> = ({
         {
           label: $i18n.get({
             id: 'main.pages.Component.AppComponent.components.Card.index.componentDescription',
-            dm: '组件描述',
+            dm: 'Component Description',
           }),
           content: description,
         },
         {
           label: $i18n.get({
             id: 'main.pages.Component.AppComponent.components.Card.index.componentId',
-            dm: '组件ID',
+            dm: 'Component ID',
           }),
           content: code,
         },
@@ -47,7 +47,7 @@ const AppComponentCard: React.FC<AppComponentCardProps> = ({
         <div className={styles.bottom}>
           {$i18n.get({
             id: 'main.pages.Component.AppComponent.components.Card.index.updatedAt',
-            dm: '更新于',
+            dm: 'Updated at ',
           })}
           {updateTime}
         </div>
@@ -61,13 +61,13 @@ const AppComponentCard: React.FC<AppComponentCardProps> = ({
           >
             {$i18n.get({
               id: 'main.pages.Component.AppComponent.components.Card.index.edit',
-              dm: '编辑',
+              dm: 'Edit',
             })}
           </Button>
           <Button className="flex-1" onClick={() => onClickAction('gotoApp')}>
             {$i18n.get({
               id: 'main.pages.Component.AppComponent.components.Card.index.viewOriginalApplication',
-              dm: '查看原应用',
+              dm: 'View Original Application',
             })}
           </Button>
           <Dropdown
@@ -77,7 +77,7 @@ const AppComponentCard: React.FC<AppComponentCardProps> = ({
                 {
                   label: $i18n.get({
                     id: 'main.pages.Component.AppComponent.components.Card.index.componentReferenceDetails',
-                    dm: '组件引用详情',
+                    dm: 'Component Reference Details',
                   }),
                   key: 'detail',
                   onClick: () => onClickAction('referDetail'),
@@ -85,7 +85,7 @@ const AppComponentCard: React.FC<AppComponentCardProps> = ({
                 {
                   label: $i18n.get({
                     id: 'main.pages.Component.AppComponent.components.Card.index.delete',
-                    dm: '删除',
+                    dm: 'Delete',
                   }),
                   key: 'delete',
                   danger: true,

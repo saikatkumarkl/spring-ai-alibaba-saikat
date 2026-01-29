@@ -42,7 +42,7 @@ export default function () {
           <Tag color="mauve">
             {$i18n.get({
               id: 'main.pages.Component.Plugin.Tools.List.draft',
-              dm: '草稿',
+              dm: 'Draft',
             })}
           </Tag>
         );
@@ -52,7 +52,7 @@ export default function () {
           <Tag color="blue">
             {$i18n.get({
               id: 'main.pages.Component.Plugin.Tools.List.published',
-              dm: '已发布',
+              dm: 'Published',
             })}
           </Tag>
         );
@@ -62,7 +62,7 @@ export default function () {
           <Tag color="blue">
             {$i18n.get({
               id: 'main.pages.Component.Plugin.Tools.List.editedPublished',
-              dm: '已发布编辑中',
+              dm: 'Published (Editing)',
             })}
           </Tag>
         );
@@ -86,7 +86,7 @@ export default function () {
             <span>
               {$i18n.get({
                 id: 'main.pages.Component.Plugin.Tools.List.success',
-                dm: '成功',
+                dm: 'Success',
               })}
             </span>
           </>
@@ -103,7 +103,7 @@ export default function () {
             <span>
               {$i18n.get({
                 id: 'main.pages.Component.Plugin.Tools.List.failure',
-                dm: '失败',
+                dm: 'Failure',
               })}
             </span>
           </>
@@ -119,7 +119,7 @@ export default function () {
             <span>
               {$i18n.get({
                 id: 'main.pages.Component.Plugin.Tools.List.notTested',
-                dm: '未测试',
+                dm: 'Not Tested',
               })}
             </span>
           </>
@@ -134,7 +134,7 @@ export default function () {
     {
       title: $i18n.get({
         id: 'main.pages.Component.Plugin.Tools.List.toolName',
-        dm: '工具名称',
+        dm: 'Tool Name',
       }),
       key: 'name',
       width: 500,
@@ -154,7 +154,7 @@ export default function () {
     {
       title: $i18n.get({
         id: 'main.pages.Component.Plugin.Tools.List.inputParameters',
-        dm: '输入参数',
+        dm: 'Input Parameters',
       }),
       key: 'input_params',
       render: (_: any, record: PluginTool) => {
@@ -168,7 +168,7 @@ export default function () {
     {
       title: $i18n.get({
         id: 'main.pages.Component.Plugin.Tools.List.debugStatus',
-        dm: '调试状态',
+        dm: 'Debug Status',
       }),
       key: 'test_status',
       render: (_: any, record: PluginTool) => {
@@ -182,7 +182,7 @@ export default function () {
     {
       title: $i18n.get({
         id: 'main.pages.Component.Plugin.Tools.List.updateTime',
-        dm: '更新时间',
+        dm: 'Update Time',
       }),
       key: 'update_time',
       render: (_: any, record: PluginTool) => {
@@ -192,7 +192,7 @@ export default function () {
     {
       title: $i18n.get({
         id: 'main.pages.Component.Plugin.Tools.List.enable',
-        dm: '启用',
+        dm: 'Enable',
       }),
       key: 'enabled',
       render: (_: any, record: PluginTool) => {
@@ -208,7 +208,7 @@ export default function () {
                   message.success(
                     $i18n.get({
                       id: 'main.pages.Component.Plugin.Tools.List.operationSuccess',
-                      dm: '操作成功',
+                      dm: 'Operation successful',
                     }),
                   );
                 });
@@ -219,11 +219,11 @@ export default function () {
               {record.enabled
                 ? $i18n.get({
                     id: 'main.pages.Component.Plugin.Tools.List.enabled',
-                    dm: '已启用',
+                    dm: 'Enabled',
                   })
                 : $i18n.get({
                     id: 'main.pages.Component.Plugin.Tools.List.disabled',
-                    dm: '未启用',
+                    dm: 'Disabled',
                   })}
             </div>
           </Flex>
@@ -233,7 +233,7 @@ export default function () {
     {
       title: $i18n.get({
         id: 'main.pages.Component.Plugin.Tools.List.operation',
-        dm: '操作',
+        dm: 'Actions',
       }),
       key: 'action',
       render: (_: any, record: PluginTool) => {
@@ -248,7 +248,7 @@ export default function () {
             >
               {$i18n.get({
                 id: 'main.pages.Component.Plugin.Tools.List.edit',
-                dm: '编辑',
+                dm: 'Edit',
               })}
             </Button>
             <Flex align="center">
@@ -258,7 +258,7 @@ export default function () {
                     {
                       label: $i18n.get({
                         id: 'main.pages.Component.Plugin.Tools.List.delete',
-                        dm: '删除',
+                        dm: 'Delete',
                       }),
                       key: 'delete',
                       danger: true,
@@ -270,7 +270,7 @@ export default function () {
                 <Button className="gap-1" size="small" type="link">
                   {$i18n.get({
                     id: 'main.pages.Component.Plugin.Tools.List.more',
-                    dm: '更多',
+                    dm: 'More',
                   })}
 
                   <IconFont type="spark-down-line" />
@@ -287,18 +287,18 @@ export default function () {
     AlertDialog.warning({
       title: $i18n.get({
         id: 'main.pages.Component.Plugin.Tools.List.confirmDeleteTool',
-        dm: '是否删除该工具',
+        dm: 'Delete this tool?',
       }),
       children: $i18n.get({
         id: 'main.pages.Component.Plugin.Tools.List.deleteWithoutSave',
-        dm: '删除后，工具信息不会保存，是否确认？',
+        dm: 'After deletion, tool information will not be saved. Confirm?',
       }),
       onOk() {
         removeTool(id, record.tool_id || '').then(() => {
           message.success(
             $i18n.get({
               id: 'main.pages.Component.Plugin.Tools.List.successDelete',
-              dm: '删除成功',
+              dm: 'Delete successful',
             }),
           );
           setToken(token + 1);
@@ -312,7 +312,7 @@ export default function () {
         {
           title: $i18n.get({
             id: 'main.pages.Component.Plugin.Tools.List.componentManagement',
-            dm: '组件管理',
+            dm: 'Component Management',
           }),
           path: `/component/plugin`,
         },
@@ -324,7 +324,7 @@ export default function () {
         <Tooltip
           title={$i18n.get({
             id: 'main.pages.Component.Plugin.Tools.List.definePluginInterface',
-            dm: '定义您的插件接口，详细内容可查看 如何定义插件接口协议',
+            dm: 'Define your plugin interface. For details, see the plugin interface protocol.',
           })}
         >
           <IconFont type="spark-warningCircle-line" />
@@ -337,7 +337,7 @@ export default function () {
             <Empty
               title={$i18n.get({
                 id: 'main.pages.Component.Plugin.Tools.List.noData',
-                dm: '暂无数据',
+                dm: 'No data',
               })}
             >
               <Button
@@ -350,7 +350,7 @@ export default function () {
               >
                 {$i18n.get({
                   id: 'main.pages.Component.Plugin.Tools.List.createTool',
-                  dm: '创建工具',
+                  dm: 'Create Tool',
                 })}
               </Button>
             </Empty>
@@ -365,7 +365,7 @@ export default function () {
               <span className={styles.title}>
                 {$i18n.get({
                   id: 'main.pages.Component.Plugin.Tools.List.toolList',
-                  dm: '工具列表',
+                  dm: 'Tool List',
                 })}
               </span>
               <Button
@@ -377,7 +377,7 @@ export default function () {
               >
                 {$i18n.get({
                   id: 'main.pages.Component.Plugin.Tools.List.createTool',
-                  dm: '创建工具',
+                  dm: 'Create Tool',
                 })}
               </Button>
             </Flex>
@@ -399,7 +399,7 @@ export default function () {
           >
             {$i18n.get({
               id: 'main.pages.Component.Plugin.Tools.List.editPlugin',
-              dm: '编辑插件',
+              dm: 'Edit Plugin',
             })}
           </Button>
         </>,

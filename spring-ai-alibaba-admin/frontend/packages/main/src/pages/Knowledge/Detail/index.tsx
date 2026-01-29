@@ -115,11 +115,11 @@ const KnowledgeDetail: React.FC = () => {
     Modal.confirm({
       title: $i18n.get({
         id: 'main.pages.Knowledge.Detail.index.deleteData',
-        dm: '删除数据',
+        dm: 'Delete Data',
       }),
       content: $i18n.get({
         id: 'main.pages.Knowledge.Detail.index.confirmDeleteData',
-        dm: '确定删除该数据吗？',
+        dm: 'Are you sure you want to delete this data?',
       }),
       onOk: () => {
         deleteDocuments(kb_id, doc_id).then(() => {
@@ -172,7 +172,7 @@ const KnowledgeDetail: React.FC = () => {
         {
           title: $i18n.get({
             id: 'main.pages.Knowledge.Detail.index.fileList',
-            dm: '文件列表',
+            dm: 'File List',
           }),
         },
       ]}

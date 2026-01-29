@@ -176,14 +176,14 @@ export default memo(function TaskTestPanel() {
           {
             label: $i18n.get({
               id: 'main.pages.App.Workflow.components.TaskTestPanel.index.input',
-              dm: '输入',
+              dm: 'Input',
             }),
             value: 'input',
           },
           {
             label: $i18n.get({
               id: 'main.pages.App.Workflow.components.TaskTestPanel.index.result',
-              dm: '结果',
+              dm: 'Result',
             }),
             value: 'result',
           },
@@ -197,7 +197,7 @@ export default memo(function TaskTestPanel() {
           {
             label: $i18n.get({
               id: 'main.pages.App.Workflow.components.TaskTestPanel.index.input',
-              dm: '输入',
+              dm: 'Input',
             }),
             key: 'input',
             children: (
@@ -215,11 +215,11 @@ export default memo(function TaskTestPanel() {
                   {state.loading
                     ? $i18n.get({
                         id: 'main.pages.App.Workflow.components.TaskTestPanel.index.testing',
-                        dm: '测试中...',
+                        dm: 'Testing...',
                       })
                     : $i18n.get({
                         id: 'main.pages.App.Workflow.components.TaskTestPanel.index.startTesting',
-                        dm: '开始测试',
+                        dm: 'Start Test',
                       })}
                 </Button>
               </div>
@@ -228,7 +228,7 @@ export default memo(function TaskTestPanel() {
           {
             label: $i18n.get({
               id: 'main.pages.App.Workflow.components.TaskTestPanel.index.output',
-              dm: '输出',
+              dm: 'Output',
             }),
             key: 'result',
             children: (
@@ -241,7 +241,7 @@ export default memo(function TaskTestPanel() {
                     data={{}}
                     title={$i18n.get({
                       id: 'main.pages.App.Workflow.components.TaskTestPanel.index.outputResultDisplayed',
-                      dm: '输出结果在这里展示',
+                      dm: 'Output results displayed here',
                     })}
                   />
                 ) : (
@@ -250,7 +250,7 @@ export default memo(function TaskTestPanel() {
                       <div className={styles['result-title']}>
                         {$i18n.get({
                           id: 'main.pages.App.Workflow.components.TaskTestPanel.index.runResult',
-                          dm: '运行结果',
+                          dm: 'Run Results',
                         })}
                       </div>
                       {state.taskInfo && (

@@ -10,11 +10,11 @@ const checkValid = (data: IVariableAssignNodeData) => {
     errorMsg.push({
       label: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.VariableAssign.schema.setVariable',
-        dm: '设置变量',
+        dm: 'Set Variable',
       }),
       error: $i18n.get({
         id: 'main.pages.App.Workflow.nodes.VariableAssign.schema.notNull',
-        dm: '不能为空',
+        dm: 'Cannot be empty',
       }),
     });
   }
@@ -25,11 +25,11 @@ const checkValid = (data: IVariableAssignNodeData) => {
       errorMsg.push({
         label: $i18n.get({
           id: 'main.pages.App.Workflow.nodes.VariableAssign.schema.setVariable',
-          dm: '设置变量',
+          dm: 'Set Variable',
         }),
         error: $i18n.get({
           id: 'main.pages.App.Workflow.nodes.VariableAssign.schema.leftValueNotNull',
-          dm: '左值不能为空',
+          dm: 'Left value cannot be empty',
         }),
       });
     }
@@ -42,11 +42,11 @@ const checkValid = (data: IVariableAssignNodeData) => {
       errorMsg.push({
         label: $i18n.get({
           id: 'main.pages.App.Workflow.nodes.VariableAssign.schema.setVariable',
-          dm: '设置变量',
+          dm: 'Set Variable',
         }),
         error: $i18n.get({
           id: 'main.pages.App.Workflow.nodes.VariableAssign.schema.rightValueNotNull',
-          dm: '右值不能为空',
+          dm: 'Right value cannot be empty',
         }),
       });
     }
@@ -59,16 +59,16 @@ export const VariableAssignSchema: INodeSchema = {
   type: 'VariableAssign',
   title: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.VariableAssign.schema.variableAssignment',
-    dm: '变量赋值',
+    dm: 'Variable Assignment',
   }),
   desc: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.VariableAssign.schema.assignVariables',
-    dm: '用于对变量进行赋值。',
+    dm: 'Used to assign values to variables.',
   }),
   iconType: 'spark-variableSetting-line',
   groupLabel: $i18n.get({
     id: 'main.pages.App.Workflow.nodes.VariableAssign.schema.variable',
-    dm: '变量',
+    dm: 'Variable',
   }),
   defaultParams: {
     input_params: [],

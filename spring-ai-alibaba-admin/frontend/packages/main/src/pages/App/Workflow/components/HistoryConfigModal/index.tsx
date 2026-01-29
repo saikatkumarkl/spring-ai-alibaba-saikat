@@ -35,7 +35,7 @@ export default function HistoryConfigModal(props: IHistoryConfigModalProps) {
         message.success(
           $i18n.get({
             id: 'main.pages.App.Workflow.components.GlobalVariableFormModal.index.saveSuccess',
-            dm: '保存成功',
+            dm: 'Save successful',
           }),
         );
         props.onOk();
@@ -49,7 +49,7 @@ export default function HistoryConfigModal(props: IHistoryConfigModalProps) {
     <Modal
       title={$i18n.get({
         id: 'main.pages.App.Workflow.components.HistoryConfigModal.contextRoundSetting',
-        dm: '上下文轮次设置',
+        dm: 'Context Rounds Settings',
       })}
       open={true}
       onOk={handleOk}
@@ -60,7 +60,7 @@ export default function HistoryConfigModal(props: IHistoryConfigModalProps) {
         <Form.Item
           label={$i18n.get({
             id: 'main.pages.App.Workflow.components.HistoryConfigModal.enableContext',
-            dm: '是否开启上下文',
+            dm: 'Enable Context',
           })}
         >
           <Switch
@@ -75,7 +75,7 @@ export default function HistoryConfigModal(props: IHistoryConfigModalProps) {
         <Form.Item
           label={$i18n.get({
             id: 'main.pages.App.Workflow.components.HistoryConfigModal.maxMemoryRounds',
-            dm: '最大记忆轮次',
+            dm: 'Max Memory Rounds',
           })}
         >
           <SliderSelector
@@ -110,7 +110,7 @@ export function HistoryConfigBtn({
       <Tooltip
         title={$i18n.get({
           id: 'main.pages.App.Workflow.components.HistoryConfigModal.contextRoundSetting',
-          dm: '上下文轮次设置',
+          dm: 'Context Rounds Settings',
         })}
       >
         <IconButton

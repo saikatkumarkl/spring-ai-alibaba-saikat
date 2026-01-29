@@ -40,7 +40,7 @@ export default function (props: IProps) {
         {
           title: $i18n.get({
             id: 'main.pages.Component.Plugin.Info.index.componentManagement',
-            dm: '组件管理',
+            dm: 'Component Management',
           }),
           path: '/component',
         },
@@ -48,11 +48,11 @@ export default function (props: IProps) {
           title: props.isCreate
             ? $i18n.get({
                 id: 'main.pages.Component.Plugin.Info.index.createCustomPlugin',
-                dm: '创建自定义插件',
+                dm: 'Create Custom Plugin',
               })
             : $i18n.get({
                 id: 'main.pages.Component.Plugin.Info.index.editCustomPlugin',
-                dm: '编辑自定义插件',
+                dm: 'Edit Custom Plugin',
               }),
         },
       ]}
@@ -68,7 +68,7 @@ export default function (props: IProps) {
           <div className={styles.title}>
             {$i18n.get({
               id: 'main.pages.Component.Plugin.Info.index.pluginInfo',
-              dm: '插件信息',
+              dm: 'Plugin Info',
             })}
           </div>
           <Form.Item
@@ -78,19 +78,19 @@ export default function (props: IProps) {
                 required: true,
                 message: $i18n.get({
                   id: 'main.pages.Component.Plugin.Info.index.enterPluginName',
-                  dm: '请输入插件名称',
+                  dm: 'Please enter plugin name',
                 }),
               },
             ]}
             label={$i18n.get({
               id: 'main.pages.Component.Plugin.Info.index.pluginName',
-              dm: '插件名称',
+              dm: 'Plugin Name',
             })}
           >
             <Input
               placeholder={$i18n.get({
                 id: 'main.pages.Component.Plugin.Info.index.enterPluginName',
-                dm: '请输入插件名称',
+                dm: 'Please enter plugin name',
               })}
               showCount
               maxLength={128}
@@ -104,13 +104,13 @@ export default function (props: IProps) {
                 required: true,
                 message: $i18n.get({
                   id: 'main.pages.Component.Plugin.Info.index.enterPluginDescription',
-                  dm: '请输入插件描述，帮助用户更好的理解插件功能和使用场景',
+                  dm: 'Please enter plugin description to help users understand its functionality and use cases',
                 }),
               },
             ]}
             label={$i18n.get({
               id: 'main.pages.Component.Plugin.Info.index.pluginDescription',
-              dm: '插件描述',
+              dm: 'Plugin Description',
             })}
           >
             <Input.TextArea
@@ -122,7 +122,7 @@ export default function (props: IProps) {
               maxLength={200}
               placeholder={$i18n.get({
                 id: 'main.pages.Component.Plugin.Info.index.enterPluginDescription',
-                dm: '请输入插件描述，帮助用户更好的理解插件功能和使用场景',
+                dm: 'Please enter plugin description to help users understand its functionality and use cases',
               })}
             />
           </Form.Item>
@@ -133,27 +133,27 @@ export default function (props: IProps) {
                 required: true,
                 message: $i18n.get({
                   id: 'main.pages.Component.Plugin.Info.index.enterPluginUrl',
-                  dm: '请输入插件URL',
+                  dm: 'Please enter plugin URL',
                 }),
               },
               {
                 pattern: /^https?:\/\/[^\s]+$/,
                 message: $i18n.get({
                   id: 'main.pages.Component.Plugin.Info.index.enterValidPluginUrl',
-                  dm: '请输入合法的插件URL地址',
+                  dm: 'Please enter a valid plugin URL',
                 }),
               },
             ]}
             name={['config', 'server']}
             label={$i18n.get({
               id: 'main.pages.Component.Plugin.Info.index.pluginUrl',
-              dm: '插件URL',
+              dm: 'Plugin URL',
             })}
           >
             <Input
               placeholder={$i18n.get({
                 id: 'main.pages.Component.Plugin.Info.index.enterPluginUrl',
-                dm: '请输入插件URL',
+                dm: 'Please enter plugin URL',
               })}
             />
           </Form.Item>
@@ -161,7 +161,7 @@ export default function (props: IProps) {
           <Form.Item
             label={$i18n.get({
               id: 'main.pages.Component.Plugin.Info.index.headerList',
-              dm: 'Header列表',
+              dm: 'Header List',
             })}
           >
             <HeadersEditForm />
@@ -170,7 +170,7 @@ export default function (props: IProps) {
           <Form.Item
             label={$i18n.get({
               id: 'main.pages.Component.Plugin.Info.index.isAuthentication',
-              dm: '是否鉴权',
+              dm: 'Authentication Required',
             })}
             name={['config', 'auth', 'type']}
           >
@@ -199,7 +199,7 @@ export default function (props: IProps) {
               <Form.Item
                 label={$i18n.get({
                   id: 'main.pages.Component.Plugin.Info.index.authenticationType',
-                  dm: '认证类型',
+                  dm: 'Authentication Type',
                 })}
                 name={['config', 'auth', 'authorization_type']}
                 rules={[
@@ -207,7 +207,7 @@ export default function (props: IProps) {
                     required: authType !== 'none',
                     message: $i18n.get({
                       id: 'main.pages.Component.Plugin.Info.index.selectAuthenticationType',
-                      dm: '请选择认证类型',
+                      dm: 'Please select authentication type',
                     }),
                   },
                 ]}
@@ -223,7 +223,7 @@ export default function (props: IProps) {
               <Form.Item
                 label={$i18n.get({
                   id: 'main.pages.Component.Plugin.Info.index.authenticationLocation',
-                  dm: '认证位置',
+                  dm: 'Authentication Location',
                 })}
                 name={['config', 'auth', 'authorization_position']}
                 rules={[
@@ -231,7 +231,7 @@ export default function (props: IProps) {
                     required: authType !== 'none',
                     message: $i18n.get({
                       id: 'main.pages.Component.Plugin.Info.index.selectAuthenticationLocation',
-                      dm: '请选择认证位置',
+                      dm: 'Please select authentication location',
                     }),
                   },
                 ]}
@@ -247,7 +247,7 @@ export default function (props: IProps) {
               <Form.Item
                 label={$i18n.get({
                   id: 'main.pages.Component.Plugin.Info.index.authenticationParameterName',
-                  dm: '认证参数名',
+                  dm: 'Authentication Parameter Name',
                 })}
                 name={['config', 'auth', 'authorization_key']}
                 rules={[
@@ -255,7 +255,7 @@ export default function (props: IProps) {
                     required: authType !== 'none',
                     message: $i18n.get({
                       id: 'main.pages.Component.Plugin.Info.index.enterAuthenticationParameterName',
-                      dm: '请输入认证参数名',
+                      dm: 'Please enter authentication parameter name',
                     }),
                   },
                 ]}
@@ -266,7 +266,7 @@ export default function (props: IProps) {
               <Form.Item
                 label={$i18n.get({
                   id: 'main.pages.Component.Plugin.Info.index.authenticationParameterValue',
-                  dm: '认证参数值',
+                  dm: 'Authentication Parameter Value',
                 })}
                 name={['config', 'auth', 'authorization_value']}
                 rules={[
@@ -274,7 +274,7 @@ export default function (props: IProps) {
                     required: authType !== 'none',
                     message: $i18n.get({
                       id: 'main.pages.Component.Plugin.Info.index.enterAuthenticationParameterValue',
-                      dm: '请输入认证参数值',
+                      dm: 'Please enter authentication parameter value',
                     }),
                   },
                 ]}
@@ -305,11 +305,11 @@ export default function (props: IProps) {
             {props.isCreate
               ? $i18n.get({
                   id: 'main.pages.Component.Plugin.Info.index.confirmCreate',
-                  dm: '确认创建',
+                  dm: 'Confirm Create',
                 })
               : $i18n.get({
                   id: 'main.pages.Component.Plugin.Info.index.save',
-                  dm: '保存',
+                  dm: 'Save',
                 })}
           </Button>
           {props.isCreate ? (
@@ -326,7 +326,7 @@ export default function (props: IProps) {
             >
               {$i18n.get({
                 id: 'main.pages.Component.Plugin.Info.index.continueAddTool',
-                dm: '继续添加工具',
+                dm: 'Continue Adding Tool',
               })}
             </Button>
           ) : null}
@@ -336,23 +336,23 @@ export default function (props: IProps) {
               const text = props.isCreate
                 ? $i18n.get({
                     id: 'main.pages.Component.Plugin.Info.index.confirmExitCustomPluginCreate',
-                    dm: '创建',
+                    dm: 'creating',
                   })
                 : $i18n.get({
                     id: 'main.pages.Component.Plugin.Info.index.confirmExitCustomPluginEdit',
-                    dm: '编辑',
+                    dm: 'editing',
                   });
               AlertDialog.warning({
                 title: $i18n.get(
                   {
                     id: 'main.pages.Component.Plugin.Info.index.confirmExitCustomPlugin',
-                    dm: '是否退出{var1}自定义插件',
+                    dm: 'Exit {var1} custom plugin?',
                   },
                   { var1: text },
                 ),
                 children: $i18n.get({
                   id: 'main.pages.Component.Plugin.Info.index.exitWithoutSave',
-                  dm: '退出后，插件信息不会保存，是否确认？',
+                  dm: 'Plugin information will not be saved after exiting. Are you sure?',
                 }),
                 onOk() {
                   history.push('/component/plugin');
@@ -362,7 +362,7 @@ export default function (props: IProps) {
           >
             {$i18n.get({
               id: 'main.pages.Component.Plugin.Info.index.cancel',
-              dm: '取消',
+              dm: 'Cancel',
             })}
           </Button>
         </Flex>,

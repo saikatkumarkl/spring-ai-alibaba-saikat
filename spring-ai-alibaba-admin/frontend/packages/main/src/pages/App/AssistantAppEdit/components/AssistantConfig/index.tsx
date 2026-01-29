@@ -22,7 +22,7 @@ import ModelConfig from './modelConfig';
 
 export const RAG_PROMPT_TEMPLATE = $i18n.get({
   id: 'main.pages.App.AssistantAppEdit.components.AssistantConfig.index.knowledgeBaseTip',
-  dm: '# 知识库\\n请记住以下材料，他们可能对回答问题有帮助。\\n${documents}',
+  dm: '# Knowledge Base\\nPlease remember the following materials, they may be helpful for answering questions.\\n${documents}',
 });
 
 export default function AssistantConfig() {
@@ -41,7 +41,7 @@ export default function AssistantConfig() {
       message.warning(
         $i18n.get({
           id: 'main.pages.App.AssistantAppEdit.components.AssistantConfig.index.selectModelFirst',
-          dm: '请先选择模型！',
+          dm: 'Please select a model first!',
         }),
       );
       return false;
@@ -100,7 +100,7 @@ export default function AssistantConfig() {
               >
                 {$i18n.get({
                   id: 'main.pages.App.AssistantAppEdit.components.AssistantConfig.index.apiConfiguration',
-                  dm: 'API配置',
+                  dm: 'API Configuration',
                 })}
 
                 <ModelConfig></ModelConfig>
@@ -120,7 +120,7 @@ export default function AssistantConfig() {
                       >
                         {$i18n.get({
                           id: 'main.pages.App.AssistantAppEdit.components.AssistantConfig.index.instruction',
-                          dm: '指令',
+                          dm: 'Instructions',
                         })}
                       </div>
                       <AssistantPromptEditorWrap
@@ -152,7 +152,7 @@ export default function AssistantConfig() {
                       >
                         {$i18n.get({
                           id: 'main.pages.App.AssistantAppEdit.components.AssistantConfig.index.knowledge',
-                          dm: '知识',
+                          dm: 'Knowledge',
                         })}
                       </div>
                       <KnowledgeBaseSelectorComp></KnowledgeBaseSelectorComp>
@@ -170,7 +170,7 @@ export default function AssistantConfig() {
                       >
                         {$i18n.get({
                           id: 'main.pages.App.AssistantAppEdit.components.AssistantConfig.index.skill',
-                          dm: '技能',
+                          dm: 'Skills',
                         })}
                       </div>
                       <MCPSelectorComp />

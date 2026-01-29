@@ -27,7 +27,7 @@ const VersionHistoryModal = ({ prompt, onClose }) => {
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">
-              版本记录 - {prompt.name}
+              Version History - {prompt.name}
             </h2>
             <button
               onClick={onClose}
@@ -37,10 +37,10 @@ const VersionHistoryModal = ({ prompt, onClose }) => {
             </button>
           </div>
           <p className="text-sm text-gray-500 mt-2">
-            点击两个版本进行对比，或单击查看详情
+            Click two versions to compare, or click one to view details
           </p>
         </div>
-        
+
         <div className="p-6">
           <div className="space-y-4">
             {prompt.history && prompt.history.length > 0 ? (
@@ -67,30 +67,30 @@ const VersionHistoryModal = ({ prompt, onClose }) => {
                         <div>{version.createdAt}</div>
                       </div>
                   </div>
-                  
+
                   <div className="mb-3">
                     <h4 className="text-sm font-medium text-gray-700 mb-1">
-                      版本说明:
+                      Version Description:
                     </h4>
                     <p className="text-sm text-gray-600">
                       {version.description}
                     </p>
                   </div>
-                  
+
                   <div>
                     <h4 className="text-sm font-medium text-gray-700 mb-1">
-                      内容预览:
+                      Content Preview:
                     </h4>
                     <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded max-h-20 overflow-hidden">
                       {version.content.substring(0, 150)}
                       {version.content.length > 150 && '...'}
                     </div>
                   </div>
-                  
+
                   {selectedVersions.some(v => v.id === version.id) && (
                     <div className="mt-2 text-xs text-blue-600">
                       <i className="fas fa-check-circle mr-1"></i>
-                      已选择用于对比
+                      Selected for comparison
                     </div>
                   )}
                 </div>
@@ -98,7 +98,7 @@ const VersionHistoryModal = ({ prompt, onClose }) => {
             ) : (
                   <div className="text-center py-8">
                     <i className="fas fa-history text-3xl text-gray-300 mb-3"></i>
-                    <p className="text-gray-500">暂无版本记录</p>
+                    <p className="text-gray-500">No version history available</p>
                   </div>
             )}
           </div>
@@ -108,30 +108,30 @@ const VersionHistoryModal = ({ prompt, onClose }) => {
           <div className="text-sm text-gray-500">
             {selectedVersions.length > 0 && (
               <span>
-                已选择 {selectedVersions.length} 个版本
-                {selectedVersions.length === 2 && ' (将自动打开对比)'}
+                Selected {selectedVersions.length} version{selectedVersions.length > 1 ? 's' : ''}
+                {selectedVersions.length === 2 && ' (comparison will open automatically)'}
               </span>
             )}
           </div>
-          
+
           <div className="flex space-x-3">
             <button
               onClick={() => setSelectedVersions([])}
               disabled={selectedVersions.length === 0}
               className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
             >
-              清除选择
+              Clear Selection
             </button>
             <button
               onClick={onClose}
               className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
             >
-              关闭
+              Close
             </button>
           </div>
         </div>
       </div>
-      
+
       {showCompare && selectedVersions.length === 2 && (
         <VersionCompareModal
           prompt={prompt}

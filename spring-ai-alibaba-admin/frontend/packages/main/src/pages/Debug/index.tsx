@@ -15,7 +15,7 @@ const DebugPage: React.FC = () => {
         {
           title: $i18n.get({
             id: 'main.pages.App.index.home',
-            dm: '首页',
+            dm: 'Home',
           }),
         },
         {
@@ -33,7 +33,7 @@ const DebugPage: React.FC = () => {
               <Suspense
                 fallback={
                   <div className={styles.loadingContainer}>
-                    <Spin size="large" tip="加载聊天界面..." />
+                    <Spin size="large" tip="Loading chat interface..." />
                   </div>
                 }
               >

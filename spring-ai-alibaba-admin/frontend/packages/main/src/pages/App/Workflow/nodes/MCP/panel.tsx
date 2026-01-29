@@ -99,13 +99,13 @@ export default memo(function MCPPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.MCP.panel.input',
-              dm: '输入',
+              dm: 'Input',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.MCP.panel.inputVariables',
-                dm: '输入变量，MCP工具的输入参数。',
+                dm: 'Input variables, the input parameters for the MCP tool.',
               })}
             />
           </div>
@@ -130,13 +130,13 @@ export default memo(function MCPPanel(props: {
           <div className="spark-flow-panel-form-title">
             {$i18n.get({
               id: 'main.pages.App.Workflow.nodes.MCP.panel.output',
-              dm: '输出',
+              dm: 'Output',
             })}
 
             <InfoIcon
               tip={$i18n.get({
                 id: 'main.pages.App.Workflow.nodes.MCP.panel.outputVariables',
-                dm: '输出本节点处理结果的变量，用于后续节点识别和处理本节点的处理结果。',
+                dm: 'Output variables for the processing results of this node, used for subsequent nodes to identify and process the results.',
               })}
             />
           </div>
