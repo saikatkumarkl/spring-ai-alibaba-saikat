@@ -100,11 +100,16 @@ export class Chat extends EventEmitter {
 
   close() {
     // manually close
-    this.messages.push({
+    const assistantMessage: IMessage = {
       role: 'assistant',
-      content: this.cacheMessage?.message?.content,
+      content: this.cacheMessage?.message?.content || '',
       content_type: this.cacheMessage?.message?.content_type || 'text',
-    });
+    };
+    // Include tool_calls in the message history for proper multi-turn tool calling
+    if (this.cacheMessage?.message?.tool_calls?.length) {
+      (assistantMessage as any).tool_calls = this.cacheMessage.message.tool_calls;
+    }
+    this.messages.push(assistantMessage);
     this.cacheMessage = null;
     this.rpc.close();
   }
@@ -243,11 +248,16 @@ export class Chat extends EventEmitter {
               console.log('[SSE] Final traceId in cacheMessage:', this.cacheMessage.trace_id);
             }
           }
-          this.messages.push({
+          const assistantMessage: IMessage = {
             role: 'assistant',
-            content: this.cacheMessage?.message?.content,
+            content: this.cacheMessage?.message?.content || '',
             content_type: this.cacheMessage?.message?.content_type || 'text',
-          });
+          };
+          // Include tool_calls in the message history for proper multi-turn tool calling
+          if (this.cacheMessage?.message?.tool_calls?.length) {
+            (assistantMessage as any).tool_calls = this.cacheMessage.message.tool_calls;
+          }
+          this.messages.push(assistantMessage);
           this.emit('close', this.cacheMessage);
           this.cacheMessage = null;
           this.currentTraceId = null;

@@ -329,7 +329,18 @@ export default function (props: IProps) {
                 dm: 'Continue Adding Tool',
               })}
             </Button>
-          ) : null}
+          ) : (
+            <Button
+              onClick={() => {
+                history.push(`/component/plugin/${props.pluginData?.plugin_id}/tools`);
+              }}
+            >
+              {$i18n.get({
+                id: 'main.pages.Component.Plugin.Info.index.manageTools',
+                dm: 'Manage Tools',
+              })}
+            </Button>
+          )}
 
           <Button
             onClick={() => {

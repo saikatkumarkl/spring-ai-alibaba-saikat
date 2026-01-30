@@ -334,7 +334,29 @@ public class BasicAgentExecutor extends AbstractAgentExecutor {
 								chatMessage.getContentType().getValue() + "not supported"));
 					}
 				}
-				case ASSISTANT -> message = new AssistantMessage(String.valueOf(chatMessage.getContent()));
+				case ASSISTANT -> {
+					String content = chatMessage.getContent() != null ? String.valueOf(chatMessage.getContent()) : "";
+					// Convert tool calls from domain model to Spring AI format
+					List<AssistantMessage.ToolCall> springToolCalls = null;
+					if (!CollectionUtils.isEmpty(chatMessage.getToolCalls())) {
+						springToolCalls = chatMessage.getToolCalls().stream()
+							.filter(tc -> tc.getFunction() != null)
+							.map(tc -> new AssistantMessage.ToolCall(
+								tc.getId(),
+								"function",
+								tc.getFunction().getName(),
+								tc.getFunction().getArguments()))
+							.collect(Collectors.toList());
+					}
+					if (springToolCalls != null && !springToolCalls.isEmpty()) {
+						message = AssistantMessage.builder()
+							.content(content)
+							.toolCalls(springToolCalls)
+							.build();
+					} else {
+						message = new AssistantMessage(content);
+					}
+				}
 			}
 
 			messages.add(message);
