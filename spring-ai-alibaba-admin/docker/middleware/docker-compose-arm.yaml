@@ -5,15 +5,18 @@ services:
     restart: always
     image: mysql:8.0
     platform: linux/amd64
-    env_file:
-      - ./mysql.env
     environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=admin
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=admin
+      - LANG=C.UTF-8
       - TZ=Asia/Shanghai
     volumes:
-      - ${MIDDLEWARE_HOME:-.}/mysql/data:/var/lib/mysql
-      - ${MIDDLEWARE_HOME:-.}/mysql/log:/var/log
-      - ${MIDDLEWARE_HOME:-.}/conf/mysql:/etc/mysql/conf.d
-      - ${MIDDLEWARE_HOME:-.}/init/mysql:/docker-entrypoint-initdb.d/
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/log:/var/log
+      - ./conf/mysql:/etc/mysql/conf.d
+      - ./init/mysql:/docker-entrypoint-initdb.d/
     ports:
       - "3306:3306"
     healthcheck:
@@ -74,8 +77,8 @@ services:
       - MODE=standalone
       - NACOS_AUTH_ENABLE=false
     volumes:
-      - ${MIDDLEWARE_HOME:-.}/nacos/logs:/home/nacos/logs
-      - ${MIDDLEWARE_HOME:-.}/nacos/data:/home/nacos/data
+      - ./nacos/logs:/home/nacos/logs
+      - ./nacos/data:/home/nacos/data
     networks:
       - saa-network
 
@@ -86,22 +89,21 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - ${MIDDLEWARE_HOME:-.}/redis/data:/data
+      - ./redis/data:/data
     command: redis-server
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
     networks:
       - saa-network
 
-  rmq_namesrv:
+  rmq-namesrv:
     image: apache/rocketmq:5.3.2
     platform: linux/amd64
-    container_name: rmq_namesrv
+    container_name: rmq-namesrv
     restart: always
-    env_file:
-      - ./.env
     environment:
-      - NAMESRV_ADDR=rmq_namesrv:9876
+      - TZ=Asia/Shanghai
+      - NAMESRV_ADDR=rmq-namesrv:9876
       - HEAP_OPTS=-Xms128M -Xmx256M -Xmn128M
     ports:
       - "9876:9876"
@@ -114,24 +116,23 @@ services:
       timeout: 5s
       retries: 5
 
-  rmq_broker:
+  rmq-broker:
     image: apache/rocketmq:5.3.2
     platform: linux/amd64
-    container_name: rmq_broker
+    container_name: rmq-broker
     restart: always
-    env_file:
-      - ./.env
     environment:
-      - NAMESRV_ADDR=rmq_namesrv:9876
+      - TZ=Asia/Shanghai
+      - NAMESRV_ADDR=rmq-namesrv:9876
       - HEAP_OPTS=-Xms256M -Xmx512M -Xmn256M -XX:MaxDirectMemorySize=128M
     volumes:
-      - ${MIDDLEWARE_HOME:-.}/rocketmq/store:/home/rocketmq/store
+      - ./rocketmq/store:/home/rocketmq/store
     ports:
       - "10909:10909"
       - "10911:10911"
       - "10912:10912"
     depends_on:
-      rmq_namesrv:
+      rmq-namesrv:
         condition: service_healthy
     networks:
       - saa-network
@@ -142,24 +143,23 @@ services:
       timeout: 5s
       retries: 5
 
-  rmq_proxy:
+  rmq-proxy:
     image: apache/rocketmq:5.3.2
     platform: linux/amd64
-    container_name: rmq_proxy
+    container_name: rmq-proxy
     restart: always
     volumes:
-      - ${MIDDLEWARE_HOME:-.}/conf/rocketmq:/home/rocketmq/conf
-    env_file:
-      - ./.env
+      - ./conf/rocketmq:/home/rocketmq/conf
     environment:
-      - NAMESRV_ADDR=rmq_namesrv:9876
+      - TZ=Asia/Shanghai
+      - NAMESRV_ADDR=rmq-namesrv:9876
       - HEAP_OPTS=-Xms128M -Xmx256M -Xmn128M
     networks:
       - saa-network
     depends_on:
-      rmq_broker:
+      rmq-broker:
         condition: service_healthy
-      rmq_namesrv:
+      rmq-namesrv:
         condition: service_healthy
     ports:
       - "18080:18080"
@@ -172,9 +172,9 @@ services:
     container_name: rmq-init-topic
     restart: "no"
     depends_on:
-      rmq_namesrv:
+      rmq-namesrv:
         condition: service_healthy
-      rmq_broker:
+      rmq-broker:
         condition: service_healthy
     networks:
       - saa-network
@@ -182,16 +182,46 @@ services:
       sh -c "
         echo 'Waiting for RocketMQ to be ready...' &&
         sleep 30 &&
-        until sh mqadmin clusterList -n rmq_namesrv:9876; do
+        until sh mqadmin clusterList -n rmq-namesrv:9876; do
           echo 'Waiting for RocketMQ to be fully ready...' &&
           sleep 10
         done &&
         echo 'Creating topic...' &&
-        sh mqadmin updateTopic -n rmq_namesrv:9876 -t topic_saa_studio_document_index -c DefaultCluster -a +message.type=NORMAL &&
-        sh mqadmin updateSubGroup -n rmq_namesrv:9876 -g group_saa_studio_document_index -c DefaultCluster &&
+        sh mqadmin updateTopic -n rmq-namesrv:9876 -t topic_saa_studio_document_index -c DefaultCluster -a +message.type=NORMAL &&
+        sh mqadmin updateSubGroup -n rmq-namesrv:9876 -g group_saa_studio_document_index -c DefaultCluster &&
         echo 'Verifying topic creation...' &&
-        sh mqadmin topicList -n rmq_namesrv:9876 &&
+        sh mqadmin topicList -n rmq-namesrv:9876 &&
         echo 'Topic creation completed'"
+
+  backend:
+    build:
+      context: ../..
+      dockerfile: docker/middleware/Dockerfile.backend
+    image: spring-ai-alibaba-admin-server:latest
+    container_name: saa-backend
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - JAVA_OPTS=-Xms512m -Xmx1024m -XX:+UseG1GC
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      rmq-proxy:
+        condition: service_started
+    networks:
+      - saa-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
 volumes:
   elasticsearch_data:

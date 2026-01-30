@@ -39,9 +39,13 @@ const ModelConfigModal: React.FC<ModelConfigModalProps> = ({
         form.resetFields();
         setAvailableModels([]);
         setUseDropdown(false);
+        // Auto-load models for Ollama providers when adding new model
+        if (!isEdit && provider?.credential?.endpoint && provider?.protocol === 'openai') {
+          fetchAvailableModels();
+        }
       }
     }
-  }, [open, model, form]);
+  }, [open, model, form, provider]);
 
   const fetchAvailableModels = async () => {
     if (!provider?.credential?.endpoint) {
@@ -143,22 +147,17 @@ const ModelConfigModal: React.FC<ModelConfigModalProps> = ({
                     dm: 'Model Name',
                   })}
                 </span>
-                {!isEdit && provider?.credential?.endpoint && (
+                {!isEdit && provider?.credential?.endpoint && useDropdown && availableModels.length > 0 && (
                   <Button
                     type="link"
                     size="small"
-                    loading={loadingModels}
                     onClick={() => {
-                      if (useDropdown) {
-                        setUseDropdown(false);
-                        setAvailableModels([]);
-                      } else {
-                        fetchAvailableModels();
-                      }
+                      setUseDropdown(false);
+                      setAvailableModels([]);
                     }}
                     style={{ padding: 0, height: 'auto' }}
                   >
-                    {useDropdown ? 'Use manual input' : 'Load available models'}
+                    Use manual input
                   </Button>
                 )}
               </div>
@@ -173,7 +172,16 @@ const ModelConfigModal: React.FC<ModelConfigModalProps> = ({
               },
             ]}
           >
-            {useDropdown && availableModels.length > 0 ? (
+            {loadingModels ? (
+              <Select
+                placeholder={$i18n.get({
+                  id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.loadingModels',
+                  dm: 'Loading available models...',
+                })}
+                loading={true}
+                disabled={true}
+              />
+            ) : useDropdown && availableModels.length > 0 ? (
               <Select
                 placeholder={$i18n.get({
                   id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.selectModel',
