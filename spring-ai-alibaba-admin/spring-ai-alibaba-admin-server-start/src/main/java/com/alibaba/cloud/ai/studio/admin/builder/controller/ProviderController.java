@@ -540,7 +540,20 @@ public class ProviderController {
 			return Result.success(Lists.newArrayList());
 		} catch (Exception e) {
 			log.error("Failed to fetch Ollama models from endpoint: {}", endpoint, e);
-			throw new BizException(ErrorCode.SYSTEM_ERROR.toError("Failed to connect to Ollama: " + e.getMessage()));
+			String errorMsg = e.getMessage();
+			
+			// Provide helpful error message for common Docker networking issue
+			if (errorMsg != null && errorMsg.contains("Connection refused") && endpoint.contains("localhost")) {
+				errorMsg = "Cannot connect to Ollama at " + endpoint + ". " +
+						"If running in Docker, use 'host.docker.internal' instead of 'localhost'. " +
+						"Example: http://host.docker.internal:11434";
+			} else if (errorMsg != null && errorMsg.contains("Connection refused")) {
+				errorMsg = "Cannot connect to Ollama at " + endpoint + ". Please check if Ollama is running and accessible.";
+			} else {
+				errorMsg = "Failed to connect to Ollama: " + errorMsg;
+			}
+			
+			throw new BizException(ErrorCode.SYSTEM_ERROR.toError(errorMsg));
 		}
 	}
 }
