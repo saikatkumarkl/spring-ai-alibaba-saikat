@@ -148,8 +148,11 @@ public class ModelFactory {
 		ProviderConfigInfo providerDetail = providerManager.getProviderDetail(provider, false);
 		ModelCredential credential = providerDetail.getCredential();
 
+		// If API key is not provided, use a placeholder for local/self-hosted providers
+		// This allows providers like Ollama, LM Studio, etc. that don't require API keys
 		if (StringUtils.isBlank(credential.getApiKey())) {
-			throw new BizException(ErrorCode.INVALID_PARAMS.toError("apikey", "api key is invalid."));
+			credential.setApiKey("not-required");
+			log.debug("API key not provided for provider {}, using placeholder", provider);
 		}
 
 		return credential;

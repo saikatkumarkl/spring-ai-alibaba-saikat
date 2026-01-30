@@ -117,14 +117,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-      jakarta:
-        persistence:
-          jdbc:
-            # 使用与 datasource 相同的配置，通过环境变量覆盖
-            url: ${SPRING_DATASOURCE_URL}
-            user: ${SPRING_DATASOURCE_USERNAME}
-            password: ${SPRING_DATASOURCE_PASSWORD}
-            driver: com.mysql.cj.jdbc.Driver
 mybatis:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.alibaba.cloud.ai.studio.admin.entity

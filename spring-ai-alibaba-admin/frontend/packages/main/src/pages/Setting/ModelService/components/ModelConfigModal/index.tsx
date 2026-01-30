@@ -39,8 +39,9 @@ const ModelConfigModal: React.FC<ModelConfigModalProps> = ({
         form.resetFields();
         setAvailableModels([]);
         setUseDropdown(false);
-        // Auto-load models for Ollama providers when adding new model
-        if (!isEdit && provider?.credential?.endpoint && provider?.protocol === 'openai') {
+        // Auto-load models for providers with endpoint configured
+        if (!isEdit && provider?.credential?.endpoint) {
+          console.log('Auto-loading models from:', provider.credential.endpoint);
           fetchAvailableModels();
         }
       }
@@ -64,12 +65,7 @@ const ModelConfigModal: React.FC<ModelConfigModalProps> = ({
       if (response?.data && response.data.length > 0) {
         setAvailableModels(response.data);
         setUseDropdown(true);
-        message.success(
-          $i18n.get({
-            id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.modelsLoaded',
-            dm: `Found ${response.data.length} models`,
-          }),
-        );
+        // Silently loaded models - no success message needed
       } else {
         message.info(
           $i18n.get({

@@ -37,13 +37,21 @@ const ModelServiceProviderModal: React.FC<ModelServiceProviderModalProps> = ({
       const values = await form.validateFields();
       setLoading(true);
 
+      // Build credential config - only include api_key if provided
+      const credentialConfig: { endpoint: string; api_key?: string } = {
+        endpoint: values.endpoint,
+      };
+
+      // Only add api_key to credentials if it's provided (for cloud providers)
+      // Local providers like Ollama don't require API keys
+      if (values.api_key && values.api_key.trim()) {
+        credentialConfig.api_key = values.api_key;
+      }
+
       const params: ICreateProviderParams = {
         name: values.name,
         protocol: values.protocol,
-        credential_config: {
-          api_key: values.api_key,
-          endpoint: values.endpoint,
-        },
+        credential_config: credentialConfig,
       };
 
       const res = await createProvider(params);
@@ -132,17 +140,17 @@ const ModelServiceProviderModal: React.FC<ModelServiceProviderModalProps> = ({
 
         <Form.Item
           name="api_key"
-          label="API-KEY"
-          rules={[
-            {
-              required: true,
-              message: $i18n.get({
-                id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.enterApiKey',
-                dm: 'Please enter API-KEY',
-              }),
-            },
-          ]}
-          required
+          label={
+            <span>
+              API-KEY{' '}
+              <span style={{ color: '#999', fontWeight: 'normal', fontSize: '12px' }}>
+                ({$i18n.get({
+                  id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.optionalForLocalProviders',
+                  dm: 'Optional for local providers like Ollama',
+                })})
+              </span>
+            </span>
+          }
         >
           <Input.Password
             placeholder={$i18n.get({

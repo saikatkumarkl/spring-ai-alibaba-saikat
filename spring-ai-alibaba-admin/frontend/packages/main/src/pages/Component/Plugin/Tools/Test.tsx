@@ -1,7 +1,7 @@
 import $i18n from '@/i18n';
 import { testTool } from '@/services/plugin';
 import { Button, CodeBlock, Drawer, IconFont } from '@spark-ai/design';
-import { Collapse, CollapseProps, Flex } from 'antd';
+import { Collapse, CollapseProps, Flex, message } from 'antd';
 import { useEffect, useState } from 'react';
 import { InputParamItem } from '../components/InputParamsConfig';
 import styles from './index.module.less';
@@ -53,6 +53,15 @@ export default function (props: {
             type="primary"
             className="self-start mb-2"
             onClick={() => {
+              if (!props.toolId) {
+                message.warning(
+                  $i18n.get({
+                    id: 'main.pages.Component.Plugin.Tools.Test.saveFirst',
+                    dm: 'Please save the tool first before testing',
+                  }),
+                );
+                return;
+              }
               const _input = JSON.parse(finalInput);
               testTool(props.pluginId, props.toolId, _input).then((res) => {
                 setResult(JSON.stringify(res));
