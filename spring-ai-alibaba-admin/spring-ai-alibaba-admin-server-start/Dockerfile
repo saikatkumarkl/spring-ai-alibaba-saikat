@@ -27,12 +27,12 @@ COPY spring-ai-alibaba-admin-server-start/src ./spring-ai-alibaba-admin-server-s
 RUN mvn clean package -DskipTests -pl spring-ai-alibaba-admin-server-start -am
 
 # Stage 2: Run the application
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre
 
 WORKDIR /app
 
 # Install wget for health check
-RUN apk add --no-cache wget
+RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user
 RUN addgroup -S spring && adduser -S spring -G spring

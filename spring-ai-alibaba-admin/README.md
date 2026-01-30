@@ -1,12 +1,12 @@
 # Spring AI Alibaba Admin
 
-> Spring AI Alibaba Repo: https://github.com/alibaba/spring-ai-alibaba
+> Spring AI Alibaba Repo: https://github.com/saikatkumarkl/spring-ai-alibaba-saikat
 >
 > Spring AI Alibaba Website: https://java2ai.com
 >
 > Spring AI Alibaba Website Repo: https://github.com/springaialibaba/spring-ai-alibaba-website
 
-English | [中文](./README-zh.md) 
+English | [Chinese](./README-zh.md) 
 
 ## Project Background
 
@@ -66,8 +66,8 @@ Agent Studio is an AI Agent development and evaluation platform based on Spring 
 #### 1. Clone the Project
 
 ```bash
-git clone https://github.com/spring-ai-alibaba/spring-ai-alibaba-admin.git
-cd spring-ai-alibaba-admin
+git clone https://github.com/saikatkumarkl/spring-ai-alibaba-saikat.git
+cd spring-ai-alibaba-saikat/spring-ai-alibaba-admin
 ```
 
 #### 2. Configure Your API Keys
@@ -85,19 +85,46 @@ nacos:
 ```
 
 ### 4. Start SAA Admin
-#### 4.1 Start Middleware Services
-Navigate to the `docker/middleware` directory in the project root and execute the startup script to launch the required middleware services (MySQL, Elasticsearch, Nacos, Redis, RocketMQ):
+
+#### 4.1 Start Backend and Middleware Services with Docker Compose
+
+Navigate to the `docker/middleware` directory and start all services (MySQL, Redis, Elasticsearch, Nacos, RocketMQ, and Backend) with a single command:
 
 ```bash
 cd docker/middleware
-sh run.sh
+docker compose -f docker-compose-arm.yaml up -d
 ```
-#### 4.2 Start Backend Service
-Navigate to the `spring-ai-alibaba-admin-server-start` directory and start the application:
+
+This will start:
+- **MySQL** on port 3306 (user: `admin`, password: `admin`, database: `admin`)
+- **Redis** on port 6379
+- **Elasticsearch** on port 9200
+- **Nacos** on port 8848
+- **RocketMQ** (namesrv: 9876, broker: 10909/10911, proxy: 18080)
+- **Backend API** on port 8080
+
+Wait for all services to become healthy (about 1-2 minutes):
 ```bash
-mvn spring-boot:run
+docker ps
 ```
-#### 4.3 Start Frontend Service
+
+Verify backend is running:
+```bash
+curl http://localhost:8080/actuator/health
+```
+
+To stop all services:
+```bash
+docker compose -f docker-compose-arm.yaml down
+```
+
+To rebuild the backend after code changes:
+```bash
+cd docker/middleware
+./rebuild-backend.sh
+```
+
+#### 4.2 Start Frontend Service
 Navigate to the `frontend` directory in the project root, read the corresponding README to install dependencies and configure the environment, then start the service:
 ```bash
 cd packages/main
