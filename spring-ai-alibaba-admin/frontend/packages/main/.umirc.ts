@@ -105,10 +105,6 @@ export default defineConfig({
       component: 'Component/Plugin/Info/Create',
     },
     {
-      path: '/component/plugin/:id',
-      component: 'Component/Plugin/Info/Edit',
-    },
-    {
       path: '/component/plugin/:id/tool/create',
       component: 'Component/Plugin/Tools/Edit',
     },
@@ -119,6 +115,10 @@ export default defineConfig({
     {
       path: '/component/plugin/:id/tools',
       component: 'Component/Plugin/Tools/List',
+    },
+    {
+      path: '/component/plugin/:id',
+      component: 'Component/Plugin/Info/Edit',
     },
     {
       path: '/knowledge',

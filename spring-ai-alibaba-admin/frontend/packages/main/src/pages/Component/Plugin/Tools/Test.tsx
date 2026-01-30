@@ -62,10 +62,23 @@ export default function (props: {
                 );
                 return;
               }
-              const _input = JSON.parse(finalInput);
-              testTool(props.pluginId, props.toolId, _input).then((res) => {
-                setResult(JSON.stringify(res));
-              });
+              try {
+                const _input = JSON.parse(finalInput || input);
+                testTool(props.pluginId, props.toolId, _input)
+                  .then((res) => {
+                    setResult(JSON.stringify(res, null, 2));
+                  })
+                  .catch((err) => {
+                    setResult(JSON.stringify({ error: err.message || 'Test failed' }, null, 2));
+                  });
+              } catch (error) {
+                message.error(
+                  $i18n.get({
+                    id: 'main.pages.Component.Plugin.Tools.Test.invalidJson',
+                    dm: 'Invalid JSON input',
+                  }),
+                );
+              }
             }}
           >
             {$i18n.get({

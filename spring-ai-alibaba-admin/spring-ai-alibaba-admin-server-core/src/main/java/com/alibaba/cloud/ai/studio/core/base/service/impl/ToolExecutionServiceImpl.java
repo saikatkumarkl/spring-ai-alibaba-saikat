@@ -38,6 +38,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
@@ -113,7 +114,7 @@ public class ToolExecutionServiceImpl implements ToolExecutionService {
 			Plugin.PluginConfig pluginConfig = request.getTool().getPlugin().getConfig();
 			Tool.ToolConfig toolConfig = request.getTool().getConfig();
 
-			String server = pluginConfig.getServer();
+			String server = sanitizeServerUrl(pluginConfig.getServer());
 			StringBuilder requestUrl = new StringBuilder(String.format("%s%s", server, toolConfig.getPath()));
 			String method = toolConfig.getRequestMethod();
 
@@ -373,6 +374,62 @@ public class ToolExecutionServiceImpl implements ToolExecutionService {
 					break;
 				}
 			}
+		}
+	}
+
+	/**
+	 * Sanitizes the server URL by extracting only the scheme, host, and port.
+	 * This handles cases where users incorrectly include path or query parameters in the server URL.
+	 * For example: "https://api.example.com/v1/path?query=value" becomes "https://api.example.com"
+	 * @param serverUrl The raw server URL from plugin configuration
+	 * @return The sanitized base URL (scheme + host + port only)
+	 */
+	private String sanitizeServerUrl(String serverUrl) {
+		if (StringUtils.isBlank(serverUrl)) {
+			return serverUrl;
+		}
+
+		try {
+			URI uri = new URI(serverUrl);
+			StringBuilder baseUrl = new StringBuilder();
+			baseUrl.append(uri.getScheme()).append("://").append(uri.getHost());
+			if (uri.getPort() > 0 && uri.getPort() != 80 && uri.getPort() != 443) {
+				baseUrl.append(":").append(uri.getPort());
+			}
+			// Include path if it looks like a versioned API base path (e.g., /api/v3)
+			String path = uri.getPath();
+			if (StringUtils.isNotBlank(path) && !path.equals("/")) {
+				// Remove trailing slash and any query-like patterns from path
+				path = path.replaceAll("/+$", "");
+				// Only include path segments that look like API versioning (not full endpoint paths)
+				// e.g., keep /api/v3 but not /api/v3/simple/price
+				String[] segments = path.split("/");
+				StringBuilder cleanPath = new StringBuilder();
+				for (String segment : segments) {
+					if (StringUtils.isBlank(segment)) {
+						continue;
+					}
+					// Keep api, version segments (v1, v2, v3, etc.)
+					if (segment.equalsIgnoreCase("api") || segment.matches("v\\d+")) {
+						cleanPath.append("/").append(segment);
+					}
+					else {
+						// Stop at first non-api-version segment
+						break;
+					}
+				}
+				baseUrl.append(cleanPath);
+			}
+
+			String result = baseUrl.toString();
+			if (!result.equals(serverUrl)) {
+				LogUtils.warn("Server URL sanitized from '{}' to '{}'", serverUrl, result);
+			}
+			return result;
+		}
+		catch (Exception e) {
+			LogUtils.warn("Failed to sanitize server URL '{}', using as-is: {}", serverUrl, e.getMessage());
+			return serverUrl;
 		}
 	}
 
