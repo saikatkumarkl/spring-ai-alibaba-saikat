@@ -109,6 +109,10 @@ public class ToolExecutionServiceImpl implements ToolExecutionService {
 	 */
 	public ToolExecutionResult callOpenApi(ToolExecutionRequest request) {
 		try {
+			// Clean and normalize arguments before validation
+			this.unwrapNestedTypeObjects(request.getArguments());
+			this.cleanEmptyStringArguments(request.getArguments());
+			this.normalizeCryptoArguments(request);
 			this.validateInputs(request);
 
 			Plugin.PluginConfig pluginConfig = request.getTool().getPlugin().getConfig();
@@ -430,6 +434,90 @@ public class ToolExecutionServiceImpl implements ToolExecutionService {
 		catch (Exception e) {
 			LogUtils.warn("Failed to sanitize server URL '{}', using as-is: {}", serverUrl, e.getMessage());
 			return serverUrl;
+		}
+	}
+
+	/**
+	 * Unwraps nested type objects in arguments. Converts patterns like {"type":"value"}
+	 * to plain "value" strings to handle LLM schema confusion with capitalized types.
+	 * @param arguments The arguments map to clean
+	 */
+	private void unwrapNestedTypeObjects(Map<String, Object> arguments) {
+		if (CollectionUtils.isEmpty(arguments)) {
+			return;
+		}
+
+		for (Map.Entry<String, Object> entry : arguments.entrySet()) {
+			Object value = entry.getValue();
+			if (value instanceof Map) {
+				Map<?, ?> mapValue = (Map<?, ?>) value;
+				// Check if this is a nested type object {"type":"actualValue"}
+				if (mapValue.size() == 1 && mapValue.containsKey("type")) {
+					Object typeValue = mapValue.get("type");
+					entry.setValue(typeValue);
+				}
+			}
+		}
+	}
+
+	private void cleanEmptyStringArguments(Map<String, Object> arguments) {
+		if (CollectionUtils.isEmpty(arguments)) {
+			return;
+		}
+
+		Iterator<Map.Entry<String, Object>> iterator = arguments.entrySet().iterator();
+		while (iterator.hasNext()) {
+			Map.Entry<String, Object> entry = iterator.next();
+			Object value = entry.getValue();
+			if (value instanceof String) {
+				String text = ((String) value).trim();
+				if (StringUtils.isBlank(text) || "null".equalsIgnoreCase(text)) {
+					iterator.remove();
+				}
+			}
+		}
+	}
+
+	/**
+	 * Normalizes cryptocurrency arguments for CoinGecko API.
+	 * Converts ticker symbols (BTC, ETH) to full names (bitcoin, ethereum) and
+	 * converts uppercase currency codes (USD, EUR) to lowercase (usd, eur).
+	 * @param request The tool execution request
+	 */
+	private void normalizeCryptoArguments(ToolExecutionRequest request) {
+		if (request == null || request.getTool() == null || !"get_crypto_price".equals(request.getTool().getName())) {
+			return;
+		}
+
+		Map<String, Object> args = request.getArguments();
+		if (args == null) {
+			return;
+		}
+
+		// Normalize cryptocurrency IDs (BTC -> bitcoin, ETH -> ethereum, etc.)
+		if (args.containsKey("ids")) {
+			Object idsValue = args.get("ids");
+			String ids = String.valueOf(idsValue).trim();
+			// Map common ticker symbols to CoinGecko IDs
+			ids = ids.replaceAll("(?i)\\bBTC\\b", "bitcoin")
+				.replaceAll("(?i)\\bETH\\b", "ethereum")
+				.replaceAll("(?i)\\bSOL\\b", "solana")
+				.replaceAll("(?i)\\bBNB\\b", "binancecoin")
+				.replaceAll("(?i)\\bADA\\b", "cardano")
+				.replaceAll("(?i)\\bDOGE\\b", "dogecoin")
+				.replaceAll("(?i)\\bXRP\\b", "ripple")
+				.replaceAll("(?i)\\bDOT\\b", "polkadot")
+				.replaceAll("(?i)\\bUNI\\b", "uniswap")
+				.replaceAll("(?i)\\bLINK\\b", "chainlink")
+				.toLowerCase();
+			args.put("ids", ids);
+		}
+
+		// Normalize vs_currencies (USD -> usd, EUR -> eur, etc.)
+		if (args.containsKey("vs_currencies")) {
+			Object currenciesValue = args.get("vs_currencies");
+			String currencies = String.valueOf(currenciesValue).trim().toLowerCase();
+			args.put("vs_currencies", currencies);
 		}
 	}
 

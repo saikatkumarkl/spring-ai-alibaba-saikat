@@ -38,6 +38,7 @@ import com.alibaba.cloud.ai.studio.core.base.service.PluginService;
 import com.alibaba.cloud.ai.studio.core.base.service.ToolExecutionService;
 import com.alibaba.cloud.ai.studio.core.config.CommonConfig;
 import com.alibaba.cloud.ai.studio.core.context.RequestContextHolder;
+import org.springframework.ai.chat.messages.ToolResponseMessage;
 import com.alibaba.cloud.ai.studio.core.model.llm.ModelFactory;
 import com.alibaba.cloud.ai.studio.core.base.manager.AppComponentManager;
 import com.alibaba.cloud.ai.studio.core.base.manager.DocumentRetrieverManager;
@@ -50,6 +51,7 @@ import com.alibaba.cloud.ai.studio.core.rag.DocumentChunkConverter;
 import com.alibaba.cloud.ai.studio.core.utils.io.FileUtils;
 import com.alibaba.cloud.ai.studio.core.utils.common.IdGenerator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.ai.chat.client.ChatClient;
@@ -99,6 +101,7 @@ import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
  *
  * @since 1.0.0.3
  */
+@Slf4j
 @Service()
 @Qualifier("basicAgentExecutor")
 @RequiredArgsConstructor
@@ -149,20 +152,22 @@ public class BasicAgentExecutor extends AbstractAgentExecutor {
 		// build tool callback provider
 		ToolCallingManager toolCallingManager = ToolCallingManager.builder().build();
 		CompositeToolCallbackProvider toolCallbackProvider = buildToolCallbackProvider(config, request.getExtraPrams());
+		boolean enableTools = shouldEnableTools(request);
 
 		// build messages
 		List<Message> messages = buildMessages(context);
 
 		// build chat client
-		ChatClient.Builder chatClientBuilder = buildChatClient(context, chatOptions, toolCallbackProvider);
+		ChatClient.Builder chatClientBuilder = buildChatClient(context, chatOptions, toolCallbackProvider, enableTools);
 
 		final Prompt prompt = new Prompt(messages, chatOptions);
 		return chatClientBuilder.build()
 			.prompt(prompt)
+			.options(chatOptions)
 			.stream()
 			.chatResponse()
 			.concatMap(response -> processToolCallsRecursively(chatClientBuilder, response, prompt, toolCallingManager,
-					toolCallbackProvider, requestContext, chatOptions));
+					toolCallbackProvider, requestContext, chatOptions, enableTools));
 	}
 
 	/**
@@ -185,7 +190,8 @@ public class BasicAgentExecutor extends AbstractAgentExecutor {
 		List<Message> messages = buildMessages(context);
 
 		// build chat client
-		ChatClient.Builder chatClientBuilder = buildChatClient(context, chatOptions, toolCallbackProvider);
+		boolean enableTools = shouldEnableTools(request);
+		ChatClient.Builder chatClientBuilder = buildChatClient(context, chatOptions, toolCallbackProvider, enableTools);
 
 		Prompt prompt = new Prompt(messages, chatOptions);
 		ChatResponse response = chatClientBuilder.build().prompt(prompt).options(chatOptions).call().chatResponse();
@@ -226,6 +232,7 @@ public class BasicAgentExecutor extends AbstractAgentExecutor {
 	 * @return OpenAiChatOptions instance
 	 */
 	private OpenAiChatOptions buildChatOptions(AgentConfig config) {
+		log.info("Building chat options - model: '{}', provider: '{}'", config.getModel(), config.getModelProvider());
 		OpenAiChatOptions.Builder builder = OpenAiChatOptions.builder()
 			.model(config.getModel())
 			.streamUsage(true)
@@ -238,7 +245,9 @@ public class BasicAgentExecutor extends AbstractAgentExecutor {
 				.presencePenalty(config.getParameter().getRepetitionPenalty());
 		}
 
-		return builder.build();
+		OpenAiChatOptions options = builder.build();
+		log.info("Built chat options with model: '{}'", options.getModel());
+		return options;
 	}
 
 	/**
@@ -247,7 +256,7 @@ public class BasicAgentExecutor extends AbstractAgentExecutor {
 	 * @return ChatModel instance
 	 */
 	private ChatModel buildChatModel(AgentConfig config) {
-		return modelFactory.getChatModel(config.getModelProvider());
+		return modelFactory.getChatModel(config.getModelProvider(), config.getModel());
 	}
 
 	/**
@@ -258,12 +267,15 @@ public class BasicAgentExecutor extends AbstractAgentExecutor {
 	 * @return ChatClient.Builder instance
 	 */
 	private ChatClient.Builder buildChatClient(AgentContext context, ToolCallingChatOptions chatOptions,
-			ToolCallbackProvider toolCallbackProvider) {
+			ToolCallbackProvider toolCallbackProvider, boolean enableTools) {
 		AgentConfig config = context.getConfig();
 		AgentRequest request = context.getRequest();
 
 		ChatModel chatModel = buildChatModel(config);
-		ChatClient chatClient = ChatClient.builder(chatModel).defaultAdvisors(new SimpleLoggerAdvisor()).build();
+		// Don't set default options on ChatClient - use Prompt options instead for better control
+		ChatClient chatClient = ChatClient.builder(chatModel)
+			.defaultAdvisors(new SimpleLoggerAdvisor())
+			.build();
 
 		// Add chat memory advisor
 		ChatClient.Builder chatClientBuilder = chatClient.mutate();
@@ -292,10 +304,12 @@ public class BasicAgentExecutor extends AbstractAgentExecutor {
 			chatClientBuilder.defaultAdvisors(retrievalAdvisor);
 		}
 
-		// Add tool callbacks
-		ToolCallback[] toolCallbacks = toolCallbackProvider.getToolCallbacks();
-		if (!ArrayUtils.isEmpty(toolCallbacks)) {
-			chatOptions.setToolCallbacks(Arrays.stream(toolCallbacks).toList());
+		// Add tool callbacks only when tools are needed
+		if (enableTools) {
+			ToolCallback[] toolCallbacks = toolCallbackProvider.getToolCallbacks();
+			if (!ArrayUtils.isEmpty(toolCallbacks)) {
+				chatOptions.setToolCallbacks(Arrays.stream(toolCallbacks).toList());
+			}
 		}
 
 		return chatClientBuilder;
@@ -340,7 +354,11 @@ public class BasicAgentExecutor extends AbstractAgentExecutor {
 					List<AssistantMessage.ToolCall> springToolCalls = null;
 					if (!CollectionUtils.isEmpty(chatMessage.getToolCalls())) {
 						springToolCalls = chatMessage.getToolCalls().stream()
-							.filter(tc -> tc.getFunction() != null)
+							.filter(tc -> tc.getFunction() != null && 
+							         (tc.getType() == ToolCallType.TOOL_CALL || 
+							          tc.getType() == ToolCallType.FUNCTION ||
+							          tc.getType() == ToolCallType.MCP_TOOL_CALL ||
+							          tc.getType() == ToolCallType.COMPONENT_TOOL_CALL))
 							.map(tc -> new AssistantMessage.ToolCall(
 								tc.getId(),
 								"function",
@@ -357,9 +375,28 @@ public class BasicAgentExecutor extends AbstractAgentExecutor {
 						message = new AssistantMessage(content);
 					}
 				}
+				case TOOL -> {
+					List<ToolResponseMessage.ToolResponse> responses = new ArrayList<>();
+					if (!CollectionUtils.isEmpty(chatMessage.getToolCalls())) {
+						for (ToolCall toolCall : chatMessage.getToolCalls()) {
+							if (toolCall.getFunction() != null && toolCall.getFunction().getOutput() != null) {
+								responses.add(new ToolResponseMessage.ToolResponse(
+									toolCall.getId(),
+									toolCall.getFunction().getName(),
+									toolCall.getFunction().getOutput()));
+							}
+						}
+					}
+
+					if (!responses.isEmpty()) {
+						message = ToolResponseMessage.builder().responses(responses).build();
+					}
+				}
 			}
 
-			messages.add(message);
+			if (message != null) {
+				messages.add(message);
+			}
 		}
 
 		return messages;
@@ -683,9 +720,17 @@ public class BasicAgentExecutor extends AbstractAgentExecutor {
 	private Flux<AgentResponse> processToolCallsRecursively(ChatClient.Builder chatClientBuilder, ChatResponse response,
 			Prompt originalPrompt, ToolCallingManager toolCallingManager,
 			CompositeToolCallbackProvider toolCallbackProvider, RequestContext requestContext,
-			ToolCallingChatOptions chatOptions) {
+			ToolCallingChatOptions chatOptions, boolean enableTools) {
 
+		// If no tool calls in response, just return it
 		if (!response.hasToolCalls()) {
+			return convertResponse(response, toolCallbackProvider).flux();
+		}
+		
+		// If tools are not enabled and response has tool calls, log warning and return response
+		// This shouldn't happen normally, but prevents issues
+		if (!enableTools) {
+			log.warn("Response has tool calls but tools are disabled - returning response without tool execution");
 			return convertResponse(response, toolCallbackProvider).flux();
 		}
 
@@ -707,8 +752,64 @@ public class BasicAgentExecutor extends AbstractAgentExecutor {
 					ToolExecutionResult result = (ToolExecutionResult) array[0];
 					AgentResponse toolResult = (AgentResponse) array[1];
 
-					// Create new prompt with the tool execution result
-					Prompt newPrompt = new Prompt(result.conversationHistory(), chatOptions);
+					// Convert conversation history to Spring AI Messages for the LLM
+					List<Message> historyMessages = new ArrayList<>();
+					for (Object item : result.conversationHistory()) {
+						if (item instanceof Message msg) {
+							historyMessages.add(msg);
+						} else if (item instanceof ChatMessage domainMsg) {
+							// Convert domain ChatMessage to Spring AI Message
+							switch (domainMsg.getRole()) {
+								case USER -> historyMessages.add(new UserMessage(String.valueOf(domainMsg.getContent())));
+								case ASSISTANT -> {
+									String content = domainMsg.getContent() != null ? String.valueOf(domainMsg.getContent()) : "";
+									List<AssistantMessage.ToolCall> springToolCalls = null;
+									if (!CollectionUtils.isEmpty(domainMsg.getToolCalls())) {
+										springToolCalls = domainMsg.getToolCalls().stream()
+											.filter(tc -> tc.getFunction() != null && 
+											         (tc.getType() == ToolCallType.TOOL_CALL || 
+											          tc.getType() == ToolCallType.FUNCTION ||
+											          tc.getType() == ToolCallType.MCP_TOOL_CALL ||
+											          tc.getType() == ToolCallType.COMPONENT_TOOL_CALL))
+											.map(tc -> new AssistantMessage.ToolCall(
+												tc.getId(),
+												"function",
+												tc.getFunction().getName(),
+												tc.getFunction().getArguments()))
+											.collect(Collectors.toList());
+									}
+									if (springToolCalls != null && !springToolCalls.isEmpty()) {
+										historyMessages.add(AssistantMessage.builder()
+											.content(content)
+											.toolCalls(springToolCalls)
+											.build());
+									} else {
+										historyMessages.add(new AssistantMessage(content));
+									}
+								}
+								case TOOL -> {
+									List<ToolResponseMessage.ToolResponse> responses = new ArrayList<>();
+									if (!CollectionUtils.isEmpty(domainMsg.getToolCalls())) {
+										for (ToolCall toolCall : domainMsg.getToolCalls()) {
+											if (toolCall.getFunction() != null && toolCall.getFunction().getOutput() != null) {
+												responses.add(new ToolResponseMessage.ToolResponse(
+													toolCall.getId(),
+													toolCall.getFunction().getName(),
+													toolCall.getFunction().getOutput()));
+											}
+										}
+									}
+									if (!responses.isEmpty()) {
+										historyMessages.add(ToolResponseMessage.builder().responses(responses).build());
+									}
+								}
+								case SYSTEM -> historyMessages.add(new SystemMessage(String.valueOf(domainMsg.getContent())));
+							}
+						}
+					}
+
+					// Create new prompt with the converted Spring AI messages
+					Prompt newPrompt = new Prompt(historyMessages, chatOptions);
 
 					return Flux.concat(
 							// Send tool execution result
@@ -717,13 +818,39 @@ public class BasicAgentExecutor extends AbstractAgentExecutor {
 							// calls
 							chatClientBuilder.build()
 								.prompt(newPrompt)
+								.options(chatOptions)
 								.stream()
 								.chatResponse()
 								// Key change: Recursively process the response
 								.concatMap(newResponse -> processToolCallsRecursively(chatClientBuilder, newResponse,
 										newPrompt, toolCallingManager, toolCallbackProvider, requestContext,
-										chatOptions)));
+										chatOptions, enableTools)));
 				}));
+	}
+
+	private boolean shouldEnableTools(AgentRequest request) {
+		if (request == null || CollectionUtils.isEmpty(request.getMessages())) {
+			return false;
+		}
+		
+		// Check if conversation history contains tool calls
+		// If so, we MUST enable tools to avoid 400 errors from Ollama
+		for (ChatMessage msg : request.getMessages()) {
+			if ((msg.getRole() == MessageRole.ASSISTANT || msg.getRole() == MessageRole.TOOL)
+					&& !CollectionUtils.isEmpty(msg.getToolCalls())) {
+				return true;
+			}
+		}
+		
+		// Check if current user message needs tools
+		for (int i = request.getMessages().size() - 1; i >= 0; i--) {
+			ChatMessage msg = request.getMessages().get(i);
+			if (msg.getRole() == MessageRole.USER && msg.getContent() != null) {
+				String text = String.valueOf(msg.getContent()).toLowerCase();
+				return text.matches(".*(price|cost|worth|value|rate|exchange|quote|market|how\s+much|btc|bitcoin|eth|ethereum|sol|solana|gold|silver|usd|usdt).*?");
+			}
+		}
+		return false;
 	}
 
 	/**

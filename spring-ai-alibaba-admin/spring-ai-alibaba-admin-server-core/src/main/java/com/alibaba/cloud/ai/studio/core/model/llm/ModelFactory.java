@@ -40,10 +40,16 @@ import org.springframework.ai.document.MetadataMode;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.model.tool.ToolCallingManager;
 import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.OpenAiEmbeddingModel;
 import org.springframework.ai.openai.OpenAiEmbeddingOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import reactor.netty.http.client.HttpClient;
+import reactor.netty.transport.logging.AdvancedByteBufFormat;
+import io.netty.handler.logging.LogLevel;
 
 import java.util.Map;
 
@@ -80,15 +86,36 @@ public class ModelFactory {
 	 * @return ChatModel instance
 	 */
 	public ChatModel getChatModel(String provider) {
+		return getChatModel(provider, null);
+	}
+
+	/**
+	 * Creates and returns a chat model instance for the specified provider and model
+	 * @param provider The provider name
+	 * @param modelName The model name to use (required for Ollama and other providers)
+	 * @return ChatModel instance
+	 */
+	public ChatModel getChatModel(String provider, String modelName) {
+		log.info("getChatModel called with provider: '{}', modelName: '{}'", provider, modelName);
 		ModelCredential credential = getModelCredential(provider, null);
 		// TODO will adapt other provider in future, now it's only for OpenAI compatible
 		// API
 
 		OpenAiApi openAiApi = buildOpenAiApi(credential);
-		OpenAiChatModel openAiChatModel = OpenAiChatModel.builder()
+		OpenAiChatModel.Builder builder = OpenAiChatModel.builder()
 				.openAiApi(openAiApi)
-				.observationRegistry(observationRegistry)
-				.build();
+				.observationRegistry(observationRegistry);
+
+		// Set default options with model name if provided
+		if (StringUtils.isNotBlank(modelName)) {
+			log.info("Setting default model in ChatModel builder: {}", modelName);
+			builder.defaultOptions(OpenAiChatOptions.builder().model(modelName).build());
+		}
+		else {
+			log.warn("getChatModel called with null modelName!");
+		}
+
+		OpenAiChatModel openAiChatModel = builder.build();
 		openAiChatModel.setObservationConvention(customChatModelObservationConvention);
 		return openAiChatModel;
 	}
@@ -168,6 +195,13 @@ public class ModelFactory {
 			.apiKey(credential.getApiKey())
 			.responseErrorHandler(ErrorHandlerUtils.OPENAI_RESPONSE_ERROR_HANDLER)
 			.headers(ApiUtils.getBaseHeaders());
+
+		// Enable wiretap logging to inspect request/response payloads when troubleshooting
+		HttpClient httpClient = HttpClient.create()
+			.wiretap("reactor.netty.http.client.HttpClient", LogLevel.INFO, AdvancedByteBufFormat.TEXTUAL);
+		WebClient.Builder webClientBuilder = WebClient.builder()
+			.clientConnector(new ReactorClientHttpConnector(httpClient));
+		openAiApiBuilder.webClientBuilder(webClientBuilder);
 		if (StringUtils.isNotBlank(credential.getEndpoint())) {
 			String endpoint = credential.getEndpoint();
 
