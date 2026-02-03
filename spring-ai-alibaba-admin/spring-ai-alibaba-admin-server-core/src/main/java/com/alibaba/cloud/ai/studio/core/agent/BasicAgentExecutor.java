@@ -833,23 +833,67 @@ public class BasicAgentExecutor extends AbstractAgentExecutor {
 			return false;
 		}
 		
-		// Check if conversation history contains tool calls
-		// If so, we MUST enable tools to avoid 400 errors from Ollama
+		// Count messages to determine if tools should be enabled
+		long userAndAssistantMessages = request.getMessages().stream()
+			.filter(msg -> msg.getRole() == MessageRole.USER || msg.getRole() == MessageRole.ASSISTANT)
+			.count();
+		
+		log.info("shouldEnableTools: Total messages in conversation: {}, User/Assistant messages: {}", 
+			request.getMessages().size(), userAndAssistantMessages);
+		
+		// Check if conversation history already contains tool calls
+		// If so, we MUST enable tools to avoid protocol errors
+		boolean hasToolCallsInHistory = false;
 		for (ChatMessage msg : request.getMessages()) {
 			if ((msg.getRole() == MessageRole.ASSISTANT || msg.getRole() == MessageRole.TOOL)
 					&& !CollectionUtils.isEmpty(msg.getToolCalls())) {
+				hasToolCallsInHistory = true;
+				break;
+			}
+		}
+		
+		if (hasToolCallsInHistory) {
+			log.info("Tool calls found in history - tools ENABLED");
+			return true;
+		}
+		
+		// If this is the first user message (count <= 1), disable tools
+		// Let the model answer simple questions naturally
+		if (userAndAssistantMessages <= 1) {
+			log.info("First user message detected (count={}), tools DISABLED to encourage natural responses", userAndAssistantMessages);
+			return false;
+		}
+		
+		// For multi-turn conversations, check if the latest user message suggests need for tools
+		// by looking for common patterns that indicate external data is needed
+		ChatMessage lastUserMessage = null;
+		for (int i = request.getMessages().size() - 1; i >= 0; i--) {
+			ChatMessage msg = request.getMessages().get(i);
+			if (msg.getRole() == MessageRole.USER) {
+				lastUserMessage = msg;
+				break;
+			}
+		}
+		
+		if (lastUserMessage != null && lastUserMessage.getContent() != null) {
+			String text = String.valueOf(lastUserMessage.getContent()).toLowerCase();
+			
+			// First check if this is a code/programming request - NEVER use tools for these
+			if (text.matches(".*(code|program|script|function|class|method|java|python|javascript|example|tutorial|how to).*")) {
+				log.info("Code/programming request detected - tools DISABLED");
+				return false;
+			}
+			
+			// Keywords that suggest need for external tools/data
+			if (text.matches(".*(price|cost|worth|value|rate|exchange|quote|market|btc|bitcoin|ethereum|crypto|weather|time|current|latest|today|news|search|find).*")) {
+				log.info("Content suggests need for tools - tools ENABLED");
 				return true;
 			}
 		}
 		
-		// Check if current user message needs tools
-		for (int i = request.getMessages().size() - 1; i >= 0; i--) {
-			ChatMessage msg = request.getMessages().get(i);
-			if (msg.getRole() == MessageRole.USER && msg.getContent() != null) {
-				String text = String.valueOf(msg.getContent()).toLowerCase();
-				return text.matches(".*(price|cost|worth|value|rate|exchange|quote|market|how\s+much|btc|bitcoin|eth|ethereum|sol|solana|gold|silver|usd|usdt).*?");
-			}
-		}
+		// For other multi-turn messages without tool indicators, disable tools
+		// to force natural answers
+		log.info("Multi-turn conversation (count={}) without tool indicators - tools DISABLED", userAndAssistantMessages);
 		return false;
 	}
 

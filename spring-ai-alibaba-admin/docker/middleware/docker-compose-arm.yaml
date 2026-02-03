@@ -205,6 +205,15 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - JAVA_OPTS=-Xms512m -Xmx1024m -XX:+UseG1GC
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/admin?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&characterEncoding=utf-8
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=admin
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - SPRING_REDIS_DATABASE=0
+      - SPRING_ELASTICSEARCH_URIS=http://elasticsearch:9200
+      - NACOS_SERVER_ADDR=nacos:8848
+      - ROCKETMQ_ENDPOINTS=rmq-proxy:18081
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
