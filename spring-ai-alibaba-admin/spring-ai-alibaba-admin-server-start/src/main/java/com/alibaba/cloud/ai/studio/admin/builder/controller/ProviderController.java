@@ -380,6 +380,10 @@ public class ProviderController {
 		if (request == null) {
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("input_params", "request is valid"));
 		}
+		log.info("=== UPDATE MODEL REQUEST === provider={}, modelId={}", provider, modelId);
+		log.info("Request details - name={}, type={}, tags={}, icon={}, enable={}", 
+			request.getModelName(), request.getType(), request.getTags(), request.getIcon(), request.getEnable());
+		
 		request.setModelId(modelId);
 		String tagStrings = request.getTags();
 		List<String> tags = Lists.newArrayList();
@@ -393,8 +397,15 @@ public class ProviderController {
 		modelConfigInfo.setProvider(provider);
 		modelConfigInfo.setTags(tags);
 		modelConfigInfo.setIcon(request.getIcon());
+		modelConfigInfo.setType(request.getType());
 		modelConfigInfo.setEnable(request.getEnable());
-		return Result.success(modelManager.updateModel(modelConfigInfo));
+		
+		log.info("ModelConfigInfo before update - modelId={}, name={}, type={}, tags={}", 
+			modelConfigInfo.getModelId(), modelConfigInfo.getName(), modelConfigInfo.getType(), modelConfigInfo.getTags());
+		
+		Boolean result = modelManager.updateModel(modelConfigInfo);
+		log.info("Update model result: {}", result);
+		return Result.success(result);
 	}
 
 	/**
@@ -497,63 +508,5 @@ public class ProviderController {
 		// For example: OpenAI, Azure, Anthropic, etc.
 		List<String> protocols = Lists.newArrayList("OpenAI");
 		return Result.success(protocols);
-	}
-	/**
-	 * Fetches available models from an Ollama endpoint.
-	 *
-	 * This endpoint queries the Ollama API to retrieve a list of available models.
-	 * Useful for populating model dropdowns when configuring Ollama providers.
-	 * @param endpoint The Ollama API endpoint (e.g., http://localhost:11434)
-	 * @return Result containing a list of available model names
-	 */
-	@GetMapping("/ollama/models")
-	public Result<List<String>> getOllamaModels(@RequestParam String endpoint) {
-		try {
-			if (StringUtils.isBlank(endpoint)) {
-				throw new BizException(ErrorCode.INVALID_PARAMS.toError("endpoint", "Endpoint is required"));
-			}
-			
-			// Normalize endpoint - remove trailing slash and /v1
-			String baseUrl = endpoint.replaceAll("/$", "").replaceAll("/v1$", "");
-			String tagsUrl = baseUrl + "/api/tags";
-			
-			log.info("Fetching Ollama models from: {}", tagsUrl);
-			
-			// Use Spring's RestTemplate to call Ollama API
-			org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
-			@SuppressWarnings("unchecked")
-			Map<String, Object> response = restTemplate.getForObject(tagsUrl, Map.class);
-			
-			if (response != null && response.containsKey("models")) {
-				@SuppressWarnings("unchecked")
-				List<Map<String, Object>> models = (List<Map<String, Object>>) response.get("models");
-				List<String> modelNames = models.stream()
-					.map(model -> (String) model.get("name"))
-					.filter(StringUtils::isNotBlank)
-					.sorted()
-					.collect(Collectors.toList());
-				
-				log.info("Found {} Ollama models", modelNames.size());
-				return Result.success(modelNames);
-			}
-			
-			return Result.success(Lists.newArrayList());
-		} catch (Exception e) {
-			log.error("Failed to fetch Ollama models from endpoint: {}", endpoint, e);
-			String errorMsg = e.getMessage();
-			
-			// Provide helpful error message for common Docker networking issue
-			if (errorMsg != null && errorMsg.contains("Connection refused") && endpoint.contains("localhost")) {
-				errorMsg = "Cannot connect to Ollama at " + endpoint + ". " +
-						"If running in Docker, use 'host.docker.internal' instead of 'localhost'. " +
-						"Example: http://host.docker.internal:11434";
-			} else if (errorMsg != null && errorMsg.contains("Connection refused")) {
-				errorMsg = "Cannot connect to Ollama at " + endpoint + ". Please check if Ollama is running and accessible.";
-			} else {
-				errorMsg = "Failed to connect to Ollama: " + errorMsg;
-			}
-			
-			throw new BizException(ErrorCode.SYSTEM_ERROR.toError(errorMsg));
-		}
 	}
 }

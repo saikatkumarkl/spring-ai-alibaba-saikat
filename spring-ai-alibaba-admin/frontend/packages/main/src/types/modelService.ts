@@ -84,6 +84,7 @@ export interface IUpdateModelParams {
   icon?: string;
   tags?: string[];
   enable?: boolean;
+  type?: string;
 }
 
 // Model input parameter rules

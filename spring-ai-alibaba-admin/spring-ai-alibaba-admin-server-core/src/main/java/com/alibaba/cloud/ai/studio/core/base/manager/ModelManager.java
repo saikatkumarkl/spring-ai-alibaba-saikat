@@ -55,6 +55,9 @@ public class ModelManager {
 	 * @return true if model was added successfully
 	 */
 	public boolean addModel(ModelConfigInfo modelConfigInfo) {
+		log.info("=== ADD MODEL CALLED === modelId={}, type={}, provider={}", 
+			modelConfigInfo.getModelId(), modelConfigInfo.getType(), modelConfigInfo.getProvider());
+		
 		RequestContext context = RequestContextHolder.getRequestContext();
 		// 检查提供商是否存在
 		ProviderConfigInfo providerDetail = providerManager.getProviderDetail(modelConfigInfo.getProvider(), false);
@@ -68,11 +71,28 @@ public class ModelManager {
 		queryWrapper.eq("provider", modelConfigInfo.getProvider());
 		queryWrapper.eq("workspace_id", context.getWorkspaceId());
 		ModelEntity existModelEntity = modelMapper.selectOne(queryWrapper);
+		
 		if (existModelEntity != null) {
-			log.error("模型[{}]已存在", modelConfigInfo.getModelId());
-			throw new BizException(ErrorCode.INVALID_PARAMS.toError("input_params", "model existed"));
+			// Model exists - update it instead of throwing error
+			log.info("模型[{}]已存在，更新模型信息 - 当前type={}, 新type={}", 
+				modelConfigInfo.getModelId(), existModelEntity.getType(), modelConfigInfo.getType());
+			existModelEntity.setGmtModified(new Date());
+			existModelEntity.setName(modelConfigInfo.getName());
+			existModelEntity.setType(modelConfigInfo.getType());
+			String tags = modelConfigInfo.getTags() != null 
+				? modelConfigInfo.getTags().stream().collect(Collectors.joining(","))
+				: "";
+			existModelEntity.setTags(tags);
+			if (modelConfigInfo.getIcon() != null) {
+				existModelEntity.setIcon(modelConfigInfo.getIcon());
+			}
+			int update = modelMapper.updateById(existModelEntity);
+			log.info("Update via addModel: rows affected={}", update);
+			return update > 0;
 		}
 
+		// Model doesn't exist - create new
+		log.info("创建新模型: {}", modelConfigInfo.getModelId());
 		ModelEntity modelEntity = new ModelEntity();
 		modelEntity.setWorkspaceId(context.getWorkspaceId());
 		modelEntity.setGmtCreate(new Date());
@@ -84,8 +104,12 @@ public class ModelManager {
 		modelEntity.setEnable(true);
 		modelEntity.setType(modelConfigInfo.getType());
 		modelEntity.setModelId(modelConfigInfo.getModelId());
-		modelEntity.setTags(modelConfigInfo.getTags().stream().collect(Collectors.joining(",")));
+		String tags = modelConfigInfo.getTags() != null 
+			? modelConfigInfo.getTags().stream().collect(Collectors.joining(","))
+			: "";
+		modelEntity.setTags(tags);
 		int insert = modelMapper.insert(modelEntity);
+		log.info("Insert result: rows affected={}", insert);
 		return insert > 0;
 	}
 
@@ -95,6 +119,9 @@ public class ModelManager {
 	 * @return true if model was updated successfully
 	 */
 	public boolean updateModel(ModelConfigInfo modelConfigInfo) {
+		log.info("=== UPDATE MODEL CALLED === modelId={}, type={}, provider={}", 
+			modelConfigInfo.getModelId(), modelConfigInfo.getType(), modelConfigInfo.getProvider());
+		
 		RequestContext context = RequestContextHolder.getRequestContext();
 		// 检查提供商是否存在
 		ProviderConfigInfo providerDetail = providerManager.getProviderDetail(modelConfigInfo.getProvider(), false);
@@ -116,6 +143,8 @@ public class ModelManager {
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("input_params", "model not found"));
 		}
 
+		log.info("Existing model type={}, new type={}", existingModel.getType(), modelConfigInfo.getType());
+
 		// 更新模型信息
 		existingModel.setGmtModified(new Date());
 		if (StringUtils.isNotBlank(modelConfigInfo.getName())) {
@@ -130,11 +159,16 @@ public class ModelManager {
 		if (StringUtils.isNotBlank(modelConfigInfo.getIcon())) {
 			existingModel.setIcon(modelConfigInfo.getIcon());
 		}
+		if (StringUtils.isNotBlank(modelConfigInfo.getType())) {
+			log.info("Setting new type: {}", modelConfigInfo.getType());
+			existingModel.setType(modelConfigInfo.getType());
+		}
 		if (modelConfigInfo.getEnable() != null) {
 			existingModel.setEnable(modelConfigInfo.getEnable());
 		}
 
 		int update = modelMapper.updateById(existingModel);
+		log.info("Update result: rows affected={}", update);
 		return update > 0;
 	}
 

@@ -123,10 +123,12 @@ export async function createModel(
     url: `/console/v1/providers/${provider}/models`,
     method: 'POST',
     data: {
-      ...params,
+      model_id: params.model_id,
       model_name: params.name,
+      type: params.type,
       tags:
         typeof params.tags === 'string' ? params.tags : params.tags?.join(','),
+      icon: params.icon,
     },
   });
   return response.data;
@@ -148,10 +150,13 @@ export async function updateModel(
     url: `/console/v1/providers/${provider}/models/${modelId}`,
     method: 'PUT',
     data: {
-      ...params,
+      model_id: modelId,
       model_name: params.name,
+      type: params.type,
       tags:
         typeof params.tags === 'string' ? params.tags : params.tags?.join(','),
+      icon: params.icon,
+      enable: params.enable,
     },
   });
   return response.data;

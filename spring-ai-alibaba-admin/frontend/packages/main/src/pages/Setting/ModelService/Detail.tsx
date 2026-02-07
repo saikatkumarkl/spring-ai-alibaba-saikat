@@ -246,21 +246,43 @@ const ModelServiceDetail: React.FC = () => {
       return;
     }
 
-    const updateParams: ICreateModelParams = {
-      ...modelInfo,
+    const updateParams = {
       name: modelInfo.name,
+      icon: modelInfo.icon,
+      tags: modelInfo.tags,
+      type: modelInfo.type,
+      enable: modelInfo.enable,
     };
 
-    const response = await updateModel(id, modelInfo.model_id, updateParams);
-    if (response) {
-      message.success(
+    try {
+      console.log('Current modelInfo from state:', modelInfo);
+      console.log('Updating model with params:', updateParams);
+      const response = await updateModel(id, modelInfo.model_id, updateParams);
+      console.log('Update model response:', response);
+
+      if (response && response.data === true) {
+        message.success(
+          $i18n.get({
+            id: 'main.pages.Setting.ModelService.Detail.updateModelSuccess',
+            dm: 'Model updated successfully',
+          }),
+        );
+        setIsModelConfigModalVisible(false);
+        fetchModels();
+      } else {
+        const errorMsg = response?.message || 'Failed to update model. The backend rejected the configuration.';
+        console.error('Backend rejected model update:', errorMsg);
+        message.error(errorMsg);
+      }
+    } catch (error) {
+      console.error('Error updating model:', error);
+      message.error(
+        error?.message ||
         $i18n.get({
-          id: 'main.pages.Setting.ModelService.Detail.updateModelSuccess',
-          dm: 'Model updated successfully',
+          id: 'main.pages.Setting.ModelService.Detail.updateModelFailed',
+          dm: 'Failed to update model. Please check console for details.',
         }),
       );
-      setIsModelConfigModalVisible(false);
-      fetchModels();
     }
   };
 
@@ -280,16 +302,36 @@ const ModelServiceDetail: React.FC = () => {
       name: modelInfo.name,
     };
 
-    const response = await createModel(id, createParams);
-    if (response) {
-      message.success(
+    try {
+      console.log('Creating model with params:', createParams);
+      const response = await createModel(id, createParams);
+      console.log('Create model response:', response);
+
+      // Check if response.data is true (successful save)
+      if (response && response.data === true) {
+        message.success(
+          $i18n.get({
+            id: 'main.pages.Setting.ModelService.Detail.addModelSuccess',
+            dm: 'Model added successfully',
+          }),
+        );
+        setIsModelConfigModalVisible(false);
+        fetchModels();
+      } else {
+        // API returned false or error code
+        const errorMsg = response?.message || 'Failed to save model. The backend rejected the configuration.';
+        console.error('Backend rejected model creation:', errorMsg);
+        message.error(errorMsg);
+      }
+    } catch (error) {
+      console.error('Error creating model:', error);
+      message.error(
+        error?.message ||
         $i18n.get({
-          id: 'main.pages.Setting.ModelService.Detail.addModelSuccess',
-          dm: 'Model added successfully',
+          id: 'main.pages.Setting.ModelService.Detail.addModelFailed',
+          dm: 'Failed to add model. Please check console for details.',
         }),
       );
-      setIsModelConfigModalVisible(false);
-      fetchModels();
     }
   };
 
