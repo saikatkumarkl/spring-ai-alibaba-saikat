@@ -22,7 +22,7 @@
         id, experiment_id, input, actual_output, reference_output, score, reason, evaluation_time, evaluator_version_id, create_time, update_time
     </sql>
 
-    <!-- 批量创建实验结果 -->
+    <!--Create experimental results in batches-->
     <insert id="batchInsert">
         INSERT INTO
         <include refid="table_name"/>
@@ -34,7 +34,7 @@
         </foreach>
     </insert>
 
-    <!-- 根据实验ID删除实验结果 -->
+    <!--Delete experiment results based on experiment ID-->
     <delete id="deleteByExperimentId">
         DELETE FROM
         <include refid="table_name"/>
@@ -64,7 +64,7 @@
         and evaluator_version_id = #{evaluatorVersionId}
     </select>
 
-    <!-- 分页查询实验结果 -->
+    <!--Query experimental results by page-->
     <select id="selectByExperimentAndEvaluator" resultMap="experimentResultResultMap">
         SELECT
         <include refid="base_column_list"/>
@@ -85,14 +85,14 @@
         WHERE experiment_id = #{experimentId}
         and evaluator_version_id = #{evaluatorVersionId}
         ORDER BY create_time DESC
-        LIMIT #{offset}, #{limit}
+        LIMIT #{limit} OFFSET #{offset}
 
     </select>
 
 
 
 
-    <!-- 根据ID更新实验结果 -->
+    <!--Update experiment results based on ID-->
     <update id="updateById" parameterType="com.alibaba.cloud.ai.studio.admin.entity.ExperimentResultDO">
         UPDATE
         <include refid="table_name"/>

@@ -73,7 +73,7 @@ public class DatasetItemServiceImpl implements DatasetItemService {
         ).toList();
 
         if (!itemIds.isEmpty()) {
-            // 更新数据集版本中的数据项列表
+            //Update the list of data items in a dataset version
             DatasetVersionDO datasetVersionDO = datasetVersionMapper.selectById(request.getDatasetVersionId());
             if (datasetVersionDO == null) {
                 throw new RuntimeException("数据集版本不存在: " + request.getDatasetVersionId());
@@ -139,7 +139,7 @@ public class DatasetItemServiceImpl implements DatasetItemService {
     public DatasetItem update(DatasetItemUpdateRequest request) {
         log.info("更新数据项: {}", request);
         
-        // 检查数据项是否存在
+        //Check if the data item exists
         DatasetItemDO existingData = datasetItemMapper.selectById(request.getId());
 
         if(Objects.isNull(existingData)){
@@ -157,12 +157,12 @@ public class DatasetItemServiceImpl implements DatasetItemService {
     public void deleteById(Long id) {
         log.info("删除数据项: {}", id);
         
-        // 数据验证
+        //Data validation
         if (id == null || id <= 0) {
             throw new IllegalArgumentException("数据项ID不能为空且必须大于0");
         }
         
-        // 检查数据项是否存在
+        //Check if the data item exists
         DatasetItemDO existingItem = datasetItemMapper.selectById(id);
         if (existingItem == null) {
             log.warn("尝试删除不存在的数据项: {}", id);

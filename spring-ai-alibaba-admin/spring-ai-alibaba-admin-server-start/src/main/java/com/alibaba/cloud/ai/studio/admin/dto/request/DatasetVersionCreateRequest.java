@@ -10,24 +10,24 @@ import java.util.List;
 public class DatasetVersionCreateRequest {
 
     /**
-     * 数据集Id
+     * DatasetId
      */
     @NotNull
     private Long datasetId;
 
     /**
-     * 数据集版本描述
+     * Dataset version description
      */
     private String description;
 
     /**
-     * 列结构配置
+     * Column structure configuration
      */
     @NotNull
     private List<DatasetColumn> columnsConfig;
 
     /**
-     * 数据集ID
+     * Data set ID
      */
     @NotNull
     private List<Long> datasetItems;

@@ -25,25 +25,25 @@ import java.util.Map;
  */
 public interface AgentTypeProvider {
 
-	// 类型标识，对齐 schema 中 agent.type，如 "ReactAgent"、"SequentialAgent"
+	//Type identifier, aligned with agent.type in schema, such as "ReactAgent", "SequentialAgent"
 	String type();
 
-	// handle 的版本号（用于迁移）
+	//version number of handle (used for migration)
 	String handleVersion();
 
-	// 返回该 type 的 handle 的 JSON Schema（前端表单渲染、校验）
+	//Returns the JSON Schema of the handle of this type (front-end form rendering, verification)
 	String jsonSchema();
 
-	// 返回该 type 的 handle 默认值（前端新建时的初始值）
+	//Returns the handle default value of this type (the initial value when the front end is created)
 	Map<String, Object> defaultHandle();
 
-	// 版本迁移（从旧版本 handle 升级到当前 handleVersion）
+	//Version migration (upgrade from old version handle to current handleVersion)
 	Map<String, Object> migrate(Map<String, Object> oldHandle, String fromVersion);
 
-	// 渲染代码分段：根据壳层 + handle + 子 Agent 变量名（父节点调用时传入）产出代码与导入
+	//Rendering code segmentation: output code and import based on shell + handle + sub-Agent variable name (passed in when the parent node is called)
 	CodeSections render(AgentShell shell, Map<String, Object> handle, RenderContext ctx, List<String> childVarNames);
 
-	// 校验 DSL 数据的有效性
+	//Verify validity of DSL data
 	void validateDSL(Map<String, Object> root);
 
 }

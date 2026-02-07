@@ -28,10 +28,10 @@ public class ModelConfigParser {
     private final ModelManager modelManager;
     
     /**
-     * 解析模型配置JSON字符串
+     * Parse model configuration JSON string
      *
-     * @param modelConfigJson 模型配置JSON
-     * @return 模型配置信息
+     * @param modelConfigJson model configuration JSON
+     * @return model configuration information
      */
     public ModelConfigInfo parseModelConfig(String modelConfigJson) {
         if (!StringUtils.hasText(modelConfigJson)) {
@@ -52,13 +52,13 @@ public class ModelConfigParser {
             modelConfigInfo = parseModelConfig(modelConfig);
             validateModelConfig(modelConfigInfo);
             
-            // 验证模型配置是否存在
-            // 首先尝试从 ModelConfigRepository (YAML 文件) 查找
+            //Verify that the model configuration exists
+            //First try to find from ModelConfigRepository (YAML file)
             boolean exists = modelConfigRepository.existsById(modelConfigInfo.getModelId());
             
             if (!exists) {
-                // 如果 ModelConfigRepository 中不存在，尝试从 ModelManager (数据库) 查找
-                // 安全地获取 workspaceId
+                //If it does not exist in ModelConfigRepository, try to find it from ModelManager (database)
+                //Get workspaceId safely
                 String workspaceId = null;
                 try {
                     RequestContext context = RequestContextHolder.getRequestContext();
@@ -71,12 +71,12 @@ public class ModelConfigParser {
                 
                 ModelEntity modelEntity = null;
                 
-                // 1. 首先尝试通过 modelId (Long) 作为 ModelEntity 的 id 查找
+                //1. First try to find by modelId (Long) as the id of ModelEntity
                 if (modelConfigInfo.getModelId() != null) {
                     modelEntity = modelManager.findModelByIdOrName(modelConfigInfo.getModelId(), workspaceId);
                 }
                 
-                // 2. 如果通过 modelId 找不到，尝试通过 modelName 查找
+                //2. If not found by modelId, try to find by modelName
                 if (modelEntity == null) {
                     String modelName = (String) modelConfigInfo.getParameter("modelName");
                     if (StringUtils.hasText(modelName)) {
@@ -84,17 +84,17 @@ public class ModelConfigParser {
                     }
                 }
                 
-                // 3. 如果还是找不到，抛出异常
+                //3. If still not found, throw an exception
                 if (modelEntity == null) {
                     throw new IllegalArgumentException("模型配置不存在: modelId=" + modelConfigInfo.getModelId() + 
                         (modelConfigInfo.getParameter("modelName") != null ? ", modelName=" + modelConfigInfo.getParameter("modelName") : ""));
                 }
                 
-                // 如果从 ModelManager 找到了模型，更新 modelConfigInfo 的 modelId 为 ModelEntity 的 id
+                //If the model is found from the ModelManager, update the modelId of modelConfigInfo to the id of the ModelEntity
                 log.info("从 ModelManager 找到模型: id={}, name={}, modelId={}, workspaceId={}", 
                     modelEntity.getId(), modelEntity.getName(), modelEntity.getModelId(), workspaceId);
                 
-                // 更新 modelId 为 ModelEntity 的 id，确保后续使用正确的 id
+                //Update modelId to the id of ModelEntity to ensure that the correct id is used later.
                 modelConfigInfo.setModelId(modelEntity.getId());
             }
         } catch (Exception e) {
@@ -105,10 +105,10 @@ public class ModelConfigParser {
     }
     
     /**
-     * 提取模型调用参数 从ModelConfigInfo中获取动态参数并转换格式
+     * Extract model call parameters, obtain dynamic parameters from ModelConfigInfo and convert the format
      *
-     * @param modelConfigInfo 模型配置信息对象
-     * @return 模型调用参数Map
+     * @param modelConfigInfo model configuration information object
+     * @return Model call parameter Map
      */
     public Map<String, Object> extractModelParameters(ModelConfigInfo modelConfigInfo) {
         if (modelConfigInfo == null) {
@@ -118,7 +118,7 @@ public class ModelConfigParser {
         Map<String, Object> convertedParameters = new HashMap<>();
         Map<String, Object> originalParameters = modelConfigInfo.getAllParameters();
         
-        // 转换参数名称和格式
+        //Conversion parameter names and formats
         for (Map.Entry<String, Object> entry : originalParameters.entrySet()) {
             String originalKey = entry.getKey();
             Object value = entry.getValue();
@@ -133,22 +133,22 @@ public class ModelConfigParser {
     }
     
     /**
-     * 转换参数名称格式 将驼峰命名转换为下划线命名，以适配OpenAI API格式
+     * Convert parameter name format: Convert camel case naming to underscore naming to adapt to the OpenAI API format
      *
-     * @param parameterName 原参数名
-     * @return 转换后的参数名
+     * @param parameterName original parameter name
+     * @return converted parameter name
      */
     private String convertParameterName(String parameterName) {
-        // 自动将驼峰命名转换为下划线命名
+        //Automatically convert camelCase naming to underscore naming
         return parameterName.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
     }
     
     /**
-     * 替换Prompt模板中的变量
+     * Replace variables in Prompt template
      *
-     * @param template      Prompt模板
-     * @param variablesJson 变量JSON字符串
-     * @return 替换后的Prompt
+     * @param template Prompt template
+     * @param variablesJson variable JSON string
+     * @return Prompt after replacement
      */
     public String replaceVariables(String template, String variablesJson) {
         if (!StringUtils.hasText(template)) {
@@ -163,7 +163,7 @@ public class ModelConfigParser {
             JsonNode variables = objectMapper.readTree(variablesJson);
             StringBuilder resultBuilder = new StringBuilder(template);
             
-            // 替换所有变量占位符
+            //Replace all variable placeholders
             variables.fields().forEachRemaining(entry -> {
                 String placeholder = "{{" + entry.getKey() + "}}";
                 String value = entry.getValue().asText();
@@ -180,10 +180,10 @@ public class ModelConfigParser {
     }
     
     /**
-     * 验证模型配置的有效性 只验证必需字段，动态参数由模型服务自行验证
+     * Verify the validity of the model configuration. Only required fields are verified, and dynamic parameters are verified by the model service itself.
      *
-     * @param modelConfigInfo 模型配置信息
-     * @throws IllegalArgumentException 如果配置无效
+     * @param modelConfigInfo model configuration information
+     * @throws IllegalArgumentException if the configuration is invalid
      */
     public void validateModelConfig(ModelConfigInfo modelConfigInfo) {
         if (modelConfigInfo == null) {
@@ -194,14 +194,14 @@ public class ModelConfigParser {
             throw new IllegalArgumentException("模型ID不能为空");
         }
         
-        // 只进行基本的数据类型验证，具体的参数范围由模型服务验证
+        //Only basic data type verification is performed, and the specific parameter range is verified by the model service.
         validateParameterTypes(modelConfigInfo);
     }
     
     /**
-     * 验证参数类型是否合理 确保数值参数确实是数值类型
+     * Verify whether the parameter type is reasonable and ensure that the numeric parameter is indeed a numeric type
      *
-     * @param modelConfigInfo 模型配置信息
+     * @param modelConfigInfo model configuration information
      */
     private void validateParameterTypes(ModelConfigInfo modelConfigInfo) {
         Map<String, Object> parameters = modelConfigInfo.getAllParameters();
@@ -214,7 +214,7 @@ public class ModelConfigParser {
                 continue;
             }
             
-            // 对于明显的数值参数名，验证类型
+            //For explicit numeric parameter names, verify the type
             if (isNumericParameterName(name)) {
                 validateNumericValue(name, value);
             }
@@ -222,10 +222,10 @@ public class ModelConfigParser {
     }
     
     /**
-     * 判断参数名是否是数值类型参数
+     * Determine whether the parameter name is a numeric type parameter
      *
-     * @param parameterName 参数名
-     * @return 是否是数值参数
+     * @param parameterName parameter name
+     * @return Is it a numeric parameter?
      */
     private boolean isNumericParameterName(String parameterName) {
         String lowerName = parameterName.toLowerCase();
@@ -235,20 +235,20 @@ public class ModelConfigParser {
     }
     
     /**
-     * 验证数值类型的参数值
+     * Validate parameter values ​​of numeric types
      *
-     * @param parameterName 参数名
-     * @param value         参数值
+     * @param parameterName parameter name
+     * @param value parameter value
      */
     private void validateNumericValue(String parameterName, Object value) {
         if (value instanceof Number) {
-            return; // 已经是数值类型
+            return; //Already a numeric type
         }
         
         if (value instanceof String) {
             try {
                 Double.parseDouble((String) value);
-                return; // 可以转换为数值
+                return; //Can be converted to a numeric value
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(
                         String.format("参数 %s 的值 '%s' 不是有效的数值", parameterName, value));

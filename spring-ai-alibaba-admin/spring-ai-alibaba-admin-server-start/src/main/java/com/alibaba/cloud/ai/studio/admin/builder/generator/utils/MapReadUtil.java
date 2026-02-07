@@ -28,9 +28,9 @@ public final class MapReadUtil {
 	}
 
 	/**
-	 * 将obj转换为{@code List<T>}对象
+	 * Convert an object to {@code List<T>}.
 	 * @param obj Object
-	 * @return {@code List<T>}，如果obj不是List或者元素不全为T的实例则返回null
+	 * @return {@code List<T>}; returns null if obj is not a List or elements are not T.
 	 */
 	public static <T> List<T> safeCastToList(Object obj, Class<T> clazz) {
 		if (!(obj instanceof List<?> list)) {
@@ -47,7 +47,7 @@ public final class MapReadUtil {
 	}
 
 	/**
-	 * 将obj转换为{@code List<Map<String,Object>>}对象
+	 * Convert an object to {@code List<Map<String,Object>>}.
 	 * @param obj Object
 	 * @return {@code List<Map<String,Object>>}
 	 */
@@ -59,13 +59,13 @@ public final class MapReadUtil {
 	}
 
 	/**
-	 * 将obj转换为{@code Map<String,Object>}对象
+	 * Convert an object to {@code Map<String,Object>}.
 	 * @param obj Object
 	 * @return {@code Map<String,Object>}
 	 */
 	public static Map<String, Object> safeCastToMapWithStringKey(Object obj) {
 		if (obj instanceof Map<?, ?> map) {
-			// 检查所有键是否是 String
+			// Ensure all keys are String
 			for (Object key : map.keySet()) {
 				if (!(key instanceof String)) {
 					return null;
@@ -81,11 +81,11 @@ public final class MapReadUtil {
 	}
 
 	/**
-	 * 读取Map多层的值
+	 * Read a nested value from a map.
 	 * @param map map
-	 * @param clazz 值的类型
-	 * @param keys 多层key
-	 * @return 读取的值，若失败则返回null
+	 * @param clazz value type
+	 * @param keys nested keys
+	 * @return value, or null if not found or incompatible
 	 */
 	public static <T> T getMapDeepValue(Map<String, Object> map, Class<T> clazz, String... keys) {
 		for (int i = 0; i < keys.length; i++) {
@@ -95,7 +95,7 @@ public final class MapReadUtil {
 			}
 			Object object = map.get(key);
 			if (i == keys.length - 1) {
-				// 最后一层数据，判断是不是目标类型
+				// Last level: verify target type
 				try {
 					return clazz.cast(object);
 				}
@@ -103,7 +103,7 @@ public final class MapReadUtil {
 					return null;
 				}
 			}
-			// 非最后一层数据，判断是不是Map
+			// Intermediate level: verify map
 			map = safeCastToMapWithStringKey(object);
 			if (map == null) {
 				return null;
@@ -134,10 +134,10 @@ public final class MapReadUtil {
 	}
 
 	/**
-	 * 将map对应的字段赋值给特定的record类型
+	 * Map fields into a target record type.
 	 * @param map map
-	 * @param clazz record类
-	 * @return record对象
+	 * @param clazz record type
+	 * @return record instance
 	 */
 	public static <T extends Record> T castMapToRecord(Map<String, Object> map, Class<T> clazz) {
 		if (!clazz.isRecord()) {
@@ -147,11 +147,11 @@ public final class MapReadUtil {
 		Object[] params = Arrays.stream(constructor.getParameters()).map(p -> {
 			Object object = map.get(p.getName());
 			if (object == null) {
-				// 尝试将名称转换为下划线命名
+				// Try snake_case field name
 				String name = camelToSnakeCase(p.getName());
 				object = map.get(name);
 			}
-			// 判断是否为对应类型
+			// Verify target type
 			if (object == null || !p.getType().isInstance(object)) {
 				return null;
 			}

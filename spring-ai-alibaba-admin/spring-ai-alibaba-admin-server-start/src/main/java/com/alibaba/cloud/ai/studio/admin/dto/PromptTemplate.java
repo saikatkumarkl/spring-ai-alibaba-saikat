@@ -13,22 +13,22 @@ import lombok.NoArgsConstructor;
 public class PromptTemplate {
 
     /**
-     * Prompt模板名称
+     * Prompt template name
      */
     private String promptTemplateKey;
 
     /**
-     * Prompt描述
+     * PromptDescription
      */
     private String templateDescription;
 
     /**
-     * 标签，逗号分隔
+     * tags, comma separated
      */
     private String tags;
 
     /**
-     * 从DO转换为DTO
+     * Convert from DO to DTO
      */
     public static PromptTemplate fromDO(PromptTemplateDO promptTemplateDO) {
         if (promptTemplateDO == null) {

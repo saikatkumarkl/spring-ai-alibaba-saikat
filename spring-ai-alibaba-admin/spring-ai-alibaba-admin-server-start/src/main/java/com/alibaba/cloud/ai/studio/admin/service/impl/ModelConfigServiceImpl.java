@@ -31,7 +31,7 @@ public class ModelConfigServiceImpl implements ModelConfigService {
     private final ObjectMapper objectMapper;
     private final ChatClientFactoryDelegate chatClientFactoryDelegate;
 
-    // 写接口已下线：保留签名以保证接口兼容性（控制器已不再暴露），避免误用
+    //The write interface is offline: the signature is retained to ensure interface compatibility (the controller is no longer exposed) to avoid misuse
     @Override
     public ModelConfigResponse create(ModelConfigCreateRequest request) throws StudioException {
         throw new StudioException(StudioException.NO_RIGHT, "不支持通过接口创建模型配置，请使用 model-config.yml");
@@ -108,7 +108,7 @@ public class ModelConfigServiceImpl implements ModelConfigService {
     }
 
     /**
-     * 转换实体对象为响应对象
+     * Convert entity object to response object
      */
     private ModelConfigResponse convertToResponse(ModelConfigDO modelConfig) {
         if (modelConfig == null) {
@@ -131,7 +131,7 @@ public class ModelConfigServiceImpl implements ModelConfigService {
     }
 
     /**
-     * 对象转JSON字符串
+     * Object to JSON string
      */
     private String toJsonString(Object obj) {
         if (obj == null) {
@@ -146,7 +146,7 @@ public class ModelConfigServiceImpl implements ModelConfigService {
     }
 
     /**
-     * JSON字符串转对象
+     * JSON string to object
      */
     private <T> T fromJsonString(String json, TypeReference<T> typeRef) {
         if (!StringUtils.hasText(json)) {

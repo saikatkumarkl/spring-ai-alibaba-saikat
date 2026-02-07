@@ -3,12 +3,12 @@ package com.alibaba.cloud.ai.studio.admin.enums;
 public enum versionStatus {
 
     /**
-     * 草稿
+     * draft
      */
     DRAFT("DRAFT", "草稿"),
 
     /**
-     * 已发布
+     * Published
      */
     PUBLISHED("PUBLISHED", "已发布");
 

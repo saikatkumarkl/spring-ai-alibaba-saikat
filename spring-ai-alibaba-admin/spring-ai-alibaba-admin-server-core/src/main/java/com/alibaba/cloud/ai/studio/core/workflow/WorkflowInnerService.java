@@ -70,7 +70,7 @@ public class WorkflowInnerService {
 	public WorkflowContext getContextCache(String workspaceId, String taskId) {
 		WorkflowContext context = redisManager.get(WORKFLOW_TASK_CONTEXT_PREFIX + workspaceId + "_" + taskId);
 
-		// 确保返回的context有有效的版本号
+		//Make sure the context returned has a valid version number
 		if (context != null && context.getVersion() <= 0) {
 			context.setVersion(1L);
 		}
@@ -99,40 +99,40 @@ public class WorkflowInnerService {
 	public void forceRefreshContextCache(WorkflowContext context) {
 		String cacheKey = WORKFLOW_TASK_CONTEXT_PREFIX + context.getWorkspaceId() + "_" + context.getTaskId();
 
-		// 确保context有有效的版本号
+		//Make sure the context has a valid version number
 		if (context.getVersion() <= 0) {
 			context.setVersion(1L);
 		}
 
-		// 获取缓存中的最新context
+		//Get the latest context in the cache
 		WorkflowContext existingContext = redisManager.get(cacheKey);
 
 		if (existingContext != null) {
-			// 确保existingContext有有效的版本号
+			//Make sure existingContext has a valid version number
 			if (existingContext.getVersion() <= 0) {
 				existingContext.setVersion(1L);
 			}
 
-			// 如果缓存中存在context，进行版本比较
+			//If context exists in cache, perform version comparison
 			if (existingContext.getVersion() > context.getVersion()) {
-				// 缓存中的版本更新或相同，需要合并
+				//The version in the cache is newer or the same and needs to be merged
 				log.debug("Version conflict detected: existing={}, new={}, taskId={}", existingContext.getVersion(),
 						context.getVersion(), context.getTaskId());
 
-				// 合并context版本
+				//Merge context version
 				WorkflowContext mergedContext = mergeContextVersions(existingContext, context);
 
-				// 更新版本号
+				//Update version number
 				mergedContext.setVersion(Math.max(existingContext.getVersion(), context.getVersion()) + 1);
 
-				// 保存合并后的context
+				//Save the merged context
 				redisManager.put(cacheKey, mergedContext, Duration.ofHours(1));
 
 				log.debug("Context merged and saved: taskId={}, newVersion={}", mergedContext.getTaskId(),
 						mergedContext.getVersion());
 			}
 			else {
-				// 新context版本更高，直接保存
+				//If the new context version is higher, save it directly.
 				context.setVersion(existingContext.getVersion() + 1);
 				redisManager.put(cacheKey, context, Duration.ofHours(1));
 
@@ -141,7 +141,7 @@ public class WorkflowInnerService {
 			}
 		}
 		else {
-			// 缓存中不存在context，直接保存
+			//The context does not exist in the cache and is saved directly.
 			context.setVersion(1L);
 			redisManager.put(cacheKey, context, Duration.ofHours(1));
 
@@ -298,13 +298,13 @@ public class WorkflowInnerService {
 	}
 
 	/**
-	 * 合并两个WorkflowContext版本，确保新数据不会被旧数据覆盖 优先保留新context中的数据，但保留旧context中可能被遗漏的重要信息
-	 * @param existingContext 现有的context
-	 * @param newContext 新的context
-	 * @return 合并后的context
+	 * Merge two WorkflowContext versions to ensure that new data will not be overwritten by old data. Give priority to retaining data in the new context, but retain important information that may be missed in the old context.
+	 * @param existingContext existing context
+	 * @param newContext new context
+	 * @return merged context
 	 */
 	private WorkflowContext mergeContextVersions(WorkflowContext existingContext, WorkflowContext newContext) {
-		// 创建合并后的context，基于新context
+		//Create a merged context based on the new context
 		WorkflowContext mergedContext = WorkflowContext.deepCopy(newContext);
 
 		if (mergedContext == null) {
@@ -312,15 +312,15 @@ public class WorkflowInnerService {
 			return newContext;
 		}
 
-		// 确保合并后的context有有效的版本号
+		//Make sure the merged context has a valid version number
 		if (mergedContext.getVersion() <= 0) {
 			mergedContext.setVersion(1L);
 		}
 
-		// 合并nodeResultMap - 保留所有节点的最新结果
+		//Merge nodeResultMap - keep latest results for all nodes
 		if (existingContext.getNodeResultMap() != null) {
 			existingContext.getNodeResultMap().forEach((nodeId, nodeResult) -> {
-				// 如果新context中没有该节点的结果，或者新context中该节点状态更早，则保留旧结果
+				//If there is no result for the node in the new context, or the node status is earlier in the new context, the old result is retained.
 				NodeResult newResult = mergedContext.getNodeResultMap().get(nodeId);
 				if (newResult == null || isNodeStatusOlder(newResult.getNodeStatus(), nodeResult.getNodeStatus())) {
 					mergedContext.getNodeResultMap().put(nodeId, nodeResult);
@@ -328,7 +328,7 @@ public class WorkflowInnerService {
 			});
 		}
 
-		// 合并variablesMap - 保留所有变量，新值优先
+		//Merge variablesMap - keep all variables, new values ​​first
 		if (existingContext.getVariablesMap() != null) {
 			existingContext.getVariablesMap().forEach((key, value) -> {
 				if (!mergedContext.getVariablesMap().containsKey(key)) {
@@ -337,9 +337,9 @@ public class WorkflowInnerService {
 			});
 		}
 
-		// 合并executeOrderList - 保留完整的执行顺序
+		//Merge executeOrderList - retain full execution order
 		if (existingContext.getExecuteOrderList() != null && mergedContext.getExecuteOrderList() != null) {
-			// 合并执行顺序，避免重复
+			//Merge execution order to avoid duplication
 			existingContext.getExecuteOrderList().forEach(nodeId -> {
 				if (!mergedContext.getExecuteOrderList().contains(nodeId)) {
 					mergedContext.getExecuteOrderList().add(nodeId);
@@ -347,14 +347,14 @@ public class WorkflowInnerService {
 			});
 		}
 
-		// 合并subTaskIdSet - 保留所有子任务ID
+		//Merge subTaskIdSet - keep all subtask IDs
 		if (existingContext.getSubTaskIdSet() != null) {
 			existingContext.getSubTaskIdSet().forEach(subTaskId -> {
 				mergedContext.getSubTaskIdSet().add(subTaskId);
 			});
 		}
 
-		// 合并subWorkflowContextMap - 保留所有子工作流上下文
+		//Merge subWorkflowContextMap - keep all sub-workflow contexts
 		if (existingContext.getSubWorkflowContextMap() != null) {
 			existingContext.getSubWorkflowContextMap().forEach((key, subContext) -> {
 				if (!mergedContext.getSubWorkflowContextMap().containsKey(key)) {
@@ -373,14 +373,14 @@ public class WorkflowInnerService {
 	}
 
 	/**
-	 * 判断节点状态是否更早（用于版本合并时的优先级判断）
-	 * @param newStatus 新状态
-	 * @param oldStatus 旧状态
-	 * @return true如果新状态比旧状态更早
+	 * Determine whether the node status is earlier (used for priority judgment when merging versions)
+	 * @param newStatus new status
+	 * @param oldStatus old status
+	 * @return true if the new state is earlier than the old state
 	 */
 	private boolean isNodeStatusOlder(String newStatus, String oldStatus) {
-		// 定义状态优先级：EXECUTING < SUCCESS < FAIL < PAUSE
-		// 数字越小表示状态越早
+		//Define status priority: EXECUTING < SUCCESS < FAIL < PAUSE
+		//The smaller the number, the earlier the status is
 		java.util.Map<String, Integer> statusPriority = Map.of(NodeStatusEnum.EXECUTING.getCode(), 1,
 				NodeStatusEnum.SUCCESS.getCode(), 2, NodeStatusEnum.FAIL.getCode(), 3, NodeStatusEnum.PAUSE.getCode(),
 				4);
@@ -388,7 +388,7 @@ public class WorkflowInnerService {
 		Integer newPriority = statusPriority.get(newStatus);
 		Integer oldPriority = statusPriority.get(oldStatus);
 
-		// 如果状态不在预定义列表中，认为新状态更早
+		//If the state is not in the predefined list, the new state is considered earlier
 		if (newPriority == null) {
 			return true;
 		}

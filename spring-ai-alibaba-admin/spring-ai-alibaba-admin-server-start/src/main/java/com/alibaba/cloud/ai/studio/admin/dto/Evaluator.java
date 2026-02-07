@@ -14,18 +14,18 @@ import java.time.LocalDateTime;
 public class Evaluator {
 
     /**
-     * 主键ID
+     * Primary key ID
      */
     private Long id;
 
     /**
-     * 评估器名称
+     * evaluator name
      */
     private String name;
 
 
     /**
-     * 评估器描述
+     * Evaluator description
      */
     private String description;
 
@@ -41,22 +41,22 @@ public class Evaluator {
 
 
     /**
-     * 创建时间
+     * creation time
      */
 
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * Update time
      */
     private LocalDateTime updateTime;
 
 
     /**
-     * 从DO对象转换为DTO对象
+     * Convert from DO object to DTO object
      *
-     * @param evaluatorDO DO对象
-     * @return DTO对象
+     * @param evaluatorDO DO object
+     * @return DTO object
      */
     public static Evaluator fromDO(EvaluatorDO evaluatorDO) {
         if (evaluatorDO == null) {

@@ -13,21 +13,21 @@ import java.util.Map;
 public class ModelConfigInfo {
 
     /**
-     * 模型配置ID（必需字段）
+     * Model configuration ID (required field)
      */
     @JsonProperty("modelId")
     private Long modelId;
 
     /**
-     * 动态参数存储
-     * 存储除modelId外的所有模型参数
+     * Dynamic parameter storage
+     * Store all model parameters except modelId
      */
     @JsonIgnore
     private Map<String, Object> parameters = new HashMap<>();
 
     /**
-     * Jackson反序列化时处理未知属性
-     * 将所有除modelId外的属性存储到parameters中
+     * Jackson handles unknown attributes when deserializing
+     * Store all properties except modelId into parameters
      */
     @JsonAnySetter
     private void setDynamicProperty(String key, Object value) {
@@ -37,7 +37,7 @@ public class ModelConfigInfo {
     }
 
     /**
-     * Jackson序列化时输出动态属性
+     * Output dynamic properties during Jackson serialization
      */
     @JsonAnyGetter
     public Map<String, Object> getParameters() {
@@ -45,22 +45,22 @@ public class ModelConfigInfo {
     }
 
     /**
-     * 获取指定参数值
+     * Get the specified parameter value
      *
-     * @param parameterName 参数名
-     * @return 参数值
+     * @param parameterName parameter name
+     * @return parameter value
      */
     public Object getParameter(String parameterName) {
         return parameters.get(parameterName);
     }
 
     /**
-     * 获取指定参数值（指定类型）
+     * Get the specified parameter value (specified type)
      *
-     * @param parameterName 参数名
-     * @param type         期望的类型
-     * @param <T>          类型参数
-     * @return 参数值
+     * @param parameterName parameter name
+     * @param type expected type
+     * @param <T> type parameter
+     * @return parameter value
      */
     @SuppressWarnings("unchecked")
     public <T> T getParameter(String parameterName, Class<T> type) {
@@ -79,29 +79,29 @@ public class ModelConfigInfo {
     }
 
     /**
-     * 设置参数值
+     * Set parameter value
      *
-     * @param parameterName 参数名
-     * @param value        参数值
+     * @param parameterName parameter name
+     * @param value parameter value
      */
     public void setParameter(String parameterName, Object value) {
         parameters.put(parameterName, value);
     }
 
     /**
-     * 检查是否包含指定参数
+     * Check whether the specified parameters are included
      *
-     * @param parameterName 参数名
-     * @return 是否包含
+     * @param parameterName parameter name
+     * @return whether it contains
      */
     public boolean hasParameter(String parameterName) {
         return parameters.containsKey(parameterName);
     }
 
     /**
-     * 获取所有参数
+     * Get all parameters
      *
-     * @return 参数Map
+     * @return parameter Map
      */
     public Map<String, Object> getAllParameters() {
         return parameters;

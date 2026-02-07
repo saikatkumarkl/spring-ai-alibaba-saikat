@@ -58,12 +58,12 @@
         </rollingPolicy>
     </appender>
 
-    <!--异步日志-->
+    <!--Asynchronous log-->
     <appender name="APPLICATION_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
         <param name="neverBlock" value="true"/>
         <appender-ref ref="APPLICATION"/>
     </appender>
-    <!--异步日志-->
+    <!--Asynchronous log-->
     <appender name="MONITOR_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
         <param name="neverBlock" value="true"/>
         <appender-ref ref="MONITOR-LOG"/>

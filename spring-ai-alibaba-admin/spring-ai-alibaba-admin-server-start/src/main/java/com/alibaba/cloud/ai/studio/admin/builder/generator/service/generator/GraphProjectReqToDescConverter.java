@@ -98,7 +98,7 @@ public class GraphProjectReqToDescConverter implements ProjectRequestToDescripti
 			.orElseThrow(() -> new NotImplementedException("Unsupported appMode: " + request.getAppMode()));
 		description.setAppMode(appModeEnum);
 
-		// 获得DSL类型
+		//Get DSL type
 		DSLDialectType dslDialectType = DSLDialectType.fromValue(request.getDslDialectType())
 			.orElseThrow(
 					() -> new NotImplementedException("Unsupported dslDialectType: " + request.getDslDialectType()));

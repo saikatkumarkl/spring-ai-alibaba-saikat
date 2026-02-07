@@ -14,54 +14,54 @@ import java.util.List;
 public class PromptRunResponse {
     
     /**
-     * 会话ID
+     * Session ID
      */
     private String sessionId;
     
     /**
-     * 是否为新会话
+     * Is it a new session?
      */
     private Boolean newSession;
     
     /**
-     * 消息内容（流式响应时使用）
+     * Message content (used when streaming responses)
      */
     private String content;
     
     /**
-     * 响应类型：message-消息内容，session_info-会话信息，error-错误信息, metrics-指标信息
+     * Response type: message-message content, session_info-session information, error-error information, metrics-metric information
      */
     private String type;
     
     /**
-     * 会话消息历史（会话信息时包含）
+     * Session message history (included with session information)
      */
     private List<ChatMessage> messages;
     
     /**
-     * 消息总数
+     * Total number of messages
      */
     private Integer messageCount;
     
     /**
-     * 错误信息（错误时使用）
+     * Error message (used in case of error)
      */
     private String error;
     
     /**
-     * 指标信息（metrics 时包含）
+     * Metric information (included in metrics)
      */
     private ChatMessageMetrics metrics;
     
     /**
-     * 创建消息响应
+     * Create message response
      */
     public static PromptRunResponse createMessageResponse(String sessionId, String content) {
         return PromptRunResponse.builder().sessionId(sessionId).content(content).type("message").build();
     }
     
     /**
-     * 创建会话信息响应
+     * Create session information response
      */
     public static PromptRunResponse createSessionInfoResponse(ChatSession session) {
         return PromptRunResponse.builder().sessionId(session.getSessionId()).newSession(session.isNewSession())
@@ -69,7 +69,7 @@ public class PromptRunResponse {
     }
     
     /**
-     * 创建错误响应
+     * Create error response
      */
     public static PromptRunResponse createErrorResponse(String sessionId, String error) {
         return PromptRunResponse.builder().sessionId(sessionId).error(error).type("error").build();

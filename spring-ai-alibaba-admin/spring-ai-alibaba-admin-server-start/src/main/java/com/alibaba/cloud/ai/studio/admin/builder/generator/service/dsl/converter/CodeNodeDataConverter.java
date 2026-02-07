@@ -60,7 +60,7 @@ public class CodeNodeDataConverter extends AbstractNodeDataConverter<CodeNodeDat
 			public CodeNodeData parse(Map<String, Object> data) {
 				CodeNodeData nodeData = new CodeNodeData();
 
-				// 提取必要信息
+				//Extract necessary information
 				String code = MapReadUtil.getMapDeepValue(data, String.class, "code");
 				String lang = MapReadUtil.getMapDeepValue(data, String.class, "code_language");
 				Boolean isRetry = Optional
@@ -92,12 +92,12 @@ public class CodeNodeDataConverter extends AbstractNodeDataConverter<CodeNodeDat
 					.filter(map -> map.containsKey("value_selector") && map.containsKey("variable"))
 					.map(map -> {
 						List<String> list = MapReadUtil.safeCastToList(map.get("value_selector"), String.class);
-						// 先以Value的形式存储selector，在post阶段转换为正确的stateKey
+						//First store the selector in the form of Value and convert it to the correct stateKey in the post stage.
 						return new CodeNodeData.CodeParam(map.get("variable").toString(), list, list.get(0));
 					})
 					.toList();
 
-				// 设置必要信息
+				//Set necessary information
 				nodeData.setCodeStyle(CodeNodeData.CodeStyle.EXPLICIT_PARAMETERS);
 				nodeData.setCode(code);
 				nodeData.setCodeLanguage(lang);
@@ -106,11 +106,11 @@ public class CodeNodeDataConverter extends AbstractNodeDataConverter<CodeNodeDat
 				nodeData.setInputParams(inputParams);
 				nodeData.setOutputs(outputParams);
 
-				// 错误处理策略
+				//Error handling strategy
 				String errorStrategy = MapReadUtil.getMapDeepValue(data, String.class, "error_strategy");
 
 				if (errorStrategy != null) {
-					// 暂仅支持默认值
+					//Currently only the default value is supported
 					List<Map<String, Object>> defaultValueList = MapReadUtil
 						.safeCastToListWithMap(MapReadUtil.getMapDeepValue(data, List.class, "default_value"));
 					if (defaultValueList != null) {
@@ -141,7 +141,7 @@ public class CodeNodeDataConverter extends AbstractNodeDataConverter<CodeNodeDat
 			public CodeNodeData parse(Map<String, Object> data) throws JsonProcessingException {
 				CodeNodeData nodeData = new CodeNodeData();
 
-				// 获取基本信息
+				//Get basic information
 				String code = MapReadUtil.getMapDeepValue(data, String.class, "config", "node_param", "script_content");
 				String lang = MapReadUtil.getMapDeepValue(data, String.class, "config", "node_param", "script_type");
 				Boolean isRetry = Optional
@@ -179,7 +179,7 @@ public class CodeNodeDataConverter extends AbstractNodeDataConverter<CodeNodeDat
 							return CodeNodeData.CodeParam.withValue(key, value);
 						}
 						else {
-							// 先以Value的形式存储selector，在post阶段转换为正确的stateKey
+							//First store the selector in the form of Value and convert it to the correct stateKey in the post stage.
 							VariableSelector selector = this.varTemplateToSelector(DSLDialectType.STUDIO,
 									value.toString());
 							List<String> list = List.of(selector.getNamespace(), selector.getName());
@@ -188,7 +188,7 @@ public class CodeNodeDataConverter extends AbstractNodeDataConverter<CodeNodeDat
 					})
 					.toList();
 
-				// 设置基本信息
+				//Set basic information
 				nodeData.setCodeStyle(CodeNodeData.CodeStyle.GLOBAL_DICTIONARY);
 				nodeData.setCode(code);
 				nodeData.setCodeLanguage(lang);
@@ -197,11 +197,11 @@ public class CodeNodeDataConverter extends AbstractNodeDataConverter<CodeNodeDat
 				nodeData.setInputParams(inputParams);
 				nodeData.setOutputs(outputParams);
 
-				// 设置错误策略
+				//Set error policy
 				String errorStrategy = MapReadUtil.getMapDeepValue(data, String.class, "config", "node_param",
 						"try_catch_config", "strategy");
 				if (errorStrategy != null) {
-					// 暂仅支持默认值
+					//Currently only the default value is supported
 					List<Map<String, Object>> defaultValueList = MapReadUtil
 						.safeCastToListWithMap(MapReadUtil.getMapDeepValue(data, List.class, "config", "node_param",
 								"try_catch_config", "default_values"));
@@ -246,9 +246,9 @@ public class CodeNodeDataConverter extends AbstractNodeDataConverter<CodeNodeDat
 	public BiConsumer<CodeNodeData, Map<String, String>> postProcessConsumer(DSLDialectType dialectType) {
 		return switch (dialectType) {
 			case DIFY, STUDIO -> this.emptyProcessConsumer().andThen((nodeData, idToVarName) -> {
-				// code节点将返回{"varName.output": {...}}的数据，之后拆包成若干输出数据
+				//The code node will return the data of {"varName.output": {...}}, and then unpack it into several output data
 				nodeData.setOutputKey(nodeData.getVarName() + "_" + CodeNodeData.getDefaultOutputSchema().getName());
-				// 输入Param的Key都格式化为varName_key
+				//The keys of the input Param are formatted as varName_key
 				nodeData.setInputParams(nodeData.getInputParams().stream().map(param -> {
 					if (param.stateKey() == null) {
 						return param;

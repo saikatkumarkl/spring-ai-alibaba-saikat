@@ -99,9 +99,9 @@ public class StartNodeDataConverter extends AbstractNodeDataConverter<StartNodeD
 
 			@Override
 			public StartNodeData parse(Map<String, Object> data) throws JsonProcessingException {
-				// 获取output属性
+				//Get output attribute
 				List<?> outputList = MapReadUtil.getMapDeepValue(data, List.class, "config", "output_params");
-				// 转换为Variable
+				//Convert to Variable
 				List<Variable> outputs = Stream.ofNullable(outputList)
 					.flatMap(List::stream)
 					.map(MapReadUtil::safeCastToMapWithStringKey)
@@ -135,7 +135,7 @@ public class StartNodeDataConverter extends AbstractNodeDataConverter<StartNodeD
 
 	@Override
 	public String generateVarName(int count) {
-		// 让输入变量名称为start_xxx，方便用户理解
+		//Let the input variable name be start_xxx to facilitate user understanding.
 		if (count == 1) {
 			return "start";
 		}

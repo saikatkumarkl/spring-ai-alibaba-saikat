@@ -39,9 +39,9 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
-// TODO: 支持其他格式的文档，如PDF、ZIP等
-// TODO: 解析并应用RerankModel、EmbeddingModel配置
-// TODO: 支持从OSS获取资源文件，或者在生成项目中从OSS获取资源文件
+//TODO: Support documents in other formats, such as PDF, ZIP, etc.
+//TODO: Parse and apply RerankModel and EmbeddingModel configurations
+//TODO: Support obtaining resource files from OSS, or obtaining resource files from OSS in the generated project
 @Component
 public class KnowledgeRetrievalNodeSection implements NodeSection<KnowledgeRetrievalNodeData> {
 
@@ -50,7 +50,7 @@ public class KnowledgeRetrievalNodeSection implements NodeSection<KnowledgeRetri
 		return NodeType.RETRIEVER.equals(nodeType);
 	}
 
-	// 用于获取Studio存储的文档
+	//Used to obtain documents stored in Studio
 	private final DocumentService studioDocumentService;
 
 	private final String studioStoragePath;
@@ -70,7 +70,7 @@ public class KnowledgeRetrievalNodeSection implements NodeSection<KnowledgeRetri
 				throw new IllegalArgumentException(
 						"The current mode does not support Studio's knowledge retrieval node code generation. Please start the complete StudioApplication class");
 			}
-			// 根据knowledgeBaseIds获取对应的资源文件
+			//Get the corresponding resource file based on knowledgeBaseIds
 			List<ResourceFile> resourceFiles = Optional.ofNullable(nodeData.getKnowledgeBaseIds())
 				.orElse(List.of())
 				.stream()
@@ -86,18 +86,18 @@ public class KnowledgeRetrievalNodeSection implements NodeSection<KnowledgeRetri
 				.filter(Document::getEnabled)
 				.filter(d -> StringUtils.hasText(d.getPath()))
 				.map(document -> {
-					// 文件类型
+					//File type
 					String contentType = document.getMetadata().getContentType();
-					// 存储形式
+					//Storage form
 					DocumentType documentType = document.getType();
-					// 存储路径
+					//storage path
 					String path = switch (documentType) {
 						case FILE -> {
 							{
 								Path p = Path.of(studioStoragePath);
 								Path resolvedPath = p.resolve(document.getPath()).normalize();
 
-								// 安全检查：确保解析后的路径仍在允许的目录范围内
+								//Security check: Make sure the resolved path is still within the allowed directory range
 								if (!resolvedPath.startsWith(p.normalize())) {
 									throw new SecurityException("非法路径访问尝试: " + document.getPath());
 								}
@@ -106,7 +106,7 @@ public class KnowledgeRetrievalNodeSection implements NodeSection<KnowledgeRetri
 							}
 						}
 						case URL -> {
-							// 对URL路径进行基本验证
+							//Perform basic validation of URL paths
 							String urlPath = document.getPath();
 							if (urlPath == null || urlPath.trim().isEmpty()) {
 								throw new IllegalArgumentException("URL路径不能为空");
@@ -117,7 +117,7 @@ public class KnowledgeRetrievalNodeSection implements NodeSection<KnowledgeRetri
 							throw new UnsupportedOperationException("unsupported document type: " + documentType);
 					};
 					String fileName = document.getName();
-					// 构造文件记录
+					//Construct file records
 					return new ResourceFile(fileName, switch (documentType) {
 						case FILE -> ResourceFile.Type.CLASS_PATH;
 						case URL -> ResourceFile.Type.URL;

@@ -139,7 +139,7 @@ public class WorkflowProjectGenerator implements ProjectGenerator {
 		renderAndWriteTemplates(List.of(GRAPH_BUILDER_TEMPLATE_NAME, GRAPH_RUN_TEMPLATE_NAME),
 				List.of(graphBuilderModel, graphRunControllerModel), projectRoot, projectDescription);
 
-		// 生成需要的资源文件
+		//Generate required resource files
 		this.generateResourceFiles(projectRoot,
 				nodes.stream()
 					.map(node -> Map.entry(node.getType(), node.getData()))
@@ -201,16 +201,16 @@ public class WorkflowProjectGenerator implements ProjectGenerator {
 	}
 
 	private String renderEdgeSections(List<Edge> edges, List<Node> nodes, Map<String, String> varNames) {
-		// nodeVarName -> node的映射
+		//nodeVarName -> mapping of node
 		Map<String, Node> nodeMap = nodes.stream()
 			.collect(Collectors.toMap(node -> node.getData().getVarName(), Function.identity()));
 
-		// 根据source进行分组
+		//Group by source
 		Map<String, List<Edge>> edgeGroup = edges.stream().collect(Collectors.groupingBy(Edge::getSource));
 
 		StringBuilder sb = new StringBuilder();
 
-		// 调用每一个source节点的renderEdges方法
+		//Call the renderEdges method of each source node
 		edgeGroup.forEach((varName, edgeList) -> {
 			NodeType nodeType = nodeMap.get(varName).getType();
 			@SuppressWarnings("unchecked")
@@ -218,7 +218,7 @@ public class WorkflowProjectGenerator implements ProjectGenerator {
 			sb.append(section.renderEdges(nodeMap.get(varName).getData(), edgeList));
 		});
 
-		// 统一生成end节点到StateGraph.END的边（避免边重复）
+		//Uniformly generate edges from end nodes to StateGraph.END (to avoid edge duplication)
 		List<String> endNodeList = nodes.stream()
 			.filter(node -> NodeType.END.equals(node.getType()))
 			.map(Node::getId)
@@ -253,7 +253,7 @@ public class WorkflowProjectGenerator implements ProjectGenerator {
 			.flatMap(List::stream)
 			.distinct()
 			.toList();
-		// 按照字典序升序排序，其中static开头的放在后面
+		//Sort in ascending lexicographic order, with items starting with static at the end.
 		List<String> allImports = Stream.of(commonImports, GRAPH_COMMON_IMPORTS)
 			.flatMap(List::stream)
 			.distinct()

@@ -24,7 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * 用于生成项目时，创建文件
+ * Utilities for creating files during project generation.
  *
  * @author vlsmb
  * @since 2025/9/5

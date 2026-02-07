@@ -242,7 +242,7 @@ public class OpenApiUtils {
 									Schema schemItem = nameSchema.getItems();
 									String itemType = schemItem.getType();
 									if ("object".equals(itemType)) {
-										// 增加父类
+										//Add parent class
 										yamlParamInfo.setType("Array<Object>");
 										if (schemItem.getProperties() != null) {
 											processSubProperties(schemItem.getProperties(), schemItem.getRequired(),
@@ -282,7 +282,7 @@ public class OpenApiUtils {
 
 				toolConfig.setInputParams(inputYamlParamList);
 
-				// 添加输出
+				//Add output
 				ApiResponses apiResponses = operation.getResponses();
 				ApiResponse apiResponse = apiResponses.get("200");
 				if (apiResponse != null && apiResponse.getContent() != null) {
@@ -318,7 +318,7 @@ public class OpenApiUtils {
 										Schema schemItem = nameSchema.getItems();
 										String itemType = schemItem.getType();
 										if ("object".equals(itemType)) {
-											// 增加父类
+											//Add parent class
 											yamlParamInfo.setType("Array<Object>");
 											if (schemItem.getProperties() != null) {
 												processSubProperties(schemItem.getProperties(), schemItem.getRequired(),
@@ -533,9 +533,9 @@ public class OpenApiUtils {
 			OpenAPI openAPI = parseResult.getOpenAPI();
 			Paths paths = openAPI.getPaths();
 			if (!CollectionUtils.isEmpty(paths)) {
-				// 遍历每个 url
+				//Iterate through each url
 				paths.forEach((path, pathItem) -> pathItem.readOperationsMap().values().forEach(operation -> {
-					// 遍历 get post put 等方法
+					//Traverse get post put and other methods
 					if (operation != null) {
 						List<ApiParameter> subResult = parseRestfulMethod(operation);
 						if (!CollectionUtils.isEmpty(subResult)) {
@@ -598,7 +598,7 @@ public class OpenApiUtils {
 			Object paramSource = schema.getExtensions().get(DEFINED_EXTENSION);
 			if (paramSource instanceof String && String.valueOf(paramSource).equals(EXTENSION_USER_SOURCE)) {
 				String type = schema.getType();
-				// 防止用户使用 "token" 类型的参数
+				//Prevent users from using "token" type parameters
 				if (StringUtils.isNotBlank(type) && TOKEN_TYPE.equals(type)) {
 					throw new YAMLException("Type \"token\" is not allowed.");
 				}
@@ -691,7 +691,7 @@ public class OpenApiUtils {
 	public static List<ApiParameter> parseOpenAPISchemaWithOutUserSource(String yamlString) {
 		ParseOptions parseOptions = new ParseOptions();
 		parseOptions.setResolve(true);
-		// 关联所有引用
+		//Link all citations
 		parseOptions.setResolveFully(true);
 		SwaggerParseResult parseResult = new OpenAPIV3Parser().readContents(yamlString, null, parseOptions);
 		if (parseResult.getMessages() != null && !parseResult.getMessages().isEmpty()) {

@@ -16,68 +16,68 @@ import java.time.LocalDateTime;
 public class ModelConfigDO {
 
     /**
-     * 主键ID
+     * Primary key ID
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
-     * 模型名称
+     * Model name
      */
     @Column(nullable = false, length = 100)
     private String name;
 
     /**
-     * 提供商(openai, azure, etc)
+     * Provider (openai, azure, etc)
      */
     @Column(nullable = false, length = 50)
     private String provider;
 
     /**
-     * 模型标识符(gpt-4, gpt-3.5-turbo等)
+     * Model identifier (gpt-4, gpt-3.5-turbo, etc.)
      */
     @Column(name = "model_name", nullable = false, length = 100)
     private String modelName;
 
     /**
-     * 模型服务地址
+     * Model service address
      */
     @Column(name = "base_url", nullable = false, length = 500)
     private String baseUrl;
 
     /**
-     * API密钥
+     * API key
      */
     @Column(name = "api_key", nullable = false, length = 500)
     private String apiKey;
 
     /**
-     * 默认参数配置(JSON格式)
+     * Default parameter configuration (JSON format)
      */
     @Column(name = "default_parameters", columnDefinition = "JSON")
     private String defaultParameters;
 
     /**
-     * 支持的参数定义(JSON格式)
+     * Supported parameter definitions (JSON format)
      */
     @Column(name = "supported_parameters", columnDefinition = "JSON")
     private String supportedParameters;
 
     /**
-     * 状态:1-启用,0-禁用
+     * Status: 1-enabled, 0-disabled
      */
     @Builder.Default
     private Integer status = 1;
 
     /**
-     * 创建时间
+     * creation time
      */
     @Column(name = "create_time")
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * Update time
      */
     @Column(name = "update_time")
     private LocalDateTime updateTime;

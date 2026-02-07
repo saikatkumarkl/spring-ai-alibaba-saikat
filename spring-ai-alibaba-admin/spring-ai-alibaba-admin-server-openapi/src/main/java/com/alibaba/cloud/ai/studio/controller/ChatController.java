@@ -329,7 +329,7 @@ public class ChatController {
 				throw new BizException(ErrorCode.MISSING_PARAMS.toError("request or taskId is null"));
 			}
 
-			// 从Redis中获取工作流上下文
+			//Get workflow context from Redis
 			String cacheKey = WORKFLOW_TASK_CONTEXT_PREFIX + context.getWorkspaceId() + "_" + request.getTaskId();
 			WorkflowContext wfContext = redisManager.get(cacheKey);
 
@@ -340,7 +340,7 @@ public class ChatController {
 						ErrorCode.WORKFLOW_CONFIG_INVALID.toError("taskId not exists"));
 			}
 
-			// 构建响应对象
+			//Build response object
 			AsyncResultResponse response = new AsyncResultResponse();
 			response.setTaskId(request.getTaskId());
 			response.setRequestId(wfContext.getRequestId());
@@ -349,11 +349,11 @@ public class ChatController {
 			response.setErrorCode(wfContext.getErrorCode());
 			response.setErrorInfo(wfContext.getErrorInfo());
 
-			// 计算执行时间
+			//Calculate execution time
 			if (wfContext.getStartTime() > 0) {
 				response.setTaskExecTime((System.currentTimeMillis() - wfContext.getStartTime()) + "ms");
 			}
-			// 获取输出节点和结束节点的内容进行输出
+			//Get the contents of the output node and end node for output
 			CopyOnWriteArrayList<String> executeOrderList = wfContext.getExecuteOrderList();
 			ConcurrentHashMap<String, NodeResult> nodeResultMap = wfContext.getNodeResultMap();
 			List<AsyncResultResponse.Output> outputs = Lists.newArrayList();
@@ -378,7 +378,7 @@ public class ChatController {
 
 				});
 			}
-			// 设置节点结果
+			//Set node results
 			response.setOutputs(outputs);
 
 			LogUtils.monitor(context, "ChatController", "getAsyncResults", context.getStartTime(), SUCCESS, request,

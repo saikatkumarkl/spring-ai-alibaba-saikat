@@ -43,12 +43,12 @@ public class DatasetVersionServiceImpl implements DatasetVersionService {
             throw new IllegalArgumentException("Dataset ID cannot be null");
         }
 
-        //检查 dataset是否存在
+        //Check if dataset exists
         if (datasetMapper.selectById(request.getDatasetId()) == null) {
             throw new IllegalArgumentException("Dataset not found: " + request.getDatasetId());
         }
 
-        // 获取当前最大的version
+        //Get the current largest version
         DatasetVersionDO latestDatasetVersionDO = datasetVersionMapper.selectLatestVersion(request.getDatasetId());
 
         String currentVersion = Objects.isNull(latestDatasetVersionDO)?null:latestDatasetVersionDO.getVersion();

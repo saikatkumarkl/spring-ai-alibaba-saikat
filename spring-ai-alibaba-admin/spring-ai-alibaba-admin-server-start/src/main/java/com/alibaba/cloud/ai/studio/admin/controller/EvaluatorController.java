@@ -34,7 +34,7 @@ public class EvaluatorController {
     private final ExperimentService experimentService;
 
     /**
-     * 创建评估器
+     * Create evaluator
      */
     @PostMapping("/evaluator")
     public Result<Evaluator> create(@Validated @RequestBody EvaluatorCreateRequest request) {
@@ -49,7 +49,7 @@ public class EvaluatorController {
     }
 
     /**
-     * 创建评估器版本
+     * Create evaluator version
      */
     @PostMapping("/evaluatorVersion")
     public Result<EvaluatorVersion> createVersion(@RequestBody EvaluatorVersionCreateRequest request) {
@@ -64,7 +64,7 @@ public class EvaluatorController {
     }
 
     /**
-     * 获取评估器列表
+     * Get list of evaluators
      */
     @GetMapping("/evaluators")
     public Result<PageResult<Evaluator>> list(EvaluatorListRequest evaluatorListRequest){
@@ -79,7 +79,7 @@ public class EvaluatorController {
     }
 
     /**
-     * 获取评估器详情
+     * Get evaluator details
      */
     @GetMapping("/evaluator")
     public Result<Evaluator> get(Long id) {
@@ -96,7 +96,7 @@ public class EvaluatorController {
         }
     }
 
-    //获取评估器版本列表
+    //Get a list of evaluator versions
     @GetMapping("/evaluatorVersions")
     public Result<PageResult<EvaluatorVersion>> listVersions(EvaluatorVersionListRequest request) {
         log.info("查询评估器版本列表请求: {}", request);
@@ -110,7 +110,7 @@ public class EvaluatorController {
     }
 
     /**
-     * 更新评估器
+     * Update evaluator
      */
     @PutMapping("/evaluator")
     public Result<Evaluator> update(@RequestBody EvaluatorUpdateRequest request) {
@@ -125,7 +125,7 @@ public class EvaluatorController {
     }
 
     /**
-     * 删除评估器
+     * Remove evaluator
      */
     @DeleteMapping("/evaluator")
     public Result<Void> delete(@RequestParam Long id) {
@@ -140,7 +140,7 @@ public class EvaluatorController {
     }
 
     /**
-     * 调试评估器
+     * Debug evaluator
      */
     @PostMapping("/debug")
     public Result<EvaluatorDebugResult> debug(@RequestBody EvaluatorTestRequest request) {
@@ -155,7 +155,7 @@ public class EvaluatorController {
     }
 
     /**
-     * 获取评估模板列表
+     * Get a list of assessment templates
      */
     @GetMapping("/templates")
     public Result<PageResult<EvaluatorTemplate>> getTemplates(EvaluatorTemplateListRequest request) {
@@ -171,7 +171,7 @@ public class EvaluatorController {
 
 
     /**
-     * 获取评估模板列表
+     * Get a list of assessment templates
      */
     @GetMapping("/template")
     public Result<EvaluatorTemplate> getTemplate(Long templateId) {
@@ -186,7 +186,7 @@ public class EvaluatorController {
     }
 
     /**
-     * 获取评估器关联的实验
+     * Get the experiment associated with the evaluator
      */
     @GetMapping("/experiments")
     public Result<PageResult<Experiment>> getExperiments(EvaluatorExperimentsListRequest request) {

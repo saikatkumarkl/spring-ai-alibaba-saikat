@@ -70,7 +70,7 @@ public class AgentDSLAdapter implements DSLAdapter {
 		if (root == null)
 			root = data;
 
-		// 仅解析壳层字段，handle 原样透传
+		//Only the shell fields are parsed, and the handle is transparently transmitted as it is.
 		AppMetadata metadata = mapToMetadata(data);
 
 		Agent agent = new Agent();
@@ -84,12 +84,12 @@ public class AgentDSLAdapter implements DSLAdapter {
 		}
 		agent.setOutputKey(asString(root.get("output_key")));
 
-		// 透传 handle（不感知字段）
+		//Transparent transmission of handle (not aware of fields)
 		if (root.get("handle") instanceof Map<?, ?> h) {
 			agent.setHandle((Map<String, Object>) h);
 		}
 
-		// 递归 sub_agents（只解析壳层 + 透传 handle）
+		//Recursive sub_agents (only parsing the shell + transparent transmission handle)
 		if (root.get("sub_agents") instanceof List<?> children) {
 			List<Agent> subs = new java.util.ArrayList<>();
 			for (Object o : children) {
@@ -133,7 +133,7 @@ public class AgentDSLAdapter implements DSLAdapter {
 		if (isBlank(type) || isBlank(name)) {
 			throw new IllegalArgumentException("invalid agent dsl: 'type/agent_class' and 'name' are required");
 		}
-		// 针对不同 Agent 类型的校验
+		//Verification for different Agent types
 		validateAgentTypeSpecificConstraints(type, root);
 	}
 
@@ -142,7 +142,7 @@ public class AgentDSLAdapter implements DSLAdapter {
 			return;
 		}
 
-		// 使用 AgentTypeProvider 进行校验
+		//Use AgentTypeProvider for verification
 		AgentTypeProvider provider = providerRegistry.get(type);
 		if (provider != null) {
 			provider.validateDSL(root);
@@ -180,7 +180,7 @@ public class AgentDSLAdapter implements DSLAdapter {
 		if (a instanceof Map) {
 			return (Map<String, Object>) a;
 		}
-		// 兼容扁平结构：认为当前 data 自身即 agent
+		//Compatible with flat structure: the current data itself is considered to be the agent
 		if (data.containsKey("agent_class") || data.containsKey("type") || data.containsKey("name")) {
 			return data;
 		}
@@ -225,7 +225,7 @@ public class AgentDSLAdapter implements DSLAdapter {
 	private Map<String, Object> dumpAgent(Agent agent) {
 		Map<String, Object> m = new HashMap<>();
 
-		// 基础属性
+		//Basic attributes
 		if (agent.getAgentClass() != null) {
 			m.put("type", agent.getAgentClass());
 		}
@@ -251,7 +251,7 @@ public class AgentDSLAdapter implements DSLAdapter {
 		if (agent.getMaxIterations() != null)
 			m.put("max_iterations", agent.getMaxIterations());
 
-		// 工具
+		//tool
 		if (agent.getTools() != null)
 			m.put("tools", agent.getTools());
 		if (agent.getToolConfig() != null && agent.getToolConfig().get("resolver") instanceof String) {
@@ -268,12 +268,12 @@ public class AgentDSLAdapter implements DSLAdapter {
 			m.put("state", state);
 		}
 
-		// 导出 handle（如果存在）
+		//export handle (if present)
 		if (agent.getHandle() != null && !agent.getHandle().isEmpty()) {
 			m.put("handle", agent.getHandle());
 		}
 
-		// 递归 sub_agents
+		//Recursive sub_agents
 		if (agent.getSubAgents() != null && !agent.getSubAgents().isEmpty()) {
 			List<Map<String, Object>> subs = agent.getSubAgents().stream().map(this::dumpAgent).map(x -> {
 				Map<String, Object> item = new HashMap<>();

@@ -514,7 +514,7 @@ public class ElasticsearchVectorStore extends AbstractObservationVectorStore imp
 			}, DEFAULT_TASK_EXECUTOR);
 			futureList.add(textFuture);
 
-			// 基于向量检索召回内容
+			//Vector-based retrieval of recalled content
 			CompletableFuture<List<Document>> vectorFuture = CompletableFuture.supplyAsync(() -> {
 				int textTopK = Math.round(searchRequest.getTopK() * searchRequest.getHybridWeight());
 				return searchBySemantic(SearchRequest.builder()
@@ -530,7 +530,7 @@ public class ElasticsearchVectorStore extends AbstractObservationVectorStore imp
 				future.get(SEARCH_TIMEOUT, TimeUnit.SECONDS);
 			}
 
-			// 去重处理
+			//Deduplication
 			List<Document> vectorList = vectorFuture.get() == null ? new ArrayList<>() : vectorFuture.get();
 			List<Document> fullTextList = textFuture.get() == null ? new ArrayList<>() : textFuture.get();
 

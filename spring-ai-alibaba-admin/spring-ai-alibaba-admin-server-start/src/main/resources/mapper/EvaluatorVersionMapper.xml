@@ -22,7 +22,7 @@
         id, evaluator_id, description, version, model_config, prompt, variables, status, experiments, create_time, update_time
     </sql>
 
-    <!-- 创建评估器版本 -->
+    <!--Create evaluator version-->
     <insert id="insert" parameterType="com.alibaba.cloud.ai.studio.admin.entity.EvaluatorVersionDO" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO
         <include refid="table_name"/>
@@ -37,7 +37,7 @@
         WHERE id = #{id}
     </delete>
 
-    <!-- 根据ID获取评估器版本 -->
+    <!--Get evaluator version by ID-->
     <select id="selectById" resultMap="evaluatorVersionResultMap">
         SELECT
         <include refid="base_column_list"/>
@@ -46,7 +46,7 @@
         WHERE id = #{id}
     </select>
 
-    <!-- 根据评估器ID获取评估器版本列表 -->
+    <!--Get a list of evaluator versions based on evaluator ID-->
     <select id="selectListByEvaluatorId" resultMap="evaluatorVersionResultMap">
         SELECT
         <include refid="base_column_list"/>
@@ -57,10 +57,10 @@
             AND name LIKE CONCAT('%', #{name}, '%')
         </if>
         ORDER BY create_time DESC
-        LIMIT #{offset}, #{limit}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <!-- 根据评估器ID统计评估器版本数量 -->
+    <!--Count the number of evaluator versions based on evaluator ID-->
     <select id="countByEvaluatorId" resultType="int">
         SELECT COUNT(*) FROM
         <include refid="table_name"/>

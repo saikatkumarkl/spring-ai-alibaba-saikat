@@ -15,7 +15,7 @@ import java.util.List;
 public class ChatSession {
 
     /**
-     * 会话ID
+     * Session ID
      */
     private String sessionId;
 
@@ -25,27 +25,27 @@ public class ChatSession {
     private String promptKey;
 
     /**
-     * Prompt版本
+     * Prompt version
      */
     private String version;
 
     /**
-     * Prompt模板
+     * Prompt template
      */
     private String template;
 
     /**
-     * 变量配置（JSON字符串）
+     * Variable configuration (JSON string)
      */
     private String variables;
 
     /**
-     * 模型配置（JSON字符串）
+     * Model configuration (JSON string)
      */
     private ModelConfigInfo modelConfig;
 
     /**
-     * 会话消息历史
+     * Conversation message history
      */
     @Builder.Default
     private List<ChatMessage> messages = new ArrayList<>();
@@ -54,17 +54,17 @@ public class ChatSession {
     private List<MockTool> mockTools = new ArrayList<>();
 
     /**
-     * 会话创建时间
+     * Session creation time
      */
     private Long createTime;
 
     /**
-     * 最后更新时间
+     * Last updated
      */
     private Long lastUpdateTime;
 
     /**
-     * 添加消息到会话
+     * Add message to conversation
      */
     public void addMessage(ChatMessage message) {
         this.messages.add(message);
@@ -72,28 +72,28 @@ public class ChatSession {
     }
 
     /**
-     * 添加用户消息
+     * Add user message
      */
     public void addUserMessage(String content) {
         addMessage(ChatMessage.createUserMessage(content));
     }
 
     /**
-     * 添加助手消息
+     * Add assistant message
      */
     public void addAssistantMessage(String content) {
         addMessage(ChatMessage.createAssistantMessage(content));
     }
 
     /**
-     * 获取消息数量
+     * Get the number of messages
      */
     public int getMessageCount() {
         return messages.size();
     }
 
     /**
-     * 是否为新会话（没有消息历史）
+     * Whether it is a new session (no message history)
      */
     public boolean isNewSession() {
         return messages.isEmpty();

@@ -54,7 +54,7 @@ public class AgentNodeSection implements NodeSection<AgentNodeData> {
 			sb.append(String.format(".maxIterations(%s)%n", nodeData.getMaxIterations()));
 		}
 		if (nodeData.getToolList() != null && !nodeData.getToolList().isEmpty()) {
-			// todo: 对于Dify中与community/tool-call功能类似的工具，可以直接在这里使用而无需用户定义
+			//todo: Tools with similar functions to community/tool-call in Dify can be used directly here without user definition.
 			String toolCodes = String.format("new ToolCallback[]{%n%s%n}", nodeData.getToolList()
 				.stream()
 				.map(tool -> String.format(

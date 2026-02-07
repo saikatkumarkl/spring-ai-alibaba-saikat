@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-// TODO：支持异常分支、支持DashScope平台以外其他模型、Dify的结构化输出
+//TODO: Supports abnormal branches, supports other models other than the DashScope platform, and Dify's structured output
 @Component
 public class LLMNodeSection implements NodeSection<LLMNodeData> {
 

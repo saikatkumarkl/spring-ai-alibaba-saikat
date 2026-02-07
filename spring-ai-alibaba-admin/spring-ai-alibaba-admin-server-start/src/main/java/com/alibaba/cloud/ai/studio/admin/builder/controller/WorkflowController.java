@@ -378,7 +378,7 @@ public class WorkflowController {
 				return Result.error(IdGenerator.uuid(), ErrorCode.WORKFLOW_CONFIG_INVALID.toError("taskId not exists"));
 			}
 			Node inputNode = null;
-			// 组装输入节点内容
+			//Assemble input node contents
 			if (StringUtils.isBlank(request.getResumeParentId())) {
 				Optional<Node> inputNodeOptional = wfContext.getWorkflowConfig()
 					.getNodes()
@@ -525,7 +525,7 @@ public class WorkflowController {
 	public SseEmitter streamEvents(@PathVariable("appId") String appId, @RequestBody ApiTaskRunRequest request) {
 		SseEmitter emitter = new SseEmitter(0L);
 
-		// 设置超时和完成回调
+		// Set timeout and completion callbacks
 		emitter.onTimeout(() -> {
 			ApiTaskMsg timeoutMsg = new ApiTaskMsg();
 			timeoutMsg.setEvent(ApiTaskMsg.Event.Error.name());
@@ -601,13 +601,13 @@ public class WorkflowController {
 		List<NodeResult> lastNodeResults = Lists.newArrayList();
 		Map<String, AtomicInteger> recmsgSeqIdMap = Maps.newHashMap();
 		while (true) {
-			// 检查超时
+			// Check timeout
 			if (System.currentTimeMillis() - startTime > InvokeSourceEnum.api.getTimeoutSeconds() * 1000) {
 				sendTimeoutMessage(emitter, taskId, conversationId);
 				break;
 			}
 
-			// 获取最新上下文
+			// Fetch latest context
 			WorkflowContext latestContext = getLatestContext(context, taskId);
 			if (latestContext == null) {
 				throw new BizException(ErrorCode.WORKFLOW_NODE_DEBUG_FAIL.toError());
@@ -631,7 +631,7 @@ public class WorkflowController {
 				lastNodeResults = currentNodeResults;
 			}
 
-			// 处理任务状态
+			// Handle task status
 			if (handleTaskStatus(emitter, latestContext, taskId, conversationId)) {
 				break;
 			}

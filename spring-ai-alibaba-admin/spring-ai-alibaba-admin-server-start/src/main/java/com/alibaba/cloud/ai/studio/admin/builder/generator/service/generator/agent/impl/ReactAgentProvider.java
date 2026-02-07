@@ -46,7 +46,7 @@ public class ReactAgentProvider extends AbstractAgentTypeProvider {
 
 	@Override
 	public String jsonSchema() {
-		// 最小 JSON Schema（可逐步完善）
+		//Minimal JSON Schema (can be gradually improved)
 		return """
 				{
 				  "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -101,7 +101,7 @@ public class ReactAgentProvider extends AbstractAgentTypeProvider {
 
 	@Override
 	public Map<String, Object> migrate(Map<String, Object> oldHandle, String fromVersion) {
-		// 初版不做迁移
+		//The first version does not migrate
 		return oldHandle;
 	}
 
@@ -110,7 +110,7 @@ public class ReactAgentProvider extends AbstractAgentTypeProvider {
 			List<String> childVarNames) {
 		String var = ctx.nextVar("reactAgent_");
 
-		// instruction 优先使用壳层
+		//instruction takes precedence over the shell
 		String instruction = shell.instruction() != null && !shell.instruction().isBlank() ? shell.instruction()
 				: str(handle.get("instruction"));
 		Integer maxIter = toInt(handle.get("max_iterations"));
@@ -118,9 +118,9 @@ public class ReactAgentProvider extends AbstractAgentTypeProvider {
 
 		StringBuilder code = generateBasicBuilderCode("ReactAgent", var, shell);
 
-		// ReactAgent 特有的字段
+		//ReactAgent-specific fields
 		if (shell.inputKeys() != null && !shell.inputKeys().isEmpty()) {
-			// todo: 目前取第一个作为主输入键， 后续计划将多个inputKey通过占位符注入到instruction中
+			//todo: Currently, the first one is used as the main input key. We plan to inject multiple inputKeys into the instruction through placeholders in the future.
 			String primaryInputKey = shell.inputKeys().get(0);
 			code.append(".inputKey(\"").append(esc(primaryInputKey)).append("\")\n");
 		}
@@ -158,16 +158,16 @@ public class ReactAgentProvider extends AbstractAgentTypeProvider {
 
 	@Override
 	protected void validateSpecific(Map<String, Object> root) {
-		// ReactAgent 必须有 model 配置
+		//ReactAgent must have model configuration
 		Map<String, Object> handle = requireHandle(root);
 
 		if (handle.get("model") == null) {
 			throw new IllegalArgumentException("ReactAgent requires model configuration in handle");
 		}
 
-		// 如果有 tools，检查相关配置
+		//If there are tools, check the relevant configuration
 		if (handle.get("tools") instanceof List<?> tools && !tools.isEmpty()) {
-			// 检查 tools 是否为空字符串
+			//Check if tools is an empty string
 			for (Object tool : tools) {
 				if (tool instanceof String s && s.trim().isEmpty()) {
 					throw new IllegalArgumentException("ReactAgent tool names cannot be empty");
@@ -175,7 +175,7 @@ public class ReactAgentProvider extends AbstractAgentTypeProvider {
 			}
 		}
 
-		// 检查 max_iterations 如果存在，必须是正数
+		//Check max_iterations if present, must be positive
 		Object maxIterations = handle.get("max_iterations");
 		if (maxIterations != null) {
 			requirePositiveNumber(maxIterations, "max_iterations", 1);

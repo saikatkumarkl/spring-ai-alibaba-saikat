@@ -139,7 +139,7 @@ public class WorkflowContext extends RequestContext {
 			WorkflowContext copy = (WorkflowContext) objectInputStream.readObject();
 			// Reinitialize lock object after deserialization
 			copy.lock = new ReentrantLock();
-			// 确保版本号被正确复制
+			//Make sure the version number is copied correctly
 			if (copy.getVersion() == 0) {
 				copy.setVersion(1L);
 			}

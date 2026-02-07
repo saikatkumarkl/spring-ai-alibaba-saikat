@@ -11,37 +11,37 @@ import java.time.LocalDateTime;
 public class EvaluatorDO {
 
     /**
-     * 主键ID
+     * Primary key ID
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
-     * 评估器名称
+     * evaluator name
      */
     private String name;
 
     /**
-     * 评估器描述
+     * Evaluator description
      */
     private String description;
 
 
 
     /**
-     * 创建时间
+     * creation time
      */
 
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * Update time
      */
     private LocalDateTime updateTime;
 
     /**
-     * 逻辑删除标识：0-未删除，1-已删除
+     * Tombstone identification: 0-not deleted, 1-deleted
      */
     private Integer deleted;
 

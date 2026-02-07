@@ -76,7 +76,7 @@ public class MqProducerManager {
 	 */
 	public SendResult sendDelay(Producer producer, MqMessage message, int delaySeconds) {
 		try {
-			// 计算延迟时间戳
+			//Calculate delayed timestamp
 			long deliveryTimestamp = System.currentTimeMillis() + (delaySeconds * 1000L);
 			message.setDeliveryTimestamp(deliveryTimestamp);
 

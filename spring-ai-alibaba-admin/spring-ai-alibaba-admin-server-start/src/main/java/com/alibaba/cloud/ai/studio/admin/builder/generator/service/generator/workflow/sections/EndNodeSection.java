@@ -48,7 +48,7 @@ public class EndNodeSection implements NodeSection<EndNodeData> {
 
 		String codeStr;
 		if ("text".equalsIgnoreCase(data.getOutputType())) {
-			// 如果输出类型为text，则使用对应的输出模板输出最终结果
+			//If the output type is text, use the corresponding output template to output the final result.
 			if (data.getTextTemplateVars().isEmpty()) {
 				codeStr = String.format("state -> Map.of(\"%s\", %s)", data.getOutputKey(),
 						ObjectToCodeUtil.toCode(data.getTextTemplate()));
@@ -80,7 +80,7 @@ public class EndNodeSection implements NodeSection<EndNodeData> {
 						.collect(Collectors.joining(", ")));
 		}
 
-		// 最终节点用于输出用户选中的变量
+		//The final node is used to output the variables selected by the user
 		sb.append("stateGraph.addNode(\"")
 			.append(varName)
 			.append("\", AsyncNodeAction.node_async(")

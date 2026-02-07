@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 
 /**
- * OpenAI聊天客户端工厂
+ * OpenAI chat client factory
  *
  * @author zhuoguang
  */
@@ -45,7 +45,7 @@ public class OpenAiChatClientFactory implements ChatClientFactory {
     @Override
     public ChatModel buildChatModel(ModelConfigDO modelConfig) {
         OpenAiApi api = OpenAiApi.builder().apiKey(modelConfig.getApiKey()).baseUrl(modelConfig.getBaseUrl()).build();
-        // 创建ChatModel
+        //Create ChatModel
         OpenAiChatModel model =  OpenAiChatModel.builder().openAiApi(api)
                 .toolCallingManager(toolCallingManager)
                 .observationRegistry(observationRegistry)
@@ -58,7 +58,7 @@ public class OpenAiChatClientFactory implements ChatClientFactory {
     public ChatOptions buildChatOptions(ModelConfigDO modelConfig, Map<String, Object> parameters, Map<String, String> observationMetadata) {
         OpenAiChatOptions.Builder builder = OpenAiChatOptions.builder().model(modelConfig.getModelName());
         builder.streamUsage(true);
-        // 应用支持的参数
+        //Parameters supported by the application
         for (Map.Entry<String, Object> entry : parameters.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();

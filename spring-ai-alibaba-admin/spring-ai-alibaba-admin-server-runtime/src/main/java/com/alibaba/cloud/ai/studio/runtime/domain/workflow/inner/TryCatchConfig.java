@@ -23,7 +23,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 异常处理配置
+ * Exception handling configuration
  *
  * @since 1.0.0.3
  */

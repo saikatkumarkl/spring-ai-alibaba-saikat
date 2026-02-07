@@ -120,15 +120,15 @@ public class ClassifierExecuteProcessor extends AbstractExecuteProcessor {
 
 		NodeResult nodeResult = initNodeResultAndRefreshContext(node, context);
 
-		// 获取决策、thought及用量，设置输入变量
+		//Get decisions, thoughts and usage, and set input variables
 		DecisionAndThoughtAndUsage decisionAndThoughtAndUsage = constructDecisionAndThought(node, context, nodeResult);
 		TargetIdAndActualDecision targetIdAndActualDecision = fetchTargetIdAndActualDecision(graph, node,
 				decisionAndThoughtAndUsage, context);
 		targetIdAndActualDecision.setTargetIds(removeDuplicates(targetIdAndActualDecision.getTargetIds()));
 		targetIdAndActualDecision.setActualDecision(removeDuplicates(targetIdAndActualDecision.getActualDecision()));
 		targetIdAndActualDecision.setConditionId(removeDuplicates(targetIdAndActualDecision.getConditionId()));
-		// 构建结束
-		// 设置输出变量
+		//Build ends
+		//Set output variables
 		Map<String, Object> subjectAndThoughObj = new HashMap<>();
 		subjectAndThoughObj.put("subject", targetIdAndActualDecision.getActualDecision().get(0));
 		subjectAndThoughObj.put("thought", decisionAndThoughtAndUsage.getThought());
@@ -157,7 +157,7 @@ public class ClassifierExecuteProcessor extends AbstractExecuteProcessor {
 		TargetIdAndActualDecision result = new TargetIdAndActualDecision();
 		NodeParam config = JsonUtils.fromMap(node.getConfig().getNodeParam(), NodeParam.class);
 		List<Condition> conditions = config.getConditions();
-		// 默认分支
+		//Default branch
 		Optional<Condition> defaultOptional = conditions.stream()
 			.filter(condition -> condition.getId().equals("default"))
 			.findAny();
@@ -224,9 +224,9 @@ public class ClassifierExecuteProcessor extends AbstractExecuteProcessor {
 	 * @return A new list containing unique values
 	 */
 	public List<String> removeDuplicates(List<String> list) {
-		// 使用HashSet去重
+		//Use HashSet to remove duplicates
 		Set<String> set = new HashSet<>(list);
-		// 将set转换回list
+		//Convert set back to list
 		List<String> uniqueList = new ArrayList<>(set);
 		return uniqueList;
 	}
@@ -254,7 +254,7 @@ public class ClassifierExecuteProcessor extends AbstractExecuteProcessor {
 	 */
 	private DecisionAndThoughtAndUsage constructDecisionAndThought(Node node, WorkflowContext context,
 			NodeResult nodeResult) {
-		// 解析待分类的文本
+		//Parse text to be classified
 		String classifierContent = extractClassifierContent(node, context);
 		NodeParam config = JsonUtils.fromMap(node.getConfig().getNodeParam(), NodeParam.class);
 		String promptTemplate;
@@ -282,17 +282,17 @@ public class ClassifierExecuteProcessor extends AbstractExecuteProcessor {
 		String prompt = String.format(promptTemplate, subjectsContent, JsonUtils.toJson(indexes), classifierContent,
 				instruction);
 
-		// 调用模型获取结果
+		//Call the model to get the results
 		List<Message> messages = Lists.newArrayList();
 		messages.add(new SystemMessage(prompt));
 
-		// 添加短期记忆
+		//Add short term memory
 		List<Message> shortTermMemories = constructShortTermMemory(node, config.getShortMemory(), context);
 		if (CollectionUtils.isNotEmpty(shortTermMemories)) {
 			messages.addAll(shortTermMemories);
 		}
 
-		// 构建模型参数
+		//Build model parameters
 		Map<String, Object> paramMap = Maps.newHashMap();
 		List<ModelConfig.ModelParam> params = config.getModelConfig().getParams();
 		if (CollectionUtils.isNotEmpty(params)) {
@@ -303,18 +303,18 @@ public class ClassifierExecuteProcessor extends AbstractExecuteProcessor {
 			});
 		}
 
-		// 设置输入变量
+		//Set input variables
 		Map<String, Object> inputObj = Maps.newHashMap();
 		inputObj.put("messages", messages);
 		nodeResult.setInput(JsonUtils.toJson(decorateInput(inputObj)));
 
-		// 调用模型
+		//call model
 		Flux<AgentResponse> stream = modelExecuteManager.stream(config.getModelConfig().getProvider(),
 				config.getModelConfig().getModelId(), paramMap, messages);
 
 		DecisionAndThoughtAndUsage dtu = new DecisionAndThoughtAndUsage();
 
-		// 处理响应
+		//Handle response
 		StringBuilder responseBuilder = new StringBuilder();
 		CountDownLatch countDownLatch = new CountDownLatch(1);
 		Usage usage = new Usage();
@@ -336,12 +336,12 @@ public class ClassifierExecuteProcessor extends AbstractExecuteProcessor {
 			log.info("log used for query classify response:{} , requestId:{}", content, context.getRequestId());
 
 			if ("efficient".equals(config.getModeSwitch())) {
-				// 快速模式 - 直接提取决策结果
+				//Quick mode - extract decision results directly
 				dtu.setDecisions(Lists.newArrayList(content.trim()));
 				dtu.setThought("");
 			}
 			else {
-				// 效果模式 - 提取思考过程和决策结果
+				//Effect model - extract thinking process and decision-making results
 				Matcher decisionMatcher = DECISION_PATTERN.matcher(content);
 				Matcher thoughtMatcher = THOUGHT_PATTERN.matcher(content);
 				List<String> decisions = new ArrayList<>();
@@ -477,7 +477,7 @@ public class ClassifierExecuteProcessor extends AbstractExecuteProcessor {
 
 		private List<Condition> conditions;
 
-		// 模式设置，advanced:效果模式 efficient:快速模式
+		//Mode settings, advanced: effect mode efficient: fast mode
 		@JsonProperty("mode_switch")
 		private String modeSwitch = "advanced";
 

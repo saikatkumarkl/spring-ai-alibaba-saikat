@@ -762,7 +762,7 @@ public abstract class AbstractExecuteProcessor implements ExecuteProcessor {
 							outputParamsRef.getProperties());
 				}
 				else {
-					// 如果object没有继续的属性，则不解析，直接将所有内容直接放入target对象中
+					//If the object has no continuing attributes, it will not be parsed and all the content will be directly put into the target object.
 					jsonObject.putAll((Map<String, Object>) sourceMap.get(outputParamsRef.getKey()));
 				}
 			}

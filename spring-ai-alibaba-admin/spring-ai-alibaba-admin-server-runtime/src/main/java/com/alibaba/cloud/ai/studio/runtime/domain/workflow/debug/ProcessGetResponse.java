@@ -23,7 +23,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 工作流控制台调试结果出参
+ * Workflow console debugging results output parameters
  */
 @Data
 public class ProcessGetResponse implements Serializable {
@@ -55,7 +55,7 @@ public class ProcessGetResponse implements Serializable {
 	@JsonProperty("node_results")
 	private List<NodeResult> nodeResults;
 
-	// 变量内容 todo
+	//Variable content todo
 
 	@Data
 	public static class ProcessOutput {

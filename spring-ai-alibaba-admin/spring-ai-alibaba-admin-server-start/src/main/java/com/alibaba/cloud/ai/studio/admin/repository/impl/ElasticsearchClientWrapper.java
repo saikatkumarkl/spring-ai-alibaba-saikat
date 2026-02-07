@@ -23,7 +23,7 @@ public class ElasticsearchClientWrapper {
     private final ElasticsearchClient elasticsearchClient;
 
     /**
-     * 执行搜索查询
+     * Execute search query
      */
     public SearchResponse<Map> search(String index, SearchRequest searchRequest) {
         try {
@@ -34,7 +34,7 @@ public class ElasticsearchClientWrapper {
     }
 
     /**
-     * 批量索引文档
+     * Batch index documents
      */
     public void bulkIndex(String index, List<Map<String, Object>> documents) {
         try {
@@ -63,7 +63,7 @@ public class ElasticsearchClientWrapper {
     }
 
     /**
-     * 检查索引是否存在
+     * Check if the index exists
      */
     public boolean indexExists(String indexName) {
         try {
@@ -76,7 +76,7 @@ public class ElasticsearchClientWrapper {
     }
 
     /**
-     * 转换SearchResponse到Map列表
+     * Convert SearchResponse to Map list
      */
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> extractHits(SearchResponse<Map> response) {
@@ -86,7 +86,7 @@ public class ElasticsearchClientWrapper {
     }
 
     /**
-     * 获取总命中数
+     * Get the total number of hits
      */
     public long getTotalHits(SearchResponse<Map> response) {
         return response.hits().total().value();

@@ -21,7 +21,7 @@ public class Node implements RunnableModel {
 
 	private String id;
 
-	// 如果在循环节点里，则有父节点ID
+	// If inside an iteration node, record the parent node ID
 	private String parentId;
 
 	private NodeType type;

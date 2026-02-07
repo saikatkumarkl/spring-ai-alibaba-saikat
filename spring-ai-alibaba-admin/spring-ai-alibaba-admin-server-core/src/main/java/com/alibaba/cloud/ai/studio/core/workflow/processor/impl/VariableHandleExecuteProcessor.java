@@ -108,7 +108,7 @@ public class VariableHandleExecuteProcessor extends AbstractExecuteProcessor {
 	 */
 	private Map<String, Object> constructGroupResult(NodeParam nodeParam, WorkflowContext context) {
 		Map<String, Object> groupVariableMap = Maps.newHashMap();
-		// 处理聚合内容
+		//Processing aggregated content
 		handleGroupVariables(nodeParam, groupVariableMap, context);
 		return groupVariableMap;
 	}

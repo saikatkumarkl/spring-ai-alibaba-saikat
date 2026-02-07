@@ -66,19 +66,19 @@ public interface NodeDataConverter<T extends NodeData> {
 	}
 
 	/**
-	 * 统一处理节点的输入输出变量名称，生成用于处理outputKey、inputKey、inputSelector 以及其他需要后置处理操作的Consumer
-	 * @return 一个BiConsumer，接受参数：T nodeData和Map idToVarName
+	 * Unify the input and output variable names of processing nodes and generate Consumers for processing outputKey, inputKey, inputSelector and other post-processing operations.
+	 * @return a BiConsumer, accepting parameters: T nodeData and Map idToVarName
 	 */
 	default BiConsumer<T, Map<String, String>> postProcessConsumer(DSLDialectType dialectType) {
 		return (nodeData, idToVarName) -> {
-			// 将所有的输出变量的名称统一为"nodeVarName_varName"的格式
+			//Unify the names of all output variables into the format of "nodeVarName_varName"
 			Optional.ofNullable(nodeData.getOutputs())
 				.ifPresentOrElse((outputs) -> nodeData.setOutputs(outputs.stream().peek(v -> {
 					String name = v.getName();
 					v.setName(nodeData.getVarName().concat("_").concat(name));
 				}).toList()), () -> nodeData.setOutputs(List.of()));
 
-			// 将所有的输入变量的nodeId转化为nodeName，并保存到nameInCode字段中
+			//Convert the nodeId of all input variables into nodeName and save it in the nameInCode field
 			nodeData.setInputs(
 					Optional.ofNullable(nodeData.getInputs()).orElse(List.of()).stream().peek(variableSelector -> {
 						String nodeId = variableSelector.getNamespace();

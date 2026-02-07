@@ -25,29 +25,29 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "prod"
-            # MySQL 数据源配置
+            #MySQL data source configuration
             - name: SPRING_DATASOURCE_URL
               value: "jdbc:mysql://mysql:3306/admin?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai"
             - name: SPRING_DATASOURCE_USERNAME
               value: "admin"
             - name: SPRING_DATASOURCE_PASSWORD
               value: "admin"
-            # Redis 配置
+            #Redis configuration
             - name: SPRING_REDIS_HOST
               value: "redis"
             - name: SPRING_REDIS_PORT
               value: "6379"
             - name: SPRING_REDIS_DATABASE
               value: "0"
-            # Elasticsearch 配置
+            #Elasticsearch configuration
             - name: SPRING_ELASTICSEARCH_URIS
               value: "http://elasticsearch:9200"
             - name: SPRING_ELASTICSEARCH_URL
               value: "http://elasticsearch:9200"
-            # Nacos 配置
+            #Nacos configuration
             - name: NACOS_SERVER_ADDR
               value: "nacos:8848"
-            # RocketMQ 配置
+            #RocketMQ configuration
             - name: ROCKETMQ_ENDPOINTS
               value: "rmq-proxy:18080"
             - name: ROCKETMQ_NAME_SERVER
@@ -56,7 +56,7 @@ spec:
               value: "topic_saa_studio_document_index"
             - name: ROCKETMQ_DOCUMENT_INDEX_GROUP
               value: "group_saa_studio_document_index"
-            # LoongCollector (OTLP) 配置
+            #LoongCollector (OTLP) configuration
             - name: MANAGEMENT_OTLP_TRACING_EXPORT_ENDPOINT
               value: "http://loongcollector:4318/v1/traces"
           resources:

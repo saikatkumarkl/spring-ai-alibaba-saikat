@@ -110,13 +110,13 @@ public class WorkflowServiceImpl implements WorkflowService {
 			return any.get();
 		}
 
-		// 筛选出nodeType为End的响应
+		//Filter out responses whose nodeType is End
 		List<WorkflowResponse> endNodeResponses = allResponses.stream()
 			.filter(resp -> NodeTypeEnum.END.getCode().equals(resp.getNodeType()))
 			.sorted((r1, r2) -> Integer.compare(r1.getNodeMsgSeqId(), r2.getNodeMsgSeqId()))
 			.collect(Collectors.toList());
 
-		// 拼接已完成节点的内容
+		//Splice the contents of completed nodes
 		StringBuilder contentBuilder = new StringBuilder();
 		for (WorkflowResponse resp : endNodeResponses) {
 			if (resp.getMessage() != null) {
@@ -124,7 +124,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 			}
 		}
 
-		// 构建最终响应
+		//Build final response
 		WorkflowResponse finalResponse = allResponses.get(allResponses.size() - 1);
 		finalResponse.setMessage(new ChatMessage(MessageRole.ASSISTANT, contentBuilder.toString()));
 		return finalResponse;
@@ -285,7 +285,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 				});
 			}
 
-			// 处理messages作为上下文
+			//Handle messages as context
 			if (!CollectionUtils.isEmpty(request.getMessages())) {
 				workflowContext.getSysMap().put(SYS_HISTORY_LIST_KEY, request.getMessages());
 			}

@@ -199,7 +199,7 @@ public class HttpClientManager implements InitializingBean {
 		}
 	}
 
-	/******************** get方法 begin ********************/
+	/******************** get method begin ********************/
 	public RpcResult doGet(String url, Map<String, Object> parameters) {
 		return doGet(url, Maps.newHashMap(), parameters);
 	}

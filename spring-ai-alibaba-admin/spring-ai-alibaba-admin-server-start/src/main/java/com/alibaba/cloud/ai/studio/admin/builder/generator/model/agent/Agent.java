@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public class Agent {
 
-	// 基础属性
+	// Basic attributes
 	private String agentClass; // ReactAgent, SequentialAgent, ParallelAgent.etc
 
 	private String name;
@@ -37,11 +37,11 @@ public class Agent {
 	@Deprecated
 	private String inputKey;
 
-	// 支持多输入键（与 schema: input_keys 对齐）
+	// Multiple input keys (aligns with schema: input_keys)
 	@Deprecated
 	private List<String> inputKeys;
 
-	// LLM相关配置
+	// LLM-related configuration
 	private String model;
 
 	private String instruction;
@@ -50,24 +50,24 @@ public class Agent {
 
 	private Map<String, Object> chatOptions;
 
-	// 工具配置
+	// Tool configuration
 	private List<String> tools;
 
 	private Map<String, Object> toolConfig;
 
-	// 子agent配置
+	// Sub-agent configuration
 	private List<Agent> subAgents;
 
-	// 流程控制配置
+	// Flow control configuration
 	private Map<String, Object> flowConfig;
 
-	// 状态管理配置
+	// State management configuration
 	private Map<String, String> stateConfig;
 
-	// 钩子配置
+	// Hook configuration
 	private Map<String, Object> hooks;
 
-	// 动态 handle：原样透传每种 agent type 的专属配置
+	// Dynamic handle: pass-through per agent type configuration
 	private Map<String, Object> handle;
 
 	public Agent() {

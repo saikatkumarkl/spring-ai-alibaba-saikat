@@ -143,13 +143,13 @@ public class FileManager {
 			URL imageUrl = new URL(url);
 			// noinspection StartSSRFNetHookCheckingInspection
 			java.io.InputStream is = imageUrl.openStream();
-			byte[] bytes = new byte[Math.min(is.available(), 1024)]; // 读取前1KB用于识别
+			byte[] bytes = new byte[Math.min(is.available(), 1024)]; //The first 1KB of reading is used for identification
 			is.read(bytes);
 			is.close();
 			MediaType mediaType = null;
-			// 根据文件头识别MIME类型
+			//Identify MIME type based on file header
 			if (bytes.length >= 4) {
-				// 图片格式
+				//Picture format
 				if (bytes[0] == (byte) 0xFF && bytes[1] == (byte) 0xD8) {
 					mediaType = MediaType.IMAGE_JPEG;
 				}
@@ -160,17 +160,17 @@ public class FileManager {
 				else if (bytes[0] == (byte) 0x47 && bytes[1] == (byte) 0x49 && bytes[2] == (byte) 0x46) {
 					mediaType = MediaType.IMAGE_GIF;
 				}
-				// PDF格式
+				//PDF format
 				else if (bytes[0] == (byte) 0x25 && bytes[1] == (byte) 0x50 && bytes[2] == (byte) 0x44
 						&& bytes[3] == (byte) 0x46) {
 					mediaType = MediaType.APPLICATION_PDF;
 				}
-				// XML格式
+				//XML format
 				else if (bytes[0] == (byte) 0x3C && bytes[1] == (byte) 0x3F && bytes[2] == (byte) 0x78
 						&& bytes[3] == (byte) 0x6D) {
 					mediaType = MediaType.APPLICATION_XML;
 				}
-				// JSON格式 - 检查开头是否为 { 或 [
+				//JSON format - Check if it starts with { or [
 				else if (bytes[0] == (byte) 0x7B || bytes[0] == (byte) 0x5B) {
 					mediaType = MediaType.APPLICATION_JSON;
 				}

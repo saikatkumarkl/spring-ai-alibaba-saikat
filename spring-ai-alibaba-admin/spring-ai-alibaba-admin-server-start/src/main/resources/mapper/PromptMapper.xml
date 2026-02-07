@@ -2,12 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.alibaba.cloud.ai.studio.admin.mapper.PromptMapper">
 
-    <!-- Prompt表字段 -->
+    <!--Prompt table field-->
     <sql id="prompt_columns">
         id, prompt_key, prompt_desc, latest_version, tags, create_time, update_time
     </sql>
 
-    <!-- Prompt实体映射 -->
+    <!--Prompt entity mapping-->
     <resultMap id="promptResultMap" type="com.alibaba.cloud.ai.studio.admin.entity.PromptDO">
         <id property="id" column="id"/>
         <result property="promptKey" column="prompt_key"/>
@@ -18,25 +18,25 @@
         <result property="updateTime" column="update_time"/>
     </resultMap>
 
-    <!-- 创建Prompt -->
+    <!--CreatePrompt-->
     <insert id="insert" parameterType="com.alibaba.cloud.ai.studio.admin.entity.PromptDO" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO prompt (prompt_key, prompt_desc, latest_version, tags, create_time, update_time)
         VALUES (#{promptKey}, #{promptDesc}, #{latestVersion}, #{tags}, NOW(), NOW())
     </insert>
 
-    <!-- 根据Prompt Key删除Prompt（物理删除，因为表中没有deleted字段） -->
+    <!--Delete Prompt based on Prompt Key (physical deletion, because there is no deleted field in the table)-->
     <delete id="deleteByPromptKey">
         DELETE FROM prompt WHERE prompt_key = #{promptKey}
     </delete>
 
-    <!-- 根据Prompt Key获取Prompt -->
+    <!--Get Prompt based on Prompt Key-->
     <select id="selectByPromptKey" resultMap="promptResultMap">
         SELECT <include refid="prompt_columns"/>
         FROM prompt
         WHERE prompt_key = #{promptKey}
     </select>
 
-    <!-- 查询Prompt列表 -->
+    <!--Query prompt list-->
     <select id="selectList" resultMap="promptResultMap">
         SELECT <include refid="prompt_columns"/>
         FROM prompt
@@ -55,10 +55,10 @@
             AND (tags = #{tag} OR tags LIKE CONCAT('%,', #{tag}, ',%') OR tags LIKE CONCAT(#{tag}, ',%') OR tags LIKE CONCAT('%,', #{tag}))
         </if>
         ORDER BY create_time DESC
-        LIMIT #{offset}, #{limit}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <!-- 查询Prompt总数 -->
+    <!--Query the total number of prompts-->
     <select id="selectCount" resultType="int">
         SELECT COUNT(*)
         FROM prompt
@@ -78,7 +78,7 @@
         </if>
     </select>
 
-    <!-- 更新Prompt -->
+    <!--UpdatePrompt-->
     <update id="update" parameterType="com.alibaba.cloud.ai.studio.admin.entity.PromptDO">
         UPDATE prompt
         <set>
@@ -89,14 +89,14 @@
         WHERE prompt_key = #{promptKey}
     </update>
 
-    <!-- 更新最新版本 -->
+    <!--Update to latest version-->
     <update id="updateLatestVersion">
         UPDATE prompt
         SET latest_version = #{latestVersion}, update_time = NOW()
         WHERE prompt_key = #{promptKey}
     </update>
 
-    <!-- 根据Prompt Key获取Prompt及其最新版本状态 -->
+    <!--Get Prompt and its latest version status based on Prompt Key-->
     <select id="selectByPromptKeyWithLatestVersionStatus" resultType="java.util.Map">
         SELECT 
             p.id,
@@ -112,7 +112,7 @@
         WHERE p.prompt_key = #{promptKey}
     </select>
 
-    <!-- 查询Prompt列表及其最新版本状态 -->
+    <!--Query the Prompt list and its latest version status-->
     <select id="selectListWithLatestVersionStatus" resultType="java.util.Map">
         SELECT 
             p.id,
@@ -140,7 +140,7 @@
             AND (p.tags = #{tag} OR p.tags LIKE CONCAT('%,', #{tag}, ',%') OR p.tags LIKE CONCAT(#{tag}, ',%') OR p.tags LIKE CONCAT('%,', #{tag}))
         </if>
         ORDER BY p.create_time DESC
-        LIMIT #{offset}, #{limit}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
 </mapper>

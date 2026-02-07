@@ -37,7 +37,7 @@ public class PromptTemplateServiceImpl implements PromptTemplateService {
     public PageResult<PromptTemplate> list(PromptTemplateListRequest request) throws StudioException {
         log.info("查询Prompt模板列表: {}", request);
         
-        // 验证搜索模式参数
+        //Validate search pattern parameters
         if (request.getSearch() != null && 
             !"accurate".equals(request.getSearch()) &&
             !"blur".equals(request.getSearch())) {

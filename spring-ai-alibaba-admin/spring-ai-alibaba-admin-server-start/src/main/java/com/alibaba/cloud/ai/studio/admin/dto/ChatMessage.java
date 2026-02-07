@@ -12,42 +12,42 @@ import lombok.NoArgsConstructor;
 public class ChatMessage {
     
     /**
-     * 消息角色：user-用户，assistant-助手，system-系统
+     * Message role: user-user, assistant-assistant, system-system
      */
     private String role;
     
     /**
-     * 消息内容
+     * Message content
      */
     private String content;
     
     /**
-     * 消息时间戳
+     * Message timestamp
      */
     private Long timestamp;
     
     
     /**
-     * 消息指标
+     * message indicators
      */
     private ChatMessageMetrics metrics;
     
     /**
-     * 创建用户消息
+     * Create user message
      */
     public static ChatMessage createUserMessage(String content) {
         return ChatMessage.builder().role("user").content(content).timestamp(System.currentTimeMillis()).build();
     }
     
     /**
-     * 创建助手消息
+     * Create assistant message
      */
     public static ChatMessage createAssistantMessage(String content) {
         return ChatMessage.builder().role("assistant").content(content).timestamp(System.currentTimeMillis()).build();
     }
     
     /**
-     * 创建系统消息
+     * Create system message
      */
     public static ChatMessage createSystemMessage(String content) {
         return ChatMessage.builder().role("system").content(content).timestamp(System.currentTimeMillis()).build();

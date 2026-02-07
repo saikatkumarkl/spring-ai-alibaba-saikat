@@ -55,7 +55,7 @@ public class AnswerNodeSection implements NodeSection<AnswerNodeData> {
 			.append(varName)
 			.append("));\n\n");
 
-		// 回答节点直接接END
+		//The answer node is directly connected to END
 		sb.append(String.format("stateGraph.addEdge(\"%s\", END);%n", varName));
 
 		return sb.toString();

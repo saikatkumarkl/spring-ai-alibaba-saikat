@@ -9,29 +9,29 @@ import lombok.Data;
 public class PromptTemplateListRequest {
 
     /**
-     * 查询模式：accurate-精确，blur-模糊
+     * Query mode: accurate, blur
      */
     @Pattern(regexp = "^(accurate|blur)$", message = "搜索模式必须是accurate或blur")
     private String search = "blur";
 
     /**
-     * 标签名称
+     * Tag name
      */
     private String tag;
 
     /**
-     * Prompt模板Key
+     * Prompt template key
      */
     private String promptTemplateKey;
 
     /**
-     * 页码
+     * page number
      */
     @Min(value = 1, message = "页码必须大于0")
     private Integer pageNo = 1;
 
     /**
-     * 每页数量
+     * Quantity per page
      */
     @Min(value = 1, message = "每页大小必须大于0")
     @Max(value = 100, message = "每页大小不能超过100")

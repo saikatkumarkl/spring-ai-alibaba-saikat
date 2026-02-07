@@ -44,13 +44,13 @@ public class ProviderEntity {
 	private Boolean enable;
 
 	/**
-	 * 协议，默认openai协议
+	 * Protocol, default openai protocol
 	 */
 	private String protocol = "openai";
 
 	private String source;
 
-	// 支持的模型类型列表，逗号分隔
+	//Comma separated list of supported model types
 	@TableField("supported_model_types")
 	private String supportedModelTypes;
 

@@ -14,52 +14,52 @@ import lombok.NoArgsConstructor;
 public class PromptVersionDetail {
 
     /**
-     * 版本号
+     * version number
      */
     private String version;
 
     /**
-     * Prompt名称
+     * Prompt name
      */
     private String promptKey;
 
     /**
-     * Prompt版本描述
+     * Prompt version description
      */
     private String versionDescription;
 
     /**
-     * Prompt内容
+     * Prompt content
      */
     private String template;
 
     /**
-     * Prompt中的变量值，JSON
+     * Variable value in Prompt, JSON
      */
     private String variables;
 
     /**
-     * 使用的模型相关参数，JSON
+     * Model related parameters used, JSON
      */
     private String modelConfig;
 
     /**
-     * Prompt版本创建时间，时间戳毫秒
+     * Prompt version creation time, timestamp milliseconds
      */
     private Long createTime;
 
     /**
-     * 前置版本
+     * Previous version
      */
     private String previousVersion;
 
     /**
-     * 版本状态：pre-预发布版本，release-正式版本
+     * Version status: pre-pre-release version, release-official version
      */
     private String status;
 
     /**
-     * 从DO转换为DTO
+     * Convert from DO to DTO
      */
     public static PromptVersionDetail fromDO(PromptVersionDO promptVersionDO) {
         if (promptVersionDO == null) {

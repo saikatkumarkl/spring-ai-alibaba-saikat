@@ -41,7 +41,7 @@ public class CodeNodeData extends NodeData {
 
 	private int retryIntervalMs = 1000;
 
-	// 运行失败时的默认值
+	// Default value when execution fails
 	private Map<String, Object> defaultValue;
 
 	private CodeStyle codeStyle = CodeStyle.EXPLICIT_PARAMETERS;
@@ -121,12 +121,12 @@ public class CodeNodeData extends NodeData {
 	public enum CodeStyle {
 
 		/**
-		 * Dify代码样式
+		 * Dify code style.
 		 */
 		EXPLICIT_PARAMETERS,
 
 		/**
-		 * Studio代码样式
+		 * Studio code style.
 		 */
 		GLOBAL_DICTIONARY
 

@@ -53,7 +53,7 @@ import java.util.stream.Stream;
  * @author vlsmb
  * @since 2025/8/27
  */
-// TODO: 与DifyDSLAdapter合并一些重复代码
+//TODO: merge some duplicate code with DifyDSLAdapter
 @Component
 public class StudioDSLAdapter extends AbstractDSLAdapter {
 
@@ -82,12 +82,12 @@ public class StudioDSLAdapter extends AbstractDSLAdapter {
 
 	@Override
 	public Workflow mapToWorkflow(Map<String, Object> data) {
-		// 构建Graph
+		//Build Graph
 		Workflow workflow = new Workflow();
 		Graph graph = this.constructGraph(data);
 		workflow.setGraph(graph);
 
-		// 节点的输出变量
+		//node output variable
 		List<Variable> extraVars = graph.getNodes().stream().flatMap(node -> {
 			NodeType type = node.getType();
 			@SuppressWarnings("unchecked")
@@ -95,7 +95,7 @@ public class StudioDSLAdapter extends AbstractDSLAdapter {
 			return conv.extractWorkflowVars(node.getData());
 		}).toList();
 
-		// 会话变量
+		//session variables
 		Map<?, ?> variableConfigObj = MapReadUtil.getMapDeepValue(data, Map.class, "config", "global_config",
 				"variable_config");
 		WorkflowConfig.VariableConfig variableConfig = OBJECT_MAPPER.convertValue(variableConfigObj,
@@ -108,7 +108,7 @@ public class StudioDSLAdapter extends AbstractDSLAdapter {
 				.setValue(param.getDefaultValue()))
 			.toList();
 
-		// 预制变量
+		//Prefabricated variables
 		List<Variable> reserveVars = List.of(new Variable("sys_query", VariableType.STRING),
 				new Variable("sys_history_list", VariableType.ARRAY_STRING)
 					.setVariableStrategy(Variable.Strategy.APPEND));
@@ -134,7 +134,7 @@ public class StudioDSLAdapter extends AbstractDSLAdapter {
 		List<Map<String, Object>> innerNodeMaps = new ArrayList<>();
 		List<Map<String, Object>> innerEdgeMaps = new ArrayList<>();
 
-		// 展开迭代节点内部的Node和Edge
+		//Expand Node and Edge inside the iteration node
 		nodeMap.forEach(map -> {
 			NodeType type = NodeType.fromStudioValue(MapReadUtil.getMapDeepValue(map, String.class, "type"))
 				.orElseThrow(() -> new UnsupportedOperationException("unsupported node type " + map.get("type")));
@@ -161,7 +161,7 @@ public class StudioDSLAdapter extends AbstractDSLAdapter {
 			.collect(Collectors.toMap(Node::getId, n -> n.getData().getVarName()));
 		Map<String, Node> nodeIdMap = nodes.stream().collect(Collectors.toMap(Node::getId, n -> n));
 
-		// 根据parnetId进行分组，为了给迭代节点的起始节点传递迭代数据
+		//Group according to parnetId, in order to pass iteration data to the starting node of the iteration node
 		Map<String, List<Node>> groupByParentId = nodes.stream()
 			.filter(node -> Objects.nonNull(node.getParentId()))
 			.collect(Collectors.groupingBy(Node::getParentId));
@@ -185,13 +185,13 @@ public class StudioDSLAdapter extends AbstractDSLAdapter {
 			});
 		});
 
-		// 将Edge里的source和target都转换成varName
+		//Convert both source and target in Edge to varName
 		edges.forEach(edge -> {
 			edge.setSource(varNames.getOrDefault(edge.getSource(), edge.getSource()));
 			edge.setTarget(varNames.getOrDefault(edge.getTarget(), edge.getTarget()));
 		});
 
-		// 将Iteration节点起始改为iteration_start，并将Iteration节点结束改为iteration_end
+		//Change the start of the Iteration node to iteration_start and the end of the Iteration node to iteration_end
 		Map<String, Node> nodeVarMap = nodes.stream().collect(Collectors.toMap(n -> n.getData().getVarName(), n -> n));
 		edges.forEach(edge -> {
 			if (NodeType.ITERATION.equals(nodeVarMap.get(edge.getSource()).getType())) {
@@ -228,7 +228,7 @@ public class StudioDSLAdapter extends AbstractDSLAdapter {
 			NodeType nodeType = NodeType.fromStudioValue(nodeTypeStr)
 				.orElseThrow(() -> new NotImplementedException("unsupported node type " + nodeTypeStr));
 
-			// 构造Node
+			//ConstructNode
 			Node node = new Node();
 			node.setId(nodeId)
 				.setType(nodeType)
@@ -247,7 +247,7 @@ public class StudioDSLAdapter extends AbstractDSLAdapter {
 
 			data.setVarName(varName);
 
-			// 获得处理输入变量名称的Consumer，当所有节点都处理完时使用
+			//Get the Consumer that processes the input variable name, used when all nodes have been processed
 			postProcessConsumers.put(data.getClass(), converter.postProcessConsumer(DSLDialectType.STUDIO));
 
 			node.setData(data);
@@ -258,7 +258,7 @@ public class StudioDSLAdapter extends AbstractDSLAdapter {
 		Map<String, String> varNames = nodes.stream()
 			.collect(Collectors.toMap(Node::getId, n -> n.getData().getVarName()));
 
-		// 执行每一个节点的postProcess
+		//Execute postProcess of each node
 		nodes.forEach(node -> {
 			Class<? extends NodeData> clazz = node.getData().getClass();
 			BiConsumer<? super NodeData, Map<String, String>> consumer = postProcessConsumers.get(clazz);
@@ -314,7 +314,7 @@ public class StudioDSLAdapter extends AbstractDSLAdapter {
 			throw new IllegalArgumentException("config is null");
 		}
 
-		// 检查config是否为WorkflowConfig
+		//Check if config is WorkflowConfig
 		try {
 			OBJECT_MAPPER.convertValue(config, WorkflowConfig.class);
 		}

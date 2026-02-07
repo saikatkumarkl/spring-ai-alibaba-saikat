@@ -2,12 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.alibaba.cloud.ai.studio.admin.mapper.PromptTemplateMapper">
 
-    <!-- Prompt模板表字段 -->
+    <!--Prompt template table fields-->
     <sql id="prompt_template_columns">
         id, prompt_template_key, tags, template_desc, template, variables, model_config
     </sql>
 
-    <!-- Prompt模板实体映射 -->
+    <!--Prompt template entity mapping-->
     <resultMap id="promptTemplateResultMap" type="com.alibaba.cloud.ai.studio.admin.entity.PromptTemplateDO">
         <id property="id" column="id"/>
         <result property="promptTemplateKey" column="prompt_template_key"/>
@@ -18,14 +18,14 @@
         <result property="modelConfig" column="model_config"/>
     </resultMap>
 
-    <!-- 根据模板Key获取Prompt模板 -->
+    <!--Get the Prompt template based on the template Key-->
     <select id="selectByPromptTemplateKey" resultMap="promptTemplateResultMap">
         SELECT <include refid="prompt_template_columns"/>
         FROM prompt_build_template
         WHERE prompt_template_key = #{promptTemplateKey}
     </select>
 
-    <!-- 查询Prompt模板列表 -->
+    <!--Query Prompt template list-->
     <select id="selectList" resultMap="promptTemplateResultMap">
         SELECT <include refid="prompt_template_columns"/>
         FROM prompt_build_template
@@ -44,10 +44,10 @@
             AND (tags = #{tag} OR tags LIKE CONCAT('%,', #{tag}, ',%') OR tags LIKE CONCAT(#{tag}, ',%') OR tags LIKE CONCAT('%,', #{tag}))
         </if>
         ORDER BY id DESC
-        LIMIT #{offset}, #{limit}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <!-- 查询Prompt模板总数 -->
+    <!--Query the total number of Prompt templates-->
     <select id="selectCount" resultType="int">
         SELECT COUNT(*)
         FROM prompt_build_template

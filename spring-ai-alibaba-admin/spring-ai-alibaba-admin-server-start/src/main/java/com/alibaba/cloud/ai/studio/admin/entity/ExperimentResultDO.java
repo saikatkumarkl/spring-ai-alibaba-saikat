@@ -11,57 +11,57 @@ import java.time.LocalDateTime;
 public class ExperimentResultDO {
 
     /**
-     * 主键ID
+     * Primary key ID
      */
     private Long id;
 
     /**
-     * 实验ID
+     * Experiment ID
      */
     private Long experimentId;
 
     /**
-     * 输入内容
+     * Enter content
      */
     private String input;
 
     /**
-     * 实际输出
+     * actual output
      */
     private String actualOutput;
 
     /**
-     * 参考输出
+     * Reference output
      */
     private String referenceOutput;
 
     /**
-     * 评估得分（0.0-1.0）
+     * Assessment score (0.0-1.0)
      */
     private BigDecimal score;
 
     /**
-     * 评估原因
+     * Assess the reasons
      */
     private String reason;
 
     /**
-     * 评估时间
+     * Assessment time
      */
     private LocalDateTime evaluationTime;
 
     /**
-     * 评估器版本ID
+     * Evaluator version ID
      */
     private Long evaluatorVersionId;
 
     /**
-     * 创建时间
+     * creation time
      */
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * Update time
      */
     private LocalDateTime updateTime;
 } 

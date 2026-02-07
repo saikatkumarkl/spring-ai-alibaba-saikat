@@ -13,49 +13,49 @@ import lombok.NoArgsConstructor;
 public class Prompt {
 
     /**
-     * Prompt名称
+     * Prompt name
      */
     private String promptKey;
 
     /**
-     * Prompt描述
+     * PromptDescription
      */
     private String promptDescription;
 
     /**
-     * 最新版本
+     * latest version
      */
     private String latestVersion;
 
     /**
-     * 最新版本状态：pre-预发布版本，release-正式版本
+     * Latest version status: pre-pre-release version, release-official version
      */
     private String latestVersionStatus;
 
     /**
-     * 标签，逗号分隔
+     * tags, comma separated
      */
     private String tags;
 
     /**
-     * Prompt创建时间，时间戳毫秒
+     * Prompt creation time, timestamp milliseconds
      */
     private Long createTime;
 
     /**
-     * Prompt变更时间，时间戳毫秒
+     * Prompt change time, timestamp milliseconds
      */
     private Long updateTime;
 
     /**
-     * 从DO转换为DTO
+     * Convert from DO to DTO
      */
     public static Prompt fromDO(PromptDO promptDO) {
         return fromDO(promptDO, null);
     }
 
     /**
-     * 从DO转换为DTO，包含最新版本状态
+     * Convert from DO to DTO with latest version status
      */
     public static Prompt fromDO(PromptDO promptDO, String latestVersionStatus) {
         if (promptDO == null) {

@@ -21,7 +21,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * Common Param for InputParams and OutputParams 公共参数，用于InputParams和OutputParams
+ * Common Param for InputParams and OutputParams Common Param for InputParams and OutputParams
  *
  * @since 1.0.0.3
  */

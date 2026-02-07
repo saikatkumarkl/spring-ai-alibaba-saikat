@@ -21,7 +21,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * Edge of The Graph 画布的边声明
+ * Edge of The Graph canvas edge declaration
  *
  * @since 1.0.0.3
  */
@@ -29,12 +29,12 @@ import java.io.Serializable;
 public class Edge implements Cloneable, Serializable {
 
 	/**
-	 * id of the edge 边的id
+	 * id of the edge id of the edge
 	 */
 	private String id;
 
 	/**
-	 * source node id of the edge 边的源节点id
+	 * source node id of the edge source node id of the edge
 	 */
 	private String source;
 
@@ -42,13 +42,13 @@ public class Edge implements Cloneable, Serializable {
 	 * If the source node has multiple outgoing connection points, sourceHandle is
 	 * formatted as {source}_{connectionPointId};Otherwise (if there’s only one connection
 	 * point), sourceHandle simply uses {source}.
-	 * 边的源节点存在多个出向连接点，sourceHandle则格式化为{source}_{连接点的id}；否则sourceHandle为{source}
+	 * The source node of an edge has multiple outgoing connection points, and sourceHandle is formatted as {source}_{id of the connection point}; otherwise sourceHandle is {source}
 	 */
 	@JsonProperty("source_handle")
 	private String sourceHandle;
 
 	/**
-	 * target node id of the edge 边的目标节点id
+	 * target node id of the edge target node id of the edge
 	 */
 	private String target;
 
@@ -56,7 +56,7 @@ public class Edge implements Cloneable, Serializable {
 	 * If the target node has multiple incoming connection points, targetHandle is
 	 * formatted as {target}_{connectionPointId};Otherwise (if there’s only one connection
 	 * point), targetHandle simply uses {target}.
-	 * 边的目的节点存在多个入向连接点，targetHandle则格式化为{target}_{连接点的id}；否则targetHandle则格式化为为{target}
+	 * The destination node of the edge has multiple incoming connection points, and the targetHandle is formatted as {target}_{id of the connection point}; otherwise the targetHandle is formatted as {target}
 	 */
 	@JsonProperty("target_handle")
 	private String targetHandle;

@@ -14,17 +14,17 @@ import java.util.List;
 public class ValidationErrorResponse {
 
     /**
-     * 错误消息
+     * Error message.
      */
     private String message;
 
     /**
-     * 字段错误详情列表
+     * Field error details list.
      */
     private List<FieldError> fieldErrors;
 
     /**
-     * 字段错误详情
+     * Field error details.
      */
     @Data
     @Builder
@@ -33,17 +33,17 @@ public class ValidationErrorResponse {
     public static class FieldError {
         
         /**
-         * 错误字段名
+         * Field name with error.
          */
         private String field;
         
         /**
-         * 被拒绝的值
+         * Rejected value.
          */
         private Object rejectedValue;
         
         /**
-         * 错误消息
+         * Error message.
          */
         private String message;
     }

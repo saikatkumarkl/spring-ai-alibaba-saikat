@@ -9,18 +9,18 @@ import com.alibaba.cloud.ai.studio.admin.exception.StudioException;
 public interface PromptTemplateService {
 
     /**
-     * 根据模板Key获取Prompt模板详情
+     * Get Prompt template details based on template Key
      *
-     * @param promptTemplateKey 模板Key
-     * @return Prompt模板详情
+     * @param promptTemplateKey template Key
+     * @return Prompt template details
      */
     PromptTemplateDetail getByPromptTemplateKey(String promptTemplateKey) throws StudioException;
 
     /**
-     * 分页查询Prompt模板列表
+     * Paginated query prompt template list
      *
-     * @param request 查询请求
-     * @return 分页结果
+     * @param request query request
+     * @return paginated results
      */
     PageResult<PromptTemplate> list(PromptTemplateListRequest request) throws StudioException;
 }

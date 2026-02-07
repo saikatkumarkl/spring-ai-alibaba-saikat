@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-// TODO: 支持异常分支
+//TODO: Support exception branches
 @Component
 public class CodeNodeSection implements NodeSection<CodeNodeData> {
 
@@ -86,7 +86,7 @@ public class CodeNodeSection implements NodeSection<CodeNodeData> {
 						           int count = maxRetryCount;
 						           while (count-- > 0) {
 						               try {
-						                   // 将代码运行的结果拆包
+						                   //Unpack the results of running the code
 						                   Map<String, Object> result = codeNodeAction.apply(state);
 						                   Object object = result.get(key);
 						                   if(!(object instanceof Map)) {

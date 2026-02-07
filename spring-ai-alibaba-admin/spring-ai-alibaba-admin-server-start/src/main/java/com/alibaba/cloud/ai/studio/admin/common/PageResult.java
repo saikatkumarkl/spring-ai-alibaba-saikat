@@ -8,38 +8,38 @@ import java.util.List;
 public class PageResult<T> {
 
     /**
-     * 总记录数
+     * Total number of records
      */
     private Long totalCount;
 
     /**
-     * 总页数
+     * Total pages
      */
     private Long totalPage;
 
     /**
-     * 当前页
+     * Current page
      */
     private Long pageNumber;
 
     /**
-     * 每页大小
+     * page size
      */
     private Long pageSize;
 
     /**
-     * 数据列表
+     * Data list
      */
     private List<T> pageItems;
 
     /**
-     * 构造函数
+     * Constructor
      */
     public PageResult() {
     }
 
     /**
-     * 构造函数
+     * Constructor
      */
     public PageResult(Long totalCount, Long pageNumber, Long pageSize, List<T> pageItems) {
         this.totalCount = totalCount;

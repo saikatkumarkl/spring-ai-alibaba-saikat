@@ -71,7 +71,7 @@ public class TracingRepositoryImpl implements TracingRepository {
         if (response.aggregations() != null) {
             Aggregate servicesAgg = response.aggregations().get("services");
             if (servicesAgg != null && servicesAgg.isSterms()) {
-                // 使用String Terms聚合
+                //Aggregation using String Terms
                 var termsAgg = servicesAgg.sterms();
                 for (var bucket : termsAgg.buckets().array()) {
                     String serviceName = bucket.key().stringValue();
@@ -105,7 +105,7 @@ public class TracingRepositoryImpl implements TracingRepository {
         
         Map<String, Aggregate> aggregations = response.aggregations();
         
-        // 构建统计结果 - 所有查询都采用detail模式
+        //Construct statistical results - all queries use detail mode
         OverviewStatsDTO.StatDetail operationCount = buildOperationCountStats(aggregations, true);
         OverviewStatsDTO.StatDetail modelCount = buildModelCountStats(aggregations, true);
         OverviewStatsDTO.StatDetail usageTokens = buildUsageTokensStats(aggregations, true);
@@ -129,17 +129,17 @@ public class TracingRepositoryImpl implements TracingRepository {
     }
 
     /**
-     * 转换为TraceSpanDTO
+     * Convert to TraceSpanDTO
      */
     @SuppressWarnings("unchecked")
     private TraceSpanDTO convertToTraceSpanDTO(Map<String, Object> source) {
-        // 获取 metadata 对象
+        //Get metadata object
         Map<String, Object> metadata = (Map<String, Object>) source.get("metadata");
         if (metadata == null) {
             metadata = new HashMap<>();
         }
         
-        // 获取时间戳，转换为 ISO8601 格式
+        //Get timestamp and convert to ISO8601 format
         Long startTimeUs = getLong(metadata, "start");
         String startTimeStr = startTimeUs != null ? convertMicrosecondsToISO8601(startTimeUs) : null;
         
@@ -152,14 +152,14 @@ public class TracingRepositoryImpl implements TracingRepository {
             .traceId(getString(metadata, "traceID"))
             .spanId(getString(metadata, "spanID"))
             .parentSpanId(getString(metadata, "parentSpanID"))
-            .durationNs(durationUs != null ? durationUs * 1000 : null) // 微秒转纳秒
+            .durationNs(durationUs != null ? durationUs * 1000 : null) //microsecond to nanosecond
             .spanKind(convertSpanKind(getString(metadata, "kind")))
             .service(getString(metadata, "service"))
             .spanName(getString(metadata, "name"))
             .startTime(startTimeStr)
             .endTime(endTimeStr)
             .status(convertStatusCode(getString(metadata, "statusCode")))
-            // FIXME: 暂时设为0，后续可根据需要计算
+            //FIXME: Temporarily set to 0, and can be calculated as needed later.
             .errorCount(0)
             .attributes((Map<String, Object>) source.get("attributes"))
             .resources((Map<String, Object>) source.get("resources"))
@@ -169,7 +169,7 @@ public class TracingRepositoryImpl implements TracingRepository {
     }
 
     /**
-     * 转换为Elasticsearch文档
+     * Convert to Elasticsearch document
      */
     private Map<String, Object> convertToElasticsearchDoc(TraceSpanDTO span) {
         Map<String, Object> doc = new HashMap<>();
@@ -192,7 +192,7 @@ public class TracingRepositoryImpl implements TracingRepository {
     }
 
     /**
-     * 构建分页结果
+     * Build paginated results
      */
     private PageResult<TraceSpanDTO> buildPageResult(SearchResponse<Map> response, 
                                                    List<TraceSpanDTO> spans, 
@@ -211,13 +211,13 @@ public class TracingRepositoryImpl implements TracingRepository {
     }
 
     /**
-     * 将微秒时间戳转换为ISO8601格式
+     * Convert microsecond timestamp to ISO8601 format
      */
     private String convertMicrosecondsToISO8601(Long microseconds) {
         if (microseconds == null) {
             return null;
         }
-        // 微秒转毫秒
+        //Microseconds to milliseconds
         long milliseconds = microseconds / 1000;
         return java.time.Instant.ofEpochMilli(milliseconds)
             .atZone(java.time.ZoneOffset.UTC)
@@ -225,7 +225,7 @@ public class TracingRepositoryImpl implements TracingRepository {
     }
 
     /**
-     * 转换Span类型
+     * Convert span type
      */
     private String convertSpanKind(String kind) {
         if (kind == null) {
@@ -247,7 +247,7 @@ public class TracingRepositoryImpl implements TracingRepository {
     }
 
     /**
-     * 转换状态码
+     * Conversion status code
      */
     private String convertStatusCode(String statusCode) {
         if (statusCode == null) {
@@ -267,7 +267,7 @@ public class TracingRepositoryImpl implements TracingRepository {
 
 
     /**
-     * 构建操作统计（operation.count）
+     * Build operation statistics (operation.count)
      */
     private OverviewStatsDTO.StatDetail buildOperationCountStats(Map<String, Aggregate> aggregations, 
                                                                Boolean detail) {
@@ -279,7 +279,7 @@ public class TracingRepositoryImpl implements TracingRepository {
             if (operationCountAgg != null && operationCountAgg.isSterms()) {
                 var termsAgg = operationCountAgg.sterms();
                 
-                // 计算总操作数
+                //Calculate total number of operations
                 for (var bucket : termsAgg.buckets().array()) {
                     total += bucket.docCount();
                 }
@@ -302,7 +302,7 @@ public class TracingRepositoryImpl implements TracingRepository {
     }
 
     /**
-     * 构建模型统计（model.count）
+     * Build model statistics (model.count)
      */
     private OverviewStatsDTO.StatDetail buildModelCountStats(Map<String, Aggregate> aggregations, 
                                                            Boolean detail) {
@@ -314,7 +314,7 @@ public class TracingRepositoryImpl implements TracingRepository {
             if (modelCountAgg != null && modelCountAgg.isSterms()) {
                 var termsAgg = modelCountAgg.sterms();
                 
-                // 计算总模型数
+                //Calculate the total number of models
                 for (var bucket : termsAgg.buckets().array()) {
                     total += bucket.docCount();
                 }
@@ -337,7 +337,7 @@ public class TracingRepositoryImpl implements TracingRepository {
     }
 
     /**
-     * 构建Token使用统计
+     * Build Token usage statistics
      */
     private OverviewStatsDTO.StatDetail buildUsageTokensStats(Map<String, Aggregate> aggregations, 
                                                             Boolean detail) {
@@ -349,7 +349,7 @@ public class TracingRepositoryImpl implements TracingRepository {
             if (usageTokensAgg != null && usageTokensAgg.isSterms()) {
                 var termsAgg = usageTokensAgg.sterms();
                 
-                // 计算总token数
+                //Calculate the total number of tokens
                 for (var bucket : termsAgg.buckets().array()) {
                     Aggregate totalTokensAgg = bucket.aggregations().get("total_tokens");
                     if (totalTokensAgg != null && totalTokensAgg.isSum()) {
@@ -386,7 +386,7 @@ public class TracingRepositoryImpl implements TracingRepository {
             .build();
     }
 
-    // 辅助方法
+    //Helper methods
     private String getString(Map<String, Object> map, String key) {
         Object value = map.get(key);
         return value != null ? value.toString() : null;

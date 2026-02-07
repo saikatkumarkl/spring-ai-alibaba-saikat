@@ -23,7 +23,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 模型配置信息
+ * Model configuration information
  *
  * @since 1.0.0.3
  */
@@ -31,34 +31,34 @@ import java.util.List;
 public class ModelConfig implements Serializable {
 
 	/**
-	 * 模型ID，对应model下的name
+	 * Model ID, corresponding to the name under model
 	 */
 	@JsonProperty("model_id")
 	private String modelId;
 
 	/**
-	 * 模型名称
+	 * Model name
 	 */
 	@JsonProperty("model_name")
 	private String modelName;
 
 	/**
-	 * 模型提供商
+	 * model provider
 	 */
 	private String provider;
 
 	/**
-	 * 模型参数
+	 * Model parameters
 	 */
 	private List<ModelParam> params;
 
 	/**
-	 * 模型模式：chat或completion
+	 * Model mode: chat or completion
 	 */
 	private String mode;
 
 	/**
-	 * 视觉参数列表
+	 * Visual parameter list
 	 */
 	@JsonProperty("vision_config")
 	private SkillConfig visionConfig;
@@ -74,34 +74,34 @@ public class ModelConfig implements Serializable {
 	}
 
 	/**
-	 * 模型参数配置
+	 * Model parameter configuration
 	 */
 	@Data
 	public static class ModelParam implements Serializable {
 
 		/**
-		 * 参数键名
+		 * Parameter key name
 		 */
 		private String key;
 
 		/**
-		 * 参数类型
+		 * Parameter type
 		 */
 		private String type;
 
 		/**
-		 * 默认值
+		 * default value
 		 */
 		@JsonProperty("default_value")
 		private Object defaultValue;
 
 		/**
-		 * 参数值
+		 * Parameter value
 		 */
 		private Object value;
 
 		/**
-		 * 参数开关
+		 * Parameter switch
 		 */
 		@JsonProperty("enable")
 		private Boolean enable;

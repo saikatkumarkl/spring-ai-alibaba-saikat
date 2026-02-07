@@ -31,7 +31,7 @@ import java.util.List;
  * @author vlsmb
  * @since 2025/7/23
  */
-// TODO: 支持并行模式、错误处理，支持Studio的默认输入值，支持Studio的多输入/多输出
+//TODO: Support parallel mode, error handling, support Studio’s default input value, and support Studio’s multiple input/multiple output
 @Component
 public class IterationNodeSection implements NodeSection<IterationNodeData> {
 
@@ -42,7 +42,7 @@ public class IterationNodeSection implements NodeSection<IterationNodeData> {
 
 	@Override
 	public String render(Node node, String varName) {
-		// 迭代节点在转换为Workflow的时候已经拆分为多个节点，故本方法返回空
+		//The iteration node has been split into multiple nodes when converted to Workflow, so this method returns empty
 		return "";
 	}
 
@@ -56,7 +56,7 @@ public class IterationNodeSection implements NodeSection<IterationNodeData> {
 		return List.of("java.util.ArrayList", "java.util.Arrays");
 	}
 
-	// 规定迭代节点的start为iterationVarName_start，end为iterationVarName_end
+	//It is specified that the start of the iteration node is iterationVarName_start and the end is iterationVarName_end.
 
 	@Component
 	public static class IterationStartNodeSection implements NodeSection<IterationNodeData> {
@@ -81,7 +81,7 @@ public class IterationNodeSection implements NodeSection<IterationNodeData> {
 					nodeData.getIndexOffset());
 		}
 
-		// TODO: 添加辅助节点以支持迭代起始节点并行
+		//TODO: Add auxiliary nodes to support iteration start node parallelism
 		@Override
 		public String renderEdges(IterationNodeData nodeData, List<Edge> edges) {
 			Edge edge = edges.get(0);
@@ -170,7 +170,7 @@ public class IterationNodeSection implements NodeSection<IterationNodeData> {
 					nodeData.getResultSelector().getNameInCode(), nodeData.getOutputKey());
 		}
 
-		// TODO: 添加辅助节点以支持迭代终止节点并行
+		//TODO: Add auxiliary nodes to support iteration termination node parallelism
 		@Override
 		public String renderEdges(IterationNodeData nodeData, List<Edge> edges) {
 			Edge edge = edges.get(0);

@@ -103,7 +103,7 @@ public class Sequence {
 		this.workerId = getMaxWorkerId(datacenterId, maxWorkerId);
 		long end = System.nanoTime();
 		if (end - start > Sequence.MAX_START_INTERVAL_TIME) {
-			// 一般这里启动慢,是未指定inetAddress时出现,请查看本机hostname,将本机hostname写入至本地系统hosts文件之中进行解析
+			//Generally, the slow startup here occurs when inetAddress is not specified. Please check the local hostname and write the local hostname to the local system hosts file for analysis.
 			logger.warn("Initialization Sequence Very Slow! Get datacenterId:{} workerId:{}", this.datacenterId,
 					this.workerId);
 		}
@@ -119,9 +119,9 @@ public class Sequence {
 	}
 
 	/**
-	 * 有参构造器
-	 * @param workerId 工作机器 ID
-	 * @param datacenterId 序列号
+	 * Parametric constructor
+	 * @param workerId worker machine ID
+	 * @param datacenterId serial number
 	 */
 	public Sequence(long workerId, long datacenterId) {
 		Assert.isTrue(!(workerId > maxWorkerId || workerId < 0),
@@ -134,7 +134,7 @@ public class Sequence {
 	}
 
 	/**
-	 * 获取 maxWorkerId
+	 * Get maxWorkerId
 	 */
 	protected long getMaxWorkerId(long datacenterId, long maxWorkerId) {
 		StringBuilder mpid = new StringBuilder();
@@ -147,13 +147,13 @@ public class Sequence {
 			mpid.append(name.split(StringPool.AT)[0]);
 		}
 		/*
-		 * MAC + PID 的 hashcode 获取16个低位
+		 * The hashcode of MAC + PID gets the 16 low bits
 		 */
 		return (mpid.toString().hashCode() & 0xffff) % (maxWorkerId + 1);
 	}
 
 	/**
-	 * 数据标识id部分
+	 * Data identification id part
 	 */
 	protected long getDatacenterId(long maxDatacenterId) {
 		long id = 0L;

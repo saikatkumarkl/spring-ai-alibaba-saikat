@@ -12,65 +12,65 @@ import java.util.List;
 public class DatasetVersion {
 
     /**
-     * 主键ID
+     * Primary key ID
      */
     private Long id;
 
     /**
-     * 评测集ID
+     * Evaluation set ID
      */
 
     private Long datasetId;
 
     /**
-     * 版本号
+     * version number
      */
     private String version;
 
     /**
-     * 版本描述
+     * Version description
      */
     private String description;
 
     /**
-     * 该版本的数据总量
+     * The total amount of data in this version
      */
     private Integer dataCount;
 
 
     /**
-     * 创建时间
+     * creation time
      */
     private LocalDateTime createTime;
 
 
 
     /**
-     * 列结构列表（非数据库字段）
+     * List of column structures (non-database fields)
      */
     private List<DatasetColumn> columnsConfig;
 
 
     /**
-     * 版本状态  versionStatus
+     * version status versionStatus
      */
     private String status;
 
     /**
-     * 实验集合（一对多关系）
+     * Experimental collection (one-to-many relationship)
      */
     private String experiments;
 
     /**
-     * 数据项集合（一对多关系）
+     * Collection of data items (one-to-many relationship)
      */
     private String datasetItems;
 
     /**
-     * 从DO对象转换为DTO对象
+     * Convert from DO object to DTO object
      *
-     * @param datasetVersionDO DO对象
-     * @return DTO对象
+     * @param datasetVersionDO DO object
+     * @return DTO object
      */
     public static DatasetVersion fromDO(DatasetVersionDO datasetVersionDO) {
         if (datasetVersionDO == null) {

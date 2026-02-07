@@ -108,7 +108,7 @@ public class AgentNodeDataConverter extends AbstractNodeDataConverter<AgentNodeD
 		return switch (dialectType) {
 			case DIFY -> emptyProcessConsumer().andThen((nodeData, idToVarName) -> {
 				nodeData.setOutputs(List.of(AgentNodeData.getDefaultOutputSchema()));
-				// 处理指令和查询的模板
+				//Templates for processing instructions and queries
 				nodeData.setQueryPrompt(this.convertVarTemplate(dialectType, nodeData.getQueryPrompt(), idToVarName));
 				nodeData.setInstructionPrompt(
 						this.convertVarTemplate(dialectType, nodeData.getInstructionPrompt(), idToVarName));

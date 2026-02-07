@@ -11,38 +11,38 @@ import java.time.LocalDateTime;
 public class DatasetItemDO {
 
     /**
-     * 主键ID
+     * Primary key ID
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
-     * 数据集ID
+     * Data set ID
      */
     private Long datasetId;
 
     /**
-     * 列结构配置（JSON格式）
+     * Column structure configuration (JSON format)
      */
 
     private String columnsConfig;
 
     /**
-     * 数据内容（JSON格式）
+     * Data content (JSON format)
      */
 
     private String dataContent;
 
 
     /**
-     * 创建时间
+     * creation time
      */
 
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * Update time
      */
     private LocalDateTime updateTime;
 

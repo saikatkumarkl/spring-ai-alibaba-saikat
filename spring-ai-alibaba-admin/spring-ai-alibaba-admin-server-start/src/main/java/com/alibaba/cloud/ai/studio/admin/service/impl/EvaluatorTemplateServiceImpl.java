@@ -31,13 +31,13 @@ public class EvaluatorTemplateServiceImpl implements EvaluatorTemplateService {
     public PageResult<EvaluatorTemplate> list(EvaluatorTemplateListRequest request) {
 
 
-        // 计算偏移量
+        //Calculate offset
         long offset = (request.getPageNumber() - 1L) * request.getPageSize();
         
-        // 查询数据
+        //Query data
         List<EvaluatorTemplateDO> templateDOList = evaluatorPromptTemplateMapper.list(offset, (long) request.getPageSize());
         
-        // 获取总数
+        //Get total
         int totalCount = evaluatorPromptTemplateMapper.count();
 
         return new PageResult<>(

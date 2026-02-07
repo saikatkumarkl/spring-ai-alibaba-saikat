@@ -11,39 +11,39 @@ import java.time.LocalDateTime;
 public class DatasetItem {
 
     /**
-     * 主键ID
+     * Primary key ID
      */
     private Long id;
 
     /**
-     * 列结构配置（JSON格式）
+     * Column structure configuration (JSON format)
      */
 
     private String columnsConfig;
 
     /**
-     * 数据内容（JSON格式）
+     * Data content (JSON format)
      */
 
     private String dataContent;
 
 
     /**
-     * 创建时间
+     * creation time
      */
 
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * Update time
      */
     private LocalDateTime updateTime;
 
     /**
-     * 从DO对象转换为DTO对象
+     * Convert from DO object to DTO object
      *
-     * @param datasetItemDO DO对象
-     * @return DTO对象
+     * @param datasetItemDO DO object
+     * @return DTO object
      */
     public static DatasetItem fromDO(DatasetItemDO datasetItemDO) {
         if (datasetItemDO == null) {

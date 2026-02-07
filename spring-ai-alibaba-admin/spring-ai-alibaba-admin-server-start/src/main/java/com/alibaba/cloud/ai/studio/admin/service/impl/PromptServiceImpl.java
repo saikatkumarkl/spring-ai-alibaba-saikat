@@ -30,7 +30,7 @@ public class PromptServiceImpl implements PromptService {
     private final PromptVersionMapper promptVersionMapper;
     
     /**
-     * 从Map创建Prompt对象
+     * Create Prompt object from Map
      */
     private Prompt createPromptFromMap(Map<String, Object> map) {
         if (map == null) {
@@ -51,7 +51,7 @@ public class PromptServiceImpl implements PromptService {
     public Prompt create(PromptCreateRequest request) throws StudioException {
         log.info("创建Prompt: {}", request);
         
-        // 检查Prompt Key是否已存在
+        //Check if Prompt Key already exists
         PromptDO existingPrompt = promptMapper.selectByPromptKey(request.getPromptKey());
         if (existingPrompt != null) {
             throw new StudioException(StudioException.CONFLICT, "Prompt Key已存在: " + request.getPromptKey());
@@ -82,7 +82,7 @@ public class PromptServiceImpl implements PromptService {
     public PageResult<Prompt> list(PromptListRequest request) throws StudioException {
         log.info("查询Prompt列表: {}", request);
         
-        // 验证搜索模式参数
+        //Validate search pattern parameters
         if (request.getSearch() != null && !"accurate".equals(request.getSearch()) && !"blur".equals(
                 request.getSearch())) {
             throw new StudioException(StudioException.INVALID_PARAM, "搜索模式必须是accurate或blur");
@@ -106,7 +106,7 @@ public class PromptServiceImpl implements PromptService {
     public Prompt update(PromptUpdateRequest request) throws StudioException {
         log.info("更新Prompt: {}", request);
         
-        // 检查Prompt是否存在
+        //Check if Prompt exists
         PromptDO existingPrompt = promptMapper.selectByPromptKey(request.getPromptKey());
         if (existingPrompt == null) {
             throw new StudioException(StudioException.NOT_FOUND, "Prompt不存在: " + request.getPromptKey());
@@ -126,18 +126,18 @@ public class PromptServiceImpl implements PromptService {
     public void deleteByPromptKey(String promptKey) throws StudioException {
         log.info("删除Prompt及其所有版本: {}", promptKey);
         
-        // 检查Prompt是否存在
+        //Check if Prompt exists
         PromptDO existingPrompt = promptMapper.selectByPromptKey(promptKey);
         if (existingPrompt == null) {
             log.info("Prompt不存在，无需删除: {}", promptKey);
             return;
         }
         
-        // 先删除所有版本
+        //Delete all versions first
         int deletedVersionsCount = promptVersionMapper.deleteByPromptKey(promptKey);
         log.info("Prompt {} 的所有版本删除完成，共删除 {} 个版本", promptKey, deletedVersionsCount);
         
-        // 再删除Prompt本身
+        //Then delete the prompt itself
         promptMapper.deleteByPromptKey(promptKey);
         log.info("Prompt删除成功: {}", promptKey);
     }

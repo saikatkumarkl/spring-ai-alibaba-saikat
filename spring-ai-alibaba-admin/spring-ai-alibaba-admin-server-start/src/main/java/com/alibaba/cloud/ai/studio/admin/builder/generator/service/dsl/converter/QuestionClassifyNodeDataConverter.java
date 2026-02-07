@@ -64,7 +64,7 @@ public class QuestionClassifyNodeDataConverter extends AbstractNodeDataConverter
 			public QuestionClassifierNodeData parse(Map<String, Object> data) {
 				QuestionClassifierNodeData nodeData = new QuestionClassifierNodeData();
 
-				// 获取必要的信息
+				//Get necessary information
 				String modeName = this.exactChatModelName(DSLDialectType.DIFY, data);
 				Map<String, Object> modeParams = this.exactChatModelParam(DSLDialectType.DIFY, data);
 				List<String> inputSelectorList = Optional
@@ -86,7 +86,7 @@ public class QuestionClassifyNodeDataConverter extends AbstractNodeDataConverter
 					.ofNullable(MapReadUtil.getMapDeepValue(data, String.class, "instruction"))
 					.orElse("");
 
-				// 设置基本信息
+				//Set basic information
 				nodeData.setChatModeName(modeName);
 				nodeData.setModeParams(modeParams);
 				nodeData.setInputSelector(selector);
@@ -111,7 +111,7 @@ public class QuestionClassifyNodeDataConverter extends AbstractNodeDataConverter
 			@Override
 			public QuestionClassifierNodeData parse(Map<String, Object> data) throws JsonProcessingException {
 				QuestionClassifierNodeData nodeData = new QuestionClassifierNodeData();
-				// 从data中提取必要信息
+				//Extract necessary information from data
 				String modeName = this.exactChatModelName(DSLDialectType.STUDIO, data);
 				Map<String, Object> modeParams = this.exactChatModelParam(DSLDialectType.STUDIO, data);
 
@@ -140,7 +140,7 @@ public class QuestionClassifyNodeDataConverter extends AbstractNodeDataConverter
 					.ofNullable(MapReadUtil.getMapDeepValue(data, String.class, "config", "node_param", "instruction"))
 					.orElse("");
 
-				// 设置基本信息
+				//Set basic information
 				nodeData.setChatModeName(modeName);
 				nodeData.setModeParams(modeParams);
 				nodeData.setInputSelector(selector);
@@ -185,7 +185,7 @@ public class QuestionClassifyNodeDataConverter extends AbstractNodeDataConverter
 			.andThen((nodeData, idToVarName) -> {
 				nodeData.setOutputKey(nodeData.getOutputs().get(0).getName());
 				nodeData.setInputSelector(nodeData.getInputs().get(0));
-				// 替换掉类别和指导中的占位变量
+				//Replace placeholder variables in categories and guidance
 				nodeData
 					.setPromptTemplate(this.convertVarTemplate(dialectType, nodeData.getPromptTemplate(), idToVarName));
 				nodeData.setClasses(nodeData.getClasses()
@@ -197,7 +197,7 @@ public class QuestionClassifyNodeDataConverter extends AbstractNodeDataConverter
 		return switch (dialectType) {
 			case DIFY -> consumer;
 			case STUDIO -> consumer.andThen((nodeData, idToVarName) -> {
-				// 将classConfig的id里添加nodeId（为了与Edge里的sourceHandle保持一致）
+				//Add nodeId to the id of classConfig (to be consistent with the sourceHandle in Edge)
 				Map<String, String> varNameToId = idToVarName.entrySet()
 					.stream()
 					.collect(Collectors.toUnmodifiableMap(Map.Entry::getValue, Map.Entry::getKey));

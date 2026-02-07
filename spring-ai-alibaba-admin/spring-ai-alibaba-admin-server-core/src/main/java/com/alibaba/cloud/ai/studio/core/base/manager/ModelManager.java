@@ -59,7 +59,7 @@ public class ModelManager {
 			modelConfigInfo.getModelId(), modelConfigInfo.getType(), modelConfigInfo.getProvider());
 		
 		RequestContext context = RequestContextHolder.getRequestContext();
-		// 检查提供商是否存在
+		//Check if the provider exists
 		ProviderConfigInfo providerDetail = providerManager.getProviderDetail(modelConfigInfo.getProvider(), false);
 		if (providerDetail == null) {
 			log.error("提供商[{}]不存在", modelConfigInfo.getProvider());
@@ -123,14 +123,14 @@ public class ModelManager {
 			modelConfigInfo.getModelId(), modelConfigInfo.getType(), modelConfigInfo.getProvider());
 		
 		RequestContext context = RequestContextHolder.getRequestContext();
-		// 检查提供商是否存在
+		//Check if the provider exists
 		ProviderConfigInfo providerDetail = providerManager.getProviderDetail(modelConfigInfo.getProvider(), false);
 		if (providerDetail == null) {
 			log.error("提供商[{}]不存在", modelConfigInfo.getProvider());
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("input_params", "provider is invalid"));
 		}
 
-		// 检查模型是否存在
+		//Check if the model exists
 		QueryWrapper<ModelEntity> queryWrapper = new QueryWrapper<>();
 		queryWrapper.eq("provider", providerDetail.getProvider());
 		queryWrapper.eq("model_id", modelConfigInfo.getModelId());
@@ -145,7 +145,7 @@ public class ModelManager {
 
 		log.info("Existing model type={}, new type={}", existingModel.getType(), modelConfigInfo.getType());
 
-		// 更新模型信息
+		//Update model information
 		existingModel.setGmtModified(new Date());
 		if (StringUtils.isNotBlank(modelConfigInfo.getName())) {
 			existingModel.setName(modelConfigInfo.getName());
@@ -180,7 +180,7 @@ public class ModelManager {
 	 */
 	public boolean deleteModel(String provider, String modelId) {
 		RequestContext context = RequestContextHolder.getRequestContext();
-		// 检查模型是否存在
+		//Check if the model exists
 		QueryWrapper<ModelEntity> queryWrapper = new QueryWrapper<>();
 		queryWrapper.eq("model_id", modelId);
 		queryWrapper.eq("provider", provider);
@@ -193,7 +193,7 @@ public class ModelManager {
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("input_params", "model not found"));
 		}
 
-		// 删除模型
+		//Delete model
 		int delete = modelMapper.deleteById(existingModel.getId());
 		return delete > 0;
 	}
@@ -328,16 +328,16 @@ public class ModelManager {
 		}
 		
 		QueryWrapper<ModelEntity> queryWrapper = new QueryWrapper<>();
-		// 只有当 workspaceId 不为 null 时才添加过滤条件
+		//Add filter condition only if workspaceId is not null
 		if (StringUtils.isNotBlank(workspaceId)) {
 			queryWrapper.eq("workspace_id", workspaceId);
 		}
 		
 		if (modelIdOrName instanceof Long) {
-			// 通过 id 查找
+			//Find by id
 			queryWrapper.eq("id", modelIdOrName);
 		} else if (modelIdOrName instanceof String) {
-			// 通过 name 或 model_id 查找
+			//Find by name or model_id
 			String value = (String) modelIdOrName;
 			queryWrapper.and(wrapper -> wrapper.eq("name", value).or().eq("model_id", value));
 		} else {

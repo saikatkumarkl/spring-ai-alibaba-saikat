@@ -6,27 +6,27 @@ import lombok.Data;
 public class DatasetColumn {
 
     /**
-     * 列名称
+     * Column name
      */
     private String name;
 
     /**
-     * 数据类型：STRING, NUMBER, BOOLEAN, JSON, ARRAY
+     * Data types: STRING, NUMBER, BOOLEAN, JSON, ARRAY
      */
     private String dataType;
 
     /**
-     * 显示格式：PLAIN_TEXT, MARKDOWN, CODE, JSON, TABLE
+     * Display format: PLAIN_TEXT, MARKDOWN, CODE, JSON, TABLE
      */
     private String displayFormat;
 
     /**
-     * 列描述
+     * Column description
      */
     private String description;
 
     /**
-     * 是否必填
+     * Is it required?
      */
     private Boolean required;
 } 

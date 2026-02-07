@@ -10,14 +10,14 @@ import java.util.Map;
 public interface ChatSessionService {
     
     /**
-     * 创建新会话
+     * Create new session
      *
      * @param promptKey   Prompt Key
-     * @param version     版本号
-     * @param template    Prompt模板
-     * @param variables   变量配置
-     * @param modelConfig 模型配置
-     * @return 会话对象
+     * @param version version number
+     * @param template Prompt template
+     * @param variables variable configuration
+     * @param modelConfig model configuration
+     * @return session object
      */
     default ChatSession createSession(String promptKey, String version, String template, String variables, String modelConfig){
         return createSessionWithMockTools(promptKey, version, template, variables, modelConfig, null);
@@ -25,68 +25,68 @@ public interface ChatSessionService {
     
     
     /**
-     * 创建新会话
+     * Create new session
      *
      * @param promptKey   Prompt Key
-     * @param version     版本号
-     * @param template    Prompt模板
-     * @param variables   变量配置
-     * @param modelConfig 模型配置
-     * @param mockTools   模拟工具列表
-     * @return 会话对象
+     * @param version version number
+     * @param template Prompt template
+     * @param variables variable configuration
+     * @param modelConfig model configuration
+     * @param mockTools list of simulation tools
+     * @return session object
      */
     ChatSession createSessionWithMockTools(String promptKey, String version, String template, String variables, String modelConfig, List<MockTool> mockTools);
 
 
     /**
-     * 创建新会话
+     * Create new session
      *
-     * @param variables   变量配置
-     * @param modelConfig 模型配置
-     * @return 会话对象
+     * @param variables variable configuration
+     * @param modelConfig model configuration
+     * @return session object
      */
     ChatSession createEvaluatorSession(String prompt, String variables, String modelConfig);
     
     /**
-     * 获取会话
+     * Get session
      *
-     * @param sessionId 会话ID
-     * @return 会话对象，如果不存在返回null
+     * @param sessionId session ID
+     * @return session object, return null if it does not exist
      */
     ChatSession getSession(String sessionId);
     
     /**
-     * 更新会话
+     * update session
      *
-     * @param session 会话对象
+     * @param session session object
      */
     void updateSession(ChatSession session);
     
     /**
-     * 删除会话
+     * Delete session
      *
-     * @param sessionId 会话ID
+     * @param sessionId session ID
      */
     void deleteSession(String sessionId);
     
     /**
-     * 清理过期会话
+     * Clean up expired sessions
      */
     void cleanExpiredSessions();
     
     /**
-     * 获取会话绑定的ChatClient
+     * Get the session-bound ChatClient
      *
-     * @param sessionId 会话ID
-     * @return ChatClient或null
+     * @param sessionId session ID
+     * @return ChatClient or null
      */
     ChatClient getSessionChatClient(String sessionId);
     
     /**
-     * 获取或创建会话的ChatClient
+     * Get or create the ChatClient of the session
      *
-     * @param sessionId 会话ID
-     * @return ChatClient实例
+     * @param sessionId session ID
+     * @return ChatClient instance
      */
     ChatClient getOrCreateSessionChatClient(String sessionId, Map<String, String> observationMetadata);
 }

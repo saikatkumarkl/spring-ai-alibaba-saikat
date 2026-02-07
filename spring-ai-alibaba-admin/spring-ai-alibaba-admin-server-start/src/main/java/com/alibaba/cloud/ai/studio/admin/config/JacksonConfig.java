@@ -15,7 +15,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 public class JacksonConfig {
 
     /**
-     * 配置ObjectMapper
+     * ConfigureObjectMapper
      */
     @Bean
     @Primary

@@ -14,37 +14,37 @@ import java.util.List;
 public interface ExperimentMapper {
 
     /**
-     * 创建实验
+     * Create an experiment
      *
-     * @param experiment 实验实体
-     * @return 受影响的行数
+     * @param experiment experimental entity
+     * @return Number of rows affected
      */
     int insert(ExperimentDO experiment);
 
     /**
-     * 根据ID删除实验
+     * Delete experiment by ID
      *
-     * @param id 实验ID
-     * @return 受影响的行数
+     * @param id experiment ID
+     * @return Number of rows affected
      */
     int deleteById(@Param("id") Long id);
 
     /**
-     * 根据ID获取实验
+     * Get experiment by ID
      *
-     * @param id 实验ID
-     * @return 实验实体
+     * @param id experiment ID
+     * @return experimental entity
      */
     ExperimentDO selectById(@Param("id") Long id);
 
     /**
-     * 分页查询实验列表
+     * Query the experiment list by page
      *
-     * @param name 实验名称（模糊查询）
-     * @param status 实验状态
-     * @param offset 偏移量
-     * @param limit 限制数量
-     * @return 实验列表
+     * @param name Experiment name (fuzzy query)
+     * @param status Experiment status
+     * @param offset offset
+     * @param limit limit quantity
+     * @return list of experiments
      */
     List<ExperimentDO> selectList(@Param("name") String name,
                                   @Param("status") ExperimentStatus status,
@@ -52,37 +52,37 @@ public interface ExperimentMapper {
                                   @Param("limit") int limit);
 
     /**
-     * 统计实验数量
+     * Count the number of experiments
      *
-     * @param name 实验名称（模糊查询）
-     * @param status 实验状态
-     * @return 实验数量
+     * @param name Experiment name (fuzzy query)
+     * @param status Experiment status
+     * @return number of experiments
      */
     int count(@Param("name") String name,
               @Param("status") ExperimentStatus status);
 
     /**
-     * 根据ID更新实验
+     * Update experiment based on ID
      *
-     * @param experiment 实验实体
-     * @return 受影响的行数
+     * @param experiment experimental entity
+     * @return Number of rows affected
      */
     int updateById(ExperimentDO experiment);
 
     /**
-     * 创建实验结果
+     * Create experiment results
      *
-     * @param experimentResult 实验结果实体
-     * @return 受影响的行数
+     * @param experimentResult Experiment result entity
+     * @return Number of rows affected
      */
     int insertResult(ExperimentResultDO experimentResult);
 
 
     /**
-     * 根据datasetID获取实验结果
+     * Get experimental results based on datasetID
      *
-     * @param datasetId 实验结果ID
-     * @return 实验结果实体
+     * @param datasetId Experiment result ID
+     * @return experimental result entity
      */
     List<ExperimentDO> selectByDatasetId(@Param("datasetId") Long datasetId,
                                                @Param("offset") long offset,
@@ -91,42 +91,42 @@ public interface ExperimentMapper {
     int selectCountByDatasetId(@Param("datasetId") Long datasetId);
 
     /**
-     * 根据评估器ID分页查询实验列表
+     * Query the experiment list by page based on the evaluator ID
      *
-     * @param evaluatorId 评估器ID
-     * @param offset 偏移量
-     * @param limit 限制数量
-     * @return 实验列表
+     * @param evaluatorId evaluator ID
+     * @param offset offset
+     * @param limit limit quantity
+     * @return list of experiments
      */
     List<ExperimentDO> selectByEvaluatorId(@Param("evaluatorId") Long evaluatorId,
                                            @Param("offset") long offset,
                                            @Param("limit") int limit);
 
     /**
-     * 根据评估器版本ID分页查询实验列表
+     * Query the experiment list by page based on the evaluator version ID
      *
-     * @param evaluatorVersionId 评估器版本ID
-     * @param offset 偏移量
-     * @param limit 限制数量
-     * @return 实验列表
+     * @param evaluatorVersionId evaluator version ID
+     * @param offset offset
+     * @param limit limit quantity
+     * @return list of experiments
      */
     List<ExperimentDO> selectByEvaluatorVersionId(@Param("evaluatorVersionId") Long evaluatorVersionId,
                                                   @Param("offset") long offset,
                                                   @Param("limit") int limit);
 
     /**
-     * 统计使用指定评估器的实验数量
+     * Count the number of experiments using the specified evaluator
      *
-     * @param evaluatorId 评估器ID
-     * @return 实验数量
+     * @param evaluatorId evaluator ID
+     * @return number of experiments
      */
     int selectCountByEvaluatorId(@Param("evaluatorId") Long evaluatorId);
 
     /**
-     * 统计使用指定评估器版本的实验数量
+     * Counts the number of experiments using a specified evaluator version
      *
-     * @param evaluatorVersionId 评估器版本ID
-     * @return 实验数量
+     * @param evaluatorVersionId evaluator version ID
+     * @return number of experiments
      */
     int selectCountByEvaluatorVersionId(@Param("evaluatorVersionId") Long evaluatorVersionId);
 

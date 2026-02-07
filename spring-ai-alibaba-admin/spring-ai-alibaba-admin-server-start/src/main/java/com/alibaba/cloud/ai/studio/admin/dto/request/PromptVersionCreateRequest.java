@@ -17,7 +17,7 @@ public class PromptVersionCreateRequest {
     private String promptKey;
 
     /**
-     * 版本号
+     * version number
      */
     @NotBlank(message = "版本号不能为空")
     @Size(min = 1, max = 32, message = "版本号长度必须在1-32个字符之间")
@@ -25,29 +25,29 @@ public class PromptVersionCreateRequest {
     private String version;
 
     /**
-     * 版本描述
+     * Version description
      */
     @Size(max = 255, message = "版本描述不能超过255个字符")
     private String versionDescription;
 
     /**
-     * Prompt内容
+     * Prompt content
      */
     @NotBlank(message = "Prompt内容不能为空")
     private String template;
 
     /**
-     * Prompt中的变量值，JSON格式
+     * Variable value in Prompt, JSON format
      */
     private String variables;
 
     /**
-     * 使用的模型相关参数，JSON格式
+     * Model related parameters used, JSON format
      */
     private String modelConfig;
 
     /**
-     * 版本状态：pre-预发布版本，release-正式版本
+     * Version status: pre-pre-release version, release-official version
      */
     @Pattern(regexp = "^(pre|release)$", message = "版本状态必须是pre或release")
     private String status = "pre";

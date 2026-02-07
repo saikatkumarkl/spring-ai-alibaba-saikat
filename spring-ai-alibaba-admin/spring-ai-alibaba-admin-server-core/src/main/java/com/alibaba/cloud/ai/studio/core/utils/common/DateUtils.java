@@ -329,10 +329,10 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 */
 	public static String getMonthFristDay() {
 		SimpleDateFormat format = new SimpleDateFormat(DATE_SMALL_STR);
-		// 获取当前月第一天：
+		//Get the first day of the current month:
 		Calendar c = Calendar.getInstance();
 		c.add(Calendar.MONTH, 0);
-		c.set(Calendar.DAY_OF_MONTH, 1);// 设置为1号,当前日期既为本月第一天
+		c.set(Calendar.DAY_OF_MONTH, 1);//Set to the 1st, the current date is the first day of this month
 		String first = format.format(c.getTime());
 		return first;
 	}
@@ -517,7 +517,7 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * Get datetime for given hour of current day
 	 */
 	public static Date getGivenHourDateTime(String hourTime) {
-		// 得到当天yyyy-mm-dd格式
+		//Get the day's yyyy-mm-dd format
 		String dayTime = getDate();
 		String fullTimeStr = dayTime + " " + hourTime;
 		SimpleDateFormat sdf = new SimpleDateFormat(DATE_FULL_STR);

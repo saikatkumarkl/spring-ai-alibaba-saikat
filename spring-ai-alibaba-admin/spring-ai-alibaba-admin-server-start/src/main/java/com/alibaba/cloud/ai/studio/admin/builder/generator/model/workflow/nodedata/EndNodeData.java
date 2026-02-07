@@ -41,7 +41,7 @@ public class EndNodeData extends NodeData {
 
 	private final static Pattern VAR_PATTERN = Pattern.compile("\\{(\\w+)}");
 
-	// textTemplate出现的变量名称
+	// Variable names referenced in textTemplate
 	private List<String> textTemplateVars;
 
 	public String getOutputKey() {
@@ -67,7 +67,7 @@ public class EndNodeData extends NodeData {
 
 	public void setTextTemplate(String textTemplate) {
 		this.textTemplate = textTemplate;
-		// 更新textTemplateVars，模板的{vars}为要提取的变量
+		// Update textTemplateVars; {vars} in the template are variables to extract
 		Matcher matcher = VAR_PATTERN.matcher(textTemplate);
 		List<String> vars = new ArrayList<>();
 		while (matcher.find()) {

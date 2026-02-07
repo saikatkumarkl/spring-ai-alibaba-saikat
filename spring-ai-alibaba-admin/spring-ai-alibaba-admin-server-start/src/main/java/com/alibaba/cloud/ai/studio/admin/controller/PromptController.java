@@ -34,10 +34,10 @@ public class PromptController {
     private final PromptTemplateService promptTemplateService;
     private final PromptRunService promptRunService;
 
-    // ==================== Prompt基础管理接口 ====================
+    //==================== Prompt basic management interface ====================
 
     /**
-     * 创建Prompt
+     * CreatePrompt
      */
     @PostMapping("/prompt")
     public Result<Prompt> createPrompt(@Validated @RequestBody PromptCreateRequest request) throws StudioException {
@@ -47,7 +47,7 @@ public class PromptController {
     }
 
     /**
-     * 获取Prompt详情
+     * Get Prompt details
      */
     @GetMapping("/prompt")
     public Result<Prompt> getPrompt(@RequestParam @NotBlank String promptKey) throws StudioException {
@@ -57,7 +57,7 @@ public class PromptController {
     }
 
     /**
-     * 获取Prompt列表
+     * Get prompt list
      */
     @GetMapping("/prompts")
     public Result<PageResult<Prompt>> listPrompts(@Validated @ModelAttribute PromptListRequest request) throws StudioException {
@@ -67,7 +67,7 @@ public class PromptController {
     }
 
     /**
-     * 更新Prompt
+     * UpdatePrompt
      */
     @PutMapping("/prompt")
     public Result<Prompt> updatePrompt(@Validated @RequestBody PromptUpdateRequest request) throws StudioException {
@@ -77,7 +77,7 @@ public class PromptController {
     }
 
     /**
-     * 删除Prompt
+     * DeletePrompt
      */
     @DeleteMapping("/prompt")
 
@@ -87,10 +87,10 @@ public class PromptController {
         return Result.success(true);
     }
 
-    // ==================== Prompt版本管理接口 ====================
+    //==================== Prompt version management interface ====================
 
     /**
-     * 创建Prompt版本
+     * Create prompt version
      */
     @PostMapping("/prompt/version")
     public Result<PromptVersion> createPromptVersion(@Validated @RequestBody PromptVersionCreateRequest request)
@@ -101,7 +101,7 @@ public class PromptController {
     }
 
     /**
-     * 获取Prompt版本详情
+     * Get Prompt version details
      */
     @GetMapping("/prompt/version")
     public Result<PromptVersionDetail> getPromptVersion(@RequestParam @NotBlank String promptKey,
@@ -112,7 +112,7 @@ public class PromptController {
     }
 
     /**
-     * 获取Prompt版本列表
+     * Get Prompt version list
      */
     @GetMapping("/prompt/versions")
     public Result<PageResult<PromptVersion>> listPromptVersions(@Validated @ModelAttribute PromptVersionListRequest request) {
@@ -121,10 +121,10 @@ public class PromptController {
         return Result.success(result);
     }
 
-    // ==================== Prompt模板管理接口 ====================
+    //==================== Prompt template management interface ====================
 
     /**
-     * 获取Prompt模板详情
+     * Get Prompt template details
      */
     @GetMapping("/prompt/template")
     public Result<PromptTemplateDetail> getPromptTemplate(@RequestParam @NotBlank String promptTemplateKey)
@@ -135,7 +135,7 @@ public class PromptController {
     }
 
     /**
-     * 获取Prompt模板列表
+     * Get Prompt template list
      */
     @GetMapping("/prompt/templates")
     public Result<PageResult<PromptTemplate>> listPromptTemplates(@Validated PromptTemplateListRequest request)
@@ -145,10 +145,10 @@ public class PromptController {
         return Result.success(result);
     }
 
-    // ==================== Prompt调试接口 ====================
+    //==================== Prompt debugging interface ====================
 
     /**
-     * 运行Prompt调试（支持持续交互）
+     * Run Prompt debugging (supports continuous interaction)
      */
     @PostMapping(value = "/prompt/run", produces = MediaType.APPLICATION_NDJSON_VALUE)
     public Flux<PromptRunResponse> runPrompt(@Validated @RequestBody PromptRunRequest request) {
@@ -162,7 +162,7 @@ public class PromptController {
     }
 
     /**
-     * 获取会话信息
+     * Get session information
      */
     @GetMapping("/prompt/session")
     public Result<ChatSession> getSession(@RequestParam @NotBlank String sessionId) {
@@ -175,7 +175,7 @@ public class PromptController {
     }
 
     /**
-     * 删除会话
+     * Delete session
      */
     @DeleteMapping("/prompt/session")
     public Result<Void> deleteSession(@RequestParam @NotBlank String sessionId) {

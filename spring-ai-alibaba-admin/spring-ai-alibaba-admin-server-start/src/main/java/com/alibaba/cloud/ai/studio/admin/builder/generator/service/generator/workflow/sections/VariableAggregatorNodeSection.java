@@ -97,7 +97,7 @@ public class VariableAggregatorNodeSection implements NodeSection<VariableAggreg
 
 		sb.append("    .build();\n");
 
-		// 辅助节点，将节点输出转为定义的格式
+		//Auxiliary node, converts node output into a defined format
 		String assistNodeCode;
 		if (hasGroup) {
 			assistNodeCode = String.format("wrapperAggregatorNodeAction(%s, \"%s\", \"%s\", %s)", varName, varName,

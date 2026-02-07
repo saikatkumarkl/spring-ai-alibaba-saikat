@@ -60,7 +60,7 @@ public class QuestionClassifierNodeSection implements NodeSection<QuestionClassi
 	@Override
 	public String renderEdges(QuestionClassifierNodeData nodeData, List<Edge> edges) {
 		Map<String, String> classIdToName = nodeData.getClassIdToName();
-		// 规定edge的sourceHandle为caseId，前面的转化需要符合这条规则
+		//It is specified that the sourceHandle of edge is caseId. The previous conversion needs to comply with this rule.
 		String edgeCode = String.format("""
 				state -> {
 				    String result = state.value("%s").orElseThrow().toString();

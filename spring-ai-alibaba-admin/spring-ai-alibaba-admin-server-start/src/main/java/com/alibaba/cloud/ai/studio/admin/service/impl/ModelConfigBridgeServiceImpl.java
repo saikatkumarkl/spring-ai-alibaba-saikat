@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 模型配置桥接服务实现
- * 从ModelManager和ProviderManager查询数据并转换为ModelConfigDO
+ * Model configuration bridge service implementation
+ * Query data from ModelManager and ProviderManager and convert to ModelConfigDO
  */
 @Slf4j
 @Service
@@ -43,7 +43,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
         }
 
         try {
-            // 安全地获取 workspaceId
+            //Get workspaceId safely
             String workspaceId = getWorkspaceId();
             
             ModelEntity modelEntity = modelManager.findModelByIdOrName(id, workspaceId);
@@ -67,30 +67,30 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
     @Override
     public List<ModelConfigDO> list(String name, String provider, Integer status, int offset, int limit) {
         try {
-            // 查询所有模型
+            //Query all models
             List<ModelConfigInfo> modelConfigInfos;
             if (StringUtils.isNotBlank(provider)) {
                 modelConfigInfos = modelManager.queryModels(provider);
             } else {
-                // 如果没有指定provider，查询所有启用的模型
+                //If no provider is specified, query all enabled models
                 modelConfigInfos = modelManager.queryEnabledModels();
             }
 
-            // 转换为ModelConfigDO并过滤
+            //Convert to ModelConfigDO and filter
             List<ModelConfigDO> allConfigs = modelConfigInfos.stream()
                     .map(this::convertModelConfigInfoToModelConfigDO)
                     .filter(config -> {
-                        // 名称过滤
+                        //name filter
                         if (StringUtils.isNotBlank(name) && 
                             (config.getName() == null || !config.getName().contains(name))) {
                             return false;
                         }
-                        // 提供商过滤
+                        //Provider filtering
                         if (StringUtils.isNotBlank(provider) && 
                             !provider.equalsIgnoreCase(config.getProvider())) {
                             return false;
                         }
-                        // 状态过滤
+                        //Status filtering
                         if (status != null && !status.equals(config.getStatus())) {
                             return false;
                         }
@@ -98,7 +98,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
                     })
                     .collect(Collectors.toList());
 
-            // 分页
+            //Pagination
             int start = Math.max(offset, 0);
             int end = Math.min(start + Math.max(limit, 0), allConfigs.size());
             if (start >= allConfigs.size()) {
@@ -114,7 +114,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
     @Override
     public int count(String name, String provider, Integer status) {
         try {
-            // 查询所有模型
+            //Query all models
             List<ModelConfigInfo> modelConfigInfos;
             if (StringUtils.isNotBlank(provider)) {
                 modelConfigInfos = modelManager.queryModels(provider);
@@ -122,21 +122,21 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
                 modelConfigInfos = modelManager.queryEnabledModels();
             }
 
-            // 转换为ModelConfigDO并过滤统计
+            //Convert to ModelConfigDO and filter statistics
             return (int) modelConfigInfos.stream()
                     .map(this::convertModelConfigInfoToModelConfigDO)
                     .filter(config -> {
-                        // 名称过滤
+                        //name filter
                         if (StringUtils.isNotBlank(name) && 
                             (config.getName() == null || !config.getName().contains(name))) {
                             return false;
                         }
-                        // 提供商过滤
+                        //Provider filtering
                         if (StringUtils.isNotBlank(provider) && 
                             !provider.equalsIgnoreCase(config.getProvider())) {
                             return false;
                         }
-                        // 状态过滤
+                        //Status filtering
                         if (status != null && !status.equals(config.getStatus())) {
                             return false;
                         }
@@ -169,27 +169,27 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
         }
 
         try {
-            // 直接通过provider和modelId查找ModelEntity
-            // 使用queryModels获取该provider下的所有模型，然后过滤
+            //Find ModelEntity directly through provider and modelId
+            //Use queryModels to get all models under this provider, and then filter
             List<ModelConfigInfo> models = modelManager.queryModels(provider);
             for (ModelConfigInfo model : models) {
                 if (modelId.equals(model.getModelId())) {
-                    // 找到了匹配的ModelConfigInfo，现在需要获取对应的ModelEntity
+                    //The matching ModelConfigInfo has been found, and now we need to obtain the corresponding ModelEntity
                     String workspaceId = getWorkspaceId();
-                    // 尝试通过modelId查找（可能是name或model_id）
+                    //Try to find by modelId (could be name or model_id)
                     ModelEntity modelEntity = modelManager.findModelByIdOrName(modelId, workspaceId);
-                    // 验证provider是否匹配
+                    //Verify provider matches
                     if (modelEntity != null && provider.equals(modelEntity.getProvider())) {
                         return convertToModelConfigDO(modelEntity);
                     }
-                    // 如果找不到，尝试从queryEnabledModelEntities中查找
+                    //If not found, try to find it from queryEnabledModelEntities
                     List<ModelEntity> enabledEntities = modelManager.queryEnabledModelEntities();
                     for (ModelEntity entity : enabledEntities) {
                         if (provider.equals(entity.getProvider()) && modelId.equals(entity.getModelId())) {
                             return convertToModelConfigDO(entity);
                         }
                     }
-                    // 如果还是找不到，使用ModelConfigInfo构建（但缺少id）
+                    //If still not found, use ModelConfigInfo to build (but the id is missing)
                     log.warn("找到ModelConfigInfo但未找到对应的ModelEntity，使用ModelConfigInfo构建: provider={}, modelId={}", 
                         provider, modelId);
                     return buildModelConfigDOFromModelConfigInfo(model, null);
@@ -203,7 +203,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
     }
 
     /**
-     * 将ModelEntity转换为ModelConfigDO
+     * Convert ModelEntity to ModelConfigDO
      */
     private ModelConfigDO convertToModelConfigDO(ModelEntity modelEntity) {
         if (modelEntity == null) {
@@ -211,7 +211,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
         }
 
         try {
-            // 获取Provider的credential（包含apiKey和endpoint）
+            //Get the Provider's credentials (including apiKey and endpoint)
             ProviderConfigInfo providerDetail = providerManager.getProviderDetail(modelEntity.getProvider(), false);
             if (providerDetail == null) {
                 log.warn("Provider不存在: {}", modelEntity.getProvider());
@@ -224,7 +224,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
                 return null;
             }
 
-            // 解密apiKey
+            //Decrypt apiKey
             String apiKey = credential.getApiKey();
             if (StringUtils.isNotBlank(apiKey)) {
                 try {
@@ -234,33 +234,33 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
                 }
             }
 
-            // 获取baseUrl，从credential的endpoint获取
+            //Get the baseUrl from the endpoint of the credential
             String baseUrl = credential.getEndpoint();
             if (StringUtils.isNotBlank(baseUrl)) {
-                // 移除/v1后缀（如果存在），因为Spring AI会自动添加
+                //Remove /v1 suffix if present as Spring AI will add it automatically
                 if (baseUrl.endsWith("/v1") || baseUrl.endsWith("/v1/")) {
                     baseUrl = baseUrl.replaceAll("/v1/?$", "");
                 }
             } else {
-                // 如果没有endpoint，使用默认值（根据provider类型）
+                //If there is no endpoint, use the default value (according to the provider type)
                 baseUrl = getDefaultBaseUrl(modelEntity.getProvider());
             }
 
-            // 转换时间
+            //conversion time
             LocalDateTime createTime = convertToLocalDateTime(modelEntity.getGmtCreate());
             LocalDateTime updateTime = convertToLocalDateTime(modelEntity.getGmtModified());
 
-            // 构建ModelConfigDO
+            //BuildModelConfigDO
             return ModelConfigDO.builder()
                     .id(modelEntity.getId())
                     .name(modelEntity.getName())
                     .provider(modelEntity.getProvider().toLowerCase())
-                    .modelName(modelEntity.getModelId()) // ModelEntity的modelId对应ModelConfigDO的modelName
+                    .modelName(modelEntity.getModelId()) //The modelId of ModelEntity corresponds to the modelName of ModelConfigDO
                     .baseUrl(baseUrl)
                     .apiKey(apiKey)
                     .status(modelEntity.getEnable() != null && modelEntity.getEnable() ? 1 : 0)
-                    .defaultParameters(null) // 暂时不支持，后续可以扩展
-                    .supportedParameters(null) // 暂时不支持，后续可以扩展
+                    .defaultParameters(null) //Not supported at the moment, can be expanded later
+                    .supportedParameters(null) //Not supported at the moment, can be expanded later
                     .createTime(createTime)
                     .updateTime(updateTime)
                     .build();
@@ -271,8 +271,8 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
     }
 
     /**
-     * 将ModelConfigInfo转换为ModelConfigDO
-     * 注意：这个方法需要查询ModelEntity来获取id等信息
+     * Convert ModelConfigInfo to ModelConfigDO
+     * Note: This method needs to query ModelEntity to obtain id and other information
      */
     private ModelConfigDO convertModelConfigInfoToModelConfigDO(ModelConfigInfo modelConfigInfo) {
         if (modelConfigInfo == null) {
@@ -280,20 +280,20 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
         }
 
         try {
-            // 需要获取ModelEntity来获取完整信息
+            //Need to get ModelEntity to get complete information
             String workspaceId = getWorkspaceId();
             String provider = modelConfigInfo.getProvider();
             String modelId = modelConfigInfo.getModelId();
             
-            // 首先尝试通过modelId查找（可能是name或model_id）
+            //First try to find by modelId (could be name or model_id)
             ModelEntity modelEntity = modelManager.findModelByIdOrName(modelId, workspaceId);
             
-            // 验证provider是否匹配
+            //Verify provider matches
             if (modelEntity != null && provider.equals(modelEntity.getProvider())) {
                 return convertToModelConfigDO(modelEntity);
             }
             
-            // 如果找不到或provider不匹配，从queryEnabledModelEntities中查找
+            //If not found or provider does not match, search from queryEnabledModelEntities
             List<ModelEntity> enabledEntities = modelManager.queryEnabledModelEntities();
             for (ModelEntity entity : enabledEntities) {
                 if (provider.equals(entity.getProvider()) && modelId.equals(entity.getModelId())) {
@@ -301,11 +301,11 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
                 }
             }
             
-            // 如果还是找不到，尝试从queryModels中查找
+            //If still not found, try to find it from queryModels
             List<ModelConfigInfo> models = modelManager.queryModels(provider);
             for (ModelConfigInfo model : models) {
                 if (modelId.equals(model.getModelId())) {
-                    // 再次尝试查找ModelEntity
+                    //Try finding the ModelEntity again
                     modelEntity = modelManager.findModelByIdOrName(modelId, workspaceId);
                     if (modelEntity != null && provider.equals(modelEntity.getProvider())) {
                         return convertToModelConfigDO(modelEntity);
@@ -313,7 +313,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
                 }
             }
 
-            // 如果找不到ModelEntity，使用ModelConfigInfo构建（但缺少id）
+            //If ModelEntity is not found, build with ModelConfigInfo (but id is missing)
             log.warn("找到ModelConfigInfo但未找到对应的ModelEntity: provider={}, modelId={}", 
                 provider, modelId);
             return buildModelConfigDOFromModelConfigInfo(modelConfigInfo, null);
@@ -325,7 +325,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
     }
 
     /**
-     * 从ModelConfigInfo构建ModelConfigDO（当找不到ModelEntity时使用）
+     * Build ModelConfigDO from ModelConfigInfo (used when ModelEntity cannot be found)
      */
     private ModelConfigDO buildModelConfigDOFromModelConfigInfo(ModelConfigInfo modelConfigInfo, Long id) {
         try {
@@ -377,7 +377,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
     }
 
     /**
-     * 根据provider获取默认的baseUrl
+     * Get the default baseUrl based on provider
      */
     private String getDefaultBaseUrl(String provider) {
         if (provider == null) {
@@ -399,7 +399,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
     }
 
     /**
-     * 将Date转换为LocalDateTime
+     * Convert Date to LocalDateTime
      */
     private LocalDateTime convertToLocalDateTime(Date date) {
         if (date == null) {
@@ -409,7 +409,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
     }
 
     /**
-     * 安全地获取workspaceId
+     * Get workspaceId safely
      */
     private String getWorkspaceId() {
         try {

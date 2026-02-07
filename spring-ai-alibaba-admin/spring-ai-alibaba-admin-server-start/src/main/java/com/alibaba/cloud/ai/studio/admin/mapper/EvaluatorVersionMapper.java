@@ -12,37 +12,37 @@ import java.util.List;
 public interface EvaluatorVersionMapper {
 
     /**
-     * 创建评估器版本
+     * Create evaluator version
      *
-     * @param evaluatorVersion 评估器版本实体
-     * @return 受影响的行数
+     * @param evaluatorVersion evaluator version entity
+     * @return Number of rows affected
      */
     int insert(EvaluatorVersionDO evaluatorVersion);
 
     /**
-     * 根据ID删除评估器版本（逻辑删除）
+     * Remove evaluator version based on ID (tombstone)
      *
-     * @param id 评估器版本ID
-     * @return 受影响的行数
+     * @param id evaluator version ID
+     * @return Number of rows affected
      */
     int deleteById(@Param("id") Long id);
 
     /**
-     * 根据ID获取评估器版本
+     * Get evaluator version by ID
      *
-     * @param id 评估器版本ID
-     * @return 评估器版本实体
+     * @param id evaluator version ID
+     * @return evaluator version entity
      */
     EvaluatorVersionDO selectById(@Param("id") Long id);
 
     /**
-     * 根据评估器ID获取评估器版本列表
+     * Get a list of evaluator versions based on evaluator ID
      *
-     * @param evaluatorId 评估器ID
-     * @param name 评估器版本名称（模糊查询）
-     * @param offset 偏移量
-     * @param limit 限制数量
-     * @return 评估器版本列表
+     * @param evaluatorId evaluator ID
+     * @param name evaluator version name (fuzzy query)
+     * @param offset offset
+     * @param limit limit quantity
+     * @return list of evaluator versions
      */
     List<EvaluatorVersionDO> selectListByEvaluatorId(@Param("evaluatorId") Long evaluatorId,
                                                      @Param("name") String name,
@@ -51,19 +51,19 @@ public interface EvaluatorVersionMapper {
 
 
     /**
-     * 根据评估器ID获取评估器版本列表
+     * Get a list of evaluator versions based on evaluator ID
      *
-     * @param evaluatorId 评估器ID
-     * @return 评估器版本列表
+     * @param evaluatorId evaluator ID
+     * @return list of evaluator versions
      */
     EvaluatorVersionDO selectLatestVersionByEvaluatorId(@Param("evaluatorId") Long evaluatorId);
 
     /**
-     * 根据评估器ID统计评估器版本数量
+     * Count the number of evaluator versions based on evaluator ID
      *
-     * @param evaluatorId 评估器ID
-     * @param name 评估器版本名称（模糊查询）
-     * @return 评估器版本数量
+     * @param evaluatorId evaluator ID
+     * @param name evaluator version name (fuzzy query)
+     * @return the number of evaluator versions
      */
     int countByEvaluatorId(@Param("evaluatorId") Long evaluatorId,
                            @Param("name") String name);

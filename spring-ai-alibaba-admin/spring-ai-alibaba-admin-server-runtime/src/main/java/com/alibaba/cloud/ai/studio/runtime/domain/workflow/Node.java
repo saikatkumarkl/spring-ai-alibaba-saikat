@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Node of The Graph 画布的节点声明
+ * Node of The Graph canvas node declaration
  *
  * @since 1.0.0.3
  */
@@ -42,7 +42,7 @@ public class Node implements Serializable {
 	private NodeCustomConfig config;
 
 	/**
-	 * Custom Config for Node 节点自定义配置
+	 * Custom Config for Node node custom configuration
 	 */
 	@Data
 	public static class NodeCustomConfig implements Serializable {
@@ -61,7 +61,7 @@ public class Node implements Serializable {
 	}
 
 	/**
-	 * Input Param for Node 节点输入参数
+	 * Input Param for Node node input parameter
 	 */
 	@EqualsAndHashCode(callSuper = true)
 	@Data
@@ -72,7 +72,7 @@ public class Node implements Serializable {
 	}
 
 	/**
-	 * Output Param for Node 节点输出参数
+	 * Output Param for Node node output parameter
 	 */
 	@EqualsAndHashCode(callSuper = true)
 	@Data

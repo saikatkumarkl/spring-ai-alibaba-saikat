@@ -6,27 +6,27 @@ import lombok.Data;
 public class ModelConfigQueryRequest {
 
     /**
-     * 页码，从1开始
+     * Page number, starting from 1
      */
     private Integer page = 1;
 
     /**
-     * 每页大小
+     * page size
      */
     private Integer size = 10;
 
     /**
-     * 模型名称（模糊查询）
+     * Model name (fuzzy query)
      */
     private String name;
 
     /**
-     * 提供商
+     * provider
      */
     private String provider;
 
     /**
-     * 状态:1-启用,0-禁用
+     * Status: 1-enabled, 0-disabled
      */
     private Integer status;
 }

@@ -39,9 +39,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 仅用来启动DSL转换SAA服务的启动类（可以不启动studio-admin所需要的中间件）
+ * Bootstrap class to start the DSL-to-SAA conversion service only
+ * (middleware required by studio-admin is optional).
  */
-// TODO: 将Studio的低代码平台也引入本启动类中
+// TODO: Include Studio low-code platform in this bootstrap class.
 @SpringBootApplication(exclude = { RedissonAutoConfigurationV2.class, ElasticsearchDataAutoConfiguration.class,
 		ElasticsearchRepositoriesAutoConfiguration.class, ElasticsearchRestClientAutoConfiguration.class,
 		DataSourceAutoConfiguration.class })
@@ -53,7 +54,7 @@ public class GeneratorApplication {
 		SpringApplication.run(GeneratorApplication.class, args);
 	}
 
-	// TODO: 前端适配无登陆进入DSL转换页面，去掉这个MockLoginController
+	// TODO: Let the frontend enter the DSL conversion page without login and remove this MockLoginController.
 	@RestController
 	@CrossOrigin
 	public static class MockLoginController {

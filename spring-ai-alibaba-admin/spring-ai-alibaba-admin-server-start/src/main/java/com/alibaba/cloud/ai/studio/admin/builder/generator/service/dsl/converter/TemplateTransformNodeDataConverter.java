@@ -140,8 +140,8 @@ public class TemplateTransformNodeDataConverter extends AbstractNodeDataConverte
 						nodeData.getVarName() + "_" + TemplateTransformNodeData.getDefaultOutputSchema().getName());
 				nodeData.setOutputs(List.of(TemplateTransformNodeData.getDefaultOutputSchema()));
 			}).andThen(super.postProcessConsumer(dialectType)).andThen((nodeData, idToVarName) -> {
-				// todo: 支持Jinja2的if、for语句
-				// 将模板中的占位变量替换为工作流的中间变量
+				//todo: supports Jinja2’s if and for statements
+				//Replace placeholder variables in templates with intermediate variables of the workflow
 				Map<String, String> argToStateName = nodeData.getInputs()
 					.stream()
 					.collect(Collectors.toMap(VariableSelector::getLabel, VariableSelector::getNameInCode));

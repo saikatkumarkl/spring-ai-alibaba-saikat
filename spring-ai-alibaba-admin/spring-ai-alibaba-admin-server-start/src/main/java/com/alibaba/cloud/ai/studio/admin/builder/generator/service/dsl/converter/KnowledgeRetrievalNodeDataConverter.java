@@ -61,7 +61,7 @@ public class KnowledgeRetrievalNodeDataConverter extends AbstractNodeDataConvert
 			public KnowledgeRetrievalNodeData parse(Map<String, Object> data) {
 				KnowledgeRetrievalNodeData nodeData = new KnowledgeRetrievalNodeData();
 				nodeData.setDialectType(DSLDialectType.DIFY);
-				// 获取必要信息
+				//Get necessary information
 				Integer topK = MapReadUtil.getMapDeepValue(data, Integer.class, "multiple_retrieval_config", "top_k");
 				Double threshold = MapReadUtil.getMapDeepValue(data, Double.class, "multiple_retrieval_config",
 						"score_threshold");
@@ -76,7 +76,7 @@ public class KnowledgeRetrievalNodeDataConverter extends AbstractNodeDataConvert
 					nodeData.setInputs(List.of(new VariableSelector("sys", "query")));
 				}
 
-				// 设置信息
+				//Setup information
 				nodeData.setTopK(topK);
 				nodeData.setThreshold(threshold);
 				nodeData.setKnowledgeBaseIds(knowledgeBaseIds);
@@ -99,7 +99,7 @@ public class KnowledgeRetrievalNodeDataConverter extends AbstractNodeDataConvert
 			public KnowledgeRetrievalNodeData parse(Map<String, Object> data) throws JsonProcessingException {
 				KnowledgeRetrievalNodeData nodeData = new KnowledgeRetrievalNodeData();
 				nodeData.setDialectType(DSLDialectType.STUDIO);
-				// 获取必要信息
+				//Get necessary information
 				Integer topK = MapReadUtil.getMapDeepValue(data, Integer.class, "config", "node_param", "top_k");
 				Double threshold = MapReadUtil.getMapDeepValue(data, Double.class, "config", "node_param",
 						"similarity_threshold");
@@ -108,7 +108,7 @@ public class KnowledgeRetrievalNodeDataConverter extends AbstractNodeDataConvert
 						String.class);
 				List<Map<String, Object>> inputParams = MapReadUtil
 					.safeCastToListWithMap(MapReadUtil.getMapDeepValue(data, String.class, "config", "input_params"));
-				// Studio DSL 此值是一个模板值
+				//Studio DSL This value is a template value
 				String inputKey;
 				if (inputParams != null && !inputParams.isEmpty()) {
 					inputKey = inputParams.get(0).get("value").toString();
@@ -124,7 +124,7 @@ public class KnowledgeRetrievalNodeDataConverter extends AbstractNodeDataConvert
 					nodeData.setInputs(List.of(new VariableSelector("sys", "query")));
 				}
 
-				// 设置信息
+				//Setup information
 				nodeData.setTopK(topK);
 				nodeData.setThreshold(threshold);
 				nodeData.setKnowledgeBaseIds(knowledgeBaseIds);
@@ -158,11 +158,11 @@ public class KnowledgeRetrievalNodeDataConverter extends AbstractNodeDataConvert
 	public BiConsumer<KnowledgeRetrievalNodeData, Map<String, String>> postProcessConsumer(DSLDialectType dialectType) {
 		return switch (dialectType) {
 			case DIFY, STUDIO -> this.emptyProcessConsumer().andThen((nodeData, idToVarName) ->
-				// 设置输出
+				//Set output
 				nodeData.setOutputs(KnowledgeRetrievalNodeData.getDefaultOutputSchemas(dialectType)))
 				.andThen(super.postProcessConsumer(dialectType))
 				.andThen((nodeData, idToVarName) -> {
-					// 获取最终的输入输出Key名
+					//Get the final input and output Key name
 					nodeData.setOutputKey(nodeData.getOutputs().get(0).getName());
 					nodeData.setInputKey(nodeData.getInputs().get(0).getNameInCode());
 				});

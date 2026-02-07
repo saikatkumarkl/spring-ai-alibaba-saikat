@@ -91,7 +91,7 @@ public class HttpNodeDataConverter extends AbstractNodeDataConverter<HttpNodeDat
 					headers = (Map<String, String>) headersObj;
 				}
 				else if (headersObj instanceof String str) {
-					// Dify DSL以"key:value"的形式每行存储一个headers对
+					//Dify DSL stores one header pair per row in the form of "key:value"
 					headers = Arrays.stream(str.split("\\r?\\n"))
 						.map(line -> line.split(":"))
 						.filter(parts -> parts.length == 2)
@@ -107,7 +107,7 @@ public class HttpNodeDataConverter extends AbstractNodeDataConverter<HttpNodeDat
 					queryParams = (Map<String, String>) paramsObj;
 				}
 				else if (paramsObj instanceof String str) {
-					// Dify DSL以"key:value"的形式每行存储一个params对
+					//Dify DSL stores one params pair per line in the form "key:value"
 					queryParams = Arrays.stream(str.split("\\r?\\n"))
 						.map(line -> line.split(":"))
 						.filter(parts -> parts.length == 2)
@@ -187,7 +187,7 @@ public class HttpNodeDataConverter extends AbstractNodeDataConverter<HttpNodeDat
 
 			@Override
 			public HttpNodeData parse(Map<String, Object> data) throws JsonProcessingException {
-				// 获取必要信息
+				//Get necessary information
 				HttpMethod httpMethod = HttpMethod.valueOf(Optional
 					.ofNullable(MapReadUtil.getMapDeepValue(data, String.class, "config", "node_param", "method"))
 					.orElse("GET")
@@ -272,17 +272,17 @@ public class HttpNodeDataConverter extends AbstractNodeDataConverter<HttpNodeDat
 	public BiConsumer<HttpNodeData, Map<String, String>> postProcessConsumer(DSLDialectType dialectType) {
 		return switch (dialectType) {
 			case DIFY -> emptyProcessConsumer().andThen((httpNodeData, idToVarName) -> {
-				// 设置输出键
+				//Set output key
 				httpNodeData.setOutputKey(httpNodeData.getVarName() + "_"
 						+ HttpNodeData.getDefaultOutputSchemas(dialectType).get(0).getName());
 				httpNodeData.setOutputs(HttpNodeData.getDefaultOutputSchemas(dialectType));
 			}).andThen(super.postProcessConsumer(dialectType)).andThen((httpNodeData, idToVarName) -> {
-				// 将headers，params，body的Dify参数占位符转化为SAA中间变量
+				//Convert the Dify parameter placeholders of headers, params, and body into SAA intermediate variables
 				httpNodeData.setHeaders(httpNodeData.getHeaders()
 					.entrySet()
 					.stream()
 					.collect(Collectors.toMap(
-							// HttpNode源代码使用${}的变量格式
+							//HttpNode source code uses the variable format of ${}
 							entry -> this.convertVarTemplate(dialectType, entry.getKey().replace("{{#", "${{#"),
 									idToVarName),
 							entry -> this.convertVarTemplate(dialectType, entry.getValue().replace("{{#", "${{#"),
@@ -305,7 +305,7 @@ public class HttpNodeDataConverter extends AbstractNodeDataConverter<HttpNodeDat
 						data.setValue(this.convertVarTemplate(dialectType, data.getValue().replace("{{#", "${{#"),
 								idToVarName));
 				}).toList());
-				// 处理rawBodyMap
+				//Handle rawBodyMap
 				Map<String, Object> rawBodyMap = httpNodeData.getRawBodyMap();
 				if (!CollectionUtils.isEmpty(rawBodyMap)) {
 					String json = JsonParser.toJson(rawBodyMap);
@@ -319,7 +319,7 @@ public class HttpNodeDataConverter extends AbstractNodeDataConverter<HttpNodeDat
 				}
 			});
 			case STUDIO -> emptyProcessConsumer().andThen((httpNodeData, idToVarName) -> {
-				// 设置输出键
+				//Set output key
 				httpNodeData.setOutputKey(httpNodeData.getVarName() + "_"
 						+ HttpNodeData.getDefaultOutputSchemas(dialectType).get(0).getName());
 				httpNodeData.setOutputs(HttpNodeData.getDefaultOutputSchemas(dialectType));

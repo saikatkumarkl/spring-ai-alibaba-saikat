@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChatSessionServiceImpl implements ChatSessionService {
     
     /**
-     * 会话过期时间（30分钟）
+     * Session expiration time (30 minutes)
      */
     private static final long SESSION_EXPIRE_TIME = 30 * 60 * 1000L;
     
@@ -32,12 +32,12 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     private final ModelConfigParser modelConfigParser;
     
     /**
-     * 会话存储Map（生产环境建议使用Redis）
+     * Session storage Map (Redis is recommended for production environments)
      */
     private final Map<String, ChatSession> sessionStore = new ConcurrentHashMap<>();
     
     /**
-     * 会话与ModelClient的绑定关系
+     * Binding relationship between session and ModelClient
      */
     private final Map<String, ChatClient> sessionClients = new ConcurrentHashMap<>();
     
@@ -78,7 +78,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
             return null;
         }
         
-        // 检查会话是否过期
+        //Check if the session has expired
         if (isSessionExpired(session)) {
             log.info("会话已过期，删除: {}", sessionId);
             sessionStore.remove(sessionId);
@@ -107,9 +107,9 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     }
     
     @Override
-    @Scheduled(fixedRate = 10 * 60 * 1000) // 每10分钟执行一次
+    @Scheduled(fixedRate = 10 * 60 * 1000) //Executed every 10 minutes
     public void cleanExpiredSessions() {
-        final int[] cleanedCount = {0}; // 使用数组来解决final限制
+        final int[] cleanedCount = {0}; //Use arrays to work around final restrictions
         
         sessionStore.entrySet().removeIf(entry -> {
             ChatSession session = entry.getValue();
@@ -145,7 +145,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     }
     
     /**
-     * 检查会话是否过期
+     * Check if the session has expired
      */
     private boolean isSessionExpired(ChatSession session) {
         long currentTime = System.currentTimeMillis();
@@ -153,7 +153,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
     }
     
     /**
-     * 获取当前会话总数（用于监控）
+     * Get the total number of current sessions (for monitoring)
      */
     public int getSessionCount() {
         return sessionStore.size();

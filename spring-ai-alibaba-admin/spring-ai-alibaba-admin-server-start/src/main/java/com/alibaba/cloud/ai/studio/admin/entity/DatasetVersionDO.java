@@ -13,57 +13,57 @@ import java.util.List;
 public class DatasetVersionDO {
 
     /**
-     * 主键ID
+     * Primary key ID
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
-     * 评测集ID
+     * Evaluation set ID
      */
 
     private Long datasetId;
 
     /**
-     * 版本号
+     * version number
      */
     private String version;
 
     /**
-     * 版本描述
+     * Version description
      */
     private String description;
 
     /**
-     * 该版本的数据总量
+     * The total amount of data in this version
      */
     private Integer dataCount;
 
 
     /**
-     * 版本状态  versionStatus
+     * version status versionStatus
      */
     private String status;
 
     /**
-     * 实验集合（一对多关系）
+     * Experimental collection (one-to-many relationship)
      */
     private String experiments;
 
     /**
-     * 数据项集合（一对多关系）
+     * Collection of data items (one-to-many relationship)
      */
     private String datasetItems;
 
 
     /**
-     * 创建时间
+     * creation time
      */
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * Update time
      */
     private LocalDateTime updateTime;
 

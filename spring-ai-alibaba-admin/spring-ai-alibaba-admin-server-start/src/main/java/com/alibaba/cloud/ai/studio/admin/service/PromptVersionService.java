@@ -10,27 +10,27 @@ import com.alibaba.cloud.ai.studio.admin.exception.StudioException;
 public interface PromptVersionService {
 
     /**
-     * 创建Prompt版本
+     * Create prompt version
      *
-     * @param request 创建请求
-     * @return Prompt版本
+     * @param request create request
+     * @return Prompt version
      */
     PromptVersion create(PromptVersionCreateRequest request) throws StudioException;
 
     /**
-     * 根据Prompt Key和版本获取Prompt版本详情
+     * Get Prompt version details based on Prompt Key and version
      *
      * @param promptKey Prompt Key
-     * @param version   版本号
-     * @return Prompt版本详情
+     * @param version version number
+     * @return Prompt version details
      */
     PromptVersionDetail getByPromptKeyAndVersion(String promptKey, String version) throws StudioException;
 
     /**
-     * 分页查询Prompt版本列表
+     * Query Prompt version list by pagination
      *
-     * @param request 查询请求
-     * @return 分页结果
+     * @param request query request
+     * @return paginated results
      */
     PageResult<PromptVersion> list(PromptVersionListRequest request);
 }

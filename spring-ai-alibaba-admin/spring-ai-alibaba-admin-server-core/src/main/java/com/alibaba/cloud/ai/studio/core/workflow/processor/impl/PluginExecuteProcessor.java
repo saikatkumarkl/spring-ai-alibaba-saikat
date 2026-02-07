@@ -129,7 +129,7 @@ public class PluginExecuteProcessor extends AbstractExecuteProcessor {
 		@JsonProperty("tool_name")
 		private String toolName;
 
-		private String desc; // 工具描述
+		private String desc; //Tool description
 
 		@JsonProperty("plugin_id")
 		private String pluginId;

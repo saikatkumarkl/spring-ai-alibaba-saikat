@@ -64,10 +64,10 @@ public class PromptRunServiceImpl implements PromptRunService {
         log.info("运行带会话的Prompt调试: {}", request);
         
         try {
-            // 1. 获取或创建会话
+            //1. Get or create a session
             ChatSession session = getOrCreateSession(request);
             
-            // 2. 添加用户消息到会话
+            //2. Add user messages to the conversation
             session.addUserMessage(request.getMessage());
             chatSessionService.updateSession(session);
             if (StringUtils.hasText(request.getPromptKey())) {
@@ -82,14 +82,14 @@ public class PromptRunServiceImpl implements PromptRunService {
             session.setMockTools(request.getMockTools());
             session.setModelConfig(modelConfigParser.checkAndGetModelConfigInfo(request.getModelConfig()));
             
-            // 3. 返回会话信息
+            //3. Return session information
             PromptRunResponse sessionInfo = PromptRunResponse.createSessionInfoResponse(session);
             
             return Flux.concat(
-                    // 首先返回会话信息
+                    //First return session information
                     Flux.just(sessionInfo),
                     
-                    // 然后返回真实的AI流式响应
+                    //Then return the real AI streaming response
                     generateRealAIResponse(session, request).onErrorResume(error -> {
                         log.error("模型调用失败，返回错误响应", error);
                         return Flux.just(PromptRunResponse.createErrorResponse(session.getSessionId(),
@@ -113,36 +113,36 @@ public class PromptRunServiceImpl implements PromptRunService {
     }
     
     /**
-     * 获取或创建会话
+     * Get or create a session
      */
     private ChatSession getOrCreateSession(PromptRunRequest request) {
-        // 如果强制创建新会话或没有提供sessionId，创建新会话
+        //If a new session is forced to be created or no sessionId is provided, create a new session
         if (Boolean.TRUE.equals(request.getNewSession()) || request.getSessionId() == null || request.getSessionId()
                 .trim().isEmpty()) {
             return chatSessionService.createSessionWithMockTools(request.getPromptKey(), request.getVersion(),
                     request.getTemplate(), request.getVariables(), request.getModelConfig(), request.getMockTools());
         }
         
-        // 尝试获取现有会话
+        //Try to get existing session
         ChatSession existingSession = chatSessionService.getSession(request.getSessionId());
         if (existingSession != null) {
             return existingSession;
         }
         
-        // 会话不存在，创建新会话
+        //Session does not exist, create a new session
         log.warn("会话 {} 不存在，创建新会话", request.getSessionId());
         return chatSessionService.createSessionWithMockTools(request.getPromptKey(), request.getVersion(),
                 request.getTemplate(), request.getVariables(), request.getModelConfig(), request.getMockTools());
     }
     
     /**
-     * 生成真实的AI流式响应
+     * Generate realistic AI streaming responses
      *
-     * @param session 会话对象
-     * @return 流式响应
+     * @param session session object
+     * @return streaming response
      */
     private Flux<PromptRunResponse> generateRealAIResponse(ChatSession session, PromptRunRequest request) {
-        // 用于收集完整响应的容器
+        //Container for collecting full responses
         AtomicReference<StringBuilder> completeResponse = new AtomicReference<>(new StringBuilder());
         AtomicReference<ChatMessageMetrics> metrics = new AtomicReference<>(ChatMessageMetrics.builder().build());
         
@@ -173,7 +173,7 @@ public class PromptRunServiceImpl implements PromptRunService {
         Prompt prompt = new Prompt(messages);
         return client.prompt(prompt).toolCallbacks(functionToolCallbacks).stream().chatClientResponse()
                 .map(response -> {
-                    // 收集完整响应
+                    //Collect full response
                     ChatResponse chatResponse = response.chatResponse();
                     assert chatResponse != null;
                     if (AdvisorUtils.onFinishReason().test(response)) {
@@ -189,7 +189,7 @@ public class PromptRunServiceImpl implements PromptRunService {
                         return PromptRunResponse.createMessageResponse(session.getSessionId(), "");
                     }
                 }).doOnComplete(() -> {
-                    // 响应完成后，将完整响应添加到会话历史
+                    //When the response is complete, add the full response to the session history
                     try {
                         String fullResponse = completeResponse.get().toString();
                         if (StringUtils.hasText(fullResponse)) {

@@ -96,10 +96,10 @@ public class EndNodeDataConverter extends AbstractNodeDataConverter<EndNodeData>
 						"text_template");
 				nodeData.setTextTemplate(textTemplate);
 
-				// 获取输出键
+				//Get output key
 				List<?> jsonParams = MapReadUtil.getMapDeepValue(data, List.class, "config", "node_param",
 						"json_params");
-				// 转换为VariableSelector
+				//Convert to VariableSelector
 				List<VariableSelector> variableSelectors = Stream.ofNullable(jsonParams)
 					.flatMap(List::stream)
 					.map(MapReadUtil::safeCastToMapWithStringKey)
@@ -150,9 +150,9 @@ public class EndNodeDataConverter extends AbstractNodeDataConverter<EndNodeData>
 	public BiConsumer<EndNodeData, Map<String, String>> postProcessConsumer(DSLDialectType dialectType) {
 		return switch (dialectType) {
 			case STUDIO -> emptyProcessConsumer().andThen((data, idToVarName) -> {
-				// 格式化textTemplate
+				//Format textTemplate
 				data.setTextTemplate(this.convertVarTemplate(dialectType, data.getTextTemplate(), idToVarName));
-				// 设置输出键
+				//Set output key
 				String outputKey = data.getVarName() + "_" + EndNodeData.getDefaultOutputSchema().getName();
 				data.setOutputKey(outputKey);
 				data.setOutputs(List.of(EndNodeData.getDefaultOutputSchema()));

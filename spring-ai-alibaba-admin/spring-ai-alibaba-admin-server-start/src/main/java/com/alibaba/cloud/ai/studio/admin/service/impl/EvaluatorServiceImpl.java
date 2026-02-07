@@ -46,7 +46,7 @@ public class EvaluatorServiceImpl implements EvaluatorService {
     public Evaluator create(EvaluatorCreateRequest request) {
         log.info("创建评估器: {}", request);
 
-        // 构建DO对象
+        //Build DO object
         EvaluatorDO evaluatorDO = EvaluatorDO.builder()
                 .name(request.getName())
                 .description(request.getDescription())
@@ -54,7 +54,7 @@ public class EvaluatorServiceImpl implements EvaluatorService {
                 .updateTime(LocalDateTime.now())
                 .build();
 
-        // 插入数据库
+        //Insert into database
         int result = evaluatorMapper.insert(evaluatorDO);
         if (result > 0) {
             log.info("评估器创建成功: {}", evaluatorDO.getId());
@@ -121,18 +121,18 @@ public class EvaluatorServiceImpl implements EvaluatorService {
     public Evaluator update(EvaluatorUpdateRequest request) {
         log.info("更新评估器: {}", request);
 
-        // 构建DO对象
+        //Build DO object
         EvaluatorDO evaluatorDO = EvaluatorDO.builder()
                 .id(request.getId())
                 .name(request.getName())
                 .description(request.getDescription())
                 .build();
 
-        // 更新数据库
+        //Update database
         int result = evaluatorMapper.update(evaluatorDO);
         if (result > 0) {
             log.info("评估器更新成功: {}", request.getId());
-            // 重新查询获取最新数据
+            //Query again to get the latest data
             return Evaluator.fromDO(evaluatorMapper.selectById(request.getId()));
         } else {
             throw new RuntimeException("更新评估器失败");
@@ -162,7 +162,7 @@ public class EvaluatorServiceImpl implements EvaluatorService {
 
 
     /**
-     * 调试模型调用
+     * Debug model calls
      */
     public EvaluatorDebugResult evaluatorTest(EvaluatorTestRequest request) {
         ChatSession session = chatSessionService.createEvaluatorSession(request.getPrompt(), request.getVariables(), request.getModelConfig());

@@ -30,7 +30,7 @@ public enum VariableType {
 
 	OBJECT("Object", Object.class, "object", "Object"),
 
-	// TODO：定义文件类型对象，以实现工作流直接使用文件
+	// TODO: Define a file type so workflows can use files directly.
 	FILE("File", Object.class, "file", "File"),
 
 	ARRAY("Array", Object.class, "array", "Array"),

@@ -12,37 +12,37 @@ import java.util.List;
 public interface DatasetItemService {
 
     /**
-     * 创建数据项
+     * Create data item
      */
     List<DatasetItem> create(DatasetItemCreateRequest request);
 
     /**
-     * 从Trace创建数据项
+     * Create data items from Trace
      */
     List<DatasetItem> createFromTrace(DataItemCreateFromTraceRequest request);
 
     /**
-     * 分页查询数据项列表
+     * Paging query data item list
      */
     PageResult<DatasetItem> list(DatasetItemListRequest request);
 
     /**
-     * 根据ID获取数据项
+     * Get data item based on ID
      */
     DatasetItem getById(Long id);
 
     /**
-     * 更新数据项
+     * Update data item
      */
     DatasetItem update(DatasetItemUpdateRequest request);
 
     /**
-     * 根据ID删除数据项
+     * Delete data items based on ID
      */
     void deleteById(Long id);
 
     /**
-     * 批量删除数据项
+     * Delete data items in batches
      */
     void batchDelete(List<Long> ids);
 

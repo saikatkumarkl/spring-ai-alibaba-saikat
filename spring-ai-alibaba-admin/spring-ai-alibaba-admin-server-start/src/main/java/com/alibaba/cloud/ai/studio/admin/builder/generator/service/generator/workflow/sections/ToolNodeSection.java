@@ -69,7 +69,7 @@ public class ToolNodeSection implements NodeSection<ToolNodeData> {
 			sb.append(String.format(".toolCallbacks(List.of(%s))%n", joined));
 		}
 
-		// todo: 给一些常用的Tool，提供可以直接应用的ToolCallBack
+		//todo: For some commonly used tools, provide ToolCallBack that can be directly applied
 		sb.append("""
 				.toolCallbackResolver(toolName ->
 				// todo: Implement the corresponding ToolCallBack according to the tool name

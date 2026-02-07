@@ -62,7 +62,7 @@ public class ProviderManager extends ServiceImpl<ProviderMapper, ProviderEntity>
 		RequestContext context = RequestContextHolder.getRequestContext();
 		String workspaceId = context.getWorkspaceId();
 		try {
-			// 检查提供商是否存在
+			//Check if the provider exists
 			QueryWrapper<ProviderEntity> queryWrapper = new QueryWrapper<>();
 			queryWrapper.eq("provider", providerConfigInfo.getProvider());
 			if (StringUtils.isNotBlank(context.getWorkspaceId())) {
@@ -127,7 +127,7 @@ public class ProviderManager extends ServiceImpl<ProviderMapper, ProviderEntity>
 		RequestContext context = RequestContextHolder.getRequestContext();
 		String workspaceId = context.getWorkspaceId();
 		try {
-			// 检查提供商是否存在
+			//Check if the provider exists
 			String provider = providerConfigInfo.getProvider();
 			ProviderEntity existingProvider = getProviderEntity(provider, workspaceId);
 			if (existingProvider == null) {
@@ -135,7 +135,7 @@ public class ProviderManager extends ServiceImpl<ProviderMapper, ProviderEntity>
 				throw new BizException(ErrorCode.INVALID_PARAMS.toError("input_params", "provider not found"));
 			}
 
-			// 更新提供商信息
+			//Update provider information
 			existingProvider.setGmtModified(new Date());
 			existingProvider.setModifier(context.getAccountId());
 

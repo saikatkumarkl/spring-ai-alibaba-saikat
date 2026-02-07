@@ -9,22 +9,22 @@ import com.alibaba.cloud.ai.studio.admin.dto.request.TracesQueryRequest;
 public interface TracingService {
 
     /**
-     * 分页查询追踪列表
+     * Paginated query tracking list
      */
     PageResult<TraceSpanDTO> queryTraces(TracesQueryRequest request);
 
     /**
-     * 根据TraceId获取追踪详情
+     * Get tracking details based on TraceId
      */
     TraceDetailDTO getTraceDetail(String traceId);
 
     /**
-     * 获取服务列表
+     * Get service list
      */
     ServicesResponseDTO getServices(ServicesQueryRequest request);
 
     /**
-     * 获取概览信息
+     * Get overview information
      */
     OverviewStatsDTO getOverview(OverviewQueryRequest request);
 }
