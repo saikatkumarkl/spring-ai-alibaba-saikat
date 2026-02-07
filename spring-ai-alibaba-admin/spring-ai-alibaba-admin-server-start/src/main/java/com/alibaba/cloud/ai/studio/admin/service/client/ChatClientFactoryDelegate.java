@@ -72,10 +72,10 @@ public class ChatClientFactoryDelegate {
     }
     
     public ChatClient createChatClient(Long modelConfigId, Map<String, Object> userParameters, List<Advisor> advisors, Map<String, String> observationMetadata) {
-        // 优先从桥接服务查找（从Manager层查询）
+        //Look up from the bridge service first (query from the Manager layer)
         ModelConfigDO config = modelConfigBridgeService.findById(modelConfigId);
         
-        // 如果桥接服务中找不到，尝试从ModelConfigRepository查找（保持向后兼容）
+        //If not found in the bridge service, try to find it from the ModelConfigRepository (to maintain backward compatibility)
         if (config == null) {
             log.debug("桥接服务中未找到模型配置 id={}，尝试从 ModelConfigRepository 查找", modelConfigId);
             config = modelConfigRepository.findById(modelConfigId);
@@ -94,7 +94,7 @@ public class ChatClientFactoryDelegate {
         
         ChatClientFactory factory = chatClientFactories.get(provider);
         if (factory == null) {
-            // 如果找不到对应的 provider factory，默认使用 OpenAI
+            //If the corresponding provider factory cannot be found, OpenAI is used by default.
             log.warn("未找到提供商 {} 对应的工厂，使用默认的 OpenAI 工厂", provider);
             factory = chatClientFactories.get(OpenAiChatClientFactory.OPEN_AI_PROVIDER);
             if (factory == null) {
@@ -117,16 +117,16 @@ public class ChatClientFactoryDelegate {
     }
     
     /**
-     * 合并默认参数和用户参数
-     * 用户参数具有更高优先级，会覆盖默认参数
+     * Merge default parameters and user parameters
+     * User parameters have higher priority and override default parameters
      *
-     * @param userParameters 用户传入的参数
-     * @return 合并后的参数
+     * @param userParameters Parameters passed in by the user
+     * @return merged parameters
      */
     private Map<String, Object> mergeParameters(ModelConfigDO config, Map<String, Object> userParameters) {
         Map<String, Object> mergedParameters = new HashMap<>();
         
-        // 首先添加默认参数
+        //First add default parameters
         if (StringUtils.hasText(config.getDefaultParameters())) {
             try {
                 @SuppressWarnings("unchecked")
@@ -141,7 +141,7 @@ public class ChatClientFactoryDelegate {
             }
         }
         
-        // 然后添加用户参数（覆盖默认参数）
+        //Then add user parameters (override default parameters)
         if (userParameters != null) {
             mergedParameters.putAll(userParameters);
             log.debug("用户参数: {}", userParameters);

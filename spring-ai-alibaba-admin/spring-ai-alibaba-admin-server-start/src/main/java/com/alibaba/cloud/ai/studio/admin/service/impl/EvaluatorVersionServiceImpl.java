@@ -28,7 +28,7 @@ public class EvaluatorVersionServiceImpl implements EvaluatorVersionService {
     public EvaluatorVersion create(EvaluatorVersionCreateRequest request) {
         log.info("创建评估器版本: {}", request);
 
-        // 构建DO对象
+        //Build DO object
         EvaluatorVersionDO evaluatorVersionDO = EvaluatorVersionDO.builder()
                 .evaluatorId(Long.valueOf(request.getEvaluatorId()))
                 .description(request.getDescription())
@@ -40,7 +40,7 @@ public class EvaluatorVersionServiceImpl implements EvaluatorVersionService {
                 .updateTime(LocalDateTime.now())
                 .build();
 
-        // 插入数据库
+        //Insert into database
         int result = evaluatorVersionMapper.insert(evaluatorVersionDO);
         if (result > 0) {
             log.info("评估器版本创建成功: {}", evaluatorVersionDO.getId());
@@ -54,17 +54,17 @@ public class EvaluatorVersionServiceImpl implements EvaluatorVersionService {
     public PageResult<EvaluatorVersion> list(EvaluatorVersionListRequest request) {
         log.info("查询评估器版本列表: {}", request);
 
-        // 计算分页参数
+        //Calculate paging parameters
         int pageNumber = request.getPageNumber() != null ? request.getPageNumber() : 1;
         int pageSize = request.getPageSize() != null ? request.getPageSize() : 10;
         long offset = (pageNumber - 1L) * pageSize;
 
-        // 查询数据
+        //Query data
         List<EvaluatorVersionDO> evaluatorVersionDOList = evaluatorVersionMapper.selectListByEvaluatorId(
                 request.getEvaluatorId(), request.getName(), offset, pageSize);
         int total = evaluatorVersionMapper.countByEvaluatorId(request.getEvaluatorId(), null);
 
-        // 封装分页结果
+        //Encapsulate paginated results
         return new PageResult<>(
                 (long) pageNumber,
                 (long) total,
@@ -86,7 +86,7 @@ public class EvaluatorVersionServiceImpl implements EvaluatorVersionService {
         log.info("更新评估器版本: {}", request.getEvaluatorVersionId());
 
 
-        // 检查版本是否已存在及状态验证
+        //Check whether the version already exists and verify the status
         EvaluatorVersionDO exists = evaluatorVersionMapper.selectById(request.getEvaluatorVersionId());
 
         if (Objects.isNull(exists)){

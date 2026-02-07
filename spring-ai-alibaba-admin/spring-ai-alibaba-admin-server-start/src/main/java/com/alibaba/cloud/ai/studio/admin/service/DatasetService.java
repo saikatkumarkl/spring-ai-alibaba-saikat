@@ -10,27 +10,27 @@ import com.alibaba.cloud.ai.studio.admin.entity.DatasetDO;
 public interface DatasetService {
 
     /**
-     * 创建评测集
+     * Create a review set
      */
     Dataset create(DatasetCreateRequest request);
 
     /**
-     * 分页查询评测集列表
+     * Query the evaluation set list by pagination
      */
     PageResult<Dataset> list(DatasetListRequest request);
 
     /**
-     * 根据ID获取评测集
+     * Get the evaluation set based on ID
      */
     Dataset getById(Long id);
 
     /**
-     * 更新评测集
+     * Update review set
      */
     Dataset update(DatasetUpdateRequest request);
 
     /**
-     * 根据ID删除评测集
+     * Delete a review set based on ID
      */
     void deleteById(Long id);
 } 

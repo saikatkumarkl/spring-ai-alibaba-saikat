@@ -7,13 +7,13 @@ import lombok.Data;
 public class EvaluatorCreateRequest {
 
     /**
-     * 评估器名称
+     * evaluator name
      */
     @NotNull
     private String name;
 
     /**
-     * 评估器描述
+     * Evaluator description
      */
     private String description;
 

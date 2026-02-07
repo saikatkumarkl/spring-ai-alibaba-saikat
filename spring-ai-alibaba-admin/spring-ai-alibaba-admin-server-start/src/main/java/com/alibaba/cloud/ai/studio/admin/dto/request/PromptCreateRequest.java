@@ -9,7 +9,7 @@ import lombok.Data;
 public class PromptCreateRequest {
 
     /**
-     * Prompt Key（唯一标识符）
+     * Prompt Key (unique identifier)
      */
     @NotBlank(message = "Prompt Key不能为空")
     @Size(min = 1, max = 255, message = "Prompt Key长度必须在1-255个字符之间")
@@ -17,13 +17,13 @@ public class PromptCreateRequest {
     private String promptKey;
 
     /**
-     * Prompt描述
+     * PromptDescription
      */
     @Size(max = 255, message = "Prompt描述不能超过255个字符")
     private String promptDescription;
 
     /**
-     * 标签，逗号分隔
+     * tags, comma separated
      */
     @Size(max = 255, message = "标签总长度不能超过255个字符")
     @Pattern(regexp = "^[^,]+(,[^,]+)*$|^$", message = "标签格式不正确，应为逗号分隔的非空字符串")

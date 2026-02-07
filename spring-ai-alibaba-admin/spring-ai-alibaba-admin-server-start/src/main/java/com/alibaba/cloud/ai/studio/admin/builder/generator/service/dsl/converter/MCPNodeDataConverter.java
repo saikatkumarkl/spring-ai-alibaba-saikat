@@ -59,7 +59,7 @@ public class MCPNodeDataConverter extends AbstractNodeDataConverter<MCPNodeData>
 			public MCPNodeData parse(Map<String, Object> data) {
 				MCPNodeData nodeData = new MCPNodeData();
 
-				// 获取基本信息
+				//Get basic information
 				String toolName = MapReadUtil.getMapDeepValue(data, String.class, "config", "node_param", "tool_name");
 				String serverCode = MapReadUtil.getMapDeepValue(data, String.class, "config", "node_param",
 						"server_code");
@@ -87,7 +87,7 @@ public class MCPNodeDataConverter extends AbstractNodeDataConverter<MCPNodeData>
 					.get("key")
 					.toString();
 
-				// 设置节点数据
+				//Set node data
 				nodeData.setToolName(toolName);
 				nodeData.setServerCode(serverCode);
 				nodeData.setServerName(serverName);

@@ -22,7 +22,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 短期记忆参数
+ * short term memory parameters
  *
  * @since 1.0.0.3
  */
@@ -38,7 +38,7 @@ public class ShortTermMemory implements Serializable {
 	@JsonProperty("type")
 	private String type;
 
-	// 轮次
+	//rounds
 	@JsonProperty("round")
 	private Integer round;
 

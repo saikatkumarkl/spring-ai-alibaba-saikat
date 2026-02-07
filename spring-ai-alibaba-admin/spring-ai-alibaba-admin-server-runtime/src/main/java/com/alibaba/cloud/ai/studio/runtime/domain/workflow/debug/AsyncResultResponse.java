@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 异步任务结果响应
+ * Asynchronous task result response
  */
 @Data
 public class AsyncResultResponse implements Serializable {

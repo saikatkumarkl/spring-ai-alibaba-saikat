@@ -10,22 +10,22 @@ import com.alibaba.cloud.ai.studio.admin.entity.EvaluatorVersionDO;
 public interface EvaluatorVersionService {
 
     /**
-     * 创建评估器版本
+     * Create evaluator version
      */
     EvaluatorVersion create(EvaluatorVersionCreateRequest request);
 
     /**
-     * 分页查询评估器列表
+     * Paginated query evaluator list
      */
     PageResult<EvaluatorVersion>list(EvaluatorVersionListRequest request);
 
     /**
-     * 根据ID获取评估器版本
+     * Get evaluator version by ID
      */
     EvaluatorVersion getById(Long id);
 
     /**
-     * 更新评估器版本
+     * Update evaluator version
      */
     EvaluatorVersion update(EvaluatorVersionUpdateRequest request);
 

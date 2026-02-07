@@ -326,7 +326,7 @@ public class WorkflowExecuteManager {
 
 		long lastRefreshTime = System.currentTimeMillis();
 
-		// 根据invokeSource设置不同的刷新频率
+		//Set different refresh frequencies based on invokeSource
 		Integer refreshInterval = getRefreshIntervalByInvokeSource(context.getInvokeSource());
 
 		while (!done.get()) {
@@ -344,7 +344,7 @@ public class WorkflowExecuteManager {
 				try {
 					nodeMonitorQueue.poll(100, TimeUnit.MILLISECONDS);
 
-					// 定时刷新context缓存
+					//Refresh the context cache regularly
 					long currentTime = System.currentTimeMillis();
 					if (refreshInterval != null && currentTime - lastRefreshTime >= refreshInterval) {
 						workflowInnerService.refreshContextCache(context);
@@ -361,9 +361,9 @@ public class WorkflowExecuteManager {
 	}
 
 	/**
-	 * 根据invokeSource获取刷新频率
-	 * @param invokeSource 调用来源
-	 * @return 刷新间隔（毫秒）
+	 * Get refresh frequency based on invokeSource
+	 * @param invokeSource calling source
+	 * @return refresh interval (milliseconds)
 	 */
 	private Integer getRefreshIntervalByInvokeSource(String invokeSource) {
 		Map<Object, Object> workflowRefreshInterval = JsonUtils

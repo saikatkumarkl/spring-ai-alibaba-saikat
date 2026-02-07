@@ -46,7 +46,7 @@
         FROM dataset_version
         WHERE dataset_id = #{datasetId}
         ORDER BY create_time DESC
-        LIMIT #{offset}, #{limit}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- Query dataset version count -->
@@ -95,7 +95,7 @@
         WHERE dataset_id = #{datasetId}
     </delete>
 
-    <!-- 获取最新版本号 -->
+    <!--Get the latest version number-->
     <select id="selectLatestVersion" resultMap="datasetVersionResultMap">
         SELECT *
         FROM dataset_version

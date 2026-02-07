@@ -21,7 +21,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 任务重入结果
+ * Task reentry results
  */
 @Data
 public class TaskResumeResponse implements Serializable {

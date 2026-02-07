@@ -11,38 +11,38 @@ import java.util.Map;
 public interface PromptMapper {
 
     /**
-     * 创建Prompt
+     * CreatePrompt
      *
-     * @param prompt Prompt实体
-     * @return 影响的行数
+     * @param prompt Prompt entity
+     * @return Number of rows affected
      */
     int insert(PromptDO prompt);
 
     /**
-     * 根据Prompt Key删除Prompt（逻辑删除）
+     * Delete Prompt based on Prompt Key (logical deletion)
      *
      * @param promptKey Prompt Key
-     * @return 影响的行数
+     * @return Number of rows affected
      */
     int deleteByPromptKey(@Param("promptKey") String promptKey);
 
     /**
-     * 根据Prompt Key获取Prompt
+     * Get Prompt based on Prompt Key
      *
      * @param promptKey Prompt Key
-     * @return Prompt实体
+     * @return Prompt entity
      */
     PromptDO selectByPromptKey(@Param("promptKey") String promptKey);
 
     /**
-     * 查询Prompt列表
+     * Query prompt list
      *
-     * @param search    查询模式
-     * @param tag       标签
+     * @param search query mode
+     * @param tag tag
      * @param promptKey Prompt Key
-     * @param offset    偏移量
-     * @param limit     数量限制
-     * @return Prompt列表
+     * @param offset offset
+     * @param limit quantity limit
+     * @return Prompt list
      */
     List<PromptDO> selectList(@Param("search") String search,
                               @Param("tag") String tag,
@@ -51,52 +51,52 @@ public interface PromptMapper {
                               @Param("limit") int limit);
 
     /**
-     * 查询Prompt总数
+     * Query the total number of prompts
      *
-     * @param search    查询模式
-     * @param tag       标签
+     * @param search query mode
+     * @param tag tag
      * @param promptKey Prompt Key
-     * @return 总数
+     * @return total number
      */
     int selectCount(@Param("search") String search,
                     @Param("tag") String tag,
                     @Param("promptKey") String promptKey);
 
     /**
-     * 更新Prompt
+     * UpdatePrompt
      *
-     * @param prompt Prompt实体
-     * @return 影响的行数
+     * @param prompt Prompt entity
+     * @return Number of rows affected
      */
     int update(PromptDO prompt);
 
     /**
-     * 更新最新版本
+     * Update to latest version
      *
      * @param promptKey     Prompt Key
-     * @param latestVersion 最新版本
-     * @return 影响的行数
+     * @param latestVersion latest version
+     * @return Number of rows affected
      */
     int updateLatestVersion(@Param("promptKey") String promptKey,
                             @Param("latestVersion") String latestVersion);
 
     /**
-     * 根据Prompt Key获取Prompt及其最新版本状态
+     * Get Prompt and its latest version status based on Prompt Key
      *
      * @param promptKey Prompt Key
-     * @return Map包含Prompt信息和最新版本状态
+     * @return Map contains prompt information and latest version status
      */
     Map<String, Object> selectByPromptKeyWithLatestVersionStatus(@Param("promptKey") String promptKey);
 
     /**
-     * 查询Prompt列表及其最新版本状态
+     * Query the Prompt list and its latest version status
      *
-     * @param search    查询模式
-     * @param tag       标签
+     * @param search query mode
+     * @param tag tag
      * @param promptKey Prompt Key
-     * @param offset    偏移量
-     * @param limit     数量限制
-     * @return Map列表包含Prompt信息和最新版本状态
+     * @param offset offset
+     * @param limit quantity limit
+     * @return Map list contains Prompt information and latest version status
      */
     List<Map<String, Object>> selectListWithLatestVersionStatus(@Param("search") String search,
                                                                                      @Param("tag") String tag,

@@ -7,17 +7,17 @@ import lombok.Data;
 public class DatasetListRequest {
 
     /**
-     * 页码
+     * page number
      */
     private Integer pageNumber = 1;
 
     /**
-     * 每页大小
+     * page size
      */
     private Integer pageSize = 10;
 
     /**
-     * 按照datasetName查询
+     * Query according to datasetName
      */
     private String datasetName;
 

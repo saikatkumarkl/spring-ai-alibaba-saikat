@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
- * 基于 YAML 文件的模型配置仓储实现。 查找路径：优先读取环境变量 MODEL_CONFIG_FILE；否则默认 ./model-config.yml 支持 WatchService 监听热更新（同目录文件变更）。
+ * Model configuration repository implementation based on YAML files. Search path: read the environment variable MODEL_CONFIG_FILE first; otherwise, the default ./model-config.yml supports WatchService to monitor hot updates (file changes in the same directory).
  * @author Sunrisea
  */
 @Repository
@@ -86,14 +86,14 @@ public class FileModelConfigRepository implements ModelConfigRepository, Initial
             this.snapshot.set(Collections.unmodifiableMap(data));
             log.info("模型配置加载成功，数量: {}", data.size());
         } catch (Exception e) {
-            // 允许空配置启动：若解析失败，仍然以空配置启动
+            //Allow empty configuration to start: if parsing fails, it will still start with empty configuration
             this.snapshot.set(Collections.unmodifiableMap(new HashMap<>()));
             log.error("启动时加载模型配置失败，将以空配置启动: {}", e.getMessage(), e);
         }
     }
     
     private Map<Long, ModelConfigDO> loadFromFile(Path file) throws IOException {
-        // 此方法假定调用方已判断文件存在
+        //This method assumes that the caller has determined that the file exists
         byte[] bytes = Files.readAllBytes(file);
         YamlRoot root = yamlMapper.readValue(bytes, YamlRoot.class);
         if (root == null || root.models == null) {
@@ -124,7 +124,7 @@ public class FileModelConfigRepository implements ModelConfigRepository, Initial
         if (m.modelName == null || m.modelName.isBlank()) {
             throw new IllegalArgumentException("模型缺少 modelName");
         }
-        //        if (m.baseUrl == null || m.baseUrl.isBlank()) throw new IllegalArgumentException("模型缺少 baseUrl");
+        //if (m.baseUrl == null || m.baseUrl.isBlank()) throw new IllegalArgumentException("Model is missing baseUrl");
         if (m.apiKey == null || m.apiKey.isBlank()) {
             throw new IllegalArgumentException("模型缺少 apiKey");
         }
@@ -233,7 +233,7 @@ public class FileModelConfigRepository implements ModelConfigRepository, Initial
                 .sorted(Comparator.comparing(ModelConfigDO::getId)).collect(Collectors.toList());
     }
     
-    // YAML 映射结构
+    //YAML mapping structure
     public static class YamlRoot {
         
         public List<YamlModel> models;

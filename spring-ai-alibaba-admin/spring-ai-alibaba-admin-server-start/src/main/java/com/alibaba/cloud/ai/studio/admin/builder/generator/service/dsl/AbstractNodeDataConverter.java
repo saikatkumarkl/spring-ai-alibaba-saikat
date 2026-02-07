@@ -78,10 +78,10 @@ public abstract class AbstractNodeDataConverter<T extends NodeData> implements N
 		Map<String, Object> dump(T nodeData);
 
 		/**
-		 * 将模板字符串转换为变量选择器
-		 * @param dialectType dsl语言
-		 * @param template 模板字符串
-		 * @return 变量选择器
+		 * Convert template string to variable selector
+		 * @param dialectType dsl language
+		 * @param template template string
+		 * @return variable selector
 		 */
 		default VariableSelector varTemplateToSelector(DSLDialectType dialectType, String template) {
 			if (template == null) {
@@ -100,10 +100,10 @@ public abstract class AbstractNodeDataConverter<T extends NodeData> implements N
 		}
 
 		/**
-		 * 从data中获取模型名称（LLMNode、ClassifierNode等共同使用）
-		 * @param dialectType dsl语言
-		 * @param data 节点数据
-		 * @return 模型名称
+		 * Get the model name from data (commonly used by LLMNode, ClassifierNode, etc.)
+		 * @param dialectType dsl language
+		 * @param data node data
+		 * @return model name
 		 */
 		default String exactChatModelName(DSLDialectType dialectType, Map<String, Object> data) {
 			return switch (dialectType) {
@@ -118,10 +118,10 @@ public abstract class AbstractNodeDataConverter<T extends NodeData> implements N
 		}
 
 		/**
-		 * 从data中获取模型参数（LLMNode、ClassifierNode等共同使用）
-		 * @param dialectType dsl语言
-		 * @param data 节点数据
-		 * @return 模型参数
+		 * Obtain model parameters from data (commonly used by LLMNode, ClassifierNode, etc.)
+		 * @param dialectType dsl language
+		 * @param data node data
+		 * @return model parameters
 		 */
 		default Map<String, Object> exactChatModelParam(DSLDialectType dialectType, Map<String, Object> data) {
 			return switch (dialectType) {
@@ -179,17 +179,17 @@ public abstract class AbstractNodeDataConverter<T extends NodeData> implements N
 	private static final Pattern VAR_TEMPLATE_PATTERN = Pattern.compile("\\{(\\w+)}");
 
 	/**
-	 * 将文本中变量占位符进行转化，比如Dify DSL的"你好，{{#123.query#}}"转化为"你好，{nodeName1_query}"
-	 * @param dialectType dsl语言
-	 * @param templateString 模板字符串
-	 * @param idToVarName nodeId转nodeVarName的映射
-	 * @return 转换结果
+	 * Convert variable placeholders in the text, such as Dify DSL's "Hello, {{#123.query#}}" into "Hello, {nodeName1_query}"
+	 * @param dialectType dsl language
+	 * @param templateString template string
+	 * @param idToVarName nodeId to nodeVarName mapping
+	 * @return conversion result
 	 */
 	protected String convertVarTemplate(DSLDialectType dialectType, String templateString,
 			Map<String, String> idToVarName) {
 		BiFunction<String, Map<String, String>, String> func = switch (dialectType) {
 			case DIFY -> (str, map) -> {
-				// todo: 模板支持上下文
+				//todo: template supports context
 				if (Strings.isNullOrEmpty(str)) {
 					return str;
 				}
@@ -228,9 +228,9 @@ public abstract class AbstractNodeDataConverter<T extends NodeData> implements N
 	}
 
 	/**
-	 * 获取模板中的变量占位符，比如"你好{var1}，{var2}"返回"[var1, var2]"
-	 * @param template 模板字符串
-	 * @return 变量占位符列表
+	 * Get the variable placeholder in the template, such as "Hello {var1}, {var2}" returns "[var1, var2]"
+	 * @param template template string
+	 * @return variable placeholder list
 	 */
 	protected List<String> getVarTemplateKeys(String template) {
 		Matcher matcher = VAR_TEMPLATE_PATTERN.matcher(template);
@@ -238,7 +238,7 @@ public abstract class AbstractNodeDataConverter<T extends NodeData> implements N
 	}
 
 	/**
-	 * 创建一个空处理Consumer，便于使用.andThen编程
+	 * Create an empty processing Consumer for ease of use.andThen programming
 	 * @return BiConsumer
 	 */
 	protected BiConsumer<T, Map<String, String>> emptyProcessConsumer() {

@@ -28,11 +28,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Data
 public class NodeResult implements Serializable {
 
-	// 是否多分支节点
+	//Whether to have multiple branch nodes
 	@JsonProperty("is_multi_branch")
 	private boolean isMultiBranch = false;
 
-	// 多分支节点结果
+	//Multi-branch node results
 	@JsonProperty("multi_branch_results")
 	private List<MultiBranchReference> multiBranchResults;
 
@@ -56,7 +56,7 @@ public class NodeResult implements Serializable {
 	@JsonProperty("try_catch")
 	private TryCatch tryCatch;
 
-	// 短期记忆
+	//short term memory
 	@JsonProperty("short_memory")
 	private ShortMemory shortMemory;
 
@@ -76,7 +76,7 @@ public class NodeResult implements Serializable {
 	@JsonProperty("output_type")
 	private String outputType = "json";
 
-	// 增量输出，用于api输出
+	//Incremental output, used for api output
 	@JsonProperty("increment_output")
 	private String incrementOutput;
 
@@ -85,14 +85,14 @@ public class NodeResult implements Serializable {
 	@JsonProperty("parent_node_id")
 	private String parentNodeId;
 
-	// 判���是否批处理节点
+	//Determine whether ��� is a batch processing node
 	@JsonProperty("is_batch")
 	private boolean isBatch = false;
 
-	// 批处理结果返回
+	//Batch processing result return
 	private List<NodeResult> batches = new CopyOnWriteArrayList<>();
 
-	// 批次序号,仅isBatch = false时生效
+	//Batch serial number, only valid when isBatch = false
 	private Integer index;
 
 	private String ext;

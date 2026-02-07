@@ -26,7 +26,7 @@ public class ExperimentController {
     private final ExperimentService experimentService;
 
     /**
-     * 创建实验
+     * Create an experiment
      */
     @PostMapping("/experiment")
     public Result<Experiment> create(@RequestBody ExperimentCreateRequest request) {
@@ -41,7 +41,7 @@ public class ExperimentController {
     }
 
     /**
-     * 获取实验列表
+     * Get experiment list
      */
     @GetMapping("/experiments")
     public Result<PageResult<Experiment>> list(ExperimentListRequest request) {
@@ -57,7 +57,7 @@ public class ExperimentController {
     }
 
     /**
-     * 获取实验详情
+     * Get experiment details
      */
     @GetMapping("/experiment")
     public Result<Experiment> get(@RequestParam(value = "experimentId") Long experimentId) {
@@ -75,7 +75,7 @@ public class ExperimentController {
     }
 
     /**
-     * 获取实验概览结果
+     * Get experiment overview results
      */
     @GetMapping("/experiment/results")
     public Result<List<ExperimentEvaluatorResult>> getResults(
@@ -93,7 +93,7 @@ public class ExperimentController {
 
 
     /**
-     * 获取实验详细结果
+     * Get experimental detailed results
      */
     @GetMapping("/experiment/result")
     public Result<PageResult<ExperimentEvaluatorResultDetail>> getResult(@Validated ExperimentEvaluatorResultDetailListRequest request) {
@@ -110,7 +110,7 @@ public class ExperimentController {
 
 
     /**
-     * 停止实验
+     * Stop experiment
      */
     @PutMapping("/experiment/stop")
     public Result<Experiment> stop(@RequestParam(value = "experimentId") Long experimentId) {
@@ -125,7 +125,7 @@ public class ExperimentController {
     }
 
     /**
-     * 删除实验
+     * Delete experiment
      */
     @DeleteMapping("/experiment")
     public Result<Void> delete(@RequestParam(value = "experimentId") Long experimentId) {
@@ -140,7 +140,7 @@ public class ExperimentController {
     }
 
     /**
-     * 删除实验
+     * Delete experiment
      */
     @PutMapping("/experiment/restart")
     public Result<Void> restart(@RequestParam(value = "experimentId") Long experimentId) {

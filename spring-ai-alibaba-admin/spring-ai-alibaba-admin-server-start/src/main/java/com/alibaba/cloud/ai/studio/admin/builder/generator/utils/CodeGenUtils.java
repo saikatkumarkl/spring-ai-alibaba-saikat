@@ -16,7 +16,7 @@
 package com.alibaba.cloud.ai.studio.admin.builder.generator.utils;
 
 /**
- * 代码生成工具类，提供代码生成过程中常用的字符串处理和类型转换方法
+ * Code generation helpers for common string handling and type conversion.
  *
  * @author yHong
  * @version 1.0
@@ -28,39 +28,39 @@ public final class CodeGenUtils {
 	}
 
 	/**
-	 * null 值转空字符串
-	 * @param s 输入字符串
-	 * @return 非空字符串
+	 * Convert null to empty string.
+	 * @param s input string
+	 * @return non-null string
 	 */
 	public static String nvl(String s) {
 		return s == null ? "" : s;
 	}
 
 	/**
-	 * 转义字符串用于 Java 代码生成。
-	 * 主要用于生成 Java 字符串字面量，会转义反斜杠和双引号。
+	 * Escape strings for Java code generation.
+	 * Escapes backslashes and double quotes for Java string literals.
 	 *
-	 * @param s 输入字符串
-	 * @return 转义后的字符串
+	 * @param s input string
+	 * @return escaped string
 	 */
 	public static String esc(String s) {
 		return s == null ? "" : s.replace("\\", "\\\\").replace("\"", "\\\"");
 	}
 
 	/**
-	 * 对象转字符串
-	 * @param o 输入对象
-	 * @return 字符串表示，null 对象返回 null
+	 * Convert object to string.
+	 * @param o input object
+	 * @return string representation; null if input is null
 	 */
 	public static String str(Object o) {
 		return o == null ? null : String.valueOf(o);
 	}
 
 	/**
-	 * 对象转整数（安全转换）。
+	 * Convert object to integer (safe conversion).
 	 *
-	 * @param v 输入值
-	 * @return 整数值，无法转换时返回 null
+	 * @param v input value
+	 * @return integer value, or null if conversion fails
 	 */
 	public static Integer toInt(Object v) {
 		if (v instanceof Integer i) {
@@ -74,16 +74,16 @@ public final class CodeGenUtils {
 				return Integer.parseInt(s.trim());
 			}
 			catch (Exception ignore) {
-				// 忽略解析异常，返回 null
+				// Ignore parse exceptions and return null
 			}
 		}
 		return null;
 	}
 
 	/**
-	 * 检查字符串是否为空（null 或 空白）
-	 * @param s 输入字符串
-	 * @return true 如果字符串为 null 或只包含空白字符
+	 * Check if a string is blank (null or whitespace only).
+	 * @param s input string
+	 * @return true if string is null or whitespace only
 	 */
 	public static boolean isBlank(String s) {
 		return s == null || s.trim().isEmpty();

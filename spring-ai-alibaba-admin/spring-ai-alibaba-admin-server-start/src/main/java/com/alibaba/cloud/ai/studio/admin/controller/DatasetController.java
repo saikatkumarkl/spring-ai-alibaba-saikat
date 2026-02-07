@@ -29,7 +29,7 @@ public class DatasetController {
     private final DatasetVersionService datasetVersionService;
 
     /**
-     * 创建测评集
+     * Create assessment set
      */
     @PostMapping("/dataset")
     public Result<Dataset> createDataSet(@Validated @RequestBody DatasetCreateRequest datasetCreateRequest) {
@@ -45,7 +45,7 @@ public class DatasetController {
 
 
     /**
-     * 创建测评集版本
+     * Create a review set version
      */
     @PostMapping("/datasetVersion")
     public Result<DatasetVersion> createDatasetVersion(@Validated @RequestBody DatasetVersionCreateRequest datasetVersionCreateRequest) {
@@ -60,7 +60,7 @@ public class DatasetController {
     }
 
     /**
-     * 获取测评集列表
+     * Get the list of evaluation sets
      */
     @GetMapping("/datasets")
     public Result<PageResult<Dataset>> listDataSet(@Validated  DatasetListRequest request) {
@@ -76,7 +76,7 @@ public class DatasetController {
 
 
     /**
-     * 获取测评集详情
+     * Get review set details
      */
     @GetMapping("/dataset")
     public Result<Dataset> getDataSet(@RequestParam Long datasetId) {
@@ -91,13 +91,13 @@ public class DatasetController {
     }
 
     /**
-     * 更新测评集
+     * Update review set
      */
     @PutMapping("/dataset")
     public Result<Dataset> updateDataSet(@Validated @RequestBody DatasetUpdateRequest datasetUpdateRequest) {
         log.info("更新测评集请求: {}", datasetUpdateRequest);
         try {
-            //todo 从requets中获取dataset
+            //todo gets dataset from requests
             Dataset updatedDataset = datasetService.update(datasetUpdateRequest);
             return Result.success(updatedDataset);
         } catch (Exception e) {
@@ -107,7 +107,7 @@ public class DatasetController {
     }
 
     /**
-     * 删除测评集
+     * Delete assessment set
      */
     @DeleteMapping("/dataset")
     public Result<Void> delete(@RequestParam Long datasetId) {
@@ -121,10 +121,10 @@ public class DatasetController {
         }
     }
 
-    // ==================== 数据项管理接口 ====================
+    //==================== Data item management interface ====================
 
     /**
-     * 创建数据项
+     * Create data item
      */
     @PostMapping("/dataItem")
     public Result<List<DatasetItem>> createItem(@Validated @RequestBody DatasetItemCreateRequest datasetItemCreateRequest ) {
@@ -139,7 +139,7 @@ public class DatasetController {
     }
 
     /**
-     * 获取数据项列表
+     * Get a list of data items
      */
     @GetMapping("/dataItems")
     public Result<PageResult<DatasetItem>> listItems(@Validated  DatasetItemListRequest request) {
@@ -154,7 +154,7 @@ public class DatasetController {
     }
 
     /**
-     * 获取数据项详情
+     * Get data item details
      */
     @GetMapping("/dataItem")
     public Result<DatasetItem> getItem(@PathVariable Long id) {
@@ -169,7 +169,7 @@ public class DatasetController {
     }
 
     /**
-     * 更新数据项
+     * Update data item
      */
     @PutMapping("/dataItem")
     public Result<DatasetItem> updateItem(@RequestBody  DatasetItemUpdateRequest request) {
@@ -184,7 +184,7 @@ public class DatasetController {
     }
 
     /**
-     * 删除数据项
+     * Delete data item
      */
     @DeleteMapping("/dataItem")
     public Result<Void> deleteItem(@RequestParam Long id) {
@@ -201,7 +201,7 @@ public class DatasetController {
 
 
     /**
-     * 获取测评集列表
+     * Get the list of evaluation sets
      */
     @GetMapping("/datasetVersions")
     public Result<PageResult<DatasetVersion>> listDataSetVersion(@Validated  DatasetVersionListRequest request) {
@@ -216,7 +216,7 @@ public class DatasetController {
     }
 
     /**
-     * 更新测评集
+     * Update review set
      */
     @PutMapping("/datasetVersion")
     public Result<DatasetVersion> updateDataSetVersion(@Validated @RequestBody DatasetVersionUpdateRequest datasetVersionUpdateRequest) {
@@ -231,7 +231,7 @@ public class DatasetController {
     }
 
     /**
-     * 获取关联实验
+     * Get associated experiments
      */
     @GetMapping("/experiments")
     public Result<PageResult<Experiment>> getExperiments(DatasetExperimentsListRequest datasetExperimentsListRequest) {
@@ -248,7 +248,7 @@ public class DatasetController {
 
 
     /**
-     * 创建数据项
+     * Create data item
      */
     @PostMapping("/dataItemFromTrace")
     public Result<List<DatasetItem>> createItem(@Validated @RequestBody DataItemCreateFromTraceRequest dataItemCreateFromTraceRequest ) {

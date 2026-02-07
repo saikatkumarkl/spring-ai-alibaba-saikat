@@ -6,18 +6,18 @@ import lombok.Data;
 @Data
 public class EvaluatorUpdateRequest {
     /**
-     * 主键ID
+     * Primary key ID
      */
     private Long id;
 
     /**
-     * 评估器名称
+     * evaluator name
      */
     private String name;
 
 
     /**
-     * 评估器描述
+     * Evaluator description
      */
     private String description;
 

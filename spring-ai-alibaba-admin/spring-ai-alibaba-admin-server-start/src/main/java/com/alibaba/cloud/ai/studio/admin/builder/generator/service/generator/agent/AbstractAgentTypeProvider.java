@@ -22,7 +22,7 @@ import java.util.Map;
 import static com.alibaba.cloud.ai.studio.admin.builder.generator.utils.CodeGenUtils.*;
 
 /**
- * AgentTypeProvider 的抽象基类，提供通用的校验逻辑和渲染工具
+ * The abstract base class of AgentTypeProvider provides common verification logic and rendering tools.
  *
  * @author yHong
  * @version 1.0
@@ -31,11 +31,11 @@ import static com.alibaba.cloud.ai.studio.admin.builder.generator.utils.CodeGenU
 public abstract class AbstractAgentTypeProvider implements AgentTypeProvider {
 
 	/**
-	 * 提供默认的校验实现，子类可以重写以添加特定的校验逻辑
+	 * Provides a default verification implementation, which can be overridden by subclasses to add specific verification logic.
 	 */
 	@Override
 	public void validateDSL(Map<String, Object> root) {
-		// 基础校验：检查必需字段
+		//Basic validation: Check required fields
 		if (root == null) {
 			throw new IllegalArgumentException(type() + " requires valid configuration");
 		}
@@ -45,19 +45,19 @@ public abstract class AbstractAgentTypeProvider implements AgentTypeProvider {
 			throw new IllegalArgumentException(type() + " requires 'name' field");
 		}
 
-		// 调用子类特定的校验逻辑
+		//Call subclass-specific verification logic
 		validateSpecific(root);
 	}
 
 	/**
-	 * 子类实现特定的校验逻辑
-	 * @param root DSL 根对象
+	 * Subclasses implement specific verification logic
+	 * @param root DSL root object
 	 */
 	protected abstract void validateSpecific(Map<String, Object> root);
 
 	/**
-	 * 校验 handle 是否存在
-	 * @param root DSL 根对象
+	 * Verify whether handle exists
+	 * @param root DSL root object
 	 * @return handle Map
 	 */
 	@SuppressWarnings("unchecked")
@@ -73,9 +73,9 @@ public abstract class AbstractAgentTypeProvider implements AgentTypeProvider {
 	}
 
 	/**
-	 * 校验必须有子代理
-	 * @param root DSL 根对象
-	 * @param minCount 最小数量
+	 * Verification must have subagent
+	 * @param root DSL root object
+	 * @param minCount minimum quantity
 	 */
 	@SuppressWarnings("unchecked")
 	protected List<Map<String, Object>> requireSubAgents(Map<String, Object> root, int minCount) {
@@ -92,11 +92,11 @@ public abstract class AbstractAgentTypeProvider implements AgentTypeProvider {
 	}
 
 	/**
-	 * 校验数值字段
-	 * @param value 字段值
-	 * @param fieldName 字段名
-	 * @param minValue 最小值（包含）
-	 * @return 数值
+	 * Check numeric field
+	 * @param value field value
+	 * @param fieldName field name
+	 * @param minValue minimum value (inclusive)
+	 * @return value
 	 */
 	protected int requirePositiveNumber(Object value, String fieldName, int minValue) {
 		if (value == null) {
@@ -113,14 +113,14 @@ public abstract class AbstractAgentTypeProvider implements AgentTypeProvider {
 	}
 
 	/**
-	 * 检查字符串是否为空
+	 * Check if string is empty
 	 */
 	protected boolean isBlank(String s) {
 		return s == null || s.trim().isEmpty();
 	}
 
 	/**
-	 * 检查是否有有效的输入键
+	 * Check if there are valid input keys
 	 */
 	protected boolean hasValidInputKey(Map<String, Object> root) {
 		String inputKey = (String) root.get("input_key");
@@ -129,11 +129,11 @@ public abstract class AbstractAgentTypeProvider implements AgentTypeProvider {
 	}
 
 	/**
-	 * 生成基础 builder 代码（name, description, outputKey）
-	 * @param builderName builder 类名（如 "ReactAgent", "SequentialAgent"）
-	 * @param varName 变量名
-	 * @param shell Agent 基础信息
-	 * @return 生成的代码
+	 * Generate basic builder code (name, description, outputKey)
+	 * @param builderName builder class name (such as "ReactAgent", "SequentialAgent")
+	 * @param varName variable name
+	 * @param shell Agent basic information
+	 * @return generated code
 	 */
 	protected StringBuilder generateBasicBuilderCode(String builderName, String varName, AgentShell shell) {
 		StringBuilder code = new StringBuilder();
@@ -158,10 +158,10 @@ public abstract class AbstractAgentTypeProvider implements AgentTypeProvider {
 	}
 
 	/**
-	 * 生成状态策略代码 todo: 目前渲染的每个子agent都有自己的state注册， 需要确认flowAgent的state是全局统一的还是子agent隔离的
-	 * @param handle Agent handle 配置
-	 * @param defaultMessagesStrategy 当 messages 策略未定义时的默认值（null 表示不添加默认值）
-	 * @return 生成的状态策略代码和是否有 messages 策略的标志
+	 * Generate state strategy code todo: Each sub-agent currently rendered has its own state registration. You need to confirm whether the flowAgent's state is globally unified or sub-agent isolated.
+	 * @param handle Agent handle configuration
+	 * @param defaultMessagesStrategy The default value when the messages strategy is not defined (null means no default value is added)
+	 * @return The generated status policy code and whether there is a message policy flag
 	 */
 	protected StateStrategyResult generateStateStrategyCode(Map<String, Object> handle,
 			String defaultMessagesStrategy) {
@@ -187,7 +187,7 @@ public abstract class AbstractAgentTypeProvider implements AgentTypeProvider {
 			}
 		}
 
-		// 添加默认 messages 策略（如果需要）
+		//Add default messages policy if needed
 		if (!hasMessagesStrategy && defaultMessagesStrategy != null) {
 			code.append("strategies.put(\"messages\", ").append(defaultMessagesStrategy).append(");\n");
 		}
@@ -198,7 +198,7 @@ public abstract class AbstractAgentTypeProvider implements AgentTypeProvider {
 	}
 
 	/**
-	 * 状态策略生成结果
+	 * State strategy generation results
 	 */
 	protected static class StateStrategyResult {
 
@@ -214,7 +214,7 @@ public abstract class AbstractAgentTypeProvider implements AgentTypeProvider {
 	}
 
 	/**
-	 * 添加子代理列表
+	 * Add subagent list
 	 */
 	protected void appendSubAgents(StringBuilder code, List<String> childVarNames) {
 		if (childVarNames != null && !childVarNames.isEmpty()) {

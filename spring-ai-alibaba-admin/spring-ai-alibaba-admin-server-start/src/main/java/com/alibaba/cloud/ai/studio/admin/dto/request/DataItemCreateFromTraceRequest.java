@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 public class DataItemCreateFromTraceRequest {
     /**
-     * 测评集ID
+     * Evaluation set ID
      */
     @NotNull(message = "测评集ID不能为空")
     private Long datasetId;
@@ -21,7 +21,7 @@ public class DataItemCreateFromTraceRequest {
     private List<String> dataContent;
 
     /**
-     * 列结构配置（JSON格式）
+     * Column structure configuration (JSON format)
      */
 
     private List<DatasetColumn> columnsConfig;

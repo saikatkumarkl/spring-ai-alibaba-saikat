@@ -21,7 +21,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 应用编排调试出参
+ * Application orchestration debugging parameters
  */
 @Data
 public class TaskRunResponse implements Serializable {

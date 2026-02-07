@@ -61,7 +61,7 @@ public class ListOperatorNodeSection implements NodeSection<ListOperatorNodeData
 			sb.append(String.format(".outputKey(\"%s\")%n", escape(d.getOutputKey())));
 		}
 
-		// 排序
+		//sort
 		if (d.getOrder() != null) {
 			if (javaType.equals("Number")) {
 				if (d.getOrder() == ListOperatorNodeData.Ordered.ASC) {
@@ -83,7 +83,7 @@ public class ListOperatorNodeSection implements NodeSection<ListOperatorNodeData
 			}
 		}
 
-		// 过滤
+		//filter
 		if (d.getFilters() != null && !d.getFilters().isEmpty()) {
 			ListOperatorNodeData.FilterCondition filterCondition = d.getFilters().get(0);
 			String val = filterCondition.value();
@@ -94,7 +94,7 @@ public class ListOperatorNodeSection implements NodeSection<ListOperatorNodeData
 			sb.append(String.format(".filter(x -> %s)%n", converted));
 		}
 
-		// 限制数量
+		//limited quantity
 		if (d.getLimitNumber() != null) {
 			sb.append(String.format(".limitNumber(%d)%n", d.getLimitNumber()));
 		}

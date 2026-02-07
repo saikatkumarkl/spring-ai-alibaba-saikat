@@ -6,17 +6,17 @@ import lombok.Data;
 public class EvaluatorVersionCreateRequest {
 
     /**
-     * 评估器Id
+     * EvaluatorId
      */
     private String evaluatorId;
 
     /**
-     * 评估器版本描述
+     * Evaluator version description
      */
     private String description;
 
     /**
-     * 模型ID
+     * Model ID
      */
     private String modelConfig;
 
@@ -27,7 +27,7 @@ public class EvaluatorVersionCreateRequest {
 
 
     /**
-     * 评估器 版本号
+     * Evaluator version number
      */
 
     private String version;
@@ -35,7 +35,7 @@ public class EvaluatorVersionCreateRequest {
 
 
     /**
-     * 版本状态
+     * version status
      */
     private String status;
 

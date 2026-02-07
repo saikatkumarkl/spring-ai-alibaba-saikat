@@ -21,7 +21,7 @@ public class ObservabilityController {
     private final TracingService tracingService;
 
     /**
-     * 获取Trace列表
+     * Get Trace list
      */
     @GetMapping("/traces")
     public Result<PageResult<TraceSpanDTO>> getTraces(@Valid TracesQueryRequest request) {
@@ -31,7 +31,7 @@ public class ObservabilityController {
     }
 
     /**
-     * 获取单个Trace详情
+     * Get individual Trace details
      */
     @GetMapping("/traces/{traceId}")
     public Result<TraceDetailDTO> getTraceDetail(@PathVariable String traceId) {
@@ -41,7 +41,7 @@ public class ObservabilityController {
     }
 
     /**
-     * 获取服务列表
+     * Get service list
      */
     @GetMapping("/services")
     public Result<ServicesResponseDTO> getServices(@Valid ServicesQueryRequest request) {
@@ -51,7 +51,7 @@ public class ObservabilityController {
     }
 
     /**
-     * 获取概览信息
+     * Get overview information
      */
     @GetMapping("/overview")
     public Result<OverviewStatsDTO> getOverview(@Valid OverviewQueryRequest request) {

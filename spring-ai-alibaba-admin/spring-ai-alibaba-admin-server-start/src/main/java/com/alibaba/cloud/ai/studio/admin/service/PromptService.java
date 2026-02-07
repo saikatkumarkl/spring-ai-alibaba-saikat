@@ -10,15 +10,15 @@ import com.alibaba.cloud.ai.studio.admin.exception.StudioException;
 public interface PromptService {
 
     /**
-     * 创建Prompt
+     * CreatePrompt
      *
-     * @param request 创建请求
+     * @param request create request
      * @return Prompt
      */
     Prompt create(PromptCreateRequest request) throws StudioException;
 
     /**
-     * 根据Prompt Key获取Prompt
+     * Get Prompt based on Prompt Key
      *
      * @param promptKey Prompt Key
      * @return Prompt
@@ -26,33 +26,33 @@ public interface PromptService {
     Prompt getByPromptKey(String promptKey) throws StudioException;
 
     /**
-     * 分页查询Prompt列表
+     * Query Prompt list by pagination
      *
-     * @param request 查询请求
-     * @return 分页结果
+     * @param request query request
+     * @return paginated results
      */
     PageResult<Prompt> list(PromptListRequest request) throws StudioException;
 
     /**
-     * 更新Prompt
+     * UpdatePrompt
      *
-     * @param request 更新请求
+     * @param request update request
      * @return Prompt
      */
     Prompt update(PromptUpdateRequest request) throws StudioException;
 
     /**
-     * 根据Prompt Key删除Prompt
+     * Delete Prompt based on Prompt Key
      *
      * @param promptKey Prompt Key
      */
     void deleteByPromptKey(String promptKey) throws StudioException;
 
     /**
-     * 更新最新版本
+     * Update to latest version
      *
      * @param promptKey     Prompt Key
-     * @param latestVersion 最新版本
+     * @param latestVersion latest version
      */
     void updateLatestVersion(String promptKey, String latestVersion);
 }

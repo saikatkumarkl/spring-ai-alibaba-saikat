@@ -88,7 +88,7 @@ public class IterationNodeDataConverter extends AbstractNodeDataConverter<Iterat
 			public IterationNodeData parse(Map<String, Object> data) throws JsonProcessingException {
 				IterationNodeData nodeData = new IterationNodeData();
 
-				// 获取必要信息
+				//Get necessary information
 				int parallelCount = Optional
 					.ofNullable(
 							MapReadUtil.getMapDeepValue(data, Integer.class, "config", "node_param", "concurrent_size"))
@@ -113,7 +113,7 @@ public class IterationNodeDataConverter extends AbstractNodeDataConverter<Iterat
 				VariableSelector resultSelector = this.varTemplateToSelector(DSLDialectType.STUDIO,
 						outputParamsList.get(0).get("value").toString());
 
-				// 设置必要信息
+				//Set necessary information
 				nodeData.setParallelCount(parallelCount);
 				nodeData.setMaxIterationCount(maxIterationCount);
 				nodeData.setIndexOffset(indexOffset);

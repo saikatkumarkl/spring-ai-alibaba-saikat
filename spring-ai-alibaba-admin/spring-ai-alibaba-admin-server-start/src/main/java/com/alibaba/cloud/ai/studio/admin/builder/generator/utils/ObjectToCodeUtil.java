@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * 定义一些常用对象的构造方法代码
+ * Helpers that generate code snippets for common object constructions.
  *
  * @author vlsmb
  * @since 2025/9/5
@@ -57,7 +57,7 @@ public final class ObjectToCodeUtil {
 		}
 		else if (object instanceof String) {
 			try {
-				// 尝试使用Jackson打印字符串，以便转义特殊字符，如果失败则进行简单处理
+				// Use Jackson to serialize strings to escape special characters; fall back on a simple escape.
 				return objectMapper.writeValueAsString(object.toString());
 			}
 			catch (Exception e) {
@@ -76,7 +76,7 @@ public final class ObjectToCodeUtil {
 			return mapToCode((Map<?, ?>) object);
 		}
 		else {
-			// 默认使用 toString() 方法
+			// Default to toString()
 			return object.toString();
 		}
 	}

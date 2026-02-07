@@ -10,24 +10,24 @@ import java.util.List;
 public class ExperimentCreateRequest {
 
     /**
-     * 实验名称
+     * Experiment name
      */
     @NotBlank
     private String name;
 
     /**
-     * 实验描述
+     * Experiment description
      */
     private String description;
 
     /**
-     * 数据集ID
+     * Data set ID
      */
     @NotNull
     private Long datasetId;
 
     /**
-     * 数据集版本
+     * Dataset version
      */
     @NotBlank
     private Long datasetVersionId;
@@ -36,14 +36,14 @@ public class ExperimentCreateRequest {
     private String datasetVersion;
 
     /**
-     * 评测对象配置（JSON格式）
+     * Evaluation object configuration (JSON format)
      */
     private String evaluationObjectConfig;
 
 
 
     /**
-     * 评估器配置
+     * Evaluator configuration
      */
     private String evaluatorConfig;
 

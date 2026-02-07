@@ -8,25 +8,25 @@ import reactor.core.publisher.Flux;
 public interface PromptRunService {
 
     /**
-     * 运行Prompt调试（支持持续交互）
+     * Run Prompt debugging (supports continuous interaction)
      *
-     * @param request 调试请求
-     * @return 流式响应，包含会话信息
+     * @param request debugging request
+     * @return streaming response, including session information
      */
     Flux<PromptRunResponse> run(PromptRunRequest request);
 
     /**
-     * 获取会话信息
+     * Get session information
      *
-     * @param sessionId 会话ID
-     * @return 会话对象
+     * @param sessionId session ID
+     * @return session object
      */
     ChatSession getSession(String sessionId);
 
     /**
-     * 删除会话
+     * Delete session
      *
-     * @param sessionId 会话ID
+     * @param sessionId session ID
      */
     void deleteSession(String sessionId);
 }

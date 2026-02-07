@@ -57,7 +57,7 @@ public class AgentNodeData extends NodeData {
 	}
 
 	public void setAgentStrategyName(String agentStrategyName) {
-		// todo: 支持更多的策略，如MCP，多轮对话
+		// TODO: Support more strategies, such as MCP and multi-turn chat.
 		this.agentStrategyName = switch (agentStrategyName) {
 			case "function_calling" -> "TOOL_CALLING";
 			default -> "REACT";

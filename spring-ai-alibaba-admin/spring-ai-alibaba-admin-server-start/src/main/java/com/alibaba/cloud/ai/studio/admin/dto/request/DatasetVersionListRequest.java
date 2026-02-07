@@ -6,17 +6,17 @@ import lombok.Data;
 public class DatasetVersionListRequest {
 
     /**
-     * 页码
+     * page number
      */
     private Integer pageNumber = 1;
 
     /**
-     * 每页大小
+     * page size
      */
     private Integer pageSize = 10;
 
     /**
-     * 数据集Id
+     * DatasetId
      */
     private Long datasetId;
 } 

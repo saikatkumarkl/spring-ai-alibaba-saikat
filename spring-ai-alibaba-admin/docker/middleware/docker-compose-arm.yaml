@@ -1,26 +1,48 @@
 version: '3.8'
 services:
-  mysql:
-    container_name: mysql
+  # mysql:
+  #   container_name: mysql
+  #   restart: always
+  #   image: mysql:8.0
+  #   platform: linux/amd64
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=root
+  #     - MYSQL_DATABASE=admin
+  #     - MYSQL_USER=admin
+  #     - MYSQL_PASSWORD=admin
+  #     - LANG=C.UTF-8
+  #     - TZ=Asia/Shanghai
+  #   volumes:
+  #     - ./mysql/data:/var/lib/mysql
+  #     - ./mysql/log:/var/log
+  #     - ./conf/mysql:/etc/mysql/conf.d
+  #     - ./init/mysql:/docker-entrypoint-initdb.d/
+  #   ports:
+  #     - "3306:3306"
+  #   healthcheck:
+  #     test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+  #     interval: 5s
+  #     timeout: 10s
+  #     retries: 10
+  #   networks:
+  #     - saa-network
+
+  postgres:
+    container_name: postgres
     restart: always
-    image: mysql:8.0
+    image: postgres:15
     platform: linux/amd64
     environment:
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_DATABASE=admin
-      - MYSQL_USER=admin
-      - MYSQL_PASSWORD=admin
-      - LANG=C.UTF-8
+      - POSTGRES_DB=admin
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
       - TZ=Asia/Shanghai
     volumes:
-      - ./mysql/data:/var/lib/mysql
-      - ./mysql/log:/var/log
-      - ./conf/mysql:/etc/mysql/conf.d
-      - ./init/mysql:/docker-entrypoint-initdb.d/
+      - ./postgres/data:/var/lib/postgresql/data
     ports:
-      - "3306:3306"
+      - "5433:5432"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "pg_isready -U admin -d admin -h localhost"]
       interval: 5s
       timeout: 10s
       retries: 10
@@ -205,19 +227,25 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - JAVA_OPTS=-Xms512m -Xmx1024m -XX:+UseG1GC
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/admin?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&characterEncoding=utf-8
+      # DB selection is controlled here:
+      # - URL/driver/dialect must match the chosen DB.
+      # - SQL in mappers is kept portable across MySQL/PostgreSQL.
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/admin
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
       - SPRING_DATASOURCE_USERNAME=admin
       - SPRING_DATASOURCE_PASSWORD=admin
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
       - SPRING_REDIS_DATABASE=0
+      - SPRING_ELASTICSEARCH_URL=http://elasticsearch:9200
       - SPRING_ELASTICSEARCH_URIS=http://elasticsearch:9200
       - NACOS_SERVER_ADDR=nacos:8848
       - ROCKETMQ_ENDPOINTS=rmq-proxy:18081
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -233,6 +261,27 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
+
+  manifoldcf:
+    image: apache/manifoldcf:2.29
+    platform: linux/amd64
+    container_name: manifoldcf
+    restart: always
+    ports:
+      - "8345:8345"
+    volumes:
+      - ./manifoldcf/config/properties.xml:/usr/share/manifoldcf/example/properties.xml:ro
+      - ./manifoldcf/config/logging.xml:/usr/share/manifoldcf/example/logging.xml:ro
+      - ./manifoldcf/config/jetty.xml:/usr/share/manifoldcf/example/jetty.xml:ro
+      - ./manifoldcf/config/start-options.env.unix:/usr/share/manifoldcf/example/start-options.env.unix:ro
+      - ./manifoldcf/logs:/usr/share/manifoldcf/example/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - saa-network
 
 volumes:
   elasticsearch_data:

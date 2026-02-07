@@ -47,58 +47,58 @@ public class PromptVersionServiceImpl implements PromptVersionService {
     public PromptVersion create(PromptVersionCreateRequest request) throws StudioException {
         log.info("创建Prompt版本: {}", request);
         
-        // 1. 首先验证对应的Prompt是否存在
+        //1. First verify whether the corresponding prompt exists
         if (promptMapper.selectByPromptKey(request.getPromptKey()) == null) {
             throw new StudioException(StudioException.NOT_FOUND,
                     String.format("Prompt不存在，promptKey: %s，请先创建对应的Prompt", request.getPromptKey()));
         }
         
-        // 2. 检查版本是否已存在及状态验证
+        //2. Check whether the version already exists and verify the status
         boolean exists = promptVersionMapper.existsByPromptKeyAndVersion(request.getPromptKey(), request.getVersion());
         if (exists) {
-            // 如果版本已存在，检查状态
+            //If the version already exists, check the status
             String existingStatus = promptVersionMapper.selectStatusByPromptKeyAndVersion(request.getPromptKey(),
                     request.getVersion());
             
-            // 如果要发布预发布版本，但已存在正式版本，则拦截
+            //If you want to release a pre-release version, but an official version already exists, intercept
             if ("pre".equals(request.getStatus()) && "release".equals(existingStatus)) {
                 throw new StudioException(StudioException.CONFLICT,
                         String.format("版本 %s 已经是正式版本(release)，不能再创建同版本的预发布版本",
                                 request.getVersion()));
             }
             
-            // 如果要发布正式版本，但已存在正式版本，则拦截
+            //If an official version is to be released but an official version already exists, intercept
             if ("release".equals(request.getStatus()) && "release".equals(existingStatus)) {
                 throw new StudioException(StudioException.CONFLICT,
                         String.format("版本 %s 已经是正式版本(release)，不能重复发布", request.getVersion()));
             }
             
-            // 如果要发布预发布版本，且已存在预发布版本，则允许（会覆盖原有预发布版本）
+            //If you want to publish a pre-release version and a pre-release version already exists, it is allowed (the original pre-release version will be overwritten)
             if ("pre".equals(request.getStatus()) && "pre".equals(existingStatus)) {
                 log.info("版本 {} 已存在预发布版本，将覆盖原有预发布版本", request.getVersion());
                 
-                // 获取前一个版本
+                //Get the previous version
                 String previousVersion = promptVersionMapper.selectLatestVersion(request.getPromptKey());
                 
-                // 构建更新的版本实体
+                //Build an updated version entity
                 PromptVersionDO updatePromptVersionDO = PromptVersionDO.builder().version(request.getVersion())
                         .promptKey(request.getPromptKey()).versionDesc(request.getVersionDescription())
                         .template(request.getTemplate()).variables(request.getVariables())
                         .modelConfig(request.getModelConfig()).status(request.getStatus())
                         .previousVersion(previousVersion).build();
                 
-                // 更新已存在的预发布版本
+                //Update an existing pre-release version
                 promptVersionMapper.updateByPromptKeyAndVersion(updatePromptVersionDO);
                 log.info("Prompt预发布版本更新成功: {} - {}", request.getPromptKey(), request.getVersion());
                 
-                // 重新查询更新后的版本详情返回
+                //Re-query the updated version details and return
                 PromptVersionDO updatedVersion = promptVersionMapper.selectByPromptKeyAndVersion(request.getPromptKey(),
                         request.getVersion());
                 return PromptVersion.fromDO(updatedVersion);
             }
         }
         
-        // 获取前一个版本
+        //Get the previous version
         String previousVersion = promptVersionMapper.selectLatestVersion(request.getPromptKey());
         
         PromptVersionDO promptVersionDO = PromptVersionDO.builder().version(request.getVersion())
@@ -112,7 +112,7 @@ public class PromptVersionServiceImpl implements PromptVersionService {
             publishPromptToNacos(request);
         }
         
-        // 更新Prompt的最新版本
+        //Update Prompt to the latest version
         promptService.updateLatestVersion(request.getPromptKey(), request.getVersion());
         
         return PromptVersion.fromDO(promptVersionDO);

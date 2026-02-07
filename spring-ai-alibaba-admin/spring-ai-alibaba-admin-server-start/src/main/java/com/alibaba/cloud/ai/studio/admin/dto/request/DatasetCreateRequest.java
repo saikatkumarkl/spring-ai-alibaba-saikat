@@ -10,18 +10,18 @@ import java.util.List;
 public class DatasetCreateRequest {
 
     /**
-     * 数据集名称
+     * Data set name
      */
     @NotNull
     private String name;
 
     /**
-     * 数据集描述
+     * Dataset description
      */
     private String description;
 
     /**
-     * 列结构配置
+     * Column structure configuration
      */
     @NotNull
     private List<DatasetColumn> columnsConfig;

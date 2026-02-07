@@ -18,7 +18,7 @@ package com.alibaba.cloud.ai.studio.admin.builder.generator.model.workflow;
 import java.util.Arrays;
 import java.util.Optional;
 
-// TODO: 将枚举类的DSL Value字段改为Function<DSLDialectType, String>
+// TODO: Change DSL value fields to Function<DSLDialectType, String>.
 public enum NodeType {
 
 	START("start", "start", "Start"),
@@ -55,7 +55,7 @@ public enum NodeType {
 
 	TOOL("tool", "tool", "UNSUPPORTED"),
 
-	// Dify的MCP使用ToolNode定义
+	// Dify MCP is defined using ToolNode
 	MCP("mcp", "UNSUPPORTED", "MCP"),
 
 	TEMPLATE_TRANSFORM("template-transform", "template-transform", "UNSUPPORTED"),

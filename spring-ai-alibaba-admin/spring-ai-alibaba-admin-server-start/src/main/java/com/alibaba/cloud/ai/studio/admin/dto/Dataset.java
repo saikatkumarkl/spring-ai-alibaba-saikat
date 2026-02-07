@@ -17,45 +17,45 @@ public class Dataset {
     private Long id;
 
     /**
-     * 评测集名称
+     * Evaluation set name
      */
     private String name;
 
     /**
-     * 评测集描述
+     * Evaluation set description
      */
     private String description;
 
 
     /**
-     * 列结构配置（JSON格式）
+     * Column structure configuration (JSON format)
      */
     private String columnsConfig;
 
 
     /**
-     * 数据条数
+     * Number of data items
      */
     private Integer dataCount;
 
     /**
-     * 最新版本
+     * latest version
      */
     private String latestVersion;
 
 
     /**
-     * 最新版本
+     * latest version
      */
     private Long latestVersionId;
 
     /**
-     * 创建时间
+     * creation time
      */
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * Update time
      */
     private LocalDateTime updateTime;
 

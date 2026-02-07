@@ -19,7 +19,7 @@ package com.alibaba.cloud.ai.studio.admin.builder.generator.model.workflow.noded
 import com.alibaba.cloud.ai.studio.admin.builder.generator.model.workflow.NodeData;
 
 /**
- * DSL中一些节点对于SAA无实际作用，但必须定义的节点
+ * Nodes that are required by the DSL but have no effect in SAA.
  *
  * @author vlsmb
  * @since 2025/7/22

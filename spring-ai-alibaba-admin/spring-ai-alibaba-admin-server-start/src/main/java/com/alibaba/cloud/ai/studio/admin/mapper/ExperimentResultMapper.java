@@ -12,45 +12,45 @@ import java.util.List;
 public interface ExperimentResultMapper {
 
     /**
-     * 批量创建实验结果
+     * Create experimental results in batches
      *
-     * @param experimentResults 实验结果实体列表
-     * @return 受影响的行数
+     * @param experimentResults Experiment result entity list
+     * @return Number of rows affected
      */
     int batchInsert(@Param("experimentResults") List<ExperimentResultDO> experimentResults);
 
     /**
-     * 根据实验ID删除实验结果
+     * Delete experiment results based on experiment ID
      *
-     * @param experimentId 实验ID
-     * @return 受影响的行数
+     * @param experimentId experiment ID
+     * @return Number of rows affected
      */
     int deleteByExperimentId(@Param("experimentId") Long experimentId);
 
     /**
-     * 根据ID获取实验结果
+     * Get experimental results based on ID
      *
-     * @param id 实验结果ID
-     * @return 实验结果实体
+     * @param id Experiment result ID
+     * @return experimental result entity
      */
     ExperimentResultDO selectById(@Param("id") Long id);
 
 
 
     /**
-     * 根据实验ID获取实验结果数量
+     * Get the number of experiment results based on the experiment ID
      *
-     * @param experimentId 实验ID
-     * @return 实验结果数量
+     * @param experimentId experiment ID
+     * @return the number of experimental results
      */
     int selectCountByExperimentIdAndEvaluator(@Param("experimentId") Long experimentId,
                                               @Param("evaluatorVersionId") Long evaluatorVersionId);
 
     /**
-     * 查询实验结果
+     * Query experimental results
      *
-     * @param experimentId 实验ID
-     * @return 实验结果列表
+     * @param experimentId experiment ID
+     * @return list of experimental results
      */
     List<ExperimentResultDO> selectByExperimentAndEvaluator(
             @Param("experimentId") Long experimentId,
@@ -59,12 +59,12 @@ public interface ExperimentResultMapper {
 
 
     /**
-     * 分页查询实验结果
+     * Query experimental results by page
      *
-     * @param experimentId 实验ID
-     * @param offset 偏移量
-     * @param limit 限制数量
-     * @return 实验结果列表
+     * @param experimentId experiment ID
+     * @param offset offset
+     * @param limit limit quantity
+     * @return list of experimental results
      */
     List<ExperimentResultDO> selectByExperimentAndEvaluatorWithPageble(
             @Param("experimentId") Long experimentId,
@@ -76,10 +76,10 @@ public interface ExperimentResultMapper {
 
 
     /**
-     * 根据ID更新实验结果
+     * Update experiment results based on ID
      *
-     * @param experimentResult 实验结果实体
-     * @return 受影响的行数
+     * @param experimentResult Experiment result entity
+     * @return Number of rows affected
      */
     int updateById(ExperimentResultDO experimentResult);
 

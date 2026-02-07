@@ -5,7 +5,7 @@ import com.alibaba.cloud.ai.studio.admin.entity.ModelConfigDO;
 import java.util.List;
 
 /**
- * 模型配置仓储接口（文件驱动实现）。
+ * Model configuration warehousing interface (file-driven implementation).
  */
 public interface ModelConfigRepository {
 

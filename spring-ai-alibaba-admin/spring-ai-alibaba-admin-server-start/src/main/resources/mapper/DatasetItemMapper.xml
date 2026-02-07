@@ -37,7 +37,6 @@
         WHERE id = #{id} AND deleted = 0
     </select>
 
-    <!-- Query dataset item list -->
     <select id="list" resultMap="datasetItemResultMap">
         SELECT <include refid="dataset_item_columns"/>
         FROM dataset_item
@@ -48,7 +47,7 @@
             </if>
         </where>
         ORDER BY create_time DESC
-        LIMIT #{offset}, #{limit}
+            LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- Query dataset item count -->
@@ -81,17 +80,16 @@
         ORDER BY create_time DESC
     </select>
 
-    <!-- Find dataset items by dataset ID with pagination -->
     <select id="selectByDatasetIdWithPagination" resultMap="datasetItemResultMap">
         SELECT <include refid="dataset_item_columns"/>
         FROM dataset_item
         WHERE dataset_id = #{datasetId} AND deleted = 0
         ORDER BY create_time DESC
-        LIMIT #{offset}, #{limit}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- Find dataset items by dataset ID and item IDs with pagination -->
-     <select id="selectByDatasetIdAndItemIdsWithPagination" resultMap="datasetItemResultMap">
+    <select id="selectByDatasetIdAndItemIdsWithPagination" resultMap="datasetItemResultMap">
         SELECT <include refid="dataset_item_columns"/>
         FROM dataset_item
         WHERE dataset_id = #{datasetId} AND deleted = 0
@@ -100,7 +98,7 @@
             #{itemId}
         </foreach>
         ORDER BY create_time DESC
-        LIMIT #{offset}, #{limit}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="selectByDatasetIdAndItemIds" resultMap="datasetItemResultMap">

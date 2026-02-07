@@ -5,12 +5,12 @@ import lombok.Data;
 @Data
 public class ExperimentListRequest {
     /**
-     * 页码
+     * page number
      */
     private Integer pageNumber = 1;
 
     /**
-     * 每页大小
+     * page size
      */
     private Integer pageSize = 10;
 

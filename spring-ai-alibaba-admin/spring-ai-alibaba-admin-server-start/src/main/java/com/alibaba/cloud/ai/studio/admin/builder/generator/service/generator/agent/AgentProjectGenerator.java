@@ -35,7 +35,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 /**
- * Agent 项目生成器：将 Agent Schema 转为最小可运行工程（编译 Agent 为 CompiledGraph）
+ * Agent project generator: Convert Agent Schema into a minimum runnable project (compile Agent into CompiledGraph)
  */
 @Component
 public class AgentProjectGenerator implements ProjectGenerator {
@@ -73,17 +73,17 @@ public class AgentProjectGenerator implements ProjectGenerator {
 
 	@Override
 	public void generate(GraphProjectDescription projectDescription, Path projectRoot) {
-		// 解析 DSL -> Agent 模型
+		//Parse DSL -> Agent model
 		App app = dslAdapter.importDSL(projectDescription.getDsl());
 		Agent root = (Agent) app.getSpec();
 
-		// 渲染构造 Agent 的 Java 代码片段（支持递归/并行）
+		//Render the Java code snippet that constructs the Agent (supports recursion/parallelism)
 		RenderContext ctx = new RenderContext();
 		CodeSections sections = collectSections(root, ctx);
 		String agentSection = sections.getCode()
 				+ String.format("%nreturn %s.getAndCompileGraph();%n", sections.getVarName());
 
-		// 模板渲染并写入
+		//Template rendering and writing
 		Map<String, Object> agentBuilderModel = new HashMap<>();
 		agentBuilderModel.put(PACKAGE_NAME, projectDescription.getPackageName());
 		agentBuilderModel.put(IMPORT_SECTION, String.join("\n", sections.getImports()));
@@ -108,7 +108,7 @@ public class AgentProjectGenerator implements ProjectGenerator {
 			try {
 				String template = templateRenderer.render(templateName, model);
 
-				// 覆盖写文件（自动创建/替换文件）
+				//Overwrite files (automatically create/replace files)
 				Files.writeString(filePath, template, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 			}
 			catch (IOException e) {
@@ -130,7 +130,7 @@ public class AgentProjectGenerator implements ProjectGenerator {
 	}
 
 	private CodeSections collectSections(Agent agent, RenderContext ctx) {
-		// 递归先处理子 agent，收集子 varNames
+		//Recursively process sub-agents first and collect sub-varNames
 		List<String> childVars = new ArrayList<>();
 		List<CodeSections> childSections = new ArrayList<>();
 		if (agent.getSubAgents() != null) {
@@ -141,14 +141,14 @@ public class AgentProjectGenerator implements ProjectGenerator {
 			}
 		}
 
-		// 当前节点由 Provider 渲染
+		//The current node is rendered by Provider
 		AgentTypeProvider provider = providerRegistry.get(agent.getAgentClass());
 		AgentShell shell = AgentShell.of(agent.getAgentClass(), agent.getName(), agent.getDescription(),
 				agent.getInstruction(), agent.getInputKeys(), agent.getOutputKey());
 		Map<String, Object> handle = agent.getHandle() == null ? java.util.Map.of() : agent.getHandle();
 		CodeSections me = provider.render(shell, handle, ctx, childVars);
 
-		// 合并 imports 与 hasResolver，拼接顺序：子在前、父在后
+		//Merge imports and hasResolver, splicing order: child first, parent last
 		for (CodeSections cs : childSections) {
 			me.getImports().addAll(cs.getImports());
 			if (cs.isHasResolver())

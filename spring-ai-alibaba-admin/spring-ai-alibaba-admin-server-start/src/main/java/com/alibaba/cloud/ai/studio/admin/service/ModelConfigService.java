@@ -12,55 +12,55 @@ import java.util.List;
 public interface ModelConfigService {
 
     /**
-     * 创建模型配置
+     * Create model configuration
      *
-     * @param request 创建请求
-     * @return 模型配置响应
+     * @param request create request
+     * @return model configuration response
      */
     ModelConfigResponse create(ModelConfigCreateRequest request) throws StudioException;
 
     /**
-     * 更新模型配置
+     * Update model configuration
      *
-     * @param request 更新请求
-     * @return 模型配置响应
+     * @param request update request
+     * @return model configuration response
      */
     ModelConfigResponse update(ModelConfigUpdateRequest request) throws StudioException;
 
     /**
-     * 删除模型配置
+     * Delete model configuration
      *
-     * @param id 模型配置ID
+     * @param id model configuration ID
      */
     void delete(Long id) throws StudioException;
 
     /**
-     * 获取模型配置列表
+     * Get model configuration list
      *
-     * @param request 查询请求
-     * @return 分页结果
+     * @param request query request
+     * @return paginated results
      */
     PageResult<ModelConfigResponse> list(ModelConfigQueryRequest request);
 
     /**
-     * 根据ID获取模型配置详情
+     * Get model configuration details based on ID
      *
-     * @param id 模型配置ID
-     * @return 模型配置响应
+     * @param id model configuration ID
+     * @return model configuration response
      */
     ModelConfigResponse getById(Long id) throws StudioException;
 
     /**
-     * 获取启用的模型配置列表
+     * Get the list of enabled model configurations
      *
-     * @return 启用的模型配置列表
+     * @return enabled model configuration list
      */
     List<ModelConfigResponse> getEnabledConfigs();
     
     /**
-     * 支持的模型提供商列表
+     * List of supported model providers
      *
-     * @return 支持的模型提供商列表
+     * @return list of supported model providers
      */
     List<String> getSupportedProviders();
     

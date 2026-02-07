@@ -2,12 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.alibaba.cloud.ai.studio.admin.mapper.PromptVersionMapper">
 
-    <!-- Prompt版本表字段 -->
+    <!--Prompt version table field-->
     <sql id="prompt_version_columns">
         id, version, prompt_key, version_desc, template, variables, model_config, status, create_time, previous_version
     </sql>
 
-    <!-- Prompt版本实体映射 -->
+    <!--Prompt version entity mapping-->
     <resultMap id="promptVersionResultMap" type="com.alibaba.cloud.ai.studio.admin.entity.PromptVersionDO">
         <id property="id" column="id"/>
         <result property="version" column="version"/>
@@ -21,20 +21,20 @@
         <result property="previousVersion" column="previous_version"/>
     </resultMap>
 
-    <!-- 创建Prompt版本 -->
+    <!--Create prompt version-->
     <insert id="insert" parameterType="com.alibaba.cloud.ai.studio.admin.entity.PromptVersionDO" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO prompt_version (version, prompt_key, version_desc, template, variables, model_config, status, create_time, previous_version)
         VALUES (#{version}, #{promptKey}, #{versionDesc}, #{template}, #{variables}, #{modelConfig}, #{status}, NOW(), #{previousVersion})
     </insert>
 
-    <!-- 根据Prompt Key和版本获取Prompt版本 -->
+    <!--Get the Prompt version based on the Prompt Key and version-->
     <select id="selectByPromptKeyAndVersion" resultMap="promptVersionResultMap">
         SELECT <include refid="prompt_version_columns"/>
         FROM prompt_version
         WHERE prompt_key = #{promptKey} AND version = #{version}
     </select>
 
-    <!-- 查询Prompt版本列表 -->
+    <!--Query Prompt version list-->
     <select id="selectListByPromptKey" resultMap="promptVersionResultMap">
         SELECT <include refid="prompt_version_columns"/>
         FROM prompt_version
@@ -43,10 +43,10 @@
             AND status = #{status}
         </if>
         ORDER BY create_time DESC
-        LIMIT #{offset}, #{limit}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <!-- 查询Prompt版本总数 -->
+    <!--Query the total number of Prompt versions-->
     <select id="selectCountByPromptKey" resultType="int">
         SELECT COUNT(*)
         FROM prompt_version
@@ -56,7 +56,7 @@
         </if>
     </select>
 
-    <!-- 获取最新版本号 -->
+    <!--Get the latest version number-->
     <select id="selectLatestVersion" resultType="string">
         SELECT version
         FROM prompt_version
@@ -65,21 +65,21 @@
         LIMIT 1
     </select>
 
-    <!-- 检查版本是否存在 -->
+    <!--Check if version exists-->
     <select id="existsByPromptKeyAndVersion" resultType="boolean">
         SELECT COUNT(*) > 0
         FROM prompt_version
         WHERE prompt_key = #{promptKey} AND version = #{version}
     </select>
 
-    <!-- 根据Prompt Key和版本获取状态 -->
+    <!--Get status based on Prompt Key and version-->
     <select id="selectStatusByPromptKeyAndVersion" resultType="string">
         SELECT status
         FROM prompt_version
         WHERE prompt_key = #{promptKey} AND version = #{version}
     </select>
 
-    <!-- 更新Prompt版本 -->
+    <!--Update prompt version-->
     <update id="updateByPromptKeyAndVersion" parameterType="com.alibaba.cloud.ai.studio.admin.entity.PromptVersionDO">
         UPDATE prompt_version
         SET version_desc = #{versionDesc},
@@ -91,7 +91,7 @@
         WHERE prompt_key = #{promptKey} AND version = #{version}
     </update>
 
-    <!-- 根据Prompt Key删除所有版本 -->
+    <!--Delete all versions based on Prompt Key-->
     <delete id="deleteByPromptKey">
         DELETE FROM prompt_version WHERE prompt_key = #{promptKey}
     </delete>

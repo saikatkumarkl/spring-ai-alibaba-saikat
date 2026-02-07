@@ -23,7 +23,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 调试请求
+ * debug request
  */
 @Data
 public class TaskResumeRequest implements Serializable {

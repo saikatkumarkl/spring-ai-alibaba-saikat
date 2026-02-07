@@ -30,31 +30,31 @@ import java.util.List;
 public class IterationNodeData extends NodeData {
 
 	public static List<Variable> getDefaultOutputSchemas() {
-		return List.of(new Variable("state", VariableType.ARRAY_NUMBER), // 剩余未处理的元素索引
-				new Variable("index", VariableType.NUMBER), // 迭代索引
-				new Variable("isFinished", VariableType.BOOLEAN) // 迭代是否结束
+		return List.of(new Variable("state", VariableType.ARRAY_NUMBER), // Remaining unprocessed element indexes
+				new Variable("index", VariableType.NUMBER), // Iteration index
+				new Variable("isFinished", VariableType.BOOLEAN) // Whether iteration is finished
 		);
 	}
 
-	// NodeData的来源节点名称
+	// Source node name for this NodeData
 	private final String sourceVarName;
 
 	private int parallelCount = 1;
 
 	private int maxIterationCount = Integer.MAX_VALUE;
 
-	// Dify的迭代索引从0开始，而Studio的从1开始，故需要设置这个值
+	// Dify uses 0-based iteration index; Studio uses 1-based, so adjust with this offset
 	private int indexOffset = 0;
 
-	// itemKey和outputKey的后缀在Dify中固定，但在Studio中用户可以自定义
+	// itemKey/outputKey suffixes are fixed in Dify but customizable in Studio
 	private String itemKey = "item";
 
 	private String outputKey = "output";
 
-	// 迭代输入的Selector
+	// Selector for iteration input
 	private VariableSelector inputSelector;
 
-	// 迭代结果元素的Selector
+	// Selector for iteration result elements
 	private VariableSelector resultSelector;
 
 	public IterationNodeData(IterationNodeData other) {

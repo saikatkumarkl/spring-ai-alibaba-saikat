@@ -21,7 +21,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 工作流控制台调试结果入参
+ * Workflow console debugging results input parameters
  */
 @Data
 public class ProcessGetRequest implements Serializable {

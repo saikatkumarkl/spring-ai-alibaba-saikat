@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class PromptDO {
 
     /**
-     * 主键ID
+     * Primary key ID
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,27 +28,27 @@ public class PromptDO {
     private String promptKey;
 
     /**
-     * Prompt描述
+     * PromptDescription
      */
     private String promptDesc;
 
     /**
-     * 最新版本
+     * latest version
      */
     private String latestVersion;
 
     /**
-     * 标签，逗号分隔
+     * tags, comma separated
      */
     private String tags;
 
     /**
-     * 创建时间
+     * creation time
      */
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * Update time
      */
     private LocalDateTime updateTime;
 }

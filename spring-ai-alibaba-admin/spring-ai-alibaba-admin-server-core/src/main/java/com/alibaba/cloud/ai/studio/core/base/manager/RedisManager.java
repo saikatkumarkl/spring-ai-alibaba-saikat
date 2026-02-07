@@ -320,7 +320,7 @@ public class RedisManager {
 		RLock lock = redissonClient.getLock(newKey);
 
 		try {
-			// 尝试获取锁，支持等待超时
+			//Try to acquire the lock, support waiting timeout
 			return lock.tryLock(waitTimeout.toMillis(), lockDuration.toMillis(),
 					java.util.concurrent.TimeUnit.MILLISECONDS);
 		}

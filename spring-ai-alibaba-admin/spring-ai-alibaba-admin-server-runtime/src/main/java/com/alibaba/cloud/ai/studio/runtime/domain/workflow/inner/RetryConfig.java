@@ -21,7 +21,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 错误重试配置
+ * Error retry configuration
  *
  * @since 1.0.0.3
  */

@@ -13,37 +13,37 @@ import lombok.NoArgsConstructor;
 public class PromptTemplateDetail {
 
     /**
-     * Prompt模板名称
+     * Prompt template name
      */
     private String promptTemplateKey;
 
     /**
-     * Prompt描述
+     * PromptDescription
      */
     private String templateDescription;
 
     /**
-     * 标签，逗号分隔
+     * tags, comma separated
      */
     private String tags;
 
     /**
-     * Prompt内容
+     * Prompt content
      */
     private String template;
 
     /**
-     * Prompt中的变量值，JSON
+     * Variable value in Prompt, JSON
      */
     private String variables;
 
     /**
-     * 推荐使用的模型相关参数，JSON
+     * Recommended model related parameters, JSON
      */
     private String modelConfig;
 
     /**
-     * 从DO转换为DTO
+     * Convert from DO to DTO
      */
     public static PromptTemplateDetail fromDO(PromptTemplateDO promptTemplateDO) {
         if (promptTemplateDO == null) {

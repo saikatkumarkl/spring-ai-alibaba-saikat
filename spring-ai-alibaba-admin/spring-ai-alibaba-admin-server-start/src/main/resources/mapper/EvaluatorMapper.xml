@@ -17,7 +17,7 @@
         id, name, description, create_time, update_time, deleted
     </sql>
 
-    <!-- 创建评估器 -->
+    <!--Create evaluator-->
     <insert id="insert" parameterType="com.alibaba.cloud.ai.studio.admin.entity.EvaluatorDO" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO
         <include refid="table_name"/>
@@ -26,7 +26,7 @@
         (#{name}, #{description}, NOW(), NOW(), 0)
     </insert>
 
-    <!-- 根据ID删除评估器（逻辑删除） -->
+    <!--Remove evaluator based on ID (tombstone)-->
     <update id="deleteById">
         UPDATE
         <include refid="table_name"/>
@@ -34,7 +34,7 @@
         WHERE id = #{id}
     </update>
 
-    <!-- 根据ID获取评估器 -->
+    <!--Get evaluator based on ID-->
     <select id="selectById" resultMap="evaluatorResultMap">
         SELECT
         <include refid="base_column_list"/>
@@ -43,7 +43,7 @@
         WHERE id = #{id} AND deleted = 0
     </select>
 
-    <!-- 分页查询评估器列表 -->
+    <!--Paginated query evaluator list-->
     <select id="selectList" resultMap="evaluatorResultMap">
         SELECT
         <include refid="base_column_list"/>
@@ -54,10 +54,10 @@
             AND name LIKE CONCAT('%', #{name}, '%')
         </if>
         ORDER BY create_time DESC
-        LIMIT #{offset}, #{limit}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <!-- 统计评估器数量 -->
+    <!--Number of statistical evaluators-->
     <select id="count" resultType="int">
         SELECT COUNT(*) FROM
         <include refid="table_name"/>
@@ -67,7 +67,7 @@
         </if>
     </select>
 
-    <!-- 更新评估器 -->
+    <!--Update evaluator-->
     <update id="update" parameterType="com.alibaba.cloud.ai.studio.admin.entity.EvaluatorDO">
         UPDATE
         <include refid="table_name"/>

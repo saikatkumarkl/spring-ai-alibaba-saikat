@@ -9,27 +9,27 @@ import com.alibaba.cloud.ai.studio.admin.dto.request.TracesQueryRequest;
 public interface TracingRepository {
 
     /**
-     * 查询Traces列表
+     * Query Traces list
      */
     PageResult<TraceSpanDTO> queryTraces(TracesQueryRequest request);
 
     /**
-     * 根据TraceId查询Trace详情
+     * Query Trace details based on TraceId
      */
     TraceDetailDTO getTraceDetail(String traceId);
 
     /**
-     * 查询服务列表
+     * Query service list
      */
     ServicesResponseDTO getServices(ServicesQueryRequest request);
 
     /**
-     * 查询概览统计信息
+     * Query overview statistics
      */
     OverviewStatsDTO getOverview(OverviewQueryRequest request);
 
     /**
-     * 批量保存Span数据
+     * Save Span data in batches
      */
     void saveSpans(java.util.List<TraceSpanDTO> spans);
 }

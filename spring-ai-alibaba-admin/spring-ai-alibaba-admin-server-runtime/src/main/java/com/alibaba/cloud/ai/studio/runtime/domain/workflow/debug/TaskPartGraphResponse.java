@@ -21,7 +21,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 单节点调试出参
+ * Single node debugging parameters
  */
 @Data
 public class TaskPartGraphResponse implements Serializable {

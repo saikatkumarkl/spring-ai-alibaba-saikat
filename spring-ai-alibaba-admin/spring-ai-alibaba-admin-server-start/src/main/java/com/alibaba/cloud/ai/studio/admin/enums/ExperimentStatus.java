@@ -3,27 +3,27 @@ package com.alibaba.cloud.ai.studio.admin.enums;
 public enum ExperimentStatus {
 
     /**
-     * 草稿
+     * draft
      */
     DRAFT("DRAFT", "草稿"),
 
     /**
-     * 运行中
+     * Running
      */
     RUNNING("RUNNING", "运行中"),
 
     /**
-     * 已完成
+     * Completed
      */
     COMPLETED("COMPLETED", "已完成"),
 
     /**
-     * 失败
+     * fail
      */
     FAILED("FAILED", "失败"),
 
     /**
-     * 已停止
+     * Stopped
      */
     STOPPED("STOPPED", "已停止");
 

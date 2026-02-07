@@ -58,11 +58,11 @@ public class LLMNodeDataConverter extends AbstractNodeDataConverter<LLMNodeData>
 			public LLMNodeData parse(Map<String, Object> data) {
 				LLMNodeData nodeData = new LLMNodeData();
 
-				// 获取必要的信息
+				//Get necessary information
 				String modeName = this.exactChatModelName(DSLDialectType.DIFY, data);
 				Map<String, Object> modeParams = this.exactChatModelParam(DSLDialectType.DIFY, data);
 
-				// MessageTemplate的keys字段将在postProcess中确定，所以这里先设置为空
+				//The keys field of MessageTemplate will be determined in postProcess, so it is set to empty here first.
 				List<LLMNodeData.MessageTemplate> messageTemplates = Optional
 					.ofNullable(MapReadUtil
 						.safeCastToListWithMap(MapReadUtil.getMapDeepValue(data, List.class, "prompt_template")))
@@ -90,7 +90,7 @@ public class LLMNodeDataConverter extends AbstractNodeDataConverter<LLMNodeData>
 					defaultOutput = defaultValues.get(0).get("value").toString();
 				}
 
-				// 设置NodeData
+				//SetNodeData
 				nodeData.setChatModeName(modeName);
 				nodeData.setModeParams(modeParams);
 				nodeData.setMessageTemplates(messageTemplates);
@@ -122,7 +122,7 @@ public class LLMNodeDataConverter extends AbstractNodeDataConverter<LLMNodeData>
 			public LLMNodeData parse(Map<String, Object> data) throws JsonProcessingException {
 				LLMNodeData nodeData = new LLMNodeData();
 
-				// 从data中提取必要信息
+				//Extract necessary information from data
 				String modeName = this.exactChatModelName(DSLDialectType.STUDIO, data);
 				Map<String, Object> modeParams = this.exactChatModelParam(DSLDialectType.STUDIO, data);
 
@@ -130,7 +130,7 @@ public class LLMNodeDataConverter extends AbstractNodeDataConverter<LLMNodeData>
 						"sys_prompt_content");
 				String userPrompt = MapReadUtil.getMapDeepValue(data, String.class, "config", "node_param",
 						"prompt_content");
-				// MessageTemplate的keys字段将在postProcess中确定，所以这里先设置为空
+				//The keys field of MessageTemplate will be determined in postProcess, so it is set to empty here first.
 				List<LLMNodeData.MessageTemplate> messageTemplates = List.of(
 						new LLMNodeData.MessageTemplate(systemPrompt, List.of(), MessageType.SYSTEM),
 						new LLMNodeData.MessageTemplate(userPrompt, List.of(), MessageType.USER));
@@ -155,7 +155,7 @@ public class LLMNodeDataConverter extends AbstractNodeDataConverter<LLMNodeData>
 					defaultOutput = MapReadUtil.getMapDeepValue(defaultOutputs.get(0), String.class, "value");
 				}
 
-				// 设置nodeData
+				//Set nodeData
 				nodeData.setChatModeName(modeName);
 				nodeData.setModeParams(modeParams);
 				nodeData.setMessageTemplates(messageTemplates);
@@ -196,11 +196,11 @@ public class LLMNodeDataConverter extends AbstractNodeDataConverter<LLMNodeData>
 	public BiConsumer<LLMNodeData, Map<String, String>> postProcessConsumer(DSLDialectType dialectType) {
 		return switch (dialectType) {
 			case DIFY, STUDIO -> this.emptyProcessConsumer().andThen((nodeData, idToVarName) -> {
-				// 设置输出
+				//Set output
 				nodeData.setOutputs(LLMNodeData.getDefaultOutputSchemas(dialectType));
 				nodeData.setOutputKeyPrefix(nodeData.getVarName().concat("_"));
 
-				// 处理MessageTemplates
+				//Handling MessageTemplates
 				List<LLMNodeData.MessageTemplate> messageTemplates = Optional.ofNullable(nodeData.getMessageTemplates())
 					.orElse(List.of())
 					.stream()
@@ -212,7 +212,7 @@ public class LLMNodeDataConverter extends AbstractNodeDataConverter<LLMNodeData>
 					.toList();
 				nodeData.setMessageTemplates(messageTemplates);
 
-				// 处理MemoryKey
+				//Handle MemoryKey
 				if (nodeData.getMemoryKey() != null) {
 					String res = this.convertVarTemplate(dialectType, nodeData.getMemoryKey(), idToVarName);
 					nodeData.setMemoryKey(res.substring(1, res.length() - 1));

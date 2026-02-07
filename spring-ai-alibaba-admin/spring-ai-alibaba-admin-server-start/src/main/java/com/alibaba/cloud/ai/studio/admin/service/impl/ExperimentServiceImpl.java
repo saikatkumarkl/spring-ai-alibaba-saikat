@@ -57,7 +57,7 @@ public class ExperimentServiceImpl implements ExperimentService {
     @Autowired
     private EvaluatorServiceImpl evaluatorServiceImpl;
 
-    // 创建线程池用于异步执行实验
+    //Create a thread pool for asynchronous execution of experiments
     private final ExecutorService experimentExecutor = Executors.newFixedThreadPool(5);
 
 
@@ -67,7 +67,7 @@ public class ExperimentServiceImpl implements ExperimentService {
         log.info("创建实验: {}", request);
 
 
-        // 构建实验实体
+        //Build experimental entities
         ExperimentDO experimentDO = ExperimentDO.builder()
                 .name(request.getName())
                 .description(request.getDescription())
@@ -82,7 +82,7 @@ public class ExperimentServiceImpl implements ExperimentService {
                 .updateTime(LocalDateTime.now())
                 .build();
 
-        // 插入数据库
+        //Insert into database
         int result = experimentMapper.insert(experimentDO);
         if (result <= 0) {
             throw new RuntimeException("Failed to create experiment");
@@ -90,7 +90,7 @@ public class ExperimentServiceImpl implements ExperimentService {
 
         log.info("实验创建成功: {}", experimentDO.getId());
         
-        // 异步启动实验执行
+        //Start experiment execution asynchronously
         startExperimentExecution(experimentDO);
         
         return Experiment.fromDO(experimentDO);
@@ -110,13 +110,13 @@ public class ExperimentServiceImpl implements ExperimentService {
             }
         }
         
-        // 计算偏移量
+        //Calculate offset
         long offset = (request.getPageNumber() - 1L) * request.getPageSize();
         
-        // 查询数据
+        //Query data
         List<ExperimentDO> experimentDOList = experimentMapper.selectList(request.getName(), status, offset, request.getPageSize());
 
-        // 获取总数
+        //Get total
         int totalCount = experimentMapper.count(request.getName(), status);
 
         return new PageResult<>(
@@ -166,7 +166,7 @@ public class ExperimentServiceImpl implements ExperimentService {
     public List<ExperimentEvaluatorResult> getResults(Long experimentId) {
         log.info("查询实验结果: {}", experimentId);
         
-        // 先检查实验是否存在
+        //First check if the experiment exists
         ExperimentDO experiment = experimentMapper.selectById(experimentId);
         if (experiment == null) {
             log.warn("实验不存在: {}", experimentId);
@@ -174,31 +174,31 @@ public class ExperimentServiceImpl implements ExperimentService {
         }
 
         Integer dataCount = datasetVersionMapper.selectById(experiment.getDatasetVersionId()).getDataCount();
-        // 检查dataCount是否为null或0，避免除零异常
+        //Check if dataCount is null or 0 to avoid divide-by-zero exceptions
         if (dataCount == null || dataCount == 0) {
             log.warn("数据集版本数据量为0或不存在: {}", experiment.getDatasetVersionId());
-            dataCount = 1; // 避免除零异常，设置默认值
+            dataCount = 1; //Avoid divide-by-zero exceptions and set default values
         }
 
 
-        // 正确解析 evaluatorConfig JSON 数组字符串为 List<EvaluatorConfig>
+        //Correctly parses evaluatorConfig JSON array string as List<EvaluatorConfig>
         List<EvaluatorConfig> evaluatorConfigList = JSON.parseArray(experiment.getEvaluatorConfig(), EvaluatorConfig.class);
 
-        // 提取 evaluatorVersionId 列表
+        //Extract evaluatorVersionId list
         List<Long> evaluatorList = evaluatorConfigList.stream()
                 .map(e -> Long.valueOf(e.getEvaluatorVersionId()))
                 .toList();
 
-        // 使用stream map collect方式构建结果列表
+        //Use stream map collect method to build the result list
         Integer finalDataCount = dataCount;
         return evaluatorList.stream().map(evaluatorVersionId -> {
             List<ExperimentResultDO> resultList = experimentResultMapper.selectByExperimentAndEvaluator(experimentId, evaluatorVersionId);
-            //计算score的平均值，避免除零异常
+            //Calculate the average score to avoid division by zero exceptions
             BigDecimal averageScore = BigDecimal.ZERO;
             if (resultList != null && !resultList.isEmpty()) {
                 averageScore = resultList.stream()
                         .map(ExperimentResultDO::getScore)
-                        .filter(score -> score != null) // 过滤掉空值
+                        .filter(score -> score != null) //Filter out null values
                         .reduce(BigDecimal.ZERO, BigDecimal::add)
                         .divide(new BigDecimal(resultList.size()), 2, BigDecimal.ROUND_HALF_UP);
             }
@@ -218,7 +218,7 @@ public class ExperimentServiceImpl implements ExperimentService {
     @Override
     public PageResult<ExperimentEvaluatorResultDetail> getResult(ExperimentEvaluatorResultDetailListRequest request){
 
-        // 先检查实验是否存在
+        //First check if the experiment exists
         ExperimentDO experiment = experimentMapper.selectById(request.getExperimentId());
         if (experiment == null) {
             log.warn("实验不存在: {}", request.getExperimentId());
@@ -264,7 +264,7 @@ public class ExperimentServiceImpl implements ExperimentService {
             throw new IllegalArgumentException("Experiment ID cannot be null");
         }
         
-        // 获取实验信息
+        //Get experimental information
         ExperimentDO experimentDO = experimentMapper.selectById(id);
         if (experimentDO == null) {
             throw new IllegalArgumentException("Experiment not found: " + id);
@@ -272,7 +272,7 @@ public class ExperimentServiceImpl implements ExperimentService {
 
 
 
-        // 检查实验状态
+        //Check experiment status
         if (ExperimentStatus.COMPLETED.getCode().equals(experimentDO.getStatus()) ||
             ExperimentStatus.FAILED.getCode().equals(experimentDO.getStatus()) ||
             ExperimentStatus.STOPPED.getCode().equals(experimentDO.getStatus())) {
@@ -282,7 +282,7 @@ public class ExperimentServiceImpl implements ExperimentService {
 
 
         
-        // 更新实验状态为已停止
+        //Update experiment status to stopped
         experimentDO.setStatus(String.valueOf(ExperimentStatus.STOPPED));
         experimentDO.setUpdateTime(LocalDateTime.now());
         
@@ -304,24 +304,24 @@ public class ExperimentServiceImpl implements ExperimentService {
             throw new IllegalArgumentException("Experiment ID cannot be null");
         }
         
-        // 检查实验是否存在
+        //Check if the experiment exists
         ExperimentDO experimentDO = experimentMapper.selectById(id);
         if (experimentDO == null) {
             throw new IllegalArgumentException("Experiment not found: " + id);
         }
         
-        // 检查实验状态，运行中的实验不能删除
+        //Check the experiment status. Running experiments cannot be deleted.
         if (Objects.equals(experimentDO.getStatus(), ExperimentStatus.RUNNING.getCode())) {
             throw new IllegalStateException("Cannot delete running experiment: " + id);
         }
         
-        // 删除实验
+        //Delete experiment
         int result = experimentMapper.deleteById(id);
         if (result <= 0) {
             throw new RuntimeException("Failed to delete experiment");
         }
 //
-//        // 删除相关的实验结果
+////Delete related experimental results
 //        experimentResultMapper.deleteByExperimentId(id);
         
         log.info("实验删除成功: {}", id);
@@ -329,9 +329,9 @@ public class ExperimentServiceImpl implements ExperimentService {
 
     @Override
     public void restartById(Long id) {
-        //清理历史数据
+        //Clean historical data
         experimentResultMapper.deleteByExperimentId(id);
-        //实验执行
+        //Experiment execution
 
         ExperimentDO experimentDO = experimentMapper.selectById(id);
 
@@ -343,7 +343,7 @@ public class ExperimentServiceImpl implements ExperimentService {
 
 
     /**
-     * 启动实验执行
+     * Start experiment execution
      */
     private void startExperimentExecution(ExperimentDO experimentDO)  {
         try {
@@ -363,18 +363,18 @@ public class ExperimentServiceImpl implements ExperimentService {
         } catch (Exception e) {
             log.error("启动实验执行失败: {}", experimentDO.getId(), e);
 
-            // 更新实验状态为失败
+            //Update experiment status to failed
             updateExperimentStatus(experimentDO.getId(), ExperimentStatus.FAILED, null);
         }
     }
 
     /**
-     * 执行实验的核心逻辑
+     * The core logic of executing the experiment
      */
     private void executeExperiment(ExperimentDO experimentDO) throws StudioException {
         log.info("开始执行实验: {}", experimentDO.getId());
 
-        //解析实验 目标 配置
+        //Analyze experiment target configuration
 
         EvaluationObjectConfig evaluationObjectConfig = JSONObject.parseObject(experimentDO.getEvaluationObjectConfig(),EvaluationObjectConfig.class);
         if(evaluationObjectConfig.getType().equals("prompt")){
@@ -391,7 +391,7 @@ public class ExperimentServiceImpl implements ExperimentService {
 
         Long experimentId = experimentDO.getId();
 
-        // 获取数据集中的所有数据项
+        //Get all data items in the dataset
 
         DatasetVersionDO datasetVersion = datasetVersionMapper.selectById(experimentDO.getDatasetVersionId());
 
@@ -417,7 +417,7 @@ public class ExperimentServiceImpl implements ExperimentService {
 
         for (DatasetItemDO datasetItem : datasetItems) {
             try {
-                // 检查实验是否被停止
+                //Check if the experiment has been stopped
                 if (isExperimentStopped(experimentId)) {
                     log.info("实验 {} 已被停止", experimentId);
                     return;
@@ -441,7 +441,7 @@ public class ExperimentServiceImpl implements ExperimentService {
                 );
 
 
-                // 更新进度
+                //update progress
                 int currentProgress = (processedItems.incrementAndGet() * 100) / totalItems;
                 updateExperimentProgress(experimentId, currentProgress);
 
@@ -449,11 +449,11 @@ public class ExperimentServiceImpl implements ExperimentService {
 
             } catch (Exception e) {
                 log.error("处理数据项失败: experimentId={}, itemId={}", experimentId, datasetItem.getId(), e);
-                // 继续处理下一个数据项，不中断整个实验
+                //Continue processing the next data item without interrupting the entire experiment
             }
         }
 
-        // 实验完成
+        //Experiment completed
         log.info("实验 {} 执行完成，共处理 {} 个数据项", experimentId, totalItems);
         updateExperimentStatus(experimentId, ExperimentStatus.COMPLETED, 100);
 
@@ -462,9 +462,9 @@ public class ExperimentServiceImpl implements ExperimentService {
 
 
     private  String getPromptResult(PromptVersionDetail prompt,JSONObject dataContent,EvaluationPromptConfig evaluationPromptConfig){
-        //value 是通过  EvaluationPromptConfigVariableMap 确定的。
+        //value is determined through EvaluationPromptConfigVariableMap.
         JSONObject variables = JSONObject.parseObject(prompt.getVariables());
-        // 从 EvaluationPromptConfigVariableMap 中拿到  prompt variables 和datasetvolumsname的映射关系，从datacontent中拿到对应的值，放入variables 中 对应prompt viriable name的key中
+        //Get the mapping relationship between prompt variables and datasetvolumsname from EvaluationPromptConfigVariableMap, get the corresponding value from datacontent, and put it into the key corresponding to prompt viriable name in variables.
 
         List<EvaluationPromptConfigVariableMap> variableMapList = evaluationPromptConfig.getVariableMap();
 
@@ -493,7 +493,7 @@ public class ExperimentServiceImpl implements ExperimentService {
         observationMetadata.put("promptVersion", prompt.getVersion());
         observationMetadata.put("promptTemplate", prompt.getTemplate());
         observationMetadata.put("promptVariables", variables.toJSONString());
-        // 获取或创建会话绑定的ModelClient
+        //Get or create a session-bound ModelClient
         ChatClient client = chatSessionService.getOrCreateSessionChatClient(session.getSessionId(), observationMetadata);
 
 
@@ -534,7 +534,7 @@ public class ExperimentServiceImpl implements ExperimentService {
 
 
     /**
-     * 保存实验结果
+     * Save experiment results
      */
     private void saveExperimentResult(Long experimentId, Long datasetItemId,
                                       String input, String actualOutput, String referenceOutput,
@@ -553,7 +553,7 @@ public class ExperimentServiceImpl implements ExperimentService {
                     .updateTime(LocalDateTime.now())
                     .build();
             
-            // 使用批量插入方法，将单个结果包装成列表
+            //Use the bulk insert method to wrap individual results into a list
             List<ExperimentResultDO> results = new ArrayList<>();
             results.add(resultDO);
             experimentResultMapper.batchInsert(results);
@@ -565,7 +565,7 @@ public class ExperimentServiceImpl implements ExperimentService {
     }
 
     /**
-     * 检查实验是否被停止
+     * Check if the experiment has been stopped
      */
     private boolean isExperimentStopped(Long experimentId) {
         try {
@@ -579,7 +579,7 @@ public class ExperimentServiceImpl implements ExperimentService {
     }
 
     /**
-     * 更新实验进度
+     * Update experiment progress
      */
     private void updateExperimentProgress(Long experimentId, Integer progress) {
         try {
@@ -595,7 +595,7 @@ public class ExperimentServiceImpl implements ExperimentService {
     }
 
     /**
-     * 更新实验状态
+     * Update experiment status
      */
     private void updateExperimentStatus(Long experimentId, ExperimentStatus status, Integer progress) {
         try {
@@ -623,7 +623,7 @@ public class ExperimentServiceImpl implements ExperimentService {
         log.info("查询评估器关联的实验: {}", request);
         
         try {
-            // 计算偏移量
+            //Calculate offset
             long offset = (request.getPageNumber() - 1L) * request.getPageSize();
             
             List<ExperimentDO> experimentDOList;
@@ -635,7 +635,7 @@ public class ExperimentServiceImpl implements ExperimentService {
             totalCount = experimentMapper.selectCountByEvaluatorId(request.getEvaluatorId());
 
             
-            // 转换为DTO并获取数据集版本信息
+            //Convert to DTO and get dataset version information
             List<Experiment> experiments = experimentDOList.stream()
                     .map(experimentDO -> {
                         try {

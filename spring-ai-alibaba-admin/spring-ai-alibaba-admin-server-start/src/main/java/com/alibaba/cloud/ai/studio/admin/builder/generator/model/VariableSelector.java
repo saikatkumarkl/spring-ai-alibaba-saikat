@@ -36,7 +36,7 @@ public class VariableSelector {
 	private String label;
 
 	/**
-	 * 在生成代码中使用的名称
+	 * Name used in generated code.
 	 */
 	private String nameInCode;
 

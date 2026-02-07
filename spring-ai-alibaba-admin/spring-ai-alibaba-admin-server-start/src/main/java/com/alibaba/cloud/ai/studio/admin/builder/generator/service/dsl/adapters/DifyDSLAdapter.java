@@ -186,12 +186,12 @@ public class DifyDSLAdapter extends AbstractDSLAdapter {
 			.collect(Collectors.toMap(Node::getId, n -> n.getData().getVarName()));
 		Map<String, Node> nodeIdMap = nodes.stream().collect(Collectors.toMap(Node::getId, n -> n));
 
-		// 根据parnetId进行分组，为了给迭代节点的起始节点传递迭代数据
+		//Group according to parnetId, in order to pass iteration data to the starting node of the iteration node
 		Map<String, List<Node>> groupByParentId = nodes.stream()
 			.filter(node -> Objects.nonNull(node.getParentId()))
 			.collect(Collectors.groupingBy(Node::getParentId));
 
-		// 统计具有出度的节点
+		//Count nodes with out-degree
 		Set<String> nodeIdHasOut = edges.stream().map(Edge::getSource).collect(Collectors.toSet());
 
 		groupByParentId.forEach((parentId, subNodes) -> {
@@ -212,27 +212,27 @@ public class DifyDSLAdapter extends AbstractDSLAdapter {
 				}
 			});
 
-			// 添加迭代节点的终止节点（Dify的DSL没有提供但为了后续正常转换，这里需要添加）
+			//Add the termination node of the iteration node (Dify's DSL does not provide it but for subsequent normal conversion, it needs to be added here)
 			NodeData nodeData = new IterationNodeData((IterationNodeData) nodeIdMap.get(parentId).getData());
 			nodeData.setVarName(nodeData.getVarName() + "_end");
 			Node endNode = new Node();
 			endNode.setData(nodeData).setType(NodeType.ITERATION_END).setParentId(parentId);
 			nodes.add(endNode);
 
-			// 计算每个节点的出度，出度为0的点将与迭代终止节点相连接
+			//Calculate the out-degree of each node. The point with an out-degree of 0 will be connected to the iteration termination node.
 			subNodes.stream().map(Node::getId).filter(id -> !nodeIdHasOut.contains(id)).forEach(id -> {
 				Edge newEdge = new Edge().setSource(id).setTarget(nodeData.getVarName());
 				edges.add(newEdge);
 			});
 		});
 
-		// 将Edge里的source和target都转换成varName
+		//Convert both source and target in Edge to varName
 		edges.forEach(edge -> {
 			edge.setSource(varNames.getOrDefault(edge.getSource(), edge.getSource()));
 			edge.setTarget(varNames.getOrDefault(edge.getTarget(), edge.getTarget()));
 		});
 
-		// 将Iteration节点起始改为iteration_start，并将Iteration节点结束改为iteration_end
+		//Change the start of the Iteration node to iteration_start and the end of the Iteration node to iteration_end
 		Map<String, Node> nodeVarMap = nodes.stream().collect(Collectors.toMap(n -> n.getData().getVarName(), n -> n));
 		edges.forEach(edge -> {
 			if (NodeType.ITERATION.equals(nodeVarMap.get(edge.getSource()).getType())) {
@@ -296,7 +296,7 @@ public class DifyDSLAdapter extends AbstractDSLAdapter {
 
 			data.setVarName(varName);
 
-			// 获得处理输入变量名称的Consumer，当所有节点都处理完时使用
+			//Get the Consumer that processes the input variable name, used when all nodes have been processed
 			postProcessConsumers.put(data.getClass(), converter.postProcessConsumer(DSLDialectType.DIFY));
 
 			node.setData(data);
@@ -307,7 +307,7 @@ public class DifyDSLAdapter extends AbstractDSLAdapter {
 		Map<String, String> varNames = nodes.stream()
 			.collect(Collectors.toMap(Node::getId, n -> n.getData().getVarName()));
 
-		// 执行每一个节点的postProcess
+		//Execute postProcess of each node
 		nodes.forEach(node -> {
 			Class<? extends NodeData> clazz = node.getData().getClass();
 			BiConsumer<? super NodeData, Map<String, String>> consumer = postProcessConsumers.get(clazz);

@@ -79,7 +79,7 @@ public class VariableUtils {
 		}
 		Matcher matcher = VALID_EXPRESSION_PATTERN.matcher(expression);
 		if (matcher.matches()) {
-			// 将[]转为{}，适配array下的获取逻辑
+			//Convert [] to {} to adapt the acquisition logic under array
 			String replaceExpression = expression.replaceAll("\\[", "\\{").replaceAll("\\]", "\\}");
 			Object value;
 			try {
@@ -121,9 +121,9 @@ public class VariableUtils {
 		try {
 			Matcher matcher = VALID_EXPRESSION_PATTERN.matcher(expression);
 			if (matcher.matches()) {
-				// 将[]转为{}，适配array下的获取逻辑
+				//Convert [] to {} to adapt the acquisition logic under array
 				String replaceExpression = expression.replaceAll("\\[", "\\{").replaceAll("\\]", "\\}");
-				// 这里执行的命令会被拦截
+				//The commands executed here will be intercepted
 				Ognl.setValue(replaceExpression, payload, value);
 				return true;
 			}
@@ -213,7 +213,7 @@ public class VariableUtils {
 	 */
 	public static Object convertValueByType(String key, String type, Object value) {
 		try {
-			// todo 后续删除
+			//todo subsequent deletion
 			if (type == null) {
 				return value;
 			}
@@ -336,7 +336,7 @@ public class VariableUtils {
 			return result;
 		}
 		Matcher matcher = VAR_EXPR_PATTERN.matcher(content);
-		// 查找并添加匹配的内容
+		//Find and add matching content
 		while (matcher.find()) {
 			result.add(matcher.group(1));
 		}

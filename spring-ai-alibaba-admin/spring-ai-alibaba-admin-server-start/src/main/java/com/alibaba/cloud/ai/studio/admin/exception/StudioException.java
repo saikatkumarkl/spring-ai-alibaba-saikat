@@ -6,12 +6,12 @@ import com.alibaba.nacos.api.utils.StringUtils;
 public class StudioException extends Exception {
     
     /**
-     * invalid param（参数错误）.
+     * Invalid param (parameter error).
      */
     public static final int INVALID_PARAM = 400;
     
     /**
-     * no right（鉴权失败）.
+     * No right (authorization failed).
      */
     public static final int NO_RIGHT = 403;
     
@@ -21,22 +21,22 @@ public class StudioException extends Exception {
     public static final int NOT_FOUND = 404;
     
     /**
-     * conflict（写并发冲突）.
+     * Conflict (concurrent write conflict).
      */
     public static final int CONFLICT = 409;
     
     /**
-     * server error（server异常，如超时）.
+     * Server error (e.g., timeout).
      */
     public static final int SERVER_ERROR = 500;
     
     /**
-     * bad gateway（路由异常，如nginx后面的Server挂掉）.
+     * Bad gateway (routing error, e.g., backend server down).
      */
     public static final int BAD_GATEWAY = 502;
     
     /**
-     * over threshold（超过server端的限流阈值）.
+     * Over threshold (exceeds server-side rate limit).
      */
     public static final int OVER_THRESHOLD = 503;
     

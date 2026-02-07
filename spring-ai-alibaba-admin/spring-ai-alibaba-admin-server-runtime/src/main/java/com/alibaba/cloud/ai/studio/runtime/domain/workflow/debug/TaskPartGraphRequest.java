@@ -25,7 +25,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 片段画布调试请求
+ * Fragment Canvas Debug Request
  */
 @Data
 public class TaskPartGraphRequest implements Serializable {
@@ -38,7 +38,7 @@ public class TaskPartGraphRequest implements Serializable {
 	private List<Edge> edges;
 
 	/**
-	 * 输入调试参数
+	 * Enter debugging parameters
 	 */
 	@JsonProperty("input_params")
 	private List<CommonParam> inputParams;

@@ -51,7 +51,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 判断节点
+ * Judgment node
  */
 @Slf4j
 @Component("JudgeExecuteProcessor")
@@ -385,7 +385,7 @@ public class JudgeExecuteProcessor extends AbstractExecuteProcessor {
 				case "lengthEquals":
 					if ("string".equalsIgnoreCase(leftType)) {
 						if (NumberUtils.isCreatable(rightValue)) {
-							// 如果右值是数字，则直接用左值的长度和这个数字进行比较
+							//If the rvalue is a number, the length of the lvalue is directly compared with the number.
 							return compareDigits(leftValue.length() + "", rightValue) == 0;
 						}
 						else {
@@ -397,7 +397,7 @@ public class JudgeExecuteProcessor extends AbstractExecuteProcessor {
 						// List<Object> rightArrays =
 						// JsonUtils.fromJsonToList(rightValue);
 						if (NumberUtils.isCreatable(rightValue)) {
-							// 如果右值是数字，则直接用左值的长度和这个数字进行比较
+							//If the rvalue is a number, the length of the lvalue is directly compared with the number.
 							return compareDigits(leftArrays.size() + "", rightValue) == 0;
 						}
 						else {
@@ -412,7 +412,7 @@ public class JudgeExecuteProcessor extends AbstractExecuteProcessor {
 				case "lengthGreater":
 					if ("string".equalsIgnoreCase(leftType)) {
 						if (NumberUtils.isCreatable(rightValue)) {
-							// 如果右值是数字，则直接用左值的长度和这个数字进行比较
+							//If the rvalue is a number, the length of the lvalue is directly compared with the number.
 							return compareDigits(leftValue.length() + "", rightValue) > 0;
 						}
 						else {
@@ -424,7 +424,7 @@ public class JudgeExecuteProcessor extends AbstractExecuteProcessor {
 						// List<Object> rightArrays =
 						// JsonUtils.fromJsonToList(rightValue);
 						if (NumberUtils.isCreatable(rightValue)) {
-							// 如果右值是数字，则直接用左值的长度和这个数字进行比较
+							//If the rvalue is a number, the length of the lvalue is directly compared with the number.
 							return compareDigits(leftArrays.size() + "", rightValue) > 0;
 						}
 						else {
@@ -440,7 +440,7 @@ public class JudgeExecuteProcessor extends AbstractExecuteProcessor {
 				case "lengthGreaterAndEqual":
 					if ("string".equalsIgnoreCase(leftType)) {
 						if (NumberUtils.isCreatable(rightValue)) {
-							// 如果右值是数字，则直接用左值的长度和这个数字进行比较
+							//If the rvalue is a number, the length of the lvalue is directly compared with the number.
 							return compareDigits(leftValue.length() + "", rightValue) >= 0;
 						}
 						else {
@@ -452,7 +452,7 @@ public class JudgeExecuteProcessor extends AbstractExecuteProcessor {
 						// List<Object> rightArrays =
 						// JsonUtils.fromJsonToList(rightValue);
 						if (NumberUtils.isCreatable(rightValue)) {
-							// 如果右值是数字，则直接用左值的长度和这个数字进行比较
+							//If the rvalue is a number, the length of the lvalue is directly compared with the number.
 							return compareDigits(leftArrays.size() + "", rightValue) >= 0;
 						}
 						else {
@@ -468,7 +468,7 @@ public class JudgeExecuteProcessor extends AbstractExecuteProcessor {
 				case "lengthLess":
 					if ("string".equalsIgnoreCase(leftType)) {
 						if (NumberUtils.isCreatable(rightValue)) {
-							// 如果右值是数字，则直接用左值的长度和这个数字进行比较
+							//If the rvalue is a number, the length of the lvalue is directly compared with the number.
 							return compareDigits(leftValue.length() + "", rightValue) < 0;
 						}
 						else {
@@ -480,7 +480,7 @@ public class JudgeExecuteProcessor extends AbstractExecuteProcessor {
 						// List<Object> rightArrays =
 						// JsonUtils.fromJsonToList(rightValue);
 						if (NumberUtils.isCreatable(rightValue)) {
-							// 如果右值是数字，则直接用左值的长度和这个数字进行比较
+							//If the rvalue is a number, the length of the lvalue is directly compared with the number.
 							return compareDigits(leftArrays.size() + "", rightValue) < 0;
 						}
 						else {
@@ -496,7 +496,7 @@ public class JudgeExecuteProcessor extends AbstractExecuteProcessor {
 				case "lengthLessAndEqual":
 					if ("string".equalsIgnoreCase(leftType)) {
 						if (NumberUtils.isCreatable(rightValue)) {
-							// 如果右值是数字，则直接用左值的长度和这个数字进行比较
+							//If the rvalue is a number, the length of the lvalue is directly compared with the number.
 							return compareDigits(leftValue.length() + "", rightValue) <= 0;
 						}
 						else {
@@ -508,7 +508,7 @@ public class JudgeExecuteProcessor extends AbstractExecuteProcessor {
 						// List<Object> rightArrays =
 						// JsonUtils.fromJsonToList(rightValue);
 						if (NumberUtils.isCreatable(rightValue)) {
-							// 如果右值是数字，则直接用左值的长度和这个数字进行比较
+							//If the rvalue is a number, the length of the lvalue is directly compared with the number.
 							return compareDigits(leftArrays.size() + "", rightValue) <= 0;
 						}
 						else {

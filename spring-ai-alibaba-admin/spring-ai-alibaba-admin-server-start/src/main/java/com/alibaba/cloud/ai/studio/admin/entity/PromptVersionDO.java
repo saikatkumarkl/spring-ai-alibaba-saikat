@@ -16,14 +16,14 @@ import java.time.LocalDateTime;
 public class PromptVersionDO {
 
     /**
-     * 主键ID
+     * Primary key ID
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
-     * 版本号
+     * version number
      */
     private String version;
 
@@ -33,38 +33,38 @@ public class PromptVersionDO {
     private String promptKey;
 
     /**
-     * 版本描述
+     * Version description
      */
     private String versionDesc;
 
     /**
-     * Prompt模版内容
+     * Prompt template content
      */
     @Column(columnDefinition = "LONGTEXT")
     private String template;
 
     /**
-     * Prompt模版里的可变参数，JSON格式
+     * Variable parameters in Prompt template, JSON format
      */
     private String variables;
 
     /**
-     * 调试该prompt的模型参数，JSON格式
+     * Debugging the model parameters of the prompt, JSON format
      */
     private String modelConfig;
 
     /**
-     * 创建时间
+     * creation time
      */
     private LocalDateTime createTime;
 
     /**
-     * 前置版本，用于对比
+     * Pre-version for comparison
      */
     private String previousVersion;
 
     /**
-     * 版本状态：pre-预发布版本，release-正式版本
+     * Version status: pre-pre-release version, release-official version
      */
     @Builder.Default
     private String status = "pre";

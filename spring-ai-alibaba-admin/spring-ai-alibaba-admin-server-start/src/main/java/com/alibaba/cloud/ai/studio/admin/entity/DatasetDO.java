@@ -13,40 +13,40 @@ import java.time.LocalDateTime;
 public class DatasetDO {
 
     /**
-     * 主键ID
+     * Primary key ID
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
-     * 评测集名称
+     * Evaluation set name
      */
     private String name;
 
     /**
-     * 评测集描述
+     * Evaluation set description
      */
     private String description;
 
     /**
-     * 列结构配置（JSON格式）
+     * Column structure configuration (JSON format)
      */
     private String columnsConfig;
 
 
     /**
-     * 创建时间
+     * creation time
      */
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * Update time
      */
     private LocalDateTime updateTime;
 
     /**
-     * 逻辑删除标识：0-未删除，1-已删除
+     * Tombstone identification: 0-not deleted, 1-deleted
      */
     private Integer deleted;
 

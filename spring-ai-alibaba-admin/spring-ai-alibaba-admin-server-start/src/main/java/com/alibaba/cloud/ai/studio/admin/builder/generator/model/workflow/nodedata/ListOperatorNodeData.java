@@ -74,7 +74,7 @@ public class ListOperatorNodeData extends NodeData {
 
 	}
 
-	// null则不排序
+	// If null, no sorting is applied
 	private Ordered order;
 
 	/** Limit number of entries (corresponding to limit_number in DSL) */

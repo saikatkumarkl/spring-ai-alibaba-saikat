@@ -26,20 +26,20 @@ public class TracingQueryBuilder {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
-     * 构建Traces查询请求
+     * Build Traces query request
      */
     public SearchRequest buildTracesQuery(TracesQueryRequest request) {
         BoolQuery.Builder boolQueryBuilder = new BoolQuery.Builder();
 
-        // 时间范围过滤 - 使用微秒时间戳
+        //Time range filtering - using microsecond timestamps
         if (StringUtils.hasText(request.getStartTime()) && StringUtils.hasText(request.getEndTime())) {
             try {
-                // 将ISO8601时间转换为微秒时间戳
+                //Convert ISO8601 time to microsecond timestamp
                 Long startTimeMicros = convertISO8601ToMicroseconds(request.getStartTime());
                 Long endTimeMicros = convertISO8601ToMicroseconds(request.getEndTime());
                 
                 if (startTimeMicros != null && endTimeMicros != null) {
-                    // 使用 withJson 方法构建查询
+                    //Build queries using the withJson method
                     String rangeQueryJson = String.format(
                         "{\"range\":{\"metadata.start\":{\"gte\":%d,\"lte\":%d}}}",
                         startTimeMicros, endTimeMicros
@@ -57,7 +57,7 @@ public class TracingQueryBuilder {
             }
         }
 
-        // 服务名过滤
+        //Service name filtering
         if (StringUtils.hasText(request.getServiceName())) {
             Query serviceQuery = Query.of(q -> q.term(t -> t
                 .field("metadata.service")
@@ -66,7 +66,7 @@ public class TracingQueryBuilder {
             boolQueryBuilder.filter(serviceQuery);
         }
 
-        // Trace ID过滤
+        //Trace ID filtering
         if (StringUtils.hasText(request.getTraceId())) {
             Query traceIdQuery = Query.of(q -> q.term(t -> t
                 .field("metadata.traceID")
@@ -75,7 +75,7 @@ public class TracingQueryBuilder {
             boolQueryBuilder.filter(traceIdQuery);
         }
 
-        // Span名称过滤
+        //Span name filtering
         if (StringUtils.hasText(request.getSpanName())) {
             Query spanNameQuery = Query.of(q -> q.term(t -> t
                 .field("metadata.name")
@@ -84,12 +84,12 @@ public class TracingQueryBuilder {
             boolQueryBuilder.filter(spanNameQuery);
         }
 
-        // 属性过滤
+        //Attribute filtering
         if (StringUtils.hasText(request.getAttributes())) {
             addAttributesFilter(boolQueryBuilder, request.getAttributes());
         }
 
-        // 构建搜索请求
+        //Build a search request
         SearchRequest.Builder searchBuilder = new SearchRequest.Builder()
             .index(TRACES_INDEX)
             .query(Query.of(q -> q.bool(boolQueryBuilder.build())))
@@ -101,10 +101,10 @@ public class TracingQueryBuilder {
     }
 
     /**
-     * 构建Trace详情查询请求
+     * Construct Trace details query request
      */
     public SearchRequest buildTraceDetailQuery(String traceId) {
-        // 修正：使用 metadata.traceID 字段查询
+        //Bugfix: Query using metadata.traceID field
         Query traceQuery = Query.of(q -> q.term(t -> t
             .field("metadata.traceID")
             .value(traceId)
@@ -119,10 +119,10 @@ public class TracingQueryBuilder {
     }
 
     /**
-     * 构建服务查询请求
+     * Build a service query request
      */
     public SearchRequest buildServicesQuery(ServicesQueryRequest request) {
-        // 构建聚合
+        //Build an aggregate
         Map<String, Aggregation> aggregations = new HashMap<>();
         aggregations.put("services", Aggregation.of(a -> a
             .terms(t -> t.field("metadata.service").size(1000))
@@ -136,15 +136,15 @@ public class TracingQueryBuilder {
             .size(0)
             .aggregations(aggregations);
 
-        // 时间范围过滤 - 使用微秒时间戳
+        //Time range filtering - using microsecond timestamps
         if (StringUtils.hasText(request.getStartTime()) && StringUtils.hasText(request.getEndTime())) {
             try {
-                // 将ISO8601时间转换为微秒时间戳
+                //Convert ISO8601 time to microsecond timestamp
                 Long startTimeMicros = convertISO8601ToMicroseconds(request.getStartTime());
                 Long endTimeMicros = convertISO8601ToMicroseconds(request.getEndTime());
                 
                 if (startTimeMicros != null && endTimeMicros != null) {
-                    // 使用 withJson 方法构建查询
+                    //Build queries using the withJson method
                     String rangeQueryJson = String.format(
                         "{\"range\":{\"metadata.start\":{\"gte\":%d,\"lte\":%d}}}",
                         startTimeMicros, endTimeMicros
@@ -167,23 +167,23 @@ public class TracingQueryBuilder {
     }
 
     /**
-     * 构建概览查询请求
+     * Build an overview query request
      */
     public SearchRequest buildOverviewQuery(OverviewQueryRequest request) {
         Map<String, Aggregation> aggregations = new HashMap<>();
 
-        // 根据API文档修正聚合字段
-        // 1. 操作类型统计
+        //Correct aggregate fields according to API documentation
+        //1. Operation type statistics
         aggregations.put("operation_count", Aggregation.of(a -> a
             .terms(t -> t.field("attributes.gen_ai.operation.name").size(1000).missing("generic"))
         ));
 
-        // 2. 模型统计
+        //2. Model Statistics
         aggregations.put("model_count", Aggregation.of(a -> a
             .terms(t -> t.field("attributes.gen_ai.request.model").size(1000))
         ));
 
-        // 3. Token使用统计 - 按模型分组
+        //3. Token usage statistics - grouped by model
         aggregations.put("total_usage_tokens", Aggregation.of(a -> a
             .terms(t -> t.field("attributes.gen_ai.request.model").size(1000))
             .aggregations("total_tokens", Aggregation.of(sub -> sub
@@ -202,15 +202,15 @@ public class TracingQueryBuilder {
             .size(0)
             .aggregations(aggregations);
 
-        // 时间范围过滤 - 使用微秒时间戳
+        //Time range filtering - using microsecond timestamps
         if (StringUtils.hasText(request.getStartTime()) && StringUtils.hasText(request.getEndTime())) {
             try {
-                // 将ISO8601时间转换为微秒时间戳
+                //Convert ISO8601 time to microsecond timestamp
                 Long startTimeMicros = convertISO8601ToMicroseconds(request.getStartTime());
                 Long endTimeMicros = convertISO8601ToMicroseconds(request.getEndTime());
                 
                 if (startTimeMicros != null && endTimeMicros != null) {
-                    // 使用 withJson 方法构建查询
+                    //Build queries using the withJson method
                     String rangeQueryJson = String.format(
                         "{\"range\":{\"metadata.start\":{\"gte\":%d,\"lte\":%d}}}",
                         startTimeMicros, endTimeMicros
@@ -233,7 +233,7 @@ public class TracingQueryBuilder {
     }
 
     /**
-     * 添加属性过滤条件
+     * Add attribute filter
      */
     private void addAttributesFilter(BoolQuery.Builder boolQuery, String attributesJson) {
         try {
@@ -256,12 +256,12 @@ public class TracingQueryBuilder {
 
 
     /**
-     * 将ISO8601时间字符串转换为微秒时间戳
+     * Convert ISO8601 time string to microsecond timestamp
      */
     private Long convertISO8601ToMicroseconds(String iso8601Time) {
         try {
             java.time.Instant instant = java.time.Instant.parse(iso8601Time);
-            // 转换为微秒
+            //Convert to microseconds
             return instant.toEpochMilli() * 1000;
         } catch (Exception e) {
             log.error("时间转换失败: {}", iso8601Time, e);

@@ -10,70 +10,70 @@ import java.time.LocalDateTime;
 public class ExperimentDO {
 
     /**
-     * 主键ID
+     * Primary key ID
      */
     private Long id;
 
     /**
-     * 实验名称
+     * Experiment name
      */
     private String name;
 
     /**
-     * 实验描述
+     * Experiment description
      */
     private String description;
 
     /**
-     * 数据集ID
+     * Data set ID
      */
     private Long datasetId;
 
     /**
-     * 数据集版本
+     * Dataset version
      */
     private Long datasetVersionId;
 
 
     /**
-     * 数据集版本号
+     * Dataset version number
      */
     private String datasetVersion;
 
     /**
-     * 评测对象配置（JSON格式）
+     * Evaluation object configuration (JSON format)
      */
     private String evaluationObjectConfig;
 
 
     /**
-     * 评估器配置
+     * Evaluator configuration
      */
     private String evaluatorConfig;
 
     /**
-     * 状态：DRAFT-草稿，RUNNING-运行中，COMPLETED-已完成，FAILED-失败，STOPPED-已停止
+     * Status: DRAFT - draft, RUNNING - running, COMPLETED - completed, FAILED - failed, STOPPED - stopped
      */
     private String status;
 
     /**
-     * 进度百分比：0-100
+     * Progress percentage: 0-100
      */
     private Integer progress;
 
     /**
-     * 完成时间
+     * completion time
      */
     private LocalDateTime completeTime;
 
 
     /**
-     * 创建时间
+     * creation time
      */
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * Update time
      */
     private LocalDateTime updateTime;
 }

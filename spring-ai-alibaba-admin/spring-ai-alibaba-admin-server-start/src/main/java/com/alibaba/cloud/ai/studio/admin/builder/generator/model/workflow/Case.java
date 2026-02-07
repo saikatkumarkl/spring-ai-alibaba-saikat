@@ -57,23 +57,23 @@ public class Case {
 
 	public static class Condition {
 
-		// 左值数据类型
+		// Left-hand value type
 		private VariableType varType;
 
-		// 右值数据类型
+		// Right-hand value type
 		private VariableType referenceType;
 
 		private ComparisonOperatorType comparisonOperator;
 
-		// 左值
+		// Left-hand value
 		private VariableSelector targetSelector;
 
-		// 右值
+		// Right-hand value
 		private String referenceValue;
 
 		private VariableSelector referenceSelector;
 
-		// 参考值可能来自stateKey，也有可能直接是常量值，也有可能没有参考值
+		// Reference may come from stateKey, be a literal constant, or be absent
 		public String getValue() {
 			if (referenceValue != null) {
 				return referenceValue;

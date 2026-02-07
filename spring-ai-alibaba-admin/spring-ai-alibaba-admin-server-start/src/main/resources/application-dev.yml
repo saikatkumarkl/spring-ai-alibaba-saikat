@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mysql://47.239.212.78:3306/admin?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://47.239.212.78:3306/admin?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
     username: admin
     password: admin
   data:
@@ -14,10 +14,10 @@ spring:
       jakarta:
         persistence:
           jdbc:
-            url: jdbc:mysql://47.239.212.78:3306/admin?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+            url: ${SPRING_JPA_JDBC_URL:jdbc:mysql://47.239.212.78:3306/admin?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
             user: admin
             password: admin
-            driver: com.mysql.cj.jdbc.Driver
+            driver: ${SPRING_JPA_JDBC_DRIVER:com.mysql.cj.jdbc.Driver}
 nacos:
   server-addr: 47.239.212.78:8848
 rocketmq:

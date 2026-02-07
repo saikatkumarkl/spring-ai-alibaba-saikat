@@ -15,17 +15,17 @@ import java.util.Map;
 public interface ExperimentService {
 
     /**
-     * 创建实验
+     * Create an experiment
      */
     Experiment create(ExperimentCreateRequest request);
 
     /**
-     * 分页查询实验列表
+     * Query the experiment list by page
      */
     PageResult<Experiment> list(ExperimentListRequest request);
 
     /**
-     * 根据ID获取实验
+     * Get experiment by ID
      */
     Experiment getById(Long id);
 
@@ -38,26 +38,26 @@ public interface ExperimentService {
 
 
     /**
-     * 停止实验
+     * Stop experiment
      */
     Experiment stop(Long id);
 
     /**
-     * 根据ID删除实验
+     * Delete experiment by ID
      */
     void deleteById(Long id);
 
 
     /**
-     * 根据ID删除实验
+     * Delete experiment by ID
      */
     void restartById(Long id);
 
     /**
-     * 获取使用指定评估器的实验列表
+     * Get a list of experiments using the specified evaluator
      *
-     * @param request 查询请求
-     * @return 分页的实验结果
+     * @param request query request
+     * @return paging experimental results
      */
     PageResult<Experiment> getExperimentsByEvaluator(EvaluatorExperimentsListRequest request);
 }

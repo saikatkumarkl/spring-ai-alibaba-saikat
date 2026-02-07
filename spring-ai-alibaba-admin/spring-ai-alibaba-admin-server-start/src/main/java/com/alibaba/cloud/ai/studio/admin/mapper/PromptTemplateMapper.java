@@ -10,22 +10,22 @@ import java.util.List;
 public interface PromptTemplateMapper {
 
     /**
-     * 根据模板Key获取Prompt模板
+     * Get the Prompt template based on the template Key
      *
-     * @param promptTemplateKey 模板Key
-     * @return Prompt模板实体
+     * @param promptTemplateKey template Key
+     * @return Prompt template entity
      */
     PromptTemplateDO selectByPromptTemplateKey(@Param("promptTemplateKey") String promptTemplateKey);
 
     /**
-     * 查询Prompt模板列表
+     * Query Prompt template list
      *
-     * @param search            查询模式
-     * @param tag               标签
-     * @param promptTemplateKey 模板Key
-     * @param offset            偏移量
-     * @param limit             数量限制
-     * @return Prompt模板列表
+     * @param search query mode
+     * @param tag tag
+     * @param promptTemplateKey template Key
+     * @param offset offset
+     * @param limit quantity limit
+     * @return Prompt template list
      */
     List<PromptTemplateDO> selectList(@Param("search") String search,
                                       @Param("tag") String tag,
@@ -34,12 +34,12 @@ public interface PromptTemplateMapper {
                                       @Param("limit") int limit);
 
     /**
-     * 查询Prompt模板总数
+     * Query the total number of Prompt templates
      *
-     * @param search            查询模式
-     * @param tag               标签
-     * @param promptTemplateKey 模板Key
-     * @return 总数
+     * @param search query mode
+     * @param tag tag
+     * @param promptTemplateKey template Key
+     * @return total number
      */
     int selectCount(@Param("search") String search,
                     @Param("tag") String tag,

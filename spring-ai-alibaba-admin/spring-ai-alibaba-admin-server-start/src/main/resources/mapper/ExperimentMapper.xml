@@ -44,7 +44,7 @@
         id, experiment_id, input, actual_output, reference_output, score, reason, evaluation_time, evaluator_version_id, create_time, update_time
     </sql>
 
-    <!-- 创建实验 -->
+    <!--Create an experiment-->
     <insert id="insert" parameterType="com.alibaba.cloud.ai.studio.admin.entity.ExperimentDO" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO
         <include refid="experiment_table_name"/>
@@ -56,7 +56,7 @@
     </insert>
 
 
-    <!-- 根据ID获取实验 -->
+    <!--Get experiment by ID-->
     <select id="selectById" resultMap="experimentResultMap">
         SELECT
         <include refid="experiment_base_column_list"/>
@@ -65,7 +65,7 @@
         WHERE id = #{id}
     </select>
 
-    <!-- 分页查询实验列表 -->
+    <!--Query the experiment list by page-->
     <select id="selectList" resultMap="experimentResultMap">
         SELECT
         <include refid="experiment_base_column_list"/>
@@ -83,7 +83,7 @@
     </select>
 
 
-    <!-- 分页查询datasetId实验列表 -->
+    <!--Paginated query datasetId experiment list-->
     <select id="selectByDatasetId" resultMap="experimentResultMap">
         SELECT
         <include refid="experiment_base_column_list"/>
@@ -96,7 +96,7 @@
 
 
 
-    <!-- 统计实验数量 -->
+    <!--Count the number of experiments-->
     <select id="count" resultType="int">
         SELECT COUNT(*) FROM
         <include refid="experiment_table_name"/>
@@ -111,14 +111,14 @@
     </select>
 
 
-    <!-- 统计datasetId实验数量 -->
+    <!--Count the number of datasetId experiments-->
     <select id="selectCountByDatasetId" resultType="int">
         SELECT COUNT(*) FROM
         <include refid="experiment_table_name"/>
         where dataset_id = #{datasetId}
     </select>
 
-    <!-- 根据评估器ID分页查询实验列表 -->
+    <!--Query the experiment list by page based on the evaluator ID-->
     <select id="selectByEvaluatorId" resultMap="experimentResultMap">
         SELECT
         <include refid="experiment_base_column_list"/>
@@ -129,7 +129,7 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <!-- 根据评估器版本ID分页查询实验列表 -->
+    <!--Query the experiment list by page based on the evaluator version ID-->
     <select id="selectByEvaluatorVersionId" resultMap="experimentResultMap">
         SELECT
         <include refid="experiment_base_column_list"/>
@@ -140,21 +140,21 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <!-- 统计使用指定评估器的实验数量 -->
+    <!--Count the number of experiments using the specified evaluator-->
     <select id="selectCountByEvaluatorId" resultType="int">
         SELECT COUNT(*) FROM
         <include refid="experiment_table_name"/>
         WHERE evaluator_config LIKE CONCAT('%"evaluatorId":"', #{evaluatorId}, '"%')
     </select>
 
-    <!-- 统计使用指定评估器版本的实验数量 -->
+    <!--Counts the number of experiments using a specified evaluator version-->
     <select id="selectCountByEvaluatorVersionId" resultType="int">
         SELECT COUNT(*) FROM
         <include refid="experiment_table_name"/>
         WHERE evaluator_config LIKE CONCAT('%"evaluatorVersionId":"', #{evaluatorVersionId}, '"%')
     </select>
 
-    <!-- 根据ID更新实验 -->
+    <!--Update experiment based on ID-->
     <update id="updateById" parameterType="com.alibaba.cloud.ai.studio.admin.entity.ExperimentDO">
         UPDATE
         <include refid="experiment_table_name"/>
@@ -173,7 +173,7 @@
         WHERE id = #{id}
     </update>
 
-    <!-- 创建实验结果 -->
+    <!--Create experiment results-->
     <insert id="insertResult" parameterType="com.alibaba.cloud.ai.studio.admin.entity.ExperimentResultDO" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO
         <include refid="experiment_result_table_name"/>
@@ -182,7 +182,7 @@
         (#{experimentId}, #{input}, #{actualOutput}, #{referenceOutput}, #{score}, #{reason}, #{evaluationTime}, #{evaluatorVersionId}, NOW(), NOW())
     </insert>
 
-    <!-- 根据实验ID删除实验结果 -->
+    <!--Delete experiment results based on experiment ID-->
     <delete id="deleteById">
         DELETE FROM
         <include refid="experiment_table_name"/>

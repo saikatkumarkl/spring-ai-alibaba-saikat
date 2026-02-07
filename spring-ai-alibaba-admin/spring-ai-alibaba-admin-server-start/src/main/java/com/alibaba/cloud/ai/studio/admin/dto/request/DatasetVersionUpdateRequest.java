@@ -9,19 +9,19 @@ import java.util.List;
 public class DatasetVersionUpdateRequest {
 
     /**
-     * 数据集版本Id描述
+     * Dataset version ID description
      */
     private Long datasetVersionId;
 
 
     /**
-     * 数据集版本描述
+     * Dataset version description
      */
     private String description;
 
 
     /**
-     * 数据集版本状态
+     * Dataset version status
      */
 
     private String status;

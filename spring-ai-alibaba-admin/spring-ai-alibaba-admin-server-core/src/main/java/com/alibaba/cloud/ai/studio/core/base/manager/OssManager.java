@@ -111,7 +111,7 @@ public class OssManager implements InitializingBean {
 
 		// TODO use sts in futuer?
 		/*
-		 * // 获取stsToken StsRole stsRole =
+		 * //Get stsToken StsRole stsRole =
 		 * getStsRole(fileStore.getAliyunUid().toString()); if (stsRole == null) { throw
 		 * new BizException(ErrorCodeEnum.SDK_FILE_STORE_NO_AUTH); } OSS ossClient = new
 		 * OSSClientBuilder().build(endpoint, stsRole.getStsAk(), stsRole.getStsSecret(),

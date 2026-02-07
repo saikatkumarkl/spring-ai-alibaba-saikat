@@ -35,33 +35,33 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 配置静态资源映射
+        //Configure static resource mapping
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/static/")
                 .setCachePeriod(3600);
 
-        // 配置前端资源映射 - 优先处理静态文件
+        //Configure front-end resource mapping - give priority to static files
         registry.addResourceHandler("/**")
                 .addResourceLocations("classpath:/static/")
                 .resourceChain(true)
                 .addResolver(new PathResourceResolver() {
                     @Override
                     protected Resource getResource(String resourcePath, Resource location) throws IOException {
-                        // 跳过 API 路径
+                        //Skip API path
                         if (resourcePath.startsWith("console/v1/") || resourcePath.startsWith("api/v1/")
                                 || resourcePath.startsWith("api/") || resourcePath.startsWith("initializr/")) {
                             return null;
                         }
                         
-                        // 尝试获取请求的资源
+                        //Try to get the requested resource
                         Resource requestedResource = location.createRelative(resourcePath);
                         
-                        // 如果请求的是文件且存在，直接返回
+                        //If the requested file exists and it exists, return it directly.
                         if (requestedResource.exists() && requestedResource.isReadable()) {
                             return requestedResource;
                         }
                         
-                        // 对于所有其他路径（前端路由），返回 index.html
+                        //For all other paths (frontend routes), return index.html
                         return new ClassPathResource("/static/index.html");
                     }
                 });
@@ -69,7 +69,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        // 配置根路径重定向到index.html
+        //Configure the root path to redirect to index.html
         registry.addViewController("/admin")
                 .setViewName("forward:/index.html");
     }

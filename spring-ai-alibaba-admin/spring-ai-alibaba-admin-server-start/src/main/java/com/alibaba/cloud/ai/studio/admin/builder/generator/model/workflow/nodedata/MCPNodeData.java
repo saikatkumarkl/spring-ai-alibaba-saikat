@@ -20,7 +20,7 @@ import com.alibaba.cloud.ai.studio.admin.builder.generator.model.workflow.NodeDa
 
 import java.util.List;
 
-// 本类仅考虑Studio的MCP使用，Dify的MCP使用ToolNode定义
+// This class is for Studio MCP only; Dify MCP is defined with ToolNode.
 public class MCPNodeData extends NodeData {
 
 	private String toolName;

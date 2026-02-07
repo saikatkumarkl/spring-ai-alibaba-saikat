@@ -14,10 +14,10 @@ import java.util.List;
 public class SessionUtils {
 
     /**
-     * 转换聊天历史为Spring AI消息格式
+     * Convert chat history to Spring AI message format
      *
-     * @param messages 消息列表
-     * @return Spring AI消息列表
+     * @param messages message list
+     * @return Spring AI message list
      */
     public static List<Message> convertChatMessages(List<ChatMessage> messages) {
         List<Message> convertedMessages = new ArrayList<>();
@@ -27,7 +27,7 @@ public class SessionUtils {
             } else if ("assistant".equals(message.getRole())) {
                 convertedMessages.add(new AssistantMessage(message.getContent()));
             }
-            // 忽略其他角色（如system等），根据需要可以扩展
+            //Ignore other roles (such as system, etc.) and can be expanded as needed
         }
         return convertedMessages;
     }

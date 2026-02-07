@@ -61,7 +61,7 @@ public class ParameterParsingNodeDataConverter extends AbstractNodeDataConverter
 			public ParameterParsingNodeData parse(Map<String, Object> data) {
 				ParameterParsingNodeData nodeData = new ParameterParsingNodeData();
 
-				// 获取必要信息
+				//Get necessary information
 				List<String> selectorList = MapReadUtil.safeCastToList(data.get("query"), String.class);
 				VariableSelector selector = new VariableSelector(selectorList.get(0), selectorList.get(1));
 				String chatModelName = this.exactChatModelName(DSLDialectType.DIFY, data);
@@ -80,7 +80,7 @@ public class ParameterParsingNodeDataConverter extends AbstractNodeDataConverter
 					.toList();
 				String instruction = Optional.ofNullable(data.get("instruction")).map(Object::toString).orElse("");
 
-				// 设置信息
+				//Setup information
 				nodeData.setInputSelector(selector);
 				nodeData.setChatModeName(chatModelName);
 				nodeData.setModeParams(modelParams);
@@ -112,7 +112,7 @@ public class ParameterParsingNodeDataConverter extends AbstractNodeDataConverter
 			public ParameterParsingNodeData parse(Map<String, Object> data) throws JsonProcessingException {
 				ParameterParsingNodeData nodeData = new ParameterParsingNodeData();
 
-				// 获取必要信息
+				//Get necessary information
 				VariableSelector selector = this.varTemplateToSelector(DSLDialectType.STUDIO, MapReadUtil
 					.safeCastToListWithMap(MapReadUtil.getMapDeepValue(data, List.class, "config", "input_params"))
 					.get(0)
@@ -140,7 +140,7 @@ public class ParameterParsingNodeDataConverter extends AbstractNodeDataConverter
 					.map(Object::toString)
 					.orElse("");
 
-				// 设置必要信息
+				//Set necessary information
 				nodeData.setInputSelector(selector);
 				nodeData.setChatModeName(chatModelName);
 				nodeData.setModeParams(modelParams);
@@ -180,14 +180,14 @@ public class ParameterParsingNodeDataConverter extends AbstractNodeDataConverter
 	public BiConsumer<ParameterParsingNodeData, Map<String, String>> postProcessConsumer(DSLDialectType dialectType) {
 		return switch (dialectType) {
 			case DIFY, STUDIO -> emptyProcessConsumer().andThen((nodeData, idToVarName) -> {
-				// 设置输出
+				//Set output
 				List<Variable> outputs = Stream
 					.concat(nodeData.getParameters().stream().map(p -> new Variable(p.name(), p.type())),
 							ParameterParsingNodeData.getDefaultOutputSchema(dialectType).stream())
 					.toList();
 				nodeData.setOutputs(outputs);
 
-				// 设置输入以及key
+				//Set input and key
 				Optional.ofNullable(nodeData.getInputSelector())
 					.ifPresent(selector -> selector
 						.setNameInCode(idToVarName.getOrDefault(selector.getNamespace(), selector.getNamespace()) + "_"
@@ -196,7 +196,7 @@ public class ParameterParsingNodeDataConverter extends AbstractNodeDataConverter
 				nodeData.setReasonKey(nodeData.getVarName() + "_" + nodeData.getReasonKey());
 				nodeData.setDataKey(nodeData.getVarName() + "_" + nodeData.getDataKey());
 
-				// 格式化instruction
+				//Formatting instructions
 				nodeData.setInstruction(this.convertVarTemplate(dialectType, nodeData.getInstruction(), idToVarName));
 			}).andThen(super.postProcessConsumer(dialectType));
 			default -> super.postProcessConsumer(dialectType);

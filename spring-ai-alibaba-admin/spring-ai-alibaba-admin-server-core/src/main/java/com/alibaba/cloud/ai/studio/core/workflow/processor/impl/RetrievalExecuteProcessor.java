@@ -129,15 +129,15 @@ public class RetrievalExecuteProcessor extends AbstractExecuteProcessor {
 	@Data
 	public static class NodeParam {
 
-		// 知识库ids
+		//knowledge base ids
 		@JsonProperty("knowledge_base_ids")
 		private List<String> knowledgeBaseIds;
 
-		// 知识库检索策略
+		//Knowledge base search strategy
 		@JsonProperty("prompt_strategy")
 		private String promptStrategy = "topk";
 
-		// 检索topK
+		//Retrieve topK
 		@JsonProperty("top_k")
 		private Integer topK;
 

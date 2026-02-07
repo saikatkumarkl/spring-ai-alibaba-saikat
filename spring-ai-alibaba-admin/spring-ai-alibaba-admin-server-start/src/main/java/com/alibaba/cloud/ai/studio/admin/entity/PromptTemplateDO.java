@@ -14,40 +14,40 @@ import lombok.NoArgsConstructor;
 public class PromptTemplateDO {
 
     /**
-     * 主键ID
+     * Primary key ID
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
-     * Prompt模板Key
+     * Prompt template key
      */
     private String promptTemplateKey;
 
     /**
-     * 标签，逗号分隔
+     * tags, comma separated
      */
     private String tags;
 
     /**
-     * 模板描述
+     * Template description
      */
     private String templateDesc;
 
     /**
-     * Prompt模版内容
+     * Prompt template content
      */
     @Column(columnDefinition = "LONGTEXT")
     private String template;
 
     /**
-     * Prompt模版里的可变参数
+     * Variable parameters in Prompt template
      */
     private String variables;
 
     /**
-     * 推荐使用的模型参数，JSON格式
+     * Recommended model parameters, JSON format
      */
     @Column(columnDefinition = "TEXT")
     private String modelConfig;

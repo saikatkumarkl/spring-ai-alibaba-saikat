@@ -110,7 +110,7 @@ public class BranchNodeDataConverter extends AbstractNodeDataConverter<BranchNod
 			public BranchNodeData parse(Map<String, Object> data) throws JsonProcessingException {
 				BranchNodeData nodeData = new BranchNodeData();
 
-				// 获取条件信息
+				//Get condition information
 				List<Map<String, Object>> caseList = Optional
 					.ofNullable(MapReadUtil.safeCastToListWithMap(
 							MapReadUtil.getMapDeepValue(data, List.class, "config", "node_param", "branches")))
@@ -129,7 +129,7 @@ public class BranchNodeDataConverter extends AbstractNodeDataConverter<BranchNod
 						.fromValue(Optional.ofNullable(MapReadUtil.getMapDeepValue(map, String.class, "logic"))
 							.orElse(LogicalOperatorType.AND.getValue()));
 
-					// 提取Conditions
+					//ExtractConditions
 					List<Map<String, Object>> conditionMap = Optional
 						.ofNullable(MapReadUtil
 							.safeCastToListWithMap(MapReadUtil.getMapDeepValue(map, List.class, "conditions")))
@@ -178,7 +178,7 @@ public class BranchNodeDataConverter extends AbstractNodeDataConverter<BranchNod
 					return new Case().setId(id).setLogicalOperator(logicalOperatorType).setConditions(conditions);
 				}).toList();
 
-				// 设置基本信息
+				//Set basic information
 				nodeData.setCases(cases);
 				nodeData.setDefaultCase(defaultCase);
 				return nodeData;
@@ -218,7 +218,7 @@ public class BranchNodeDataConverter extends AbstractNodeDataConverter<BranchNod
 	public BiConsumer<BranchNodeData, Map<String, String>> postProcessConsumer(DSLDialectType dialectType) {
 		BiConsumer<BranchNodeData, Map<String, String>> consumer = super.postProcessConsumer(dialectType)
 			.andThen((nodeData, idToVarName) -> {
-				// 处理条件里的VariableSelector
+				//VariableSelector in processing conditions
 				nodeData.getCases().forEach(c -> {
 					c.getConditions().forEach(condition -> {
 						VariableSelector selector = condition.getTargetSelector();
@@ -237,7 +237,7 @@ public class BranchNodeDataConverter extends AbstractNodeDataConverter<BranchNod
 		return switch (dialectType) {
 			case DIFY -> consumer;
 			case STUDIO -> consumer.andThen((nodeData, idToVarName) -> {
-				// 将Case的caseId里添加nodeId（为了与Edge里的sourceHandle保持一致）
+				//Add nodeId to caseId of Case (to be consistent with sourceHandle in Edge)
 				String varName = nodeData.getVarName();
 				String prefix = idToVarName.entrySet()
 					.stream()

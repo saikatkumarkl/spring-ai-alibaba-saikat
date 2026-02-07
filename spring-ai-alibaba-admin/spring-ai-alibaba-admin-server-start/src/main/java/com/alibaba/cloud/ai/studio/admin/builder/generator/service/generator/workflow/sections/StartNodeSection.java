@@ -41,7 +41,7 @@ public class StartNodeSection implements NodeSection<StartNodeData> {
 
 	@Override
 	public String renderEdges(StartNodeData nodeData, List<Edge> edges) {
-		// 开始节点的Source应为StateGraph.START
+		//The Source of the start node should be StateGraph.START
 		StringBuilder sb = new StringBuilder();
 		sb.append(String.format("// Edges For [START]%n"));
 		if (edges.isEmpty()) {

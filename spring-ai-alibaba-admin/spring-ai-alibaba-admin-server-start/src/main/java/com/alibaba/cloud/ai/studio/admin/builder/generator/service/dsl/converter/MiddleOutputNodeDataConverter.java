@@ -47,10 +47,10 @@ public class MiddleOutputNodeDataConverter extends AbstractNodeDataConverter<Mid
 	public BiConsumer<MiddleOutputNodeData, Map<String, String>> postProcessConsumer(DSLDialectType dialectType) {
 		return switch (dialectType) {
 			case STUDIO -> emptyProcessConsumer().andThen((nodeData, idToVarName) -> {
-				// 设置输出键
+				//Set output key
 				nodeData.setOutputs(MiddleOutputNodeData.getDefaultOutputSchemas(dialectType));
 				nodeData.setOutputKey(nodeData.getVarName() + "_" + nodeData.getOutputs().get(0).getName());
-				// 将输出模板进行处理
+				//Process the output template
 				nodeData
 					.setOutputTemplate(this.convertVarTemplate(dialectType, nodeData.getOutputTemplate(), idToVarName));
 				nodeData.setVarKeys(this.getVarTemplateKeys(nodeData.getOutputTemplate()));

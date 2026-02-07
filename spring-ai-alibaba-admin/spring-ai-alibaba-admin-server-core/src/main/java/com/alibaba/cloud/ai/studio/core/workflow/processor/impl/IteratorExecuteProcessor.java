@@ -788,7 +788,7 @@ public class IteratorExecuteProcessor extends AbstractExecuteProcessor {
 					&& !operator.equals(JudgeOperator.IS_NOT_NULL.getCode())
 					&& !operator.equals(JudgeOperator.IS_TRUE.getCode())
 					&& !operator.equals(JudgeOperator.IS_FALSE.getCode())) {
-				// is_null、is_not_null、is_true、is_false不需要右值
+				//is_null, is_not_null, is_true, is_false do not require rvalues
 				return false;
 			}
 		}

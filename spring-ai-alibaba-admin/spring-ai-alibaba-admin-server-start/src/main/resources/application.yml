@@ -4,7 +4,7 @@ server:
     mime-types: text/html,text/xml,text/plain,text/css,text/javascript
     min-response-size: 2048
 nacos:
-  # 支持通过环境变量 NACOS_SERVER_ADDR 覆盖，默认值在各个 profile 中定义
+  # Can be overridden via NACOS_SERVER_ADDR; defaults are defined per profile.
   server-addr: ${NACOS_SERVER_ADDR}
 management:
   tracing:
@@ -14,7 +14,7 @@ management:
     tracing:
       export:
         enabled: true
-      # 支持通过环境变量 MANAGEMENT_OTLP_TRACING_EXPORT_ENDPOINT 覆盖，默认值在各个 profile 中定义
+      # Can be overridden via MANAGEMENT_OTLP_TRACING_EXPORT_ENDPOINT; defaults are defined per profile.
         endpoint: ${MANAGEMENT_OTLP_TRACING_EXPORT_ENDPOINT:http://localhost:4318/v1/traces}
     metrics:
       export:
@@ -70,8 +70,8 @@ spring:
       - classpath:elasticsearch.yml
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    # 支持通过环境变量覆盖，默认值在各个 profile 中定义
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:com.mysql.cj.jdbc.Driver}
+    # Can be overridden via env vars; defaults are defined per profile.
     # SPRING_DATASOURCE_URL, SPRING_DATASOURCE_USERNAME, SPRING_DATASOURCE_PASSWORD
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
@@ -92,7 +92,7 @@ spring:
           statement-log-error-enabled: true
   data:
     redis:
-      # 支持通过环境变量覆盖，默认值在各个 profile 中定义
+      # Can be overridden via env vars; defaults are defined per profile.
       # SPRING_REDIS_HOST, SPRING_REDIS_PORT, SPRING_REDIS_DATABASE
       host: ${SPRING_REDIS_HOST}
       port: ${SPRING_REDIS_PORT}
@@ -105,12 +105,12 @@ spring:
     content-type: text/html
     template-loader-path: classpath:/templates/
   elasticsearch:
-    # Spring Boot 默认 Elasticsearch 配置（如果使用 Spring Data Elasticsearch）
-    # 注意：自定义 ElasticsearchClient 的配置在 elasticsearch.yml 中
-    # 支持通过环境变量 SPRING_ELASTICSEARCH_URIS 覆盖，默认值在各个 profile 中定义
+    # Spring Boot default Elasticsearch config (if using Spring Data Elasticsearch).
+    # Note: ElasticsearchClient custom config is in elasticsearch.yml.
+    # Can be overridden via SPRING_ELASTICSEARCH_URIS; defaults are defined per profile.
     uris: ${SPRING_ELASTICSEARCH_URIS}
   jpa:
-    database-platform: org.hibernate.dialect.MySQLDialect
+    database-platform: ${SPRING_JPA_DATABASE_PLATFORM:org.hibernate.dialect.MySQLDialect}
     hibernate:
       ddl-auto: none
     show-sql: false
@@ -124,7 +124,7 @@ mybatis:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 rocketmq:
-  # 支持通过环境变量覆盖，默认值在各个 profile 中定义
+  # Can be overridden via env vars; defaults are defined per profile.
   # ROCKETMQ_ENDPOINTS, ROCKETMQ_DOCUMENT_INDEX_TOPIC, ROCKETMQ_DOCUMENT_INDEX_GROUP
   endpoints: ${ROCKETMQ_ENDPOINTS}
   document-index-topic: ${ROCKETMQ_DOCUMENT_INDEX_TOPIC:topic_saa_studio_document_index}

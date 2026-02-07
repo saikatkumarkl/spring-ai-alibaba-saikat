@@ -161,9 +161,9 @@ public class VariableAggregatorNodeDataConverter extends AbstractNodeDataConvert
 	public BiConsumer<VariableAggregatorNodeData, Map<String, String>> postProcessConsumer(DSLDialectType dialectType) {
 		return switch (dialectType) {
 			case DIFY -> {
-				// 设置输入变量的Selector
+				//Set the Selector of the input variable
 				BiConsumer<VariableAggregatorNodeData, Map<String, String>> consumer = ((nodeData, idToVarName) -> {
-					// 设置输出变量
+					//Set output variables
 					if (nodeData.getAdvancedSettings() != null && nodeData.getAdvancedSettings().isGroupEnabled()) {
 						List<Variable> outputs = nodeData.getAdvancedSettings()
 							.getGroups()
@@ -179,7 +179,7 @@ public class VariableAggregatorNodeDataConverter extends AbstractNodeDataConvert
 					}
 					nodeData.setOutputKey(nodeData.getVarName() + "_output");
 
-					// 设置输入变量
+					//Set input variables
 					List<VariableSelector> selectors;
 					if (nodeData.getAdvancedSettings() != null && nodeData.getAdvancedSettings().isGroupEnabled()) {
 						selectors = nodeData.getAdvancedSettings()
@@ -189,7 +189,7 @@ public class VariableAggregatorNodeDataConverter extends AbstractNodeDataConvert
 							.flatMap(List::stream)
 							.map(list -> new VariableSelector(list.get(0), list.get(1)))
 							.toList();
-						// 设置Group自己的Selector
+						//Set the Group's own Selector
 						nodeData.getAdvancedSettings().getGroups().forEach(group -> {
 							group.setVariableSelectors(group.getVariables()
 								.stream()

@@ -10,52 +10,52 @@ import java.util.Map;
 public class ModelConfigResponse {
 
     /**
-     * 主键ID
+     * Primary key ID
      */
     private Long id;
 
     /**
-     * 模型名称
+     * Model name
      */
     private String name;
 
     /**
-     * 提供商
+     * provider
      */
     private String provider;
 
     /**
-     * 模型标识符
+     * model identifier
      */
     private String modelName;
 
     /**
-     * 模型服务地址
+     * Model service address
      */
     private String baseUrl;
 
     /**
-     * 默认参数配置
+     * Default parameter configuration
      */
     private Map<String, Object> defaultParameters;
 
     /**
-     * 支持的参数定义
+     * Supported parameter definitions
      */
     private List<ModelParameterDef> supportedParameters;
 
     /**
-     * 状态:1-启用,0-禁用
+     * Status: 1-enabled, 0-disabled
      */
     private Integer status;
 
     /**
-     * 创建时间
+     * creation time
      */
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * Update time
      */
     private LocalDateTime updateTime;
 }

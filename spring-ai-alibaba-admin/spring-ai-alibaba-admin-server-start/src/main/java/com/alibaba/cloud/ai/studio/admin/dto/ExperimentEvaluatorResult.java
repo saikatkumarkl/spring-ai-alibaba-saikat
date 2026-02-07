@@ -10,25 +10,25 @@ import java.math.BigDecimal;
 public class ExperimentEvaluatorResult {
 
     /**
-     * 实验ID
+     * Experiment ID
      */
     private Long experimentId;
 
 
     /**
-     * 评估平均得分（0.0-1.0）
+     * Assessment average score (0.0-1.0)
      */
     private BigDecimal averageScore;
 
 
     /**
-     * 评估器版本ID
+     * Evaluator version ID
      */
     private Long evaluatorVersionId;
 
 
     /**
-     * 进度
+     * schedule
      */
     private Integer progress;
 

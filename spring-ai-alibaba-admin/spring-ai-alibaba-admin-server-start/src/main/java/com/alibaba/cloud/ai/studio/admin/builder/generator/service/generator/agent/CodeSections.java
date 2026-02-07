@@ -74,7 +74,7 @@ public class CodeSections {
 
 	public CodeSections merge(CodeSections other) {
 		this.imports.addAll(other.imports);
-		// 合并 code 时留给上层按序拼接，这里只保留当前节点的片段
+		//When merging code, leave it to the upper layer to splice it in order. Only the fragments of the current node are retained here.
 		if (other.hasResolver)
 			this.hasResolver = true;
 		return this;

@@ -11,65 +11,65 @@ import java.time.LocalDateTime;
 @Data
 public class EvaluatorVersion {
     /**
-     * 主键ID
+     * Primary key ID
      */
     private Long id;
 
 
     /**
-     * 评估器版本描述
+     * Evaluator version description
      */
     private String description;
 
     /**
-     * 版本号
+     * version number
      */
     private String version;
 
     /**
-     * 模型ID
+     * Model ID
      */
     private String modelConfig;
 
     /**
-     * Prompt配置（JSON格式）
+     * Prompt configuration (JSON format)
      */
     private String prompt;
 
     /**
-     * 评估器中的变量参数
+     * Variable parameters in evaluators
      */
     private String variables;
 
     /**
-     * 版本状态
+     * version status
      */
     private String status;
 
 
     /**
-     * 实验集合（一对多关系）
+     * Experimental collection (one-to-many relationship)
      */
     private String experiments;
 
 
 
     /**
-     * 创建时间
+     * creation time
      */
 
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * Update time
      */
     private LocalDateTime updateTime;
 
     /**
-     * 从DO对象转换为DTO对象
+     * Convert from DO object to DTO object
      *
-     * @param evaluatorVersionDO DO对象
-     * @return DTO对象
+     * @param evaluatorVersionDO DO object
+     * @return DTO object
      */
     public static EvaluatorVersion fromDO(EvaluatorVersionDO evaluatorVersionDO) {
         if (evaluatorVersionDO == null) {

@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 
-// TODO: 支持失败时默认值以及异常分支、支持Studio的多字段输出模式
+//TODO: Supports default values ​​on failure and exception branches, supports Studio's multi-field output mode
 @Component
 public class HttpNodeSection implements NodeSection<HttpNodeData> {
 
@@ -99,7 +99,7 @@ public class HttpNodeSection implements NodeSection<HttpNodeData> {
 
 		sb.append(".build();\n");
 
-		// 辅助节点，用于转换HttpNode的结果
+		//Auxiliary node, used to convert the results of HttpNode
 		String assistNodeCode = String.format("wrapperHttpNodeAction(%s, \"%s\")", varName, varName);
 		sb.append(String.format("stateGraph.addNode(\"%s\", AsyncNodeAction.node_async(%s));%n%n", varName,
 				assistNodeCode));

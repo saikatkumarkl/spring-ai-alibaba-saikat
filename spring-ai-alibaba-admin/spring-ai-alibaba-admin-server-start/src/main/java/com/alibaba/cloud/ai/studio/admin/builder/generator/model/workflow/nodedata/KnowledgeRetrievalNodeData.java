@@ -39,7 +39,7 @@ public class KnowledgeRetrievalNodeData extends NodeData {
 
 	private Double threshold;
 
-	// 对于Studio DSL，生成代码时可以根据知识库ID生成对应代码；对于Dify DSL，只能提示用户手动编写知识库代码
+	// For Studio DSL, code can be generated based on knowledge base IDs; for Dify DSL, users must implement it manually.
 	private List<String> knowledgeBaseIds;
 
 	private List<NodeSection.ResourceFile> resourceFiles;

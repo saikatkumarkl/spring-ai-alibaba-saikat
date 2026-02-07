@@ -69,15 +69,15 @@ public class DatasetServiceImpl implements DatasetService {
     public PageResult<Dataset> list(DatasetListRequest request) {
         log.info("查询评测集列表: {}", request);
 
-        // 计算分页参数
+        //Calculate paging parameters
         int pageNumber = request.getPageNumber() != null ? request.getPageNumber() : 1;
         int pageSize = request.getPageSize() != null ? request.getPageSize() : 10;
         long offset = (pageNumber - 1L) * pageSize;
         
-        // 获取搜索条件
+        //Get search criteria
         String name = request.getDatasetName();
         
-        // 查询数据
+        //Query data
         List<DatasetDO> datasetDOList = datasetMapper.selectList(name, offset, pageSize);
 
         List<Dataset> datasetList = datasetDOList.stream()

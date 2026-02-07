@@ -278,7 +278,7 @@ public class LLMExecuteProcessor extends AbstractExecuteProcessor {
 	private UserMessage constructUserMessage(Node node, ModelConfig modelConfig, String userPrompt,
 			WorkflowContext context) {
 		userPrompt = replaceTemplateContent(userPrompt, context);
-		// 构造视觉理解
+		//Construct visual understanding
 		ModelConfig.SkillConfig visionConfig = modelConfig.getVisionConfig();
 		if (visionConfig != null && BooleanUtils.isTrue(visionConfig.getEnable())) {
 			List<Node.InputParam> visionParams = visionConfig.getParams();

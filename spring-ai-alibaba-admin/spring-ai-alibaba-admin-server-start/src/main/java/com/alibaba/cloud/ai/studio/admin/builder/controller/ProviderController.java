@@ -317,7 +317,7 @@ public class ProviderController {
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("input_params", "providerId is required"));
 		}
 		ProviderConfigInfo providerDetail = providerManager.getProviderDetail(provider, false);
-		// 处理验权凭证结构返回
+		// Handle credential spec response structure
 		ModelProvider providerInstance = providerMap.get(provider + "Provider");
 		if (providerInstance == null) {
 			providerDetail.setCredentialSpecs(providerMap.get("OpenAIProvider").getCredentialSpecs());
@@ -481,7 +481,7 @@ public class ProviderController {
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("input_params", "provider or modelId is required"));
 		}
 
-		// 获取模型详情
+		// Fetch model details
 		ModelConfigInfo modelDetail = modelManager.getModelDetail(provider, modelId);
 		if (modelDetail == null) {
 			return Result.error(IdGenerator.uuid(), ErrorCode.MODEL_NOT_FOUND);
@@ -489,7 +489,7 @@ public class ProviderController {
 
 		ModelProvider providerInstance = providerMap.get(provider + "Provider");
 		if (providerInstance == null) {
-			// 返回默认的
+			// Fallback to default provider
 			providerInstance = providerMap.get("OpenAIProvider");
 		}
 		return Result.success(providerInstance.getParameterRules(modelId, modelDetail.getType()));

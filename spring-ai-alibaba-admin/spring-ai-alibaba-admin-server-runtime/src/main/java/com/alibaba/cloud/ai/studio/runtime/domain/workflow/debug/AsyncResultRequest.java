@@ -21,7 +21,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 异步任务结果查询请求
+ * Asynchronous task result query request
  */
 @Data
 public class AsyncResultRequest implements Serializable {

@@ -43,7 +43,7 @@ import java.util.Map;
 import static com.alibaba.cloud.ai.studio.core.base.constants.CacheConstants.WORKFLOW_SESSION_VARIABLE_KEY_TEMPLATE;
 
 /**
- * 应用编排执行接口类
+ * Application orchestration execution interface class
  *
  * @since 1.0.0.3
  */
@@ -71,7 +71,7 @@ public class StartExecuteProcessor extends AbstractExecuteProcessor {
 
 		NodeResult nodeResult = initNodeResultAndRefreshContext(node, context);
 
-		// 设置系统变量
+		//Set system variables
 		Map<String, Object> sysMap = context.getSysMap();
 		if (sysMap != null) {
 			sysMap.keySet().forEach(key -> {
@@ -87,7 +87,7 @@ public class StartExecuteProcessor extends AbstractExecuteProcessor {
 			});
 		}
 
-		// 设置会话变量
+		//Set session variables
 		WorkflowConfig.GlobalConfig globalConfig = context.getWorkflowConfig().getGlobalConfig();
 		List<CommonParam> sessionParamList = (globalConfig == null || globalConfig.getVariableConfig() == null)
 				? Lists.newArrayList() : globalConfig.getVariableConfig().getConversationParams();
@@ -111,7 +111,7 @@ public class StartExecuteProcessor extends AbstractExecuteProcessor {
 			});
 		}
 
-		// 设置用户透传参数，放入Start节点下的变量关联
+		//Set user transparent transmission parameters and put them into the variable association under the Start node
 		Map<String, Object> userMap = context.getUserMap();
 		if (userMap != null) {
 			userMap.keySet().forEach(key -> {
@@ -142,7 +142,7 @@ public class StartExecuteProcessor extends AbstractExecuteProcessor {
 	@Override
 	public void handleVariables(DirectedAcyclicGraph<String, Edge> graph, Node node, WorkflowContext context,
 			NodeResult nodeResult) {
-		// 开始节点不需要处理variableMap，上面已处理
+		//The starting node does not need to process variableMap, it has been processed above
 	}
 
 }

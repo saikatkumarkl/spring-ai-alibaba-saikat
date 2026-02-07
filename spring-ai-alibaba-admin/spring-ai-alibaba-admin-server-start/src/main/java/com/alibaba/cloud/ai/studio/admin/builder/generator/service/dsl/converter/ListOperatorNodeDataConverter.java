@@ -67,7 +67,7 @@ public class ListOperatorNodeDataConverter extends AbstractNodeDataConverter<Lis
 					nd.setInputs(Collections.singletonList(new VariableSelector(sel.get(0), sel.get(1))));
 				}
 
-				// 过滤条件
+				//filter conditions
 				Object filterObj = data.get("filter_by");
 				if (filterObj instanceof Map<?, ?>) {
 					Map<String, Object> filterMap = (Map<String, Object>) filterObj;
@@ -85,7 +85,7 @@ public class ListOperatorNodeDataConverter extends AbstractNodeDataConverter<Lis
 					}
 				}
 
-				// 限制数量
+				//limited quantity
 				Object limitObj = data.get("limit");
 				if (limitObj instanceof Map<?, ?>) {
 					Map<String, Object> limitMap = (Map<String, Object>) limitObj;
@@ -96,7 +96,7 @@ public class ListOperatorNodeDataConverter extends AbstractNodeDataConverter<Lis
 					}
 				}
 
-				// 排序规则
+				//Sorting rules
 				Object orderObj = data.get("order_by");
 				if (orderObj instanceof Map<?, ?>) {
 					Map<String, Object> orderMap = (Map<String, Object>) orderObj;
