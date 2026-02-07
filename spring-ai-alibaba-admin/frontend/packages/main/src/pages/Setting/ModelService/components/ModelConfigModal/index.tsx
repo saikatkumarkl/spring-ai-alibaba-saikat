@@ -28,15 +28,28 @@ const ModelConfigModal: React.FC<ModelConfigModalProps> = ({
   const [loadingModels, setLoadingModels] = useState(false);
   const [useDropdown, setUseDropdown] = useState(false);
 
+  // Show all model types by default for all providers
+  // If provider has explicitly limited types, use those, otherwise show all
+  const supportedTypes =
+    provider?.supported_model_types && provider.supported_model_types.length > 1
+      ? provider.supported_model_types
+      : ['llm', 'text_embedding', 'rerank'];
+
+  const defaultType = model?.type || 'llm';
+
   useEffect(() => {
     if (open) {
       if (model) {
         form.setFieldsValue({
           name: model.name || '',
           tags: model.tags || [],
+          type: model.type || defaultType,
         });
       } else {
         form.resetFields();
+        form.setFieldsValue({
+          type: defaultType,
+        });
         setAvailableModels([]);
         setUseDropdown(false);
         // Auto-load models for providers with endpoint configured
@@ -46,7 +59,7 @@ const ModelConfigModal: React.FC<ModelConfigModalProps> = ({
         }
       }
     }
-  }, [open, model, form, provider]);
+  }, [open, model, form, provider, defaultType]);
 
   const fetchAvailableModels = async () => {
     if (!provider?.credential?.endpoint) {
@@ -88,12 +101,46 @@ const ModelConfigModal: React.FC<ModelConfigModalProps> = ({
 
   const handleSubmit = () => {
     form.validateFields().then((values) => {
+      console.log('Form values from validateFields:', values);
+      console.log('values.type:', values.type, 'typeof:', typeof values.type);
+      console.log('model prop:', model);
+
+      // Validate model type based on model name patterns
+      const modelName = values.name.toLowerCase();
+      const selectedType = values.type;
+
+      // Heuristic validation based on naming conventions
+      if (selectedType === 'text_embedding' && !modelName.includes('embed')) {
+        message.warning(
+          $i18n.get({
+            id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.embeddingWarning',
+            dm: 'Warning: Selected model may not support text_embedding. Embedding models typically have "embed" in their name (e.g., nomic-embed-text, mxbai-embed).',
+          }),
+        );
+      } else if (selectedType === 'rerank' && !modelName.includes('rerank')) {
+        message.warning(
+          $i18n.get({
+            id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.rerankWarning',
+            dm: 'Warning: Selected model may not support reranking. Rerank models typically have "rerank" in their name. Ollama has limited rerank model support.',
+          }),
+        );
+      } else if (selectedType === 'llm' && (modelName.includes('embed') || modelName.includes('rerank'))) {
+        message.warning(
+          $i18n.get({
+            id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.llmWarning',
+            dm: 'Warning: Selected model appears to be specialized for embedding/reranking and may not support chat/completion (llm) operations.',
+          }),
+        );
+      }
+
       const _model: ICreateModelParams = {
         ...(model || {}),
         name: values.name,
         model_id: values.name,
         tags: values.tags,
+        type: values.type || (values.tags?.includes('embedding') ? 'text_embedding' : defaultType),
       };
+      console.log('Modal onOk called with _model:', _model);
       onOk(_model);
     });
   };
@@ -201,20 +248,38 @@ const ModelConfigModal: React.FC<ModelConfigModalProps> = ({
             )}
           </Form.Item>
           <Form.Item
-            name="tags"
+            name="type"
             label={$i18n.get({
-              id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.modelAbility',
-              dm: 'Model Capabilities',
+              id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.modelType',
+              dm: 'Model Type',
             })}
             rules={[
               {
                 required: true,
                 message: $i18n.get({
-                  id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.selectAtLeastOneAbility',
-                  dm: 'Please select at least one model capability',
+                  id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.selectModelType',
+                  dm: 'Please select model type',
                 }),
               },
             ]}
+          >
+            <Select
+              placeholder={$i18n.get({
+                id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.selectModelType',
+                dm: 'Select model type',
+              })}
+              options={supportedTypes.map(type => ({
+                label: type,
+                value: type,
+              }))}
+            />
+          </Form.Item>
+          <Form.Item
+            name="tags"
+            label={$i18n.get({
+              id: 'main.pages.Setting.ModelService.components.ModelConfigModal.index.modelAbility',
+              dm: 'Model Capabilities',
+            })}
           >
             <Checkbox.Group>
               <div className={styles['capability-options']}>

@@ -42,6 +42,11 @@ public class UpdateModelRequest {
 	private String icon;
 
 	/**
+	 * Model type
+	 */
+	private String type;
+
+	/**
 	 * Tags separated by commas
 	 */
 	private String tags;
