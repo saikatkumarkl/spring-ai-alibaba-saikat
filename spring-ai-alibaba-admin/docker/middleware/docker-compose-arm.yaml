@@ -1,4 +1,5 @@
 version: '3.8'
+
 services:
   # mysql:
   #   container_name: mysql
@@ -49,21 +50,22 @@ services:
     networks:
       - saa-network
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
-    platform: linux/amd64
-    container_name: elasticsearch
+  # ============================
+  # OpenSearch (RAG-ready) + UI
+  # ============================
+
+  opensearch:
+    image: opensearchproject/opensearch:3.4.0
+    container_name: opensearch
     restart: always
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=false
-      - xpack.security.enrollment.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - cluster.name=es-cluster
-      - node.name=es-node-1
       - bootstrap.memory_lock=true
+      - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
+      - DISABLE_INSTALL_DEMO_CONFIG=true
+      - DISABLE_SECURITY_PLUGIN=true
       - http.cors.enabled=true
-      - http.cors.allow-origin="*"
+      - http.cors.allow-origin=*
       - action.destructive_requires_name=false
     ulimits:
       memlock:
@@ -74,15 +76,30 @@ services:
         hard: 65536
     ports:
       - "9200:9200"
-      - "9300:9300"
+      - "9600:9600"
     volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
+      - opensearch_data:/usr/share/opensearch/data
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 60s
+    networks:
+      - saa-network
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:3.4.0
+    container_name: opensearch-dashboards
+    restart: always
+    ports:
+      - "5601:5601"
+    environment:
+      - OPENSEARCH_HOSTS=["http://opensearch:9200"]
+      - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
+    depends_on:
+      opensearch:
+        condition: service_healthy
     networks:
       - saa-network
 
@@ -211,7 +228,7 @@ services:
         echo 'Creating topic...' &&
         sh mqadmin updateTopic -n rmq-namesrv:9876 -t topic_saa_studio_document_index -c DefaultCluster -a +message.type=NORMAL &&
         sh mqadmin updateSubGroup -n rmq-namesrv:9876 -g group_saa_studio_document_index -c DefaultCluster &&
-        echo 'Verifying topic creation...' &&
+        echo 'Verifying topic creation.' &&
         sh mqadmin topicList -n rmq-namesrv:9876 &&
         echo 'Topic creation completed'"
 
@@ -227,9 +244,6 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - JAVA_OPTS=-Xms512m -Xmx1024m -XX:+UseG1GC
-      # DB selection is controlled here:
-      # - URL/driver/dialect must match the chosen DB.
-      # - SQL in mappers is kept portable across MySQL/PostgreSQL.
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/admin
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
       - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
@@ -238,8 +252,8 @@ services:
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
       - SPRING_REDIS_DATABASE=0
-      - SPRING_ELASTICSEARCH_URL=http://elasticsearch:9200
-      - SPRING_ELASTICSEARCH_URIS=http://elasticsearch:9200
+      - SPRING_ELASTICSEARCH_URL=http://opensearch:9200
+      - SPRING_ELASTICSEARCH_URIS=http://opensearch:9200
       - NACOS_SERVER_ADDR=nacos:8848
       - ROCKETMQ_ENDPOINTS=rmq-proxy:18081
     extra_hosts:
@@ -249,7 +263,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      elasticsearch:
+      opensearch:
         condition: service_healthy
       rmq-proxy:
         condition: service_started
@@ -263,10 +277,15 @@ services:
       start_period: 60s
 
   manifoldcf:
-    image: apache/manifoldcf:2.29
+    build:
+      context: ../../../manifoldcf-saikat
+      dockerfile: Dockerfile.maven
+    image: manifoldcf-saikat:latest
     platform: linux/amd64
     container_name: manifoldcf
     restart: always
+    environment:
+      - JAVA_OPTS=-Xms512m -Xmx512m
     ports:
       - "8345:8345"
     volumes:
@@ -275,16 +294,49 @@ services:
       - ./manifoldcf/config/jetty.xml:/usr/share/manifoldcf/example/jetty.xml:ro
       - ./manifoldcf/config/start-options.env.unix:/usr/share/manifoldcf/example/start-options.env.unix:ro
       - ./manifoldcf/logs:/usr/share/manifoldcf/example/logs
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8345/mcf-api-service/json/outputconnectors"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
     depends_on:
       postgres:
         condition: service_healthy
-      elasticsearch:
+      opensearch:
+        condition: service_healthy
+    networks:
+      - saa-network
+
+  manifoldcf-init:
+    image: curlimages/curl:8.5.0
+    container_name: manifoldcf-init
+    restart: "no"
+    volumes:
+      - ./manifoldcf/config/init-opensearch-output.sh:/init-opensearch-output.sh:ro
+    entrypoint: ["/bin/sh", "/init-opensearch-output.sh"]
+    environment:
+      - MCF_API_URL=http://manifoldcf:8345/mcf-api-service
+      # OpenSearch output
+      - OPENSEARCH_URL=http://opensearch:9200/
+      - OPENSEARCH_INDEX=manifoldcf
+      # Alfresco CMIS repository (set credentials before deploying)
+      - CMIS_USERNAME=${CMIS_USERNAME:-CHANGE_ME_USERNAME}
+      - CMIS_PASSWORD=${CMIS_PASSWORD:-CHANGE_ME_PASSWORD}
+      - CMIS_PROTOCOL=https
+      - CMIS_SERVER=alfresco-demo.crestsolution.com
+      - CMIS_PORT=8080
+      - CMIS_PATH=/alfresco/api/-default-/cmis/versions/1.1/atom
+      - CMIS_BINDING=atom
+      - CMIS_REPOSITORY_ID=-default-
+    depends_on:
+      manifoldcf:
         condition: service_healthy
     networks:
       - saa-network
 
 volumes:
-  elasticsearch_data:
+  opensearch_data:
     driver: local
 
 networks:

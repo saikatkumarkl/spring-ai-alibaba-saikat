@@ -1,0 +1,20 @@
+{
+  "repositoryconnection": {
+    "name": "Alfresco CMIS",
+    "class_name": "org.apache.manifoldcf.crawler.connectors.cmis.CmisRepositoryConnector",
+    "description": "Alfresco CMIS Repository via AtomPub binding",
+    "max_connections": "10",
+    "configuration": {
+      "_PARAMETER_": [
+        { "_attribute_name": "binding",      "_value_": "atom" },
+        { "_attribute_name": "username",     "_value_": "CHANGE_ME_USERNAME" },
+        { "_attribute_name": "password",     "_value_": "CHANGE_ME_PASSWORD" },
+        { "_attribute_name": "protocol",     "_value_": "https" },
+        { "_attribute_name": "server",       "_value_": "alfresco-demo.crestsolution.com" },
+        { "_attribute_name": "port",         "_value_": "8080" },
+        { "_attribute_name": "path",         "_value_": "/alfresco/api/-default-/cmis/versions/1.1/atom" },
+        { "_attribute_name": "repositoryId", "_value_": "" }
+      ]
+    }
+  }
+}

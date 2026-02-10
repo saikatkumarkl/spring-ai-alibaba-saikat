@@ -234,6 +234,151 @@ When running backend manually (not with Docker Compose):
 - RocketMQ: `ROCKETMQ_ENDPOINTS`, `ROCKETMQ_NAME_SERVER`
 - Default values in `application.yml` are for localhost development
 
+## ManifoldCF (Document Crawler)
+
+Apache ManifoldCF is integrated as a document crawler that pushes content to OpenSearch. Located in `manifoldcf-saikat/`.
+
+### Build (Maven — converted from Ant)
+
+**Ant build files and Ant-produced artifacts have been removed.** Only the Maven build is supported.
+
+```bash
+# Full local build (creates distribution in distribution/target/dist/)
+cd manifoldcf-saikat
+mvn -B install -DskipTests -Dmaven.test.skip -DskipITs -Drat.skip -pl distribution -am
+
+# Build time: ~2 minutes first run, ~2 seconds incremental
+```
+
+Key flags:
+- `-DskipTests` — skip test execution but still build test-jars (required by some modules)
+- `-Dmaven.test.skip` — don't compile tests
+- `-DskipITs` — skip failsafe integration tests (alfresco-webscript needs this)
+- `-Drat.skip` — skip Apache RAT license checks
+- `-pl distribution -am` — build only the distribution module and its dependencies
+
+### Docker Image
+
+```bash
+# Build Docker image (uses local distribution, no Maven inside Docker)
+cd manifoldcf-saikat
+docker build -f Dockerfile.maven -t manifoldcf-saikat:latest .
+
+# Build time: ~5 seconds (copies pre-built dist/)
+```
+
+The Dockerfile (`Dockerfile.maven`) is a single-stage build that copies `distribution/target/dist/` into the image. **Always run the Maven build first.**
+
+**Release scripts are Maven-only** (no Ant calls):
+- `create-release-candidate.sh`
+- `create-release-candidate-only-artifacts.sh`
+
+### Deploy with Docker Compose
+
+```bash
+# Start ManifoldCF + dependencies (postgres, opensearch)
+cd spring-ai-alibaba-admin/docker/middleware
+docker compose -f docker-compose-arm.yaml up -d manifoldcf
+
+# Rebuild after code changes
+docker compose -f docker-compose-arm.yaml up -d --build manifoldcf
+
+# View logs
+docker compose -f docker-compose-arm.yaml logs -f manifoldcf
+```
+
+- **UI:** http://localhost:8345/mcf-crawler-ui/
+- **API:** http://localhost:8345/mcf-api-service/json/
+- **Default credentials:** admin / admin (configured in properties.xml)
+
+### Fast Iteration Cycle
+
+```bash
+cd manifoldcf-saikat && mvn -B install -DskipTests -Dmaven.test.skip -DskipITs -Drat.skip -pl distribution -am \
+  && cd ../spring-ai-alibaba-admin/docker/middleware \
+  && docker compose -f docker-compose-arm.yaml up -d --build manifoldcf
+```
+
+### Configuration Files
+
+All Docker config is in `spring-ai-alibaba-admin/docker/middleware/manifoldcf/config/`:
+
+| File | Purpose |
+|------|---------|
+| `properties.xml` | PostgreSQL connection, lib directories, authority settings |
+| `jetty.xml` | Jetty server config (port 8345, thread pool) |
+| `logging.xml` | Log4j logging configuration |
+| `start-options.env.unix` | JVM options (JAVA_OPTS) |
+| `connectors.xml` | Registered connector classes (auto-loaded on startup) |
+| `opensearch-output.json` | JSON payload for the default OpenSearch output connection |
+| `init-opensearch-output.sh` | Auto-creates OpenSearch output connection on startup |
+
+### OpenSearch Output (Auto-Configured)
+
+A `manifoldcf-init` sidecar service runs after ManifoldCF starts and automatically creates:
+1. **OpenSearch output connection** (ElasticSearch connector type)
+2. **Alfresco CMIS repository connection** (AtomPub binding over HTTPS)
+3. **Crawl job** (CMIS → OpenSearch, `SELECT * FROM cmis:document`)
+
+Configure CMIS credentials via environment variables in `docker-compose-arm.yaml`:
+```yaml
+- CMIS_USERNAME=admin
+- CMIS_PASSWORD=admin
+- CMIS_PROTOCOL=https
+- CMIS_SERVER=alfresco-demo.crestsolution.com
+- CMIS_PORT=8080
+- CMIS_PATH=/alfresco/api/-default-/cmis/versions/1.1/atom
+- CMIS_BINDING=atom
+- CMIS_REPOSITORY_ID=-default-
+```
+
+To manually create/verify the connection:
+```bash
+# Check if connection exists
+curl -s http://localhost:8345/mcf-api-service/json/outputconnections/OpenSearch | jq .
+
+# Verify connection health
+curl -s http://localhost:8345/mcf-api-service/json/status/outputconnections/OpenSearch | jq .
+
+# Check CMIS repository connection
+curl -s http://localhost:8345/mcf-api-service/json/status/repositoryconnections/Alfresco%20CMIS | jq .
+
+# Check job status
+curl -s http://localhost:8345/mcf-api-service/json/jobstatuses | jq .
+
+# Start a job manually
+curl -s -X PUT http://localhost:8345/mcf-api-service/json/start/<job_id>
+
+# Check OpenSearch document count
+curl -s http://localhost:9200/manifoldcf/_count | jq .
+```
+
+### CMIS Connector Fixes
+
+The CMIS connector has two critical fixes for HTTPS reverse proxies and classloader isolation:
+
+1. **HttpsForceHttpInvoker** (`connectors/cmis/connector/src/main/java/.../cmis/HttpsForceHttpInvoker.java`)
+   - CMIS servers behind an HTTPS reverse proxy may return `http://` URLs in service documents/AtomPub responses
+   - Apache Chemistry follows those internal HTTP URLs; the proxy rejects them with "400 Bad Request: The plain HTTP request was sent to HTTPS port"
+   - `HttpsForceHttpInvoker` wraps `DefaultHttpInvoker` and rewrites all `http://` URLs to `https://` before sending requests
+   - Automatically activated when CMIS connection uses `protocol=https` (wired via `SessionParameter.HTTP_INVOKER_CLASS`)
+
+2. **Classloader-safe reflection in `getDocumentURL`** (`CmisRepositoryConnectorUtils.java`, `CmisOutputConnectorUtils.java`)
+   - Original code used `AbstractAtomPubService.class.getDeclaredMethod(...)` then `method.invoke(objectService, ...)` — fails with `IllegalArgumentException: object is not an instance of declaring class` because ManifoldCF loads connector JARs in a separate classloader
+   - Fix: `findMethodInHierarchy()` walks the actual class hierarchy of the `objectService` instance to find the `loadLink` method, avoiding classloader mismatch
+   - Fallback: if reflection fails entirely, constructs document URI from folder path + filename
+
+### ManifoldCF Gotchas
+
+1. **ConfigParams is case-sensitive** — API parameter names must be UPPERCASE (`SERVERLOCATION`, `INDEXNAME`, `INDEXTYPE`) to match Java enum `.name()`
+2. **Connector JARs must NOT go in `lib/`** — they belong in `connector-lib/` (separate classloader). Mixing causes `NoClassDefFoundError` at runtime
+3. **Nuxeo connector excluded** — Maven repository unavailable, removed from distribution and `connectors.xml`
+4. **JSP support** — `jetty-jsp-9.2.30.v20200428.jar` is required but not in Maven dependency tree (Ant-managed). Added as explicit dependency in `distribution/pom.xml`
+5. **test-jar dependencies** — Use `-DskipTests` (not `-Dmaven.test.skip`) so test-jars still get built for modules that depend on them
+6. **HTTPS reverse proxy** — When a CMIS server is behind HTTPS, service documents may return internal `http://` URLs. `HttpsForceHttpInvoker` rewrites these to `https://` automatically when `protocol=https` is set on the connection
+7. **CMIS reflection classloader issue** — `getDocumentURL` uses reflection to call `AbstractAtomPubService.loadLink()`. ManifoldCF's connector classloader isolation breaks static class references; use `findMethodInHierarchy()` to walk the instance's actual class hierarchy instead
+8. **CMIS binding types** — AtomPub (`atom`) is the most reliable binding for Alfresco. Browser binding (`browser`) may fail with "Invalid form encoding!" errors. WebServices (`ws`) is not recommended.
+
 ## Common Gotchas
 
 1. When using `ShellTool`, always add `ShellToolAgentHook` to manage session lifecycle

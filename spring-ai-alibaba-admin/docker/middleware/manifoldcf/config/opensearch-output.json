@@ -1,0 +1,15 @@
+{
+  "outputconnection": {
+    "name": "OpenSearch",
+    "class_name": "org.apache.manifoldcf.agents.output.elasticsearch.ElasticSearchConnector",
+    "description": "Default OpenSearch output via ElasticSearch connector",
+    "max_connections": "10",
+    "configuration": {
+      "_PARAMETER_": [
+        {"_attribute_name": "SERVERLOCATION", "_value_": "http://opensearch:9200/"},
+        {"_attribute_name": "INDEXNAME", "_value_": "manifoldcf"},
+        {"_attribute_name": "INDEXTYPE", "_value_": "_doc"}
+      ]
+    }
+  }
+}
