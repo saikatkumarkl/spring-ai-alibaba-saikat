@@ -234,6 +234,34 @@ When running backend manually (not with Docker Compose):
 - RocketMQ: `ROCKETMQ_ENDPOINTS`, `ROCKETMQ_NAME_SERVER`
 - Default values in `application.yml` are for localhost development
 
+## Adding Ollama Models
+
+To add a new Ollama model that appears in the Admin UI dropdown:
+
+**1. Add to models.conf:**
+```bash
+# Edit spring-ai-alibaba-admin/docker/middleware/ollama/models.conf
+# Add your model on a new line, e.g.:
+llama3.2:3b
+```
+
+**2. Pull the model:**
+```bash
+cd spring-ai-alibaba-admin/docker/middleware
+docker compose -f docker-compose-arm.yaml run --rm ollama-init
+```
+
+**3. Verify it appears:**
+- Open http://localhost:8000
+- Go to Settings → Model Service → Ollama → Add Model
+- The model dropdown now includes your newly added model
+
+**How it works:**
+- The dropdown calls `/console/v1/providers/available-models?endpoint=http://ollama:11434`
+- This API queries Ollama's live `/api/tags` endpoint (not the database)
+- All models pulled by Ollama appear automatically in the dropdown
+- No database updates or backend restarts needed
+
 ## ManifoldCF (Document Crawler)
 
 Apache ManifoldCF is integrated as a document crawler that pushes content to OpenSearch. Located in `manifoldcf-saikat/`.
