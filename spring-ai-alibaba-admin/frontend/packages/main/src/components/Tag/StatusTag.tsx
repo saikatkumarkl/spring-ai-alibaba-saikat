@@ -2,6 +2,7 @@ import React from 'react';
 
 import type { TaskStatus } from '@/types/base';
 import { IconFont, Tag, TagProps } from '@spark-ai/design';
+import { Tooltip } from 'antd';
 import classNames from 'classnames';
 
 import $i18n from '@/i18n';
@@ -9,6 +10,7 @@ import styles from './StatusTag.module.less';
 
 interface StatusTagProps extends TagProps {
   status: TaskStatus;
+  errorMessage?: string;
 }
 
 const statusMap = {
@@ -43,7 +45,7 @@ const statusMap = {
 };
 
 const StatusTag: React.FC<StatusTagProps> = (props) => {
-  const { status, className, children, ...rest } = props;
+  const { status, errorMessage, className, children, ...rest } = props;
   const icon = (
     <IconFont
       type={statusMap[status]?.icon}
@@ -51,7 +53,7 @@ const StatusTag: React.FC<StatusTagProps> = (props) => {
     />
   );
 
-  return (
+  const tag = (
     <Tag
       icon={icon}
       className={classNames(styles['container'], className)}
@@ -60,6 +62,22 @@ const StatusTag: React.FC<StatusTagProps> = (props) => {
       {children || statusMap[status]?.text}
     </Tag>
   );
+
+  if (status === 'failed' && errorMessage) {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+        {tag}
+        <Tooltip title={errorMessage}>
+          <IconFont
+            type="spark-info-circle-line"
+            style={{ color: '#ff4d4f', fontSize: 14, cursor: 'pointer' }}
+          />
+        </Tooltip>
+      </span>
+    );
+  }
+
+  return tag;
 };
 
 export default StatusTag;

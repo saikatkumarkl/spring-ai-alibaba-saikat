@@ -1,0 +1,18 @@
+# Ollama model blobs (multi-GB) — do NOT commit
+ollama/data/
+
+# PostgreSQL data
+postgres/data/
+
+# Redis data
+redis/data/
+
+# Nacos data & logs
+nacos/data/
+nacos/logs/
+
+# RocketMQ store
+rocketmq/store/
+
+# ManifoldCF logs
+manifoldcf/logs/

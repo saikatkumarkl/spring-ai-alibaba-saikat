@@ -368,6 +368,95 @@ The CMIS connector has two critical fixes for HTTPS reverse proxies and classloa
    - Fix: `findMethodInHierarchy()` walks the actual class hierarchy of the `objectService` instance to find the `loadLink` method, avoiding classloader mismatch
    - Fallback: if reflection fails entirely, constructs document URI from folder path + filename
 
+### ACL-Aware Document Indexing
+
+ManifoldCF extracts CMIS ACLs at crawl time and stores them **raw** (groups + users, no expansion) in OpenSearch. Documents are synced with their full ACL data — no vendor-specific REST APIs are involved in the admin backend.
+
+**Key insight:** Groups live in the **CMIS application** (Alfresco, FileNet, etc.), not in SSO providers. Using vendor-specific REST APIs to resolve groups at query time doesn't scale across vendors. Instead, all ACL data is synced at crawl time and stored in OpenSearch for direct querying.
+
+**Architecture:**
+```
+Crawl time:  CMIS Server → [extractAndSetAcl()] → RepositoryDocument.setSecurity() → ElasticSearch Output → OpenSearch
+                            (raw ACLs: groups stored as groups, users stored as users, all lowercased)
+
+Query time:  OpenSearch query with ACL filter on allow_token_document / deny_token_document
+```
+
+**Crawl-Time ACL Extraction (ManifoldCF):**
+1. `extractAndSetAcl()` in `CmisRepositoryConnector.java` calls `session.getBinding().getAclService().getAcl()` for each document
+2. IMPORTANT: Cannot use `cmisObject.getAcl()` — returns null because default `OperationContext` has `includeACL=false`
+3. `resolveAcesToTokens()` stores ALL principals as-is:
+   - All principals are lowercased (e.g., `GROUP_site_demo-test-site_SiteManager` → `group_site_demo-test-site_sitemanager`)
+   - No group detection, no group expansion, no external API calls
+   - Both users and groups stored as allow/deny tokens
+4. Document-level ACLs → `allow_token_document` / `deny_token_document`
+5. Parent folder ACLs → `allow_token_parent` / `deny_token_parent`
+
+**ACL data in OpenSearch (569 total documents, 32 unique ACL tokens):**
+| Example Token | Type | Documents |
+|---------------|------|-----------|
+| `group_everyone` | Group | 451 |
+| `group_site_demo-test-site_sitemanager` | Group | 48 |
+| `jeevitha` | User | 15 |
+| `admin` | User | varies |
+
+**OpenSearch ACL query pattern:**
+```json
+{
+  "query": {
+    "bool": {
+      "must": [ { "multi_match": { "query": "search terms", "fields": ["content", "file_title"] } } ],
+      "filter": {
+        "bool": {
+          "should": [
+            { "term": { "allow_token_document": "username" } },
+            { "term": { "allow_token_document": "group_everyone" } }
+          ],
+          "minimum_should_match": 1,
+          "must_not": [
+            { "term": { "deny_token_document": "username" } }
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+**OpenSearch Index Template:**
+- Template: `manifoldcf-acl` (priority 100, pattern `manifoldcf*`)
+- ACL fields: `keyword` type with `lowercase` normalizer
+- Created automatically by `init-opensearch-output.sh` (step 0)
+- Template file: `spring-ai-alibaba-admin/docker/middleware/manifoldcf/config/opensearch-index-template.json`
+
+**Connector-agnostic design:** The ACL token fields (`allow_token_*`, `deny_token_*`) are part of ManifoldCF's standard security model. Any connector (Google Drive, Dropbox, SharePoint, etc.) that calls `RepositoryDocument.setSecurity()` will have its ACLs indexed the same way. The CMIS connector is the first one with explicit ACL extraction.
+
+**Re-indexing after enabling ACLs:**
+```bash
+# 1. Delete old index (has __nosecurity__ tokens)
+curl -X DELETE http://localhost:9200/manifoldcf
+
+# 2. Ensure index template exists
+curl -X PUT http://localhost:9200/_index_template/manifoldcf-acl -H 'Content-Type: application/json' -d @opensearch-index-template.json
+
+# 3. Delete old jobs and create fresh one (old job version tracking prevents re-ingestion)
+# Use ManifoldCF UI at http://localhost:8345/mcf-crawler-ui/ or API
+
+# 4. Start the new job
+curl -X PUT http://localhost:8345/mcf-api-service/json/start/<job_id>
+```
+
+**Deprecated (dead code — kept for reference):**
+The following files in `connectors/cmis/connector/src/main/java/.../cmis/` implemented the old crawl-time group expansion approach and are **no longer referenced** from `CmisRepositoryConnector`:
+- `GroupMemberResolver.java`, `GroupMemberResolverFactory.java`
+- `AlfrescoGroupMemberResolver.java`, `LdapGroupMemberResolver.java`, `HttpGroupMemberResolver.java`
+- `TrustAllSSLSocketFactory.java`, `NoOpGroupMemberResolver.java`
+- Environment variables `MCF_GROUP_RESOLVER`, `MCF_LDAP_*`, `MCF_HTTP_GROUP_RESOLVER_*` are no longer used
+
+The following admin backend files were also removed (vendor-specific REST API approach):
+- `CmisProperties.java`, `CmisUserGroupService.java`, `DocumentSearchService.java`, `DocumentSearchController.java`
+- `cmis.*` properties in `application.yml` and `CMIS_*` env vars from backend service in `docker-compose-arm.yaml`
+
 ### ManifoldCF Gotchas
 
 1. **ConfigParams is case-sensitive** — API parameter names must be UPPERCASE (`SERVERLOCATION`, `INDEXNAME`, `INDEXTYPE`) to match Java enum `.name()`
@@ -378,6 +467,10 @@ The CMIS connector has two critical fixes for HTTPS reverse proxies and classloa
 6. **HTTPS reverse proxy** — When a CMIS server is behind HTTPS, service documents may return internal `http://` URLs. `HttpsForceHttpInvoker` rewrites these to `https://` automatically when `protocol=https` is set on the connection
 7. **CMIS reflection classloader issue** — `getDocumentURL` uses reflection to call `AbstractAtomPubService.loadLink()`. ManifoldCF's connector classloader isolation breaks static class references; use `findMethodInHierarchy()` to walk the instance's actual class hierarchy instead
 8. **CMIS binding types** — AtomPub (`atom`) is the most reliable binding for Alfresco. Browser binding (`browser`) may fail with "Invalid form encoding!" errors. WebServices (`ws`) is not recommended.
+9. **CMIS ACL fetching** — `cmisObject.getAcl()` returns null because the default `OperationContext` has `includeACL=false`. Must use `session.getBinding().getAclService().getAcl(repositoryId, objectId, true, null)` for explicit ACL retrieval.
+10. **Job version tracking prevents re-ingestion** — When you delete/recreate an OpenSearch index, you must also delete old ManifoldCF jobs. ManifoldCF tracks document versions per-output connection; if the same connection/document pair exists in history, the doc is skipped. Delete old jobs to force fresh ingestion.
+11. **OpenSearch disk watermarks** — At 95% disk usage, OpenSearch's flood-stage watermark blocks all writes. ManifoldCF crawls will process documents but fail to index them (only 2 of 994 indexed). Fix: increase watermarks with `PUT _cluster/settings` — e.g., `flood_stage: 98%`, `high: 96%`, `low: 94%`. Use `?flat_settings=true` to verify.
+12. **ManifoldCF logging** — SLF4J binds to log4j1 (`org.slf4j.impl.Log4jLoggerFactory`), NOT log4j2. The `logging.xml` in config uses log4j2 XML format but may not properly control connector-level logging. Connector logger name is `org.apache.manifoldcf.connectors` (defined in `framework/pull-agent/.../Logging.java`). For debugging, use `System.err.println()` or switch to log4j1 properties format.
 
 ## Common Gotchas
 

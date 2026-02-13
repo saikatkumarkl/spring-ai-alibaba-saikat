@@ -101,7 +101,7 @@ public class ModelManager {
 		modelEntity.setName(modelConfigInfo.getName());
 		modelEntity.setProvider(modelConfigInfo.getProvider());
 		modelEntity.setSource(DataSourceEnum.custom.name());
-		modelEntity.setEnable(true);
+		modelEntity.setEnable(1);
 		modelEntity.setType(modelConfigInfo.getType());
 		modelEntity.setModelId(modelConfigInfo.getModelId());
 		String tags = modelConfigInfo.getTags() != null 
@@ -164,7 +164,7 @@ public class ModelManager {
 			existingModel.setType(modelConfigInfo.getType());
 		}
 		if (modelConfigInfo.getEnable() != null) {
-			existingModel.setEnable(modelConfigInfo.getEnable());
+			existingModel.setEnable(modelConfigInfo.getEnable() ? 1 : 0);
 		}
 
 		int update = modelMapper.updateById(existingModel);
@@ -233,7 +233,7 @@ public class ModelManager {
 		// Get all enabled models from enabled providers
 		QueryWrapper<ModelEntity> queryWrapper = new QueryWrapper<>();
 		queryWrapper.eq("workspace_id", context.getWorkspaceId());
-		queryWrapper.eq("enable", true);
+		queryWrapper.eq("enable", 1);
 		List<String> enabledProviderNames = enabledProviders.stream()
 				.map(ProviderConfigInfo::getProvider)
 				.collect(Collectors.toList());
@@ -263,7 +263,7 @@ public class ModelManager {
 		// Get all enabled models from enabled providers
 		QueryWrapper<ModelEntity> queryWrapper = new QueryWrapper<>();
 		queryWrapper.eq("workspace_id", context.getWorkspaceId());
-		queryWrapper.eq("enable", true);
+		queryWrapper.eq("enable", 1);
 		List<String> enabledProviderNames = enabledProviders.stream()
 				.map(ProviderConfigInfo::getProvider)
 				.collect(Collectors.toList());
@@ -366,7 +366,7 @@ public class ModelManager {
 		}
 		modelConfigInfo.setType(entity.getType());
 		modelConfigInfo.setSource(entity.getSource());
-		modelConfigInfo.setEnable(entity.getEnable());
+		modelConfigInfo.setEnable(entity.getEnable() != null && entity.getEnable() == 1);
 		return modelConfigInfo;
 	}
 

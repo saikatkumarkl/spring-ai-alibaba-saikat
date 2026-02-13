@@ -184,6 +184,33 @@ public class DocumentController {
 	}
 
 	/**
+	 * Batch updates the enabled status of documents
+	 * @param kbId Knowledge base ID
+	 * @param docIds List of document IDs to update
+	 * @param enabled Whether to enable or disable the documents
+	 * @return result status
+	 */
+	@PutMapping("/{kbId}/documents/batch-enabled")
+	public Result<Void> batchUpdateDocumentEnabled(@PathVariable("kbId") String kbId,
+			@RequestBody List<String> docIds, @RequestParam Boolean enabled) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+
+		if (Objects.isNull(kbId)) {
+			throw new BizException(ErrorCode.MISSING_PARAMS.toError("kbId"));
+		}
+
+		if (CollectionUtils.isEmpty(docIds)) {
+			throw new BizException(ErrorCode.MISSING_PARAMS.toError("docIds"));
+		}
+
+		for (String docId : docIds) {
+			documentService.updateDocumentEnabledStatus(docId, enabled);
+		}
+
+		return Result.success(context.getRequestId(), null);
+	}
+
+	/**
 	 * Re-indexes a document with process and chunking configuration
 	 * @param kbId Knowledge base ID
 	 * @param docId Document ID

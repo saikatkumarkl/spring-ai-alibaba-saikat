@@ -44,7 +44,7 @@ public class ModelEntity {
 
 	private String type;
 
-	private Boolean enable;
+	private Integer enable;
 
 	private String tags;
 

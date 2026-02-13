@@ -16,6 +16,7 @@
 
 package com.alibaba.cloud.ai.studio.core.base.entity;
 
+import com.alibaba.cloud.ai.studio.core.base.handler.BooleanSmallintTypeHandler;
 import com.alibaba.cloud.ai.studio.runtime.enums.ToolStatus;
 import com.alibaba.cloud.ai.studio.runtime.enums.ToolTestStatus;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -32,7 +33,7 @@ import java.util.Date;
  * @since 1.0.0.3
  */
 @Data
-@TableName("tool")
+@TableName(value = "tool", autoResultMap = true)
 public class ToolEntity {
 
 	/** Primary key */
@@ -55,6 +56,7 @@ public class ToolEntity {
 	private ToolStatus status;
 
 	/** Whether the tool is enabled */
+	@TableField(value = "enabled", typeHandler = BooleanSmallintTypeHandler.class)
 	private Boolean enabled;
 
 	/** Test status of the tool */

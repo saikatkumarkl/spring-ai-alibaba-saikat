@@ -16,6 +16,7 @@
 
 package com.alibaba.cloud.ai.studio.core.base.entity;
 
+import com.alibaba.cloud.ai.studio.core.base.handler.BooleanSmallintTypeHandler;
 import com.alibaba.cloud.ai.studio.runtime.enums.agent.AgentStatus;
 import com.alibaba.cloud.ai.studio.runtime.enums.agent.AgentType;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -33,7 +34,7 @@ import java.util.Date;
  * @since 1.0.0.3
  */
 @Data
-@TableName("agent_schema")
+@TableName(value = "agent_schema", autoResultMap = true)
 public class AgentSchemaEntity {
 
 	/** Primary key */
@@ -88,6 +89,7 @@ public class AgentSchemaEntity {
 	private AgentStatus status;
 
 	/** Whether the agent is enabled */
+	@TableField(value = "enabled", typeHandler = BooleanSmallintTypeHandler.class)
 	private Boolean enabled;
 
 	/** Creation timestamp */

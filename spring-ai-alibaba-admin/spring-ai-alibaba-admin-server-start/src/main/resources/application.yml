@@ -67,7 +67,7 @@ spring:
   config:
     import:
       - classpath:initializr.yml
-      - classpath:elasticsearch.yml
+      - classpath:opensearch.yml
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:com.mysql.cj.jdbc.Driver}
@@ -104,11 +104,9 @@ spring:
     enabled: true
     content-type: text/html
     template-loader-path: classpath:/templates/
-  elasticsearch:
-    # Spring Boot default Elasticsearch config (if using Spring Data Elasticsearch).
-    # Note: ElasticsearchClient custom config is in elasticsearch.yml.
-    # Can be overridden via SPRING_ELASTICSEARCH_URIS; defaults are defined per profile.
-    uris: ${SPRING_ELASTICSEARCH_URIS}
+  opensearch:
+    # OpenSearch custom config is in opensearch.yml.
+    # url is set there via SPRING_OPENSEARCH_URL env var.
   jpa:
     database-platform: ${SPRING_JPA_DATABASE_PLATFORM:org.hibernate.dialect.MySQLDialect}
     hibernate:
@@ -132,6 +130,7 @@ rocketmq:
 initializr:
   web:
     enabled: false
+
 logging:
   level:
     org.springframework.boot.autoconfigure: INFO

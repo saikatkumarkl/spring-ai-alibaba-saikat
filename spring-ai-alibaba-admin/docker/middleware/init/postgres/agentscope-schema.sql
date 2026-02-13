@@ -324,57 +324,30 @@ INSERT INTO workspace (workspace_id, account_id, status, name, description, conf
                                   creator, modifier)
 VALUES ('1', '10000', 1, 'Default Workspace', 'Default Workspace', null, now(), now(), '10000', '10000');
 
---init model
+--init Ollama provider (models are auto-discovered at runtime from the endpoint)
 INSERT INTO provider (workspace_id, icon, name, description, provider, enable, source, credential,
                                  supported_model_types, protocol, gmt_create, gmt_modified, creator, modifier)
-VALUES ( '1', null, 'Tongyi', 'Tongyi', 'Tongyi', 1, 'preset','{"endpoint":"https://dashscope.aliyuncs.com/compatible-mode"}',
+VALUES ( '1', null, 'Ollama', 'Ollama local LLM server', 'ollama', 1, 'preset','{"endpoint":"http://ollama:11434"}',
         null, 'OpenAI', now(), now(), null,null);
+-- No model rows needed — ModelController auto-syncs models from Ollama's /api/tags
 
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'qwen-max','llm','chat','qwen-max','Tongyi',1,'web_search,function_call','preset',now(),now(),null,null);
+--init Sample Chat Application (pre-configured with Ollama qwen2.5:7b)
+INSERT INTO application (workspace_id, app_id, name, description, icon, source, type, status, gmt_create, gmt_modified, creator, modifier)
+VALUES ('1', 'sample-chat-assistant', 'Sample Chat Assistant',
+        'A sample chat application using Ollama qwen2.5:7b model. Use this as a template to create your own AI assistants.',
+        null, 'preset', 'basic', 2, now(), now(), '10000', '10000');
 
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'qwen-max-latest','llm','chat','qwen-max-latest','Tongyi',1,'web_search,function_call,reasoning','preset',now(),now(),null,null);
+-- Draft config version (status=1 means draft)
+INSERT INTO application_version (app_id, workspace_id, config, status, version, description, gmt_create, gmt_modified, creator, modifier)
+VALUES ('sample-chat-assistant', '1',
+        '{"model":"qwen2.5:7b","model_provider":"ollama","instructions":"You are a helpful, accurate, and friendly AI assistant. Answer questions clearly and concisely. If you are unsure about something, say so honestly."}',
+        1, '0.0.1', 'Initial sample app', now(), now(), '10000', '10000');
 
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'qwen-plus','llm','chat','qwen-plus','Tongyi',1,'web_search,function_call','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'qwen-plus-latest','llm','chat','qwen-plus-latest','Tongyi',1,'web_search,function_call,reasoning','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'qwen-turbo','llm','chat','qwen-turbo','Tongyi',1,'web_search,function_call','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'qwen-turbo-latest','llm','chat','qwen-turbo-latest','Tongyi',1,'web_search,function_call,reasoning','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'qwen3-235b-a22b','llm','chat','qwen3-235b-a22b','Tongyi',1,'function_call,reasoning','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'qwen3-30b-a3b','llm','chat','qwen3-30b-a3b','Tongyi',1,'function_call,reasoning','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'qwen3-32b','llm','chat','qwen3-32b','Tongyi',1,'function_call,reasoning','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'qwen3-14b','llm','chat','qwen3-14b','Tongyi',1,'function_call,reasoning','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'qwen3-8b','llm','chat','qwen3-8b','Tongyi',1,'function_call,reasoning','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'qwen3-4b','llm','chat','qwen3-4b','Tongyi',1,'function_call,reasoning','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'qwen3-1.7b','llm','chat','qwen3-1.7b','Tongyi',1,'function_call,reasoning','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'qwen3-0.6b','llm','chat','qwen3-0.6b','Tongyi',1,'function_call,reasoning','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'qwen-vl-max','llm','chat','qwen-vl-max','Tongyi',1,'vision,function_call','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'qwen-vl-plus','llm','chat','qwen-vl-plus','Tongyi',1,'vision,function_call','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'qvq-max','llm','chat','qvq-max','Tongyi',1,'vision,reasoning','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'qwq-plus','llm','chat','qwq-plus','Tongyi',1,'reasoning,function_call','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'text-embedding-v1','text_embedding','chat','text-embedding-v1','Tongyi',1,'embedding','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'text-embedding-v2','text_embedding','chat','text-embedding-v2','Tongyi',1,'embedding','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'text-embedding-v3','text_embedding','chat','text-embedding-v3','Tongyi',1,'embedding','preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'gte-rerank-v2','rerank','chat','gte-rerank-v2','Tongyi',1,null,'preset',now(),now(),null,null);
-
-INSERT INTO model (workspace_id,icon,name,type,mode,model_id,provider,enable,tags,source,gmt_create,gmt_modified,creator,modifier) VALUES ('1',null,'deepseek-r1','llm','chat','deepseek-r1','Tongyi',1,'reasoning','preset',now(),now(),null,null);
+-- Published config version (status=2 means published)
+INSERT INTO application_version (app_id, workspace_id, config, status, version, description, gmt_create, gmt_modified, creator, modifier)
+VALUES ('sample-chat-assistant', '1',
+        '{"model":"qwen2.5:7b","model_provider":"ollama","instructions":"You are a helpful, accurate, and friendly AI assistant. Answer questions clearly and concisely. If you are unsure about something, say so honestly."}',
+        2, '0.0.1', 'Initial sample app', now(), now(), '10000', '10000');
 
 /******************************************/
 /*   table = agent_schema                 */

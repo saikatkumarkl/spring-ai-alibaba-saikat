@@ -41,7 +41,7 @@ public class ProviderEntity {
 
 	private String provider;
 
-	private Boolean enable;
+	private Integer enable;
 
 	/**
 	 * Protocol, default openai protocol

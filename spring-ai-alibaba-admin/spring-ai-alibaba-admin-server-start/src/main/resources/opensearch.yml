@@ -1,9 +1,9 @@
-#Elasticsearch configuration file
+#OpenSearch configuration file
 spring:
-  elasticsearch:
-    #Elasticsearch service address
-    #Supports overriding through the environment variable SPRING_ELASTICSEARCH_URL, the default value is for local development
-    url: ${SPRING_ELASTICSEARCH_URL:http://localhost:9200}
+  opensearch:
+    #OpenSearch service address
+    #Supports overriding through the environment variable SPRING_OPENSEARCH_URL, the default value is for local development
+    url: ${SPRING_OPENSEARCH_URL:http://localhost:9200}
     #Connection timeout (milliseconds)
     connect-timeout: 5000
     #Read timeout (milliseconds)

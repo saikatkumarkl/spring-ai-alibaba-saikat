@@ -45,7 +45,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -508,5 +510,63 @@ public class ProviderController {
 		// For example: OpenAI, Azure, Anthropic, etc.
 		List<String> protocols = Lists.newArrayList("OpenAI");
 		return Result.success(protocols);
+	}
+
+	/**
+	 * Fetches available models from a remote provider endpoint.
+	 *
+	 * This endpoint proxies the request to the provider's model listing API.
+	 * It first tries the OpenAI-compatible /v1/models endpoint (works with Ollama,
+	 * vLLM, LiteLLM, etc.), then falls back to Ollama's native /api/tags endpoint.
+	 *
+	 * @param endpoint The base URL of the provider (e.g., http://ollama:11434)
+	 * @return Result containing a list of available model names
+	 */
+	@SuppressWarnings("unchecked")
+	@GetMapping("/available-models")
+	public Result<List<String>> getAvailableModels(@RequestParam("endpoint") String endpoint) {
+		if (StringUtils.isBlank(endpoint)) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("input_params", "endpoint is required"));
+		}
+		String baseUrl = endpoint.replaceAll("/+$", "");
+		RestTemplate restTemplate = new RestTemplate();
+
+		// Try OpenAI-compatible /v1/models first (works with Ollama, vLLM, etc.)
+		try {
+			String url = baseUrl + "/v1/models";
+			ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+			Map<String, Object> body = response.getBody();
+			if (body != null && body.containsKey("data")) {
+				List<Map<String, Object>> data = (List<Map<String, Object>>) body.get("data");
+				List<String> modelNames = data.stream()
+					.map(m -> (String) m.get("id"))
+					.filter(StringUtils::isNotBlank)
+					.collect(Collectors.toList());
+				return Result.success(modelNames);
+			}
+		}
+		catch (Exception e) {
+			log.warn("OpenAI-compatible /v1/models failed for endpoint {}, trying Ollama API", baseUrl);
+		}
+
+		// Fallback: try Ollama-specific /api/tags
+		try {
+			String url = baseUrl + "/api/tags";
+			ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+			Map<String, Object> body = response.getBody();
+			if (body != null && body.containsKey("models")) {
+				List<Map<String, Object>> models = (List<Map<String, Object>>) body.get("models");
+				List<String> modelNames = models.stream()
+					.map(m -> (String) m.get("name"))
+					.filter(StringUtils::isNotBlank)
+					.collect(Collectors.toList());
+				return Result.success(modelNames);
+			}
+		}
+		catch (Exception e) {
+			log.error("Failed to fetch available models from endpoint: {}", baseUrl, e);
+		}
+
+		return Result.success(Lists.newArrayList());
 	}
 }

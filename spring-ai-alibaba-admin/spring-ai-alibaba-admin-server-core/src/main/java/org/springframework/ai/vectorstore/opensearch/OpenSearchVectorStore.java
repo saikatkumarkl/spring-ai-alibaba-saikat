@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-package org.springframework.ai.vectorstore.elasticsearch;
+package org.springframework.ai.vectorstore.opensearch;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.core.BulkRequest;
-import co.elastic.clients.elasticsearch.core.BulkResponse;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
-import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem;
-import co.elastic.clients.elasticsearch.core.search.Hit;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.Version;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
 import com.alibaba.cloud.ai.studio.runtime.exception.BizException;
 import com.alibaba.cloud.ai.studio.runtime.enums.ErrorCode;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.elasticsearch.client.RestClient;
+import org.opensearch.client.opensearch.OpenSearchClient;
+import org.opensearch.client.opensearch.core.BulkRequest;
+import org.opensearch.client.opensearch.core.BulkResponse;
+import org.opensearch.client.opensearch.core.SearchResponse;
+import org.opensearch.client.opensearch.core.bulk.BulkResponseItem;
+import org.opensearch.client.opensearch.core.search.Hit;
+import org.opensearch.client.opensearch._types.query_dsl.Query;
+import org.opensearch.client.json.jackson.JacksonJsonpMapper;
+import org.opensearch.client.transport.rest_client.RestClientTransport;
+import org.opensearch.client.RestClient;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.document.DocumentMetadata;
 import org.springframework.ai.embedding.EmbeddingModel;
@@ -47,7 +47,9 @@ import org.springframework.ai.vectorstore.observation.VectorStoreObservationCont
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -60,110 +62,35 @@ import static com.alibaba.cloud.ai.studio.core.rag.RagConstants.SEARCH_TIMEOUT;
 import static com.alibaba.cloud.ai.studio.core.utils.concurrent.ThreadPoolUtils.DEFAULT_TASK_EXECUTOR;
 
 /**
- * Elasticsearch-based vector store implementation using the dense_vector field type.
+ * OpenSearch-based vector store implementation using knn_vector field type.
  *
- * <p>
- * The store uses an Elasticsearch index to persist vector embeddings along with their
- * associated document content and metadata. The implementation leverages Elasticsearch's
- * k-NN search capabilities for efficient similarity search operations.
- * </p>
- *
- * <p>
- * Features:
- * </p>
+ * <p>Features:</p>
  * <ul>
  * <li>Automatic schema initialization with configurable index creation</li>
  * <li>Support for multiple similarity functions: Cosine, L2 Norm, and Dot Product</li>
- * <li>Metadata filtering using Elasticsearch query strings</li>
+ * <li>Metadata filtering using OpenSearch query strings</li>
  * <li>Configurable similarity thresholds for search results</li>
  * <li>Batch processing support with configurable strategies</li>
- * <li>Observation and metrics support through Micrometer</li>
+ * <li>Supports SEMANTIC, FULL_TEXT, and HYBRID search modes</li>
  * </ul>
  *
- * <p>
- * Basic usage example:
- * </p>
- * <pre>{@code
- * ElasticsearchVectorStore vectorStore = ElasticsearchVectorStore.builder(restClient, embeddingModel)
- *     .initializeSchema(true)
- *     .build();
- *
- * // Add documents
- * vectorStore.add(List.of(
- *     new Document("content1", Map.of("key1", "value1")),
- *     new Document("content2", Map.of("key2", "value2"))
- * ));
- *
- * // Search with filters
- * List<Document> results = vectorStore.similaritySearch(
- *     SearchRequest.query("search text")
- *         .withTopK(5)
- *         .withSimilarityThreshold(0.7)
- *         .withFilterExpression("key1 == 'value1'")
- * );
- * }</pre>
- *
- * <p>
- * Advanced configuration example:
- * </p>
- * <pre>{@code
- * ElasticsearchVectorStoreOptions options = new ElasticsearchVectorStoreOptions();
- * options.setIndexName("custom_vectors");
- * options.setSimilarity(SimilarityFunction.dot_product);
- * options.setDimensions(1536);
- *
- * ElasticsearchVectorStore vectorStore = ElasticsearchVectorStore.builder(restClient, embeddingModel)
- *     .options(options)
- *     .initializeSchema(true)
- *     .batchingStrategy(new TokenCountBatchingStrategy())
- *     .build();
- * }</pre>
- *
- * <p>
- * Requirements:
- * </p>
- * <ul>
- * <li>Elasticsearch 8.0 or later</li>
- * <li>Index mapping with id (string), content (text), metadata (object), and embedding
- * (dense_vector) fields</li>
- * </ul>
- *
- * <p>
- * Similarity Functions:
- * </p>
- * <ul>
- * <li>cosine: Default, suitable for most use cases. Measures cosine similarity between
- * vectors.</li>
- * <li>l2_norm: Euclidean distance between vectors. Lower values indicate higher
- * similarity.</li>
- * <li>dot_product: Best performance for normalized vectors (e.g., OpenAI
- * embeddings).</li>
- * </ul>
- *
- * @author Jemin Huh
- * @author Wei Jiang
- * @author Laura Trotta
- * @author Soby Chacko
- * @author Christian Tzolov
- * @author Thomas Vitale
- * @author Ilayaperumal Gopinathan
  * @since 1.0.0
  */
-public class ElasticsearchVectorStore extends AbstractObservationVectorStore implements InitializingBean {
+public class OpenSearchVectorStore extends AbstractObservationVectorStore implements InitializingBean {
 
 	private static final Map<SimilarityFunction, VectorStoreSimilarityMetric> SIMILARITY_TYPE_MAPPING = Map.of(
 			SimilarityFunction.cosine, VectorStoreSimilarityMetric.COSINE, SimilarityFunction.l2_norm,
 			VectorStoreSimilarityMetric.EUCLIDEAN, SimilarityFunction.dot_product, VectorStoreSimilarityMetric.DOT);
 
-	private final ElasticsearchClient elasticsearchClient;
+	private final OpenSearchClient openSearchClient;
 
-	private final ElasticsearchVectorStoreOptions options;
+	private final OpenSearchVectorStoreOptions options;
 
 	private final FilterExpressionConverter filterExpressionConverter;
 
 	private final boolean initializeSchema;
 
-	protected ElasticsearchVectorStore(Builder builder) {
+	protected OpenSearchVectorStore(Builder builder) {
 		super(builder);
 
 		Assert.notNull(builder.restClient, "RestClient must not be null");
@@ -172,27 +99,23 @@ public class ElasticsearchVectorStore extends AbstractObservationVectorStore imp
 		this.options = builder.options;
 		this.filterExpressionConverter = builder.filterExpressionConverter;
 
-		String version = Version.VERSION == null ? "Unknown" : Version.VERSION.toString();
-		this.elasticsearchClient = new ElasticsearchClient(new RestClientTransport(builder.restClient,
+		this.openSearchClient = new OpenSearchClient(new RestClientTransport(builder.restClient,
 				new JacksonJsonpMapper(
-						new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false))))
-			.withTransportOptions(t -> t.addHeader("user-agent", "spring-ai elastic-java/" + version));
+						new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false))));
 	}
 
 	@Override
 	public void doAdd(List<Document> documents) {
-		// For the index to be present, either it must be pre-created or set the
-		// initializeSchema to true.
 		if (!indexExists()) {
 			throw new IllegalArgumentException("Index not found");
 		}
 		BulkRequest.Builder bulkRequestBuilder = new BulkRequest.Builder();
 
-		List<float[]> embeddings = this.embeddingModel.embed(documents,  EmbeddingOptions.builder().build(),
+		List<float[]> embeddings = this.embeddingModel.embed(documents, EmbeddingOptions.builder().build(),
 				this.batchingStrategy);
 
 		for (Document document : documents) {
-			ElasticSearchDocument doc = new ElasticSearchDocument(document.getId(), document.getText(),
+			OpenSearchDocument doc = new OpenSearchDocument(document.getId(), document.getText(),
 					document.getMetadata(), embeddings.get(documents.indexOf(document)));
 			bulkRequestBuilder.operations(
 					op -> op.index(idx -> idx.index(this.options.getIndexName()).id(document.getId()).document(doc)));
@@ -211,8 +134,6 @@ public class ElasticsearchVectorStore extends AbstractObservationVectorStore imp
 	@Override
 	public void doDelete(List<String> idList) {
 		BulkRequest.Builder bulkRequestBuilder = new BulkRequest.Builder();
-		// For the index to be present, either it must be pre-created or set the
-		// initializeSchema to true.
 		if (!indexExists()) {
 			throw new IllegalArgumentException("Index not found");
 		}
@@ -226,15 +147,13 @@ public class ElasticsearchVectorStore extends AbstractObservationVectorStore imp
 
 	@Override
 	public void doDelete(Filter.Expression filterExpression) {
-		// For the index to be present, either it must be pre-created or set the
-		// initializeSchema to true.
 		if (!indexExists()) {
 			throw new IllegalArgumentException("Index not found");
 		}
 
 		try {
-			this.elasticsearchClient.deleteByQuery(d -> d.index(this.options.getIndexName())
-				.query(q -> q.queryString(qs -> qs.query(getElasticsearchQueryString(filterExpression)))));
+			this.openSearchClient.deleteByQuery(d -> d.index(this.options.getIndexName())
+				.query(q -> q.queryString(qs -> qs.query(getQueryString(filterExpression)))));
 		}
 		catch (Exception e) {
 			throw new IllegalStateException("Failed to delete documents by filter", e);
@@ -243,7 +162,7 @@ public class ElasticsearchVectorStore extends AbstractObservationVectorStore imp
 
 	private BulkResponse bulkRequest(BulkRequest bulkRequest) {
 		try {
-			return this.elasticsearchClient.bulk(bulkRequest);
+			return this.openSearchClient.bulk(bulkRequest);
 		}
 		catch (IOException e) {
 			throw new RuntimeException(e);
@@ -262,10 +181,9 @@ public class ElasticsearchVectorStore extends AbstractObservationVectorStore imp
 		};
 	}
 
-	private String getElasticsearchQueryString(Filter.Expression filterExpression) {
+	private String getQueryString(Filter.Expression filterExpression) {
 		return Objects.isNull(filterExpression) ? "*"
 				: this.filterExpressionConverter.convertExpression(filterExpression);
-
 	}
 
 	private Document toDocument(Hit<Document> hit, SearchType searchType) {
@@ -284,17 +202,10 @@ public class ElasticsearchVectorStore extends AbstractObservationVectorStore imp
 		return documentBuilder.build();
 	}
 
-	// more info on score/distance calculation
-	// https://www.elastic.co/guide/en/elasticsearch/reference/current/knn-search.html#knn-similarity-search
 	private double normalizeSimilarityScore(double score) {
 		switch (this.options.getSimilarity()) {
 			case l2_norm:
-				// the returned value of l2_norm is the opposite of the other functions
-				// (closest to zero means more accurate), so to make it consistent
-				// with the other functions the reverse is returned applying a "1-"
-				// to the standard transformation
 				return (1 - (java.lang.Math.sqrt((1 / score) - 1)));
-			// cosine and dot_product
 			default:
 				return (2 * score) - 1;
 		}
@@ -302,7 +213,7 @@ public class ElasticsearchVectorStore extends AbstractObservationVectorStore imp
 
 	public boolean indexExists() {
 		try {
-			return this.elasticsearchClient.indices().exists(ex -> ex.index(this.options.getIndexName())).value();
+			return this.openSearchClient.indices().exists(ex -> ex.index(this.options.getIndexName())).value();
 		}
 		catch (IOException e) {
 			throw new RuntimeException(e);
@@ -311,11 +222,28 @@ public class ElasticsearchVectorStore extends AbstractObservationVectorStore imp
 
 	private void createIndexMapping() {
 		try {
-			this.elasticsearchClient.indices()
+			// Use JSON-based mapping for knn_vector since OpenSearch uses different field type
+			String mappingJson = String.format("""
+					{
+						"properties": {
+							"embedding": {
+								"type": "knn_vector",
+								"dimension": %d,
+								"method": {
+									"name": "hnsw",
+									"space_type": "%s",
+									"engine": "lucene"
+								}
+							}
+						}
+					}
+					""", this.options.getDimensions(), this.options.getSimilarity().toOpenSearchSpaceType());
+
+			this.openSearchClient.indices()
 				.create(cr -> cr.index(this.options.getIndexName())
-					.mappings(map -> map.properties("embedding",
-							p -> p.denseVector(dv -> dv.similarity(this.options.getSimilarity().toString())
-								.dims(this.options.getDimensions())))));
+					.settings(s -> s.knn(true))
+					.mappings(m -> m
+						.withJson(new ByteArrayInputStream(mappingJson.getBytes(StandardCharsets.UTF_8)))));
 		}
 		catch (IOException e) {
 			throw new RuntimeException(e);
@@ -355,117 +283,94 @@ public class ElasticsearchVectorStore extends AbstractObservationVectorStore imp
 	@Override
 	public <T> Optional<T> getNativeClient() {
 		@SuppressWarnings("unchecked")
-		T client = (T) this.elasticsearchClient;
+		T client = (T) this.openSearchClient;
 		return Optional.of(client);
 	}
 
-	/**
-	 * Creates a new builder instance for ElasticsearchVectorStore.
-	 * @return a new ElasticsearchBuilder instance
-	 */
 	public static Builder builder(RestClient restClient, EmbeddingModel embeddingModel) {
 		return new Builder(restClient, embeddingModel);
 	}
 
 	/**
 	 * The representation of {@link Document} along with its embedding.
-	 *
-	 * @param id The id of the document
-	 * @param content The content of the document
-	 * @param metadata The metadata of the document
-	 * @param embedding The vectors representing the content of the document
 	 */
-	public record ElasticSearchDocument(String id, String content, Map<String, Object> metadata, float[] embedding) {
+	public record OpenSearchDocument(String id, String content, Map<String, Object> metadata, float[] embedding) {
 	}
 
 	public static class Builder extends AbstractVectorStoreBuilder<Builder> {
 
 		private final RestClient restClient;
 
-		private ElasticsearchVectorStoreOptions options = new ElasticsearchVectorStoreOptions();
+		private OpenSearchVectorStoreOptions options = new OpenSearchVectorStoreOptions();
 
 		private boolean initializeSchema = false;
 
-		private FilterExpressionConverter filterExpressionConverter = new ElasticsearchAiSearchFilterExpressionConverter();
+		private FilterExpressionConverter filterExpressionConverter = new OpenSearchFilterExpressionConverter();
 
-		/**
-		 * Sets the Elasticsearch REST client.
-		 * @param restClient the Elasticsearch REST client
-		 * @param embeddingModel the Embedding Model to be used
-		 */
 		public Builder(RestClient restClient, EmbeddingModel embeddingModel) {
 			super(embeddingModel);
 			Assert.notNull(restClient, "RestClient must not be null");
 			this.restClient = restClient;
 		}
 
-		/**
-		 * Sets the Elasticsearch vector store options.
-		 * @param options the vector store options to use
-		 * @return the builder instance
-		 * @throws IllegalArgumentException if options is null
-		 */
-		public Builder options(ElasticsearchVectorStoreOptions options) {
+		public Builder options(OpenSearchVectorStoreOptions options) {
 			Assert.notNull(options, "options must not be null");
 			this.options = options;
 			return this;
 		}
 
-		/**
-		 * Sets whether to initialize the schema.
-		 * @param initializeSchema true to initialize schema, false otherwise
-		 * @return the builder instance
-		 */
 		public Builder initializeSchema(boolean initializeSchema) {
 			this.initializeSchema = initializeSchema;
 			return this;
 		}
 
-		/**
-		 * Sets the filter expression converter.
-		 * @param converter the filter expression converter to use
-		 * @return the builder instance
-		 * @throws IllegalArgumentException if converter is null
-		 */
 		public Builder filterExpressionConverter(FilterExpressionConverter converter) {
 			Assert.notNull(converter, "filterExpressionConverter must not be null");
 			this.filterExpressionConverter = converter;
 			return this;
 		}
 
-		/**
-		 * Builds the ElasticsearchVectorStore instance.
-		 * @return a new ElasticsearchVectorStore instance
-		 * @throws IllegalStateException if the builder is in an invalid state
-		 */
 		@Override
-		public ElasticsearchVectorStore build() {
-			return new ElasticsearchVectorStore(this);
+		public OpenSearchVectorStore build() {
+			return new OpenSearchVectorStore(this);
 		}
 
 	}
 
 	protected List<Document> searchBySemantic(SearchRequest searchRequest) {
 		try {
-			float threshold = (float) searchRequest.getSimilarityThreshold();
-			// reverting l2_norm distance to its original value
-			if (this.options.getSimilarity().equals(SimilarityFunction.l2_norm)) {
-				threshold = 1 - threshold;
-			}
-			final float finalThreshold = threshold;
 			float[] vectors = this.embeddingModel.embed(searchRequest.getQuery());
+			String filterQueryString = getQueryString(searchRequest.getFilterExpression());
 
-			SearchResponse<Document> res = this.elasticsearchClient.search(sr -> sr.index(this.options.getIndexName())
-				.knn(knn -> knn.queryVector(EmbeddingUtils.toList(vectors))
-					.similarity(finalThreshold)
-					.k((long) searchRequest.getTopK())
-					.field("embedding")
-					.numCandidates((long) (1.5 * searchRequest.getTopK()))
-					.filter(fl -> fl
-						.queryString(qs -> qs.query(getElasticsearchQueryString(searchRequest.getFilterExpression())))))
-				.size(searchRequest.getTopK()), Document.class);
+			List<Float> vectorList = EmbeddingUtils.toList(vectors);
 
-			return res.hits().hits().stream().map(x -> toDocument(x, SearchType.SEMANTIC)).collect(Collectors.toList());
+			SearchResponse<Document> res;
+			if ("*".equals(filterQueryString)) {
+				res = this.openSearchClient.search(sr -> sr.index(this.options.getIndexName())
+					.query(q -> q.knn(knn -> knn
+						.field("embedding")
+						.vector(vectors)
+						.k(searchRequest.getTopK())))
+					.size(searchRequest.getTopK()), Document.class);
+			}
+			else {
+				Query filterQuery = Query.of(fq -> fq.queryString(qs -> qs.query(filterQueryString)));
+				res = this.openSearchClient.search(sr -> sr.index(this.options.getIndexName())
+					.query(q -> q.knn(knn -> knn
+						.field("embedding")
+						.vector(vectors)
+						.k(searchRequest.getTopK())
+						.filter(filterQuery)))
+					.size(searchRequest.getTopK()), Document.class);
+			}
+
+			return res.hits()
+				.hits()
+				.stream()
+				.filter(hit -> hit.score() != null
+						&& normalizeSimilarityScore(hit.score()) >= searchRequest.getSimilarityThreshold())
+				.map(x -> toDocument(x, SearchType.SEMANTIC))
+				.collect(Collectors.toList());
 		}
 		catch (IOException e) {
 			throw new BizException(ErrorCode.DOCUMENT_RETRIEVAL_ERROR.toError(), e);
@@ -474,12 +379,12 @@ public class ElasticsearchVectorStore extends AbstractObservationVectorStore imp
 
 	protected List<Document> searchByFullText(SearchRequest searchRequest) {
 		try {
-			SearchResponse<Document> res = this.elasticsearchClient.search(
+			SearchResponse<Document> res = this.openSearchClient.search(
 					sr -> sr.index(this.options.getIndexName())
 						.query(q -> q.bool(m -> m
-							.must(qm -> qm.match(mm -> mm.field("content").query(searchRequest.getQuery())))
+							.must(qm -> qm.match(mm -> mm.field("content").query(fv -> fv.stringValue(searchRequest.getQuery()))))
 							.filter(fl -> fl.queryString(
-									qs -> qs.query(getElasticsearchQueryString(searchRequest.getFilterExpression()))))))
+									qs -> qs.query(getQueryString(searchRequest.getFilterExpression()))))))
 						.minScore(searchRequest.getSimilarityThreshold())
 						.size((int) (1.5 * searchRequest.getTopK())),
 					Document.class);
@@ -514,7 +419,6 @@ public class ElasticsearchVectorStore extends AbstractObservationVectorStore imp
 			}, DEFAULT_TASK_EXECUTOR);
 			futureList.add(textFuture);
 
-			//Vector-based retrieval of recalled content
 			CompletableFuture<List<Document>> vectorFuture = CompletableFuture.supplyAsync(() -> {
 				int textTopK = Math.round(searchRequest.getTopK() * searchRequest.getHybridWeight());
 				return searchBySemantic(SearchRequest.builder()
@@ -530,7 +434,6 @@ public class ElasticsearchVectorStore extends AbstractObservationVectorStore imp
 				future.get(SEARCH_TIMEOUT, TimeUnit.SECONDS);
 			}
 
-			//Deduplication
 			List<Document> vectorList = vectorFuture.get() == null ? new ArrayList<>() : vectorFuture.get();
 			List<Document> fullTextList = textFuture.get() == null ? new ArrayList<>() : textFuture.get();
 

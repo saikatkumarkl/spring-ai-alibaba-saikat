@@ -61,7 +61,7 @@ const DifyConverter: React.FC = () => {
 
       // Prepare request parameters
       const params = {
-        dependencies: 'spring-ai-alibaba-graph,web,spring-ai-alibaba-starter-dashscope',
+        dependencies: 'spring-ai-alibaba-graph,web,spring-ai-starter-model-ollama',
         appMode: 'workflow',
         dslDialectType: 'dify',
         type: 'maven-project',
@@ -97,7 +97,7 @@ const DifyConverter: React.FC = () => {
         'Spring AI Alibaba project generated',
         'Project Type: Maven Project',
         'Language: Java 17',
-        'Includes Dependencies: spring-ai-alibaba-graph, web, spring-ai-alibaba-starter-dashscope',
+        'Includes Dependencies: spring-ai-alibaba-graph, web, spring-ai-starter-model-ollama',
         'Application Mode: workflow'
       ]);
 

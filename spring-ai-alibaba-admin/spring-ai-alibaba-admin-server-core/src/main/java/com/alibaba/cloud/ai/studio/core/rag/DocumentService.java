@@ -83,6 +83,14 @@ public interface DocumentService {
 	void updateDocumentIndexStatus(String docId, DocumentIndexStatus indexStatus);
 
 	/**
+	 * Updates document indexing status with error message
+	 * @param docId Document ID
+	 * @param indexStatus New index status
+	 * @param errorMessage Error message describing the failure
+	 */
+	void updateDocumentIndexStatus(String docId, DocumentIndexStatus indexStatus, String errorMessage);
+
+	/**
 	 * Deletes documents and their associated chunks
 	 * @param request Document deletion request
 	 */

@@ -27,8 +27,8 @@ import lombok.Getter;
 @Getter
 public enum VectorStoreType {
 
-	/** Elasticsearch vector store implementation */
-	ELASTICSEARCH("elasticsearch"),;
+	/** OpenSearch vector store implementation */
+	OPENSEARCH("opensearch"),;
 
 	/** The string identifier for the vector store type */
 	private final String type;

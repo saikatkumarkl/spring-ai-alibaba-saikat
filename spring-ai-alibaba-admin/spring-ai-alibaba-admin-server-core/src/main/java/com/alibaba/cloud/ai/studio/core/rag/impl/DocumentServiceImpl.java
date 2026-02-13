@@ -268,7 +268,7 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, DocumentEnt
 		LambdaUpdateWrapper<DocumentEntity> updateWrapper = new LambdaUpdateWrapper<>();
 		updateWrapper.eq(DocumentEntity::getDocId, docId)
 			.eq(workspaceId != null, DocumentEntity::getWorkspaceId, workspaceId)
-			.set(DocumentEntity::getEnabled, enabled);
+			.set(DocumentEntity::getEnabled, Boolean.TRUE.equals(enabled) ? 1 : 0);
 
 		this.update(updateWrapper);
 
@@ -282,8 +282,15 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, DocumentEnt
 	 */
 	@Override
 	public void updateDocumentIndexStatus(String docId, DocumentIndexStatus indexStatus) {
+		updateDocumentIndexStatus(docId, indexStatus, null);
+	}
+
+	@Override
+	public void updateDocumentIndexStatus(String docId, DocumentIndexStatus indexStatus, String errorMessage) {
 		LambdaUpdateWrapper<DocumentEntity> updateWrapper = new LambdaUpdateWrapper<>();
-		updateWrapper.eq(DocumentEntity::getDocId, docId).set(DocumentEntity::getIndexStatus, indexStatus.getStatus());
+		updateWrapper.eq(DocumentEntity::getDocId, docId)
+			.set(DocumentEntity::getIndexStatus, indexStatus.getStatus())
+			.set(DocumentEntity::getError, errorMessage);
 
 		this.update(updateWrapper);
 	}

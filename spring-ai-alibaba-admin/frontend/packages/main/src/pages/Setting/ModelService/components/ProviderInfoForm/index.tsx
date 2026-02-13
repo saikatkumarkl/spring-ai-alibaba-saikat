@@ -235,7 +235,7 @@ const ProviderInfoForm: React.FC<ProviderInfoFormProps> = ({
               rows={2}
               placeholder={$i18n.get({
                 id: 'main.pages.Setting.ModelService.components.ProviderInfoForm.index.enterApiUrl',
-                dm: 'Enter your API URL from provider docs, e.g., https://dashscope.aliyuncs.com/compatible-mode',
+                dm: 'Enter your API URL from provider docs, e.g., http://localhost:11434 (Ollama) or https://api.openai.com (OpenAI)',
               })}
             />
           </Form.Item>

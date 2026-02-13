@@ -1,33 +1,6 @@
 version: '3.8'
 
 services:
-  # mysql:
-  #   container_name: mysql
-  #   restart: always
-  #   image: mysql:8.0
-  #   platform: linux/amd64
-  #   environment:
-  #     - MYSQL_ROOT_PASSWORD=root
-  #     - MYSQL_DATABASE=admin
-  #     - MYSQL_USER=admin
-  #     - MYSQL_PASSWORD=admin
-  #     - LANG=C.UTF-8
-  #     - TZ=Asia/Shanghai
-  #   volumes:
-  #     - ./mysql/data:/var/lib/mysql
-  #     - ./mysql/log:/var/log
-  #     - ./conf/mysql:/etc/mysql/conf.d
-  #     - ./init/mysql:/docker-entrypoint-initdb.d/
-  #   ports:
-  #     - "3306:3306"
-  #   healthcheck:
-  #     test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-  #     interval: 5s
-  #     timeout: 10s
-  #     retries: 10
-  #   networks:
-  #     - saa-network
-
   postgres:
     container_name: postgres
     restart: always
@@ -232,6 +205,87 @@ services:
         sh mqadmin topicList -n rmq-namesrv:9876 &&
         echo 'Topic creation completed'"
 
+  # ============================
+  # Ollama (Local LLM + Embedding)
+  # ============================
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./ollama/data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+    networks:
+      - saa-network
+
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: ollama-init
+    restart: "no"
+    volumes:
+      - ./ollama/data:/root/.ollama
+      - ./ollama/models.conf:/models.conf:ro
+    entrypoint: >
+      sh -c "
+        export OLLAMA_HOST=http://ollama:11434 &&
+
+        echo '=== Quick-checking local model manifest cache ===' &&
+        ALL_LOCAL=true &&
+        grep -v '^ *#' /models.conf | grep -v '^ *$$' | while read -r MODEL; do
+          TAG=$${MODEL##*:}
+          NAME=$${MODEL%%:*}
+          [ \"$$TAG\" = \"$$MODEL\" ] && TAG=latest
+          MANIFEST=/root/.ollama/models/manifests/registry.ollama.ai/library/$$NAME/$$TAG
+          if [ ! -f \"$$MANIFEST\" ]; then
+            echo \"[MISSING] $$MODEL (no local manifest)\"
+            echo NEEDS_PULL > /tmp/needs_pull
+          else
+            echo \"[LOCAL]   $$MODEL\"
+          fi
+        done &&
+
+        if [ ! -f /tmp/needs_pull ]; then
+          echo '=== All models already cached locally — skipping pull ===' &&
+          exit 0
+        fi &&
+
+        rm -f /tmp/needs_pull &&
+        sleep 5 &&
+        echo '=== Some models missing — checking / pulling via Ollama ===' &&
+
+        pull_if_missing() {
+          MODEL=$$1
+          if ollama list | grep -q \"$$MODEL\"; then
+            echo \"[SKIP] $$MODEL already present\"
+          else
+            echo \"[PULL] $$MODEL ...\"
+            ollama pull $$MODEL
+          fi
+        } &&
+
+        grep -v '^ *#' /models.conf | grep -v '^ *$$' | while read -r MODEL; do
+          pull_if_missing \"$$MODEL\"
+        done &&
+
+        echo '=== Done ===' &&
+        ollama list
+      "
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks:
+      - saa-network
+
   backend:
     build:
       context: ../..
@@ -256,6 +310,15 @@ services:
       - SPRING_ELASTICSEARCH_URIS=http://opensearch:9200
       - NACOS_SERVER_ADDR=nacos:8848
       - ROCKETMQ_ENDPOINTS=rmq-proxy:18081
+      # Ollama LLM configuration
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_CHAT_MODEL=${OLLAMA_CHAT_MODEL:-qwen2.5:7b}
+      - OLLAMA_EMBEDDING_MODEL=${OLLAMA_EMBEDDING_MODEL:-nomic-embed-text}
+      # model-config.yml is mounted at /app/model-config.yml
+      - MODEL_CONFIG_FILE=/app/model-config.yml
+    volumes:
+      - ./model-config-ollama.yml:/app/model-config.yml:ro
+      - saa_storage:/home/spring/saa/storage
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -267,6 +330,8 @@ services:
         condition: service_healthy
       rmq-proxy:
         condition: service_started
+      ollama:
+        condition: service_healthy
     networks:
       - saa-network
     healthcheck:
@@ -286,6 +351,7 @@ services:
     restart: always
     environment:
       - JAVA_OPTS=-Xms512m -Xmx512m
+      - MCF_OPENSEARCH_URL=http://opensearch:9200
     ports:
       - "8345:8345"
     volumes:
@@ -319,7 +385,6 @@ services:
       - MCF_API_URL=http://manifoldcf:8345/mcf-api-service
       # OpenSearch output
       - OPENSEARCH_URL=http://opensearch:9200/
-      - OPENSEARCH_INDEX=manifoldcf
       # Alfresco CMIS repository (set credentials before deploying)
       - CMIS_USERNAME=${CMIS_USERNAME:-CHANGE_ME_USERNAME}
       - CMIS_PASSWORD=${CMIS_PASSWORD:-CHANGE_ME_PASSWORD}
@@ -329,6 +394,19 @@ services:
       - CMIS_PATH=/alfresco/api/-default-/cmis/versions/1.1/atom
       - CMIS_BINDING=atom
       - CMIS_REPOSITORY_ID=-default-
+      # CMIS vendor + group API (for authorities sync)
+      - CMIS_VENDOR=alfresco
+      - CMIS_GROUP_API_URL=/alfresco/api/-default-/public/alfresco/versions/1/groups
+      - CMIS_GROUP_MEMBERS_API_URL=/alfresco/api/-default-/public/alfresco/versions/1/groups/{groupId}/members
+      # Skip ACL wait — set "true" to skip waiting for authorities index
+      - SKIP_ACL_WAIT=false
+      # Max file size in MB — files larger than this are skipped (0 = no limit)
+      - MAX_FILE_SIZE_MB=10
+      # Cron schedule for incremental crawl (default: every 6 hours)
+      - CRAWL_CRON_MINUTE=0
+      - CRAWL_CRON_HOUR=*/6
+      # Recrawl interval in ms (6 hours)
+      - RECRAWL_INTERVAL_MS=21600000
     depends_on:
       manifoldcf:
         condition: service_healthy
@@ -337,6 +415,8 @@ services:
 
 volumes:
   opensearch_data:
+    driver: local
+  saa_storage:
     driver: local
 
 networks:

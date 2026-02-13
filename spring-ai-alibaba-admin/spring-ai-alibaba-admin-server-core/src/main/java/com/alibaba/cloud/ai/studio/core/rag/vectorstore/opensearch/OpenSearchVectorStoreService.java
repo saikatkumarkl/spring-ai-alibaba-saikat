@@ -14,18 +14,8 @@
  * limitations under the License.
  */
 
-package com.alibaba.cloud.ai.studio.core.rag.vectorstore.elasticsearch;
+package com.alibaba.cloud.ai.studio.core.rag.vectorstore.opensearch;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._types.ElasticsearchException;
-import co.elastic.clients.elasticsearch._types.mapping.*;
-import co.elastic.clients.elasticsearch.core.BulkRequest;
-import co.elastic.clients.elasticsearch.core.BulkResponse;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
-import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem;
-import co.elastic.clients.elasticsearch.core.search.Hit;
-import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
-import co.elastic.clients.elasticsearch.indices.IndexSettings;
 import com.alibaba.cloud.ai.studio.runtime.exception.BizException;
 import com.alibaba.cloud.ai.studio.runtime.enums.ErrorCode;
 import com.alibaba.cloud.ai.studio.runtime.domain.PagingList;
@@ -39,60 +29,68 @@ import com.alibaba.cloud.ai.studio.core.rag.vectorstore.VectorStoreService;
 import com.alibaba.cloud.ai.studio.core.rag.DocumentChunkConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.client.RestClient;
+import org.opensearch.client.opensearch.OpenSearchClient;
+import org.opensearch.client.opensearch._types.OpenSearchException;
+import org.opensearch.client.opensearch.core.BulkRequest;
+import org.opensearch.client.opensearch.core.BulkResponse;
+import org.opensearch.client.opensearch.core.SearchResponse;
+import org.opensearch.client.opensearch.core.bulk.BulkResponseItem;
+import org.opensearch.client.opensearch.core.search.Hit;
+import org.opensearch.client.RestClient;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.document.MetadataMode;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.embedding.EmbeddingOptions;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.ai.vectorstore.elasticsearch.ElasticsearchAiSearchFilterExpressionConverter;
-import org.springframework.ai.vectorstore.elasticsearch.ElasticsearchVectorStore;
-import org.springframework.ai.vectorstore.elasticsearch.ElasticsearchVectorStoreOptions;
-import org.springframework.ai.vectorstore.elasticsearch.SimilarityFunction;
+import org.springframework.ai.vectorstore.opensearch.OpenSearchFilterExpressionConverter;
+import org.springframework.ai.vectorstore.opensearch.OpenSearchVectorStore;
+import org.springframework.ai.vectorstore.opensearch.OpenSearchVectorStoreOptions;
+import org.springframework.ai.vectorstore.opensearch.SimilarityFunction;
 import org.springframework.ai.vectorstore.filter.FilterExpressionConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static com.alibaba.cloud.ai.studio.core.rag.RagConstants.*;
 
 /**
- * Elasticsearch vector store service implementation. Provides functionality for managing
- * vector indices and document chunks in Elasticsearch. Note: Spring AI does not support
- * index management, so we implement it ourselves.
+ * OpenSearch vector store service implementation. Provides functionality for managing
+ * vector indices and document chunks in OpenSearch.
  *
- * @since 1.0.0.3
+ * @since 1.0.0
  */
 @Service
 @Slf4j
-@Qualifier("elasticSearchVectorStoreService")
-public class ElasticSearchVectorStoreService implements VectorStoreService {
+@Qualifier("openSearchVectorStoreService")
+public class OpenSearchVectorStoreService implements VectorStoreService {
 
 	/** Factory for creating embedding models */
 	private final ModelFactory modelFactory;
 
-	/** Elasticsearch client for index operations */
-	private final ElasticsearchClient elasticsearchClient;
+	/** OpenSearch client for index operations */
+	private final OpenSearchClient openSearchClient;
 
 	/** REST client for vector store operations */
 	private final RestClient restClient;
 
-	/** Converter for filter expressions to Elasticsearch queries */
-	private final FilterExpressionConverter filterExpressionConverter = new ElasticsearchAiSearchFilterExpressionConverter();
+	/** Converter for filter expressions to OpenSearch queries */
+	private final FilterExpressionConverter filterExpressionConverter = new OpenSearchFilterExpressionConverter();
 
-	public ElasticSearchVectorStoreService(ModelFactory modelFactory, ElasticsearchClient elasticsearchClient,
+	public OpenSearchVectorStoreService(ModelFactory modelFactory, OpenSearchClient openSearchClient,
 			RestClient restClient) {
 		this.modelFactory = modelFactory;
-		this.elasticsearchClient = elasticsearchClient;
+		this.openSearchClient = openSearchClient;
 		this.restClient = restClient;
 	}
 
 	/**
-	 * Creates a new Elasticsearch index with vector search capabilities
+	 * Creates a new OpenSearch index with knn_vector search capabilities
 	 * @param indexConfig Configuration for the index including name and embedding model
 	 */
 	@Override
@@ -100,62 +98,72 @@ public class ElasticSearchVectorStoreService implements VectorStoreService {
 		String indexName = indexConfig.getName();
 
 		if (StringUtils.isBlank(indexName)) {
-			throw new IllegalArgumentException("Elastic search index name must be provided");
+			throw new IllegalArgumentException("OpenSearch index name must be provided");
 		}
 
-		ElasticsearchVectorStoreOptions options = new ElasticsearchVectorStoreOptions();
-		options.setIndexName(indexName);
-		options.setSimilarity(SimilarityFunction.dot_product);
-
-		String similarityAlgo = SimilarityFunction.cosine.name();
-		IndexSettings indexSettings = IndexSettings
-			.of(settings -> settings.numberOfShards(String.valueOf(1)).numberOfReplicas(String.valueOf(1)));
-
-		// Maybe using json directly?
 		int dimension = EmbeddingModelDimension.getDimension(indexConfig.getEmbeddingModel(), DEFAULT_DIMENSION);
-		Map<String, Property> properties = new HashMap<>();
-		properties.put(RagConstants.VECTOR_FIELD, Property.of(property -> property.denseVector(
-				DenseVectorProperty.of(dense -> dense.index(true).dims(dimension).similarity(similarityAlgo)))));
-		properties.put(RagConstants.TEXT_FIELD, Property.of(property -> property.text(TextProperty.of(t -> t))));
+		String spaceType = SimilarityFunction.cosine.toOpenSearchSpaceType();
 
-		Map<String, Property> metadata = new HashMap<>();
-		metadata.put(KEY_WORKSPACE_ID, Property.of(property -> property.keyword(KeywordProperty.of(k -> k))));
-		metadata.put(KEY_DOC_ID, Property.of(property -> property.keyword(KeywordProperty.of(k -> k))));
-		metadata.put(KEY_ENABLED, Property.of(property -> property.keyword(KeywordProperty.of(k -> k))));
-		metadata.put(KEY_CHUNK_INDEX, Property.of(property -> property.keyword(KeywordProperty.of(k -> k))));
+		// Build the mapping JSON for knn_vector type
+		String mappingJson = String.format("""
+				{
+					"properties": {
+						"%s": {
+							"type": "knn_vector",
+							"dimension": %d,
+							"method": {
+								"name": "hnsw",
+								"space_type": "%s",
+								"engine": "lucene"
+							}
+						},
+						"%s": {
+							"type": "text"
+						},
+						"metadata": {
+							"type": "object",
+							"properties": {
+								"%s": { "type": "keyword" },
+								"%s": { "type": "keyword" },
+								"%s": { "type": "keyword" },
+								"%s": { "type": "keyword" }
+							}
+						}
+					}
+				}
+				""", RagConstants.VECTOR_FIELD, dimension, spaceType,
+				RagConstants.TEXT_FIELD,
+				KEY_WORKSPACE_ID, KEY_DOC_ID, KEY_ENABLED, KEY_CHUNK_INDEX);
 
-		properties.put("metadata",
-				Property.of(property -> property.object(ObjectProperty.of(op -> op.properties(metadata)))));
-
-		CreateIndexResponse indexResponse;
 		try {
-			indexResponse = elasticsearchClient.indices()
+			var indexResponse = openSearchClient.indices()
 				.create(createIndexBuilder -> createIndexBuilder.index(indexName)
-					.settings(indexSettings)
-					.mappings(TypeMapping.of(mappings -> mappings.properties(properties))));
+					.settings(s -> s.numberOfShards("1").numberOfReplicas("1").knn(true))
+					.mappings(m -> m
+						.withJson(new ByteArrayInputStream(mappingJson.getBytes(StandardCharsets.UTF_8)))));
+
+			if (!indexResponse.acknowledged()) {
+				throw new RuntimeException("failed to create index");
+			}
+
+			log.info("create opensearch index {} successfully", indexName);
 		}
 		catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-
-		if (!indexResponse.acknowledged()) {
-			throw new RuntimeException("failed to create index");
-		}
-
-		log.info("create elasticsearch index {} successfully", indexName);
 	}
 
 	/**
-	 * Deletes an existing Elasticsearch index
+	 * Deletes an existing OpenSearch index
 	 * @param indexConfig Configuration containing the index name to delete
 	 */
 	@Override
 	public void deleteIndex(IndexConfig indexConfig) {
 		String indexName = indexConfig.getName();
 		try {
-			elasticsearchClient.indices().delete(idx -> idx.index(indexName));
+			openSearchClient.indices().delete(idx -> idx.index(indexName));
 		}
-		catch (ElasticsearchException ex) {
+		catch (OpenSearchException ex) {
 			if (ex.response().status() == 404) {
 				log.warn("index {} not found", indexName);
 			}
@@ -178,12 +186,12 @@ public class ElasticSearchVectorStoreService implements VectorStoreService {
 		EmbeddingModel embeddingModel = modelFactory.getEmbeddingModel(MetadataMode.EMBED, indexConfig);
 
 		int dimension = EmbeddingModelDimension.getDimension(indexConfig.getEmbeddingModel(), DEFAULT_DIMENSION);
-		ElasticsearchVectorStoreOptions storeOptions = new ElasticsearchVectorStoreOptions();
+		OpenSearchVectorStoreOptions storeOptions = new OpenSearchVectorStoreOptions();
 		storeOptions.setIndexName(indexConfig.getName());
 		storeOptions.setSimilarity(SimilarityFunction.cosine);
 		storeOptions.setDimensions(dimension);
 
-		return ElasticsearchVectorStore.builder(restClient, embeddingModel)
+		return OpenSearchVectorStore.builder(restClient, embeddingModel)
 			.options(storeOptions)
 			.initializeSchema(false)
 			.batchingStrategy(new DefaultBatchingStrategy())
@@ -202,7 +210,7 @@ public class ElasticSearchVectorStoreService implements VectorStoreService {
 			int size = searchRequest.getTopK();
 			String queryString = Objects.isNull(searchRequest.getFilterExpression()) ? "*"
 					: this.filterExpressionConverter.convertExpression(searchRequest.getFilterExpression());
-			SearchResponse<Document> res = this.elasticsearchClient.search(sr -> sr.index(indexConfig.getName())
+			SearchResponse<Document> res = this.openSearchClient.search(sr -> sr.index(indexConfig.getName())
 				.query(q -> q.queryString(qs -> qs.query(queryString)))
 				.from(searchRequest.getFrom())
 				.size(searchRequest.getTopK()), Document.class);
@@ -240,15 +248,15 @@ public class ElasticSearchVectorStoreService implements VectorStoreService {
 			BulkRequest.Builder bulkRequestBuilder = new BulkRequest.Builder();
 
 			List<Document> documents = chunks.stream().map(DocumentChunkConverter::toDocument).toList();
-			List<float[]> embeddings = embeddingModel.embed(documents,  EmbeddingOptions.builder().build(),
+			List<float[]> embeddings = embeddingModel.embed(documents, EmbeddingOptions.builder().build(),
 					new DefaultBatchingStrategy());
 
 			for (Document document : documents) {
-				ElasticsearchVectorStore.ElasticSearchDocument doc = new ElasticsearchVectorStore.ElasticSearchDocument(
+				OpenSearchVectorStore.OpenSearchDocument doc = new OpenSearchVectorStore.OpenSearchDocument(
 						document.getId(), document.getText(), document.getMetadata(),
 						embeddings.get(documents.indexOf(document)));
 				bulkRequestBuilder.operations(op -> op
-					.update(idx -> idx.index(indexConfig.getName()).id(document.getId()).action(a -> a.doc(doc))));
+					.update(idx -> idx.index(indexConfig.getName()).id(document.getId()).document(doc)));
 			}
 
 			bulkUpdate(bulkRequestBuilder.build());
@@ -269,10 +277,10 @@ public class ElasticSearchVectorStoreService implements VectorStoreService {
 		try {
 			BulkRequest.Builder bulkRequestBuilder = new BulkRequest.Builder();
 			for (String chunkId : chunkIds) {
-				ElasticsearchVectorStore.ElasticSearchDocument doc = new ElasticsearchVectorStore.ElasticSearchDocument(
+				OpenSearchVectorStore.OpenSearchDocument doc = new OpenSearchVectorStore.OpenSearchDocument(
 						chunkId, null, Map.of(KEY_ENABLED, enabled), null);
 				bulkRequestBuilder.operations(
-						op -> op.update(idx -> idx.index(indexConfig.getName()).id(chunkId).action(a -> a.doc(doc))));
+						op -> op.update(idx -> idx.index(indexConfig.getName()).id(chunkId).document(doc)));
 			}
 
 			bulkUpdate(bulkRequestBuilder.build());
@@ -288,7 +296,7 @@ public class ElasticSearchVectorStoreService implements VectorStoreService {
 	 * @throws IOException if the update operation fails
 	 */
 	private void bulkUpdate(BulkRequest request) throws IOException {
-		BulkResponse bulkRequest = this.elasticsearchClient.bulk(request);
+		BulkResponse bulkRequest = this.openSearchClient.bulk(request);
 		if (bulkRequest.errors()) {
 			List<BulkResponseItem> bulkResponseItems = bulkRequest.items();
 			for (BulkResponseItem bulkResponseItem : bulkResponseItems) {

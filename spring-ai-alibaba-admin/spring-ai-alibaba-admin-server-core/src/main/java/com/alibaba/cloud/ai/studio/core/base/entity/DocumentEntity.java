@@ -19,6 +19,7 @@ package com.alibaba.cloud.ai.studio.core.base.entity;
 import com.alibaba.cloud.ai.studio.runtime.enums.CommonStatus;
 import com.alibaba.cloud.ai.studio.runtime.enums.DocumentIndexStatus;
 import com.alibaba.cloud.ai.studio.runtime.enums.DocumentType;
+import com.alibaba.cloud.ai.studio.core.base.handler.BooleanSmallintTypeHandler;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -34,7 +35,7 @@ import java.util.Date;
  */
 
 @Data
-@TableName("document")
+@TableName(value = "document", autoResultMap = true)
 public class DocumentEntity {
 
 	/** Primary key */
@@ -60,6 +61,7 @@ public class DocumentEntity {
 	private DocumentType type;
 
 	/** Whether the document is enabled */
+	@TableField(value = "enabled", typeHandler = BooleanSmallintTypeHandler.class)
 	private Boolean enabled;
 
 	/** Document name */

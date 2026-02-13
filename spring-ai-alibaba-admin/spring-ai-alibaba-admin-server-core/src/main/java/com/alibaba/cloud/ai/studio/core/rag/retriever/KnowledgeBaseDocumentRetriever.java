@@ -98,7 +98,9 @@ public class KnowledgeBaseDocumentRetriever implements DocumentRetriever {
 
 			List<Document> results = documents.stream()
 				.sorted(Comparator.comparing(Document::getScore, Comparator.nullsLast(Comparator.reverseOrder())))
-				.filter(x -> x.getScore() != null && x.getScore() > searchOptions.getSimilarityThreshold())
+				.filter(x -> x.getScore() != null
+						&& (searchOptions.getSimilarityThreshold() == null
+								|| x.getScore() > searchOptions.getSimilarityThreshold()))
 				.limit(searchOptions.getTopK())
 				.toList();
 

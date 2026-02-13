@@ -117,7 +117,7 @@ public class AgentServiceImpl implements AgentService {
 			// request model
 			.flatMap(request -> streamExecute(context, request))
 			// read timeout
-			.timeout(Duration.ofSeconds(commonConfig.getAgentReadTimeout()))
+			.timeout(Duration.ofMillis(commonConfig.getAgentReadTimeout()))
 			// handle error
 			.onErrorResume(err -> handleThrowable(context, err))
 			// post handle

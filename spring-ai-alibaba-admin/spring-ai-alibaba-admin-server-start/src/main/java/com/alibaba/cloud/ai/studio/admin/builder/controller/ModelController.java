@@ -21,24 +21,27 @@ import com.alibaba.cloud.ai.studio.runtime.enums.ErrorCode;
 import com.alibaba.cloud.ai.studio.runtime.domain.Result;
 import com.alibaba.cloud.ai.studio.core.base.entity.ModelEntity;
 import com.alibaba.cloud.ai.studio.core.model.llm.domain.ModelConfigInfo;
+import com.alibaba.cloud.ai.studio.core.model.llm.domain.ModelCredential;
 import com.alibaba.cloud.ai.studio.core.model.llm.domain.ProviderConfigInfo;
 import com.alibaba.cloud.ai.studio.core.base.manager.ModelManager;
 import com.alibaba.cloud.ai.studio.core.base.manager.ProviderManager;
 import com.alibaba.cloud.ai.studio.core.utils.common.IdGenerator;
+import com.alibaba.cloud.ai.studio.runtime.utils.JsonUtils;
 import com.google.common.collect.Lists;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.ResponseEntity;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -66,11 +69,14 @@ public class ModelController {
 	/**
 	 * Model Selector API Retrieves a list of models grouped by their providers for a
 	 * specific model type. Only returns models from enabled providers.
-	 * @param modelType The type of models to retrieve (e.g., "chat", "embedding")
-	 * @return Result containing a list of ModelProviderGroup objects, where each group
-	 * contains: - Provider information (ProviderConfigInfo) - List of models
-	 * (ModelConfigInfo) for that provider Returns empty list if no models or providers
-	 * are found
+	 *
+	 * For providers with a configured endpoint (e.g. Ollama), this method auto-discovers
+	 * models at runtime by querying the provider's API, then syncs the DB:
+	 * - New models found in the provider are auto-registered
+	 * - Models no longer served by the provider are auto-removed
+	 *
+	 * @param modelType The type of models to retrieve (e.g., "llm", "text_embedding")
+	 * @return Result containing a list of ModelProviderGroup objects
 	 */
 	@GetMapping("/{modelType}/selector")
 	public Result<List<ModelProviderGroup>> getModelSelector(@PathVariable("modelType") String modelType) {
@@ -85,6 +91,12 @@ public class ModelController {
 			if (CollectionUtils.isEmpty(enableProviders)) {
 				return Result.success(Lists.newArrayList());
 			}
+
+			// Auto-sync models from providers that have a live endpoint
+			for (ProviderConfigInfo provider : enableProviders) {
+				syncModelsFromProvider(provider);
+			}
+
 			List<ModelConfigInfo> allModels = modelManager.queryModels(null);
 			if (CollectionUtils.isEmpty(allModels)) {
 				return Result.success(Lists.newArrayList());
@@ -94,7 +106,7 @@ public class ModelController {
 				.filter(model -> model.getType().equals(modelType))
 				.collect(Collectors.groupingBy(ModelConfigInfo::getProvider));
 			List<ModelProviderGroup> modelProviderGroups = Lists.newArrayList();
-			for (ProviderConfigInfo providerConfig : providers) {
+			for (ProviderConfigInfo providerConfig : enableProviders) {
 				if (!CollectionUtils.isEmpty(groupedModels.get(providerConfig.getProvider()))) {
 					ModelProviderGroup modelProviderGroup = new ModelProviderGroup();
 					modelProviderGroup.setProvider(providerConfig);
@@ -115,6 +127,158 @@ public class ModelController {
 			log.error("getModelSelector error", e);
 			return Result.error(IdGenerator.uuid(), ErrorCode.SYSTEM_ERROR);
 		}
+	}
+
+	/**
+	 * Auto-sync models from a provider's live endpoint.
+	 * Queries the provider's API to discover what models are actually available,
+	 * then adds missing ones and removes stale ones from the DB.
+	 */
+	@SuppressWarnings("unchecked")
+	private void syncModelsFromProvider(ProviderConfigInfo provider) {
+		// Only sync providers that have an endpoint configured
+		ModelCredential credential = provider.getCredential();
+		if (credential == null || StringUtils.isBlank(credential.getEndpoint())) {
+			return;
+		}
+
+		String baseUrl = credential.getEndpoint().replaceAll("/+$", "");
+		String providerName = provider.getProvider();
+
+		try {
+			List<String> liveModelNames = fetchLiveModels(baseUrl);
+			if (liveModelNames == null || liveModelNames.isEmpty()) {
+				return;
+			}
+
+			// Get current DB models for this provider
+			List<ModelConfigInfo> dbModels = modelManager.queryModels(providerName);
+			Set<String> dbModelIds = dbModels.stream()
+				.map(ModelConfigInfo::getModelId)
+				.collect(Collectors.toSet());
+			Set<String> liveModelIds = new HashSet<>(liveModelNames);
+
+			// Add models that are in Ollama but not in DB
+			for (String modelName : liveModelNames) {
+				if (!dbModelIds.contains(modelName)) {
+					String type = inferModelType(modelName);
+					ModelConfigInfo newModel = new ModelConfigInfo();
+					newModel.setModelId(modelName);
+					newModel.setName(modelName);
+					newModel.setProvider(providerName);
+					newModel.setType(type);
+					newModel.setEnable(true);
+					newModel.setTags(inferTags(modelName, type));
+					newModel.setSource("auto");
+					modelManager.addModel(newModel);
+					log.info("[AUTO-SYNC] Registered new model from {}: {} (type={})", providerName, modelName, type);
+				}
+			}
+
+			// Remove models from DB that are no longer served by the provider
+			for (ModelConfigInfo dbModel : dbModels) {
+				if (!liveModelIds.contains(dbModel.getModelId())) {
+					modelManager.deleteModel(providerName, dbModel.getModelId());
+					log.info("[AUTO-SYNC] Removed stale model from {}: {}", providerName, dbModel.getModelId());
+				}
+			}
+		}
+		catch (Exception e) {
+			log.warn("[AUTO-SYNC] Failed to sync models from {} ({}): {}", providerName, baseUrl, e.getMessage());
+		}
+	}
+
+	/**
+	 * Fetch live model names from a provider endpoint.
+	 * Tries OpenAI-compatible /v1/models first, then falls back to Ollama's /api/tags.
+	 */
+	@SuppressWarnings("unchecked")
+	private List<String> fetchLiveModels(String baseUrl) {
+		RestTemplate restTemplate = new RestTemplate();
+
+		// Try OpenAI-compatible /v1/models first
+		try {
+			String url = baseUrl + "/v1/models";
+			ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+			Map<String, Object> body = response.getBody();
+			if (body != null && body.containsKey("data")) {
+				List<Map<String, Object>> data = (List<Map<String, Object>>) body.get("data");
+				return data.stream()
+					.map(m -> (String) m.get("id"))
+					.filter(StringUtils::isNotBlank)
+					// Normalize — remove ":latest" suffix for consistency
+					.map(name -> name.endsWith(":latest") ? name.substring(0, name.length() - 7) : name)
+					.collect(Collectors.toList());
+			}
+		}
+		catch (Exception e) {
+			// Fall through to Ollama API
+		}
+
+		// Fallback: Ollama-specific /api/tags
+		try {
+			String url = baseUrl + "/api/tags";
+			ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+			Map<String, Object> body = response.getBody();
+			if (body != null && body.containsKey("models")) {
+				List<Map<String, Object>> models = (List<Map<String, Object>>) body.get("models");
+				return models.stream()
+					.map(m -> (String) m.get("name"))
+					.filter(StringUtils::isNotBlank)
+					// Normalize — remove ":latest" suffix for consistency
+					.map(name -> name.endsWith(":latest") ? name.substring(0, name.length() - 7) : name)
+					.collect(Collectors.toList());
+			}
+		}
+		catch (Exception e) {
+			log.debug("Failed to fetch models from {}: {}", baseUrl, e.getMessage());
+		}
+
+		return Collections.emptyList();
+	}
+
+	/**
+	 * Infer model type from its name.
+	 * Embedding models: nomic-embed-*, mxbai-embed-*, all-minilm*, bge-*
+	 * Vision models: llava*, bakllava*
+	 * Everything else: llm
+	 */
+	private String inferModelType(String modelName) {
+		String lower = modelName.toLowerCase();
+		if (lower.contains("embed") || lower.startsWith("all-minilm") || lower.startsWith("bge-")
+				|| lower.startsWith("snowflake-arctic-embed") || lower.contains("e5-")) {
+			return "text_embedding";
+		}
+		if (lower.startsWith("llava") || lower.startsWith("bakllava")) {
+			return "llm"; // vision models are still LLMs
+		}
+		if (lower.contains("rerank")) {
+			return "rerank";
+		}
+		return "llm";
+	}
+
+	/**
+	 * Infer tags from model name and type.
+	 */
+	private List<String> inferTags(String modelName, String type) {
+		if ("text_embedding".equals(type)) {
+			return List.of("embedding");
+		}
+		if ("rerank".equals(type)) {
+			return List.of("rerank");
+		}
+		String lower = modelName.toLowerCase();
+		if (lower.contains("deepseek-r1") || lower.contains("reasoning")) {
+			return List.of("reasoning");
+		}
+		if (lower.startsWith("llava") || lower.startsWith("bakllava")) {
+			return List.of("vision");
+		}
+		if (lower.contains("coder") || lower.contains("codestral") || lower.contains("starcoder")) {
+			return List.of("function_call");
+		}
+		return List.of("function_call");
 	}
 
 	/**
@@ -140,7 +304,7 @@ public class ModelController {
 				model.put("baseUrl", ""); // Not available in ModelEntity
 				model.put("defaultParameters", new HashMap<>()); // Not available in ModelEntity
 				model.put("supportedParameters", Lists.newArrayList()); // Not available in ModelEntity
-				model.put("status", entity.getEnable() ? 1 : 0);
+				model.put("status", (entity.getEnable() != null && entity.getEnable() == 1) ? 1 : 0);
 				return model;
 			}).collect(Collectors.toList());
 			

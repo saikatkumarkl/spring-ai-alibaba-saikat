@@ -258,7 +258,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
                     .modelName(modelEntity.getModelId()) //The modelId of ModelEntity corresponds to the modelName of ModelConfigDO
                     .baseUrl(baseUrl)
                     .apiKey(apiKey)
-                    .status(modelEntity.getEnable() != null && modelEntity.getEnable() ? 1 : 0)
+                    .status(modelEntity.getEnable() != null && modelEntity.getEnable() == 1 ? 1 : 0)
                     .defaultParameters(null) //Not supported at the moment, can be expanded later
                     .supportedParameters(null) //Not supported at the moment, can be expanded later
                     .createTime(createTime)

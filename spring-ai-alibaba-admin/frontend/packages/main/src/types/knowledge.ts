@@ -103,6 +103,7 @@ export interface IDocumentChunk {
   title: string; // Chunk title
   text: string; // Chunk text content
   page_number: string; // Page number of the chunk
+  enabled: boolean; // Whether the chunk is enabled
 }
 
 // Chunk list item response

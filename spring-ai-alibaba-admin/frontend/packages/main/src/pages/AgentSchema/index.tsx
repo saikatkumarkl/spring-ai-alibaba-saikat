@@ -393,10 +393,12 @@ const AgentSchemaCreator: React.FC = () => {
           );
           if (selectedModel) {
             // Set different default URLs based on model provider
-            const defaultUrl = selectedModel.provider === 'Tongyi'
-              ? 'https://dashscope.aliyuncs.com/api/v1'
+            const defaultUrl = selectedModel.provider === 'Ollama' || selectedModel.provider === 'ollama'
+              ? 'http://ollama:11434'
               : selectedModel.provider === 'OpenAI'
               ? 'https://api.openai.com/v1'
+              : selectedModel.provider === 'Tongyi' || selectedModel.provider === 'dashscope'
+              ? 'https://dashscope.aliyuncs.com/api/v1'
               : 'https://api.example.com/v1';
             yaml += `    url: "${defaultUrl}"\n`;
             yaml += `    api-key: "your-api-key"\n`;

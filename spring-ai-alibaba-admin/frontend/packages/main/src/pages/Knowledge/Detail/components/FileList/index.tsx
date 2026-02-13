@@ -2,7 +2,7 @@ import Table from '@/components/Table';
 import FileTag from '@/components/Tag/FileTag';
 import StatusTag from '@/components/Tag/StatusTag';
 import $i18n from '@/i18n';
-import { batchDeleteDocuments } from '@/services/knowledge';
+import { batchDeleteDocuments, batchUpdateDocumentEnabled } from '@/services/knowledge';
 import type { FileType } from '@/types/base';
 import { AlertDialog, Button, Dropdown, message } from '@spark-ai/design';
 import { Space } from 'antd';
@@ -116,8 +116,8 @@ const FileList: React.FC<FileListProps> = ({
       dataIndex: 'index_status',
       key: 'index_status',
       width: 180,
-      render: (index_status: IFileItem['index_status']) => (
-        <StatusTag status={index_status} />
+      render: (index_status: IFileItem['index_status'], record: IFileItem) => (
+        <StatusTag status={index_status} errorMessage={record.error} />
       ),
     },
     {
@@ -243,6 +243,31 @@ const FileList: React.FC<FileListProps> = ({
         id: 'main.pages.Knowledge.Detail.components.FileList.index.disabledFileNotRetrieved',
         dm: 'After disabling, the files will no longer be retrieved',
       }),
+      okText: $i18n.get({
+        id: 'main.pages.Knowledge.Detail.components.FileList.index.confirm',
+        dm: 'Confirm',
+      }),
+      cancelText: $i18n.get({
+        id: 'main.pages.Knowledge.Detail.components.FileList.index.cancel',
+        dm: 'Cancel',
+      }),
+      onOk: () => {
+        if (!kb_id) return;
+        batchUpdateDocumentEnabled({
+          kb_id,
+          doc_ids: selectedRowKeys,
+          enabled: false,
+        }).then(() => {
+          message.success(
+            $i18n.get({
+              id: 'main.pages.Knowledge.Detail.components.FileList.index.successfullyDisabled',
+              dm: 'Successfully disabled',
+            }),
+          );
+          refreshList();
+          setSelectedRows([]);
+        });
+      },
     });
   };
 
@@ -276,6 +301,23 @@ const FileList: React.FC<FileListProps> = ({
         id: 'main.pages.Knowledge.Detail.components.FileList.index.cancel',
         dm: 'Cancel',
       }),
+      onOk: () => {
+        if (!kb_id) return;
+        batchUpdateDocumentEnabled({
+          kb_id,
+          doc_ids: selectedRowKeys,
+          enabled: true,
+        }).then(() => {
+          message.success(
+            $i18n.get({
+              id: 'main.pages.Knowledge.Detail.components.FileList.index.successfullyEnabled',
+              dm: 'Successfully enabled',
+            }),
+          );
+          refreshList();
+          setSelectedRows([]);
+        });
+      },
     });
   };
 

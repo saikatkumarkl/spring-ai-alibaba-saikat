@@ -1,11 +1,11 @@
 package com.alibaba.cloud.ai.studio.admin.repository.impl;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.core.BulkRequest;
-import co.elastic.clients.elasticsearch.core.BulkResponse;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
-import co.elastic.clients.elasticsearch.indices.ExistsRequest;
+import org.opensearch.client.opensearch.OpenSearchClient;
+import org.opensearch.client.opensearch.core.BulkRequest;
+import org.opensearch.client.opensearch.core.BulkResponse;
+import org.opensearch.client.opensearch.core.SearchRequest;
+import org.opensearch.client.opensearch.core.SearchResponse;
+import org.opensearch.client.opensearch.indices.ExistsRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -18,18 +18,18 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class ElasticsearchClientWrapper {
+public class OpenSearchClientWrapper {
 
-    private final ElasticsearchClient elasticsearchClient;
+    private final OpenSearchClient openSearchClient;
 
     /**
      * Execute search query
      */
     public SearchResponse<Map> search(String index, SearchRequest searchRequest) {
         try {
-            return elasticsearchClient.search(searchRequest, Map.class);
+            return openSearchClient.search(searchRequest, Map.class);
         } catch (IOException e) {
-            throw new RuntimeException("搜索请求执行失败", e);
+            throw new RuntimeException("Search request execution failed", e);
         }
     }
 
@@ -39,7 +39,7 @@ public class ElasticsearchClientWrapper {
     public void bulkIndex(String index, List<Map<String, Object>> documents) {
         try {
             BulkRequest.Builder bulkBuilder = new BulkRequest.Builder();
-            
+
             for (Map<String, Object> doc : documents) {
                 bulkBuilder.operations(op -> op
                     .index(idx -> idx
@@ -48,17 +48,17 @@ public class ElasticsearchClientWrapper {
                     )
                 );
             }
-            
-            BulkResponse result = elasticsearchClient.bulk(bulkBuilder.build());
-            
+
+            BulkResponse result = openSearchClient.bulk(bulkBuilder.build());
+
             if (result.errors()) {
-                log.error("批量索引部分失败: {}", result.items());
+                log.error("Bulk indexing partially failed: {}", result.items());
             } else {
-                log.info("批量索引成功: {} 条文档", documents.size());
+                log.info("Bulk indexing successful: {} documents", documents.size());
             }
-            
+
         } catch (IOException e) {
-            throw new RuntimeException("批量索引失败", e);
+            throw new RuntimeException("Bulk indexing failed", e);
         }
     }
 
@@ -68,9 +68,9 @@ public class ElasticsearchClientWrapper {
     public boolean indexExists(String indexName) {
         try {
             ExistsRequest existsRequest = ExistsRequest.of(e -> e.index(indexName));
-            return elasticsearchClient.indices().exists(existsRequest).value();
+            return openSearchClient.indices().exists(existsRequest).value();
         } catch (IOException e) {
-            log.error("检查索引是否存在失败: {}", indexName, e);
+            log.error("Failed to check if index exists: {}", indexName, e);
             return false;
         }
     }

@@ -85,7 +85,7 @@ public class ProviderManager extends ServiceImpl<ProviderMapper, ProviderEntity>
 			providerEntity.setDescription(providerConfigInfo.getDescription());
 			providerEntity.setSource(StringUtils.isNotBlank(providerConfigInfo.getSource())
 					? providerConfigInfo.getSource() : DataSourceEnum.custom.name());
-			providerEntity.setEnable(providerConfigInfo.getEnable() != null ? providerConfigInfo.getEnable() : true);
+			providerEntity.setEnable(providerConfigInfo.getEnable() == null || providerConfigInfo.getEnable() ? 1 : 0);
 			providerEntity.setCredential(providerConfigInfo.getCredential() == null ? "{}"
 					: JsonUtils.toJson(providerConfigInfo.getCredential()));
 			providerEntity.setSupportedModelTypes(
@@ -152,7 +152,7 @@ public class ProviderManager extends ServiceImpl<ProviderMapper, ProviderEntity>
 				existingProvider.setCredential(JsonUtils.toJson(providerConfigInfo.getCredential()));
 			}
 			if (providerConfigInfo.getEnable() != null) {
-				existingProvider.setEnable(providerConfigInfo.getEnable());
+				existingProvider.setEnable(providerConfigInfo.getEnable() != null && providerConfigInfo.getEnable() ? 1 : 0);
 			}
 			if (CollectionUtils.isNotEmpty(providerConfigInfo.getSupportedModelTypes())) {
 				existingProvider.setSupportedModelTypes(
@@ -337,7 +337,7 @@ public class ProviderManager extends ServiceImpl<ProviderMapper, ProviderEntity>
 		configInfo.setName(entity.getName());
 		configInfo.setDescription(entity.getDescription());
 		configInfo.setIcon(entity.getIcon());
-		configInfo.setEnable(entity.getEnable());
+		configInfo.setEnable(entity.getEnable() != null && entity.getEnable() == 1);
 		configInfo.setSource(entity.getSource());
 		if (StringUtils.isNotBlank(entity.getSupportedModelTypes())) {
 			configInfo.setSupportedModelTypes(Arrays.asList(entity.getSupportedModelTypes().split(",")));

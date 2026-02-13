@@ -48,10 +48,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import reactor.netty.http.client.HttpClient;
-import reactor.netty.transport.logging.AdvancedByteBufFormat;
-import io.netty.handler.logging.LogLevel;
 
+import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.alibaba.cloud.ai.studio.core.rag.RagConstants.DEFAULT_DIMENSION;
 
@@ -80,6 +80,15 @@ public class ModelFactory {
 	@Resource
 	private ChatModelObservationConvention customChatModelObservationConvention;
 
+	/** Cache for OpenAiApi instances keyed by provider endpoint */
+	private final ConcurrentHashMap<String, OpenAiApi> apiCache = new ConcurrentHashMap<>();
+
+	/** Cache for ChatModel instances keyed by provider:model */
+	private final ConcurrentHashMap<String, ChatModel> chatModelCache = new ConcurrentHashMap<>();
+
+	/** Cache for EmbeddingModel instances keyed by provider:model:dimension */
+	private final ConcurrentHashMap<String, EmbeddingModel> embeddingModelCache = new ConcurrentHashMap<>();
+
 	/**
 	 * Creates and returns a chat model instance for the specified provider
 	 * @param provider The provider name
@@ -96,28 +105,27 @@ public class ModelFactory {
 	 * @return ChatModel instance
 	 */
 	public ChatModel getChatModel(String provider, String modelName) {
-		log.info("getChatModel called with provider: '{}', modelName: '{}'", provider, modelName);
-		ModelCredential credential = getModelCredential(provider, null);
-		// TODO will adapt other provider in future, now it's only for OpenAI compatible
-		// API
+		String cacheKey = provider + ":" + (modelName != null ? modelName : "default");
+		return chatModelCache.computeIfAbsent(cacheKey, k -> {
+			log.info("Creating ChatModel for provider: '{}', model: '{}'", provider, modelName);
+			ModelCredential credential = getModelCredential(provider, null);
 
-		OpenAiApi openAiApi = buildOpenAiApi(credential);
-		OpenAiChatModel.Builder builder = OpenAiChatModel.builder()
-				.openAiApi(openAiApi)
-				.observationRegistry(observationRegistry);
+			OpenAiApi openAiApi = getOrCreateApi(credential);
+			OpenAiChatModel.Builder builder = OpenAiChatModel.builder()
+					.openAiApi(openAiApi)
+					.observationRegistry(observationRegistry);
 
-		// Set default options with model name if provided
-		if (StringUtils.isNotBlank(modelName)) {
-			log.info("Setting default model in ChatModel builder: {}", modelName);
-			builder.defaultOptions(OpenAiChatOptions.builder().model(modelName).build());
-		}
-		else {
-			log.warn("getChatModel called with null modelName!");
-		}
+			if (StringUtils.isNotBlank(modelName)) {
+				builder.defaultOptions(OpenAiChatOptions.builder().model(modelName).build());
+			}
+			else {
+				log.warn("getChatModel called with null modelName!");
+			}
 
-		OpenAiChatModel openAiChatModel = builder.build();
-		openAiChatModel.setObservationConvention(customChatModelObservationConvention);
-		return openAiChatModel;
+			OpenAiChatModel openAiChatModel = builder.build();
+			openAiChatModel.setObservationConvention(customChatModelObservationConvention);
+			return openAiChatModel;
+		});
 	}
 
 	/**
@@ -127,14 +135,20 @@ public class ModelFactory {
 	 * @return EmbeddingModel instance
 	 */
 	public EmbeddingModel getEmbeddingModel(MetadataMode metadataMode, IndexConfig indexConfig) {
-		ModelCredential credential = getModelCredential(indexConfig.getEmbeddingProvider(),
-				indexConfig.getEmbeddingModel());
+		String cacheKey = indexConfig.getEmbeddingProvider() + ":" + indexConfig.getEmbeddingModel();
+		return embeddingModelCache.computeIfAbsent(cacheKey, k -> {
+			ModelCredential credential = getModelCredential(indexConfig.getEmbeddingProvider(),
+					indexConfig.getEmbeddingModel());
 
-		int dimension = EmbeddingModelDimension.getDimension(indexConfig.getEmbeddingModel(), DEFAULT_DIMENSION);
+			int dimension = EmbeddingModelDimension.getDimension(indexConfig.getEmbeddingModel(), DEFAULT_DIMENSION);
 
-		OpenAiApi openAiApi = buildOpenAiApi(credential);
-		return new OpenAiEmbeddingModel(openAiApi, metadataMode,
-				OpenAiEmbeddingOptions.builder().model(indexConfig.getEmbeddingModel()).dimensions(dimension).build());
+			OpenAiApi openAiApi = getOrCreateApi(credential);
+			return new OpenAiEmbeddingModel(openAiApi, metadataMode,
+					OpenAiEmbeddingOptions.builder()
+						.model(indexConfig.getEmbeddingModel())
+						.dimensions(dimension)
+						.build());
+		});
 	}
 
 	/**
@@ -186,6 +200,14 @@ public class ModelFactory {
 	}
 
 	/**
+	 * Returns a cached or newly built OpenAiApi for the given credential.
+	 */
+	private OpenAiApi getOrCreateApi(ModelCredential credential) {
+		String cacheKey = credential.getEndpoint() + "|" + credential.getApiKey();
+		return apiCache.computeIfAbsent(cacheKey, k -> buildOpenAiApi(credential));
+	}
+
+	/**
 	 * Builds an OpenAI API instance with the provided credentials
 	 * @param credential The model credentials
 	 * @return OpenAiApi instance
@@ -196,9 +218,9 @@ public class ModelFactory {
 			.responseErrorHandler(ErrorHandlerUtils.OPENAI_RESPONSE_ERROR_HANDLER)
 			.headers(ApiUtils.getBaseHeaders());
 
-		// Enable wiretap logging to inspect request/response payloads when troubleshooting
+		// Use a plain HttpClient with connection timeout — no wiretap logging
 		HttpClient httpClient = HttpClient.create()
-			.wiretap("reactor.netty.http.client.HttpClient", LogLevel.INFO, AdvancedByteBufFormat.TEXTUAL);
+			.responseTimeout(Duration.ofSeconds(180));
 		WebClient.Builder webClientBuilder = WebClient.builder()
 			.clientConnector(new ReactorClientHttpConnector(httpClient));
 		openAiApiBuilder.webClientBuilder(webClientBuilder);

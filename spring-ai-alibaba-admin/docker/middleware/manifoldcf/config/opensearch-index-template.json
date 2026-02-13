@@ -1,0 +1,115 @@
+{
+  "index_patterns": ["manifoldcf*", "manifold_*"],
+  "priority": 100,
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "index.highlight.max_analyzed_offset": 10000000,
+      "analysis": {
+        "normalizer": {
+          "lowercase": {
+            "type": "custom",
+            "filter": ["lowercase"]
+          }
+        },
+        "analyzer": {
+          "lowercase_keyword": {
+            "type": "custom",
+            "tokenizer": "keyword",
+            "filter": ["lowercase"]
+          }
+        }
+      }
+    },
+    "mappings": {
+      "dynamic": true,
+      "properties": {
+
+        "_comment_acl": {
+          "type": "text",
+          "index": false,
+          "doc_values": false
+        },
+
+        "allow_token_document": {
+          "type": "keyword",
+          "normalizer": "lowercase"
+        },
+        "deny_token_document": {
+          "type": "keyword",
+          "normalizer": "lowercase"
+        },
+        "allow_token_parent": {
+          "type": "keyword",
+          "normalizer": "lowercase"
+        },
+        "deny_token_parent": {
+          "type": "keyword",
+          "normalizer": "lowercase"
+        },
+        "allow_token_share": {
+          "type": "keyword",
+          "normalizer": "lowercase"
+        },
+        "deny_token_share": {
+          "type": "keyword",
+          "normalizer": "lowercase"
+        },
+        "authorities": {
+          "type": "keyword",
+          "normalizer": "lowercase"
+        },
+
+        "_comment_core": {
+          "type": "text",
+          "index": false,
+          "doc_values": false
+        },
+
+        "cmis:name": {
+          "type": "text",
+          "fields": {
+            "keyword": { "type": "keyword", "ignore_above": 512 }
+          }
+        },
+        "cmis:objectId": {
+          "type": "keyword"
+        },
+        "cmis:objectTypeId": {
+          "type": "keyword"
+        },
+        "cmis:baseTypeId": {
+          "type": "keyword"
+        },
+        "cmis:createdBy": {
+          "type": "keyword"
+        },
+        "cmis:lastModifiedBy": {
+          "type": "keyword"
+        },
+        "cmis:creationDate": {
+          "type": "date"
+        },
+        "cmis:lastModificationDate": {
+          "type": "date"
+        },
+        "cmis:contentStreamFileName": {
+          "type": "text",
+          "fields": {
+            "keyword": { "type": "keyword", "ignore_above": 512 }
+          }
+        },
+        "cmis:contentStreamMimeType": {
+          "type": "keyword"
+        },
+        "cmis:contentStreamLength": {
+          "type": "long"
+        },
+        "cmis:path": {
+          "type": "keyword"
+        }
+      }
+    }
+  }
+}

@@ -27,6 +27,11 @@ export interface IFileItem {
   enabled: boolean;
 
   /**
+   * Error message when processing failed
+   */
+  error?: string;
+
+  /**
    * Document metadata
    */
   metadata: IMetadata;

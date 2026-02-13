@@ -25,6 +25,7 @@ import com.alibaba.cloud.ai.studio.core.config.StudioProperties;
 import com.alibaba.cloud.ai.studio.core.base.manager.OssManager;
 import com.alibaba.cloud.ai.studio.core.rag.reader.TextDocumentReader;
 import com.alibaba.cloud.ai.studio.core.rag.splitter.RegexTextSplitter;
+import com.alibaba.cloud.ai.studio.core.rag.splitter.StructureAwareTextSplitter;
 import com.alibaba.cloud.ai.studio.core.rag.vectorstore.VectorStoreFactory;
 import com.alibaba.cloud.ai.studio.core.utils.io.FileUtils;
 import lombok.RequiredArgsConstructor;
@@ -97,12 +98,10 @@ public class KnowledgeBaseIndexPipeline implements IndexPipeline {
 
 		format = StringUtils.lowerCase(format);
 		switch (format) {
-			case "pdf": {
-				DocumentReader reader = new PagePdfDocumentReader(new FileSystemResource(file));
-				documents = reader.get();
-				break;
-			}
-			case "doc", "docx", "ppt", "pptx": {
+			case "pdf", "doc", "docx", "ppt", "pptx": {
+				// Use Tika for all binary document formats — produces cleaner text
+				// than raw PDFBox, especially for PDFs with forms, scanned layouts,
+				// and mixed text/image content.
 				DocumentReader reader = new TikaDocumentReader(new FileSystemResource(file));
 				documents = reader.get();
 				break;
@@ -124,6 +123,33 @@ public class KnowledgeBaseIndexPipeline implements IndexPipeline {
 
 		log.info("{} documents parsed", documents.size());
 
+		// Normalize text: collapse excessive whitespace, trim, and remove blank-only
+		// documents. This is critical for PDFs where layout engines inject extra
+		// spaces/newlines that degrade semantic search quality.
+		documents = documents.stream()
+			.map(doc -> {
+				String text = doc.getText();
+				if (text == null) {
+					return doc;
+				}
+				// 1. Replace multiple spaces/tabs on the same line with a single space
+				text = text.replaceAll("[ \\t]{2,}", " ");
+				// 2. Collapse 3+ consecutive newlines into 2
+				text = text.replaceAll("(\\r?\\n){3,}", "\n\n");
+				// 3. Trim each line
+				String[] lines = text.split("\\n");
+				StringBuilder sb = new StringBuilder();
+				for (String line : lines) {
+					sb.append(line.strip()).append("\n");
+				}
+				text = sb.toString().strip();
+				return new Document(text, doc.getMetadata());
+			})
+			.filter(doc -> !doc.getText().isBlank())
+			.toList();
+
+		log.info("{} documents after normalization", documents.size());
+
 		return documents;
 	}
 
@@ -135,7 +161,6 @@ public class KnowledgeBaseIndexPipeline implements IndexPipeline {
 	 */
 	public List<Document> transform(List<Document> documents, ProcessConfig processConfig) {
 
-		// TODO now use this simple chunk splitter first
 		ChunkType chunkType = processConfig.getChunkType();
 		TextSplitter splitter = null;
 		if (Objects.requireNonNull(chunkType) == ChunkType.REGEX) {
@@ -147,8 +172,12 @@ public class KnowledgeBaseIndexPipeline implements IndexPipeline {
 			splitter = new RegexTextSplitter(regex, processConfig.getChunkOverlap());
 		}
 		else {
-			splitter = new TokenTextSplitter(processConfig.getChunkSize(), processConfig.getChunkOverlap(), 1, 10000,
-					false);
+			// Use structure-aware splitter that preserves tables, code blocks, and
+			// section boundaries. Falls back to recursive character splitting for prose.
+			// chunkSize is in characters (approx 4 chars per token).
+			int chunkSizeChars = processConfig.getChunkSize() * 4;
+			int chunkOverlapChars = processConfig.getChunkOverlap() * 4;
+			splitter = new StructureAwareTextSplitter(chunkSizeChars, chunkOverlapChars);
 		}
 		List<Document> transformedDocs = splitter.apply(documents);
 

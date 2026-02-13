@@ -164,6 +164,23 @@ export const batchDeleteDocuments = (params: {
 };
 
 /**
+ * Batch update document enabled status
+ * @param params Object containing knowledge base ID, document IDs, and enabled flag
+ * @returns Promise containing API response
+ */
+export const batchUpdateDocumentEnabled = (params: {
+  kb_id: string;
+  doc_ids: string[];
+  enabled: boolean;
+}) => {
+  return request({
+    url: `/console/v1/knowledge-bases/${params.kb_id}/documents/batch-enabled?enabled=${params.enabled}`,
+    method: 'PUT',
+    data: params.doc_ids,
+  }).then((res) => res.data.data as IApiResponse<string>);
+};
+
+/**
  * Get chunk list for a document
  * @param param0 Object containing document ID and pagination parameters
  * @returns Promise containing paginated list of chunks

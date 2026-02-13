@@ -4,11 +4,11 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Data
-@ConfigurationProperties(prefix = "spring.elasticsearch")
-public class ElasticsearchProperties {
+@ConfigurationProperties(prefix = "spring.opensearch")
+public class OpenSearchProperties {
 
     /**
-     * Elasticsearch service address
+     * OpenSearch service address
      */
     private String url = "http://localhost:9200";
 

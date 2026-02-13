@@ -95,6 +95,7 @@ public class DocumentIndexHandler implements MqConsumerHandler<MqMessage> {
 	private void process(Document document) {
 		long start = System.currentTimeMillis();
 		DocumentIndexStatus status;
+		String errorMessage = null;
 		try {
 			documentService.updateDocumentIndexStatus(document.getDocId(), DocumentIndexStatus.PROCESSING);
 
@@ -122,10 +123,47 @@ public class DocumentIndexHandler implements MqConsumerHandler<MqMessage> {
 		}
 		catch (Exception e) {
 			status = DocumentIndexStatus.FAILED;
+			errorMessage = summarizeError(e);
 			LogUtils.monitor("DocumentIndexHandler", "process", start, FAIL, document, e.getMessage(), e);
 		}
 
-		documentService.updateDocumentIndexStatus(document.getDocId(), status);
+		if (status == DocumentIndexStatus.FAILED) {
+			documentService.updateDocumentIndexStatus(document.getDocId(), status, errorMessage);
+		}
+		else {
+			documentService.updateDocumentIndexStatus(document.getDocId(), status);
+		}
+	}
+
+	/**
+	 * Summarizes an exception into a user-friendly error message.
+	 * @param e The exception to summarize
+	 * @return A concise, human-readable error description
+	 */
+	private String summarizeError(Exception e) {
+		Throwable root = e;
+		while (root.getCause() != null) {
+			root = root.getCause();
+		}
+		String className = root.getClass().getSimpleName();
+		String message = root.getMessage();
+
+		if (className.contains("InvalidPasswordException") || (message != null && message.contains("password"))) {
+			return "The document is password-protected and cannot be processed without the correct password.";
+		}
+		if (className.contains("EncryptedDocumentException") || (message != null && message.contains("encrypt"))) {
+			return "The document is encrypted and cannot be processed.";
+		}
+		if (message != null && message.contains("unsupported format")) {
+			return "The document format is not supported.";
+		}
+		if (message != null && message.contains("file does not exist")) {
+			return "The uploaded file could not be found on the server.";
+		}
+
+		// Truncate to avoid storing huge stack traces
+		String errorMsg = message != null ? message : className;
+		return errorMsg.length() > 500 ? errorMsg.substring(0, 500) + "..." : errorMsg;
 	}
 
 }

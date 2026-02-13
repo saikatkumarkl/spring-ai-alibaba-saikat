@@ -3,11 +3,13 @@ package com.alibaba.cloud.ai.studio.admin.repository.impl;
 import com.alibaba.cloud.ai.studio.admin.dto.request.OverviewQueryRequest;
 import com.alibaba.cloud.ai.studio.admin.dto.request.ServicesQueryRequest;
 import com.alibaba.cloud.ai.studio.admin.dto.request.TracesQueryRequest;
-import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
-import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch._types.SortOrder;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
+import org.opensearch.client.opensearch._types.FieldValue;
+import org.opensearch.client.opensearch._types.aggregations.Aggregation;
+import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
+import org.opensearch.client.opensearch._types.query_dsl.Query;
+import org.opensearch.client.opensearch._types.SortOrder;
+import org.opensearch.client.opensearch.core.SearchRequest;
+import org.opensearch.client.json.JsonData;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,14 +41,13 @@ public class TracingQueryBuilder {
                 Long endTimeMicros = convertISO8601ToMicroseconds(request.getEndTime());
                 
                 if (startTimeMicros != null && endTimeMicros != null) {
-                    //Build queries using the withJson method
-                    String rangeQueryJson = String.format(
-                        "{\"range\":{\"metadata.start\":{\"gte\":%d,\"lte\":%d}}}",
-                        startTimeMicros, endTimeMicros
-                    );
-                    
+                    final Long startMicros = startTimeMicros;
+                    final Long endMicros = endTimeMicros;
                     Query timeRangeQuery = Query.of(q -> q
-                        .withJson(new java.io.ByteArrayInputStream(rangeQueryJson.getBytes(java.nio.charset.StandardCharsets.UTF_8)))
+                        .range(r -> r
+                            .field("metadata.start")
+                            .gte(JsonData.of(startMicros))
+                            .lte(JsonData.of(endMicros)))
                     );
                     boolQueryBuilder.filter(timeRangeQuery);
                     log.debug("添加时间范围过滤: {} - {} (微秒: {} - {})", 
@@ -61,7 +62,7 @@ public class TracingQueryBuilder {
         if (StringUtils.hasText(request.getServiceName())) {
             Query serviceQuery = Query.of(q -> q.term(t -> t
                 .field("metadata.service")
-                .value(request.getServiceName())
+                .value(FieldValue.of(request.getServiceName()))
             ));
             boolQueryBuilder.filter(serviceQuery);
         }
@@ -70,7 +71,7 @@ public class TracingQueryBuilder {
         if (StringUtils.hasText(request.getTraceId())) {
             Query traceIdQuery = Query.of(q -> q.term(t -> t
                 .field("metadata.traceID")
-                .value(request.getTraceId())
+                .value(FieldValue.of(request.getTraceId()))
             ));
             boolQueryBuilder.filter(traceIdQuery);
         }
@@ -79,7 +80,7 @@ public class TracingQueryBuilder {
         if (StringUtils.hasText(request.getSpanName())) {
             Query spanNameQuery = Query.of(q -> q.term(t -> t
                 .field("metadata.name")
-                .value(request.getSpanName())
+                .value(FieldValue.of(request.getSpanName()))
             ));
             boolQueryBuilder.filter(spanNameQuery);
         }
@@ -107,7 +108,7 @@ public class TracingQueryBuilder {
         //Bugfix: Query using metadata.traceID field
         Query traceQuery = Query.of(q -> q.term(t -> t
             .field("metadata.traceID")
-            .value(traceId)
+            .value(FieldValue.of(traceId))
         ));
         
         return SearchRequest.of(s -> s
@@ -144,14 +145,13 @@ public class TracingQueryBuilder {
                 Long endTimeMicros = convertISO8601ToMicroseconds(request.getEndTime());
                 
                 if (startTimeMicros != null && endTimeMicros != null) {
-                    //Build queries using the withJson method
-                    String rangeQueryJson = String.format(
-                        "{\"range\":{\"metadata.start\":{\"gte\":%d,\"lte\":%d}}}",
-                        startTimeMicros, endTimeMicros
-                    );
-                    
+                    final Long startMicros = startTimeMicros;
+                    final Long endMicros = endTimeMicros;
                     Query timeRangeQuery = Query.of(q -> q
-                        .withJson(new java.io.ByteArrayInputStream(rangeQueryJson.getBytes(java.nio.charset.StandardCharsets.UTF_8)))
+                        .range(r -> r
+                            .field("metadata.start")
+                            .gte(JsonData.of(startMicros))
+                            .lte(JsonData.of(endMicros)))
                     );
                     
                     searchBuilder.query(timeRangeQuery);
@@ -175,7 +175,7 @@ public class TracingQueryBuilder {
         //Correct aggregate fields according to API documentation
         //1. Operation type statistics
         aggregations.put("operation_count", Aggregation.of(a -> a
-            .terms(t -> t.field("attributes.gen_ai.operation.name").size(1000).missing("generic"))
+            .terms(t -> t.field("attributes.gen_ai.operation.name").size(1000).missing(FieldValue.of("generic")))
         ));
 
         //2. Model Statistics
@@ -210,14 +210,13 @@ public class TracingQueryBuilder {
                 Long endTimeMicros = convertISO8601ToMicroseconds(request.getEndTime());
                 
                 if (startTimeMicros != null && endTimeMicros != null) {
-                    //Build queries using the withJson method
-                    String rangeQueryJson = String.format(
-                        "{\"range\":{\"metadata.start\":{\"gte\":%d,\"lte\":%d}}}",
-                        startTimeMicros, endTimeMicros
-                    );
-                    
+                    final Long startMicros = startTimeMicros;
+                    final Long endMicros = endTimeMicros;
                     Query timeRangeQuery = Query.of(q -> q
-                        .withJson(new java.io.ByteArrayInputStream(rangeQueryJson.getBytes(java.nio.charset.StandardCharsets.UTF_8)))
+                        .range(r -> r
+                            .field("metadata.start")
+                            .gte(JsonData.of(startMicros))
+                            .lte(JsonData.of(endMicros)))
                     );
                     
                     searchBuilder.query(timeRangeQuery);
@@ -244,7 +243,7 @@ public class TracingQueryBuilder {
                 String field = "attributes." + entry.getKey();
                 Query attrQuery = Query.of(q -> q.term(t -> t
                     .field(field)
-                    .value(String.valueOf(entry.getValue()))
+                    .value(FieldValue.of(String.valueOf(entry.getValue())))
                 ));
                 boolQuery.filter(attrQuery);
             }

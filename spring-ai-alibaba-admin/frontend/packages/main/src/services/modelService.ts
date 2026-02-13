@@ -266,15 +266,17 @@ export async function getEnabledModels(): Promise<IApiResponse<Array<{
 }
 
 /**
- * Fetch available models from an Ollama endpoint
- * @param endpoint The Ollama API endpoint (e.g., http://localhost:11434)
- * @returns Promise containing list of available Ollama model names
+ * Fetch available models from a remote provider endpoint.
+ * Uses the backend proxy which tries OpenAI-compatible /v1/models first,
+ * then falls back to Ollama's /api/tags.
+ * @param endpoint The provider API endpoint (e.g., http://localhost:11434)
+ * @returns Promise containing list of available model names
  */
 export async function getOllamaModels(
   endpoint: string,
 ): Promise<IApiResponse<string[]>> {
   const response = await request({
-    url: '/console/v1/providers/ollama/models',
+    url: '/console/v1/providers/available-models',
     method: 'GET',
     params: { endpoint },
   });

@@ -42,7 +42,7 @@ public class VectorStoreFactory {
 	}
 
 	/**
-	 * Retrieves the configured vector store service. Currently supports Elasticsearch
+	 * Retrieves the configured vector store service. Currently supports OpenSearch
 	 * implementation.
 	 * @return The configured vector store service
 	 * @throws IllegalArgumentException if the configured vector store type is not
@@ -50,8 +50,8 @@ public class VectorStoreFactory {
 	 */
 	public VectorStoreService getVectorStoreService() {
 		VectorStoreType type = VectorStoreType.of(studioProperties.getVectorStoreType());
-		if (type == VectorStoreType.ELASTICSEARCH) {
-			return vdbServiceMap.get("elasticSearchVectorStoreService");
+		if (type == VectorStoreType.OPENSEARCH) {
+			return vdbServiceMap.get("openSearchVectorStoreService");
 		}
 		throw new IllegalArgumentException("Unsupported vector store type: " + type);
 	}

@@ -1,10 +1,10 @@
 package com.alibaba.cloud.ai.studio.admin.config;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
+import org.opensearch.client.opensearch.OpenSearchClient;
+import org.opensearch.client.json.jackson.JacksonJsonpMapper;
+import org.opensearch.client.transport.rest_client.RestClientTransport;
 import org.apache.http.HttpHost;
-import org.elasticsearch.client.RestClient;
+import org.opensearch.client.RestClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,37 +12,37 @@ import org.springframework.context.annotation.Configuration;
 import java.net.URL;
 
 @Configuration
-@EnableConfigurationProperties(ElasticsearchProperties.class)
-public class ElasticsearchConfig {
+@EnableConfigurationProperties(OpenSearchProperties.class)
+public class OpenSearchConfig {
 
     @Bean
-    public RestClient restClient(ElasticsearchProperties properties) {
+    public RestClient restClient(OpenSearchProperties properties) {
         try {
             URL url = new URL(properties.getUrl());
-            
+
             return RestClient.builder(
                     new HttpHost(url.getHost(), url.getPort(), url.getProtocol()))
-                .setRequestConfigCallback(requestConfigBuilder -> 
+                .setRequestConfigCallback(requestConfigBuilder ->
                     requestConfigBuilder
                         .setConnectTimeout(properties.getConnectTimeout())
                         .setSocketTimeout(properties.getSocketTimeout()))
-                .setHttpClientConfigCallback(httpClientBuilder -> 
+                .setHttpClientConfigCallback(httpClientBuilder ->
                     httpClientBuilder
                         .setMaxConnTotal(properties.getConnectionPool().getMaxConnections())
                         .setMaxConnPerRoute(properties.getConnectionPool().getMaxIdleConnections()))
                 .build();
         } catch (Exception e) {
-            throw new RuntimeException("创建RestClient失败", e);
+            throw new RuntimeException("Failed to create OpenSearch RestClient", e);
         }
     }
 
     @Bean
-    public RestClientTransport elasticsearchTransport(RestClient restClient) {
+    public RestClientTransport openSearchTransport(RestClient restClient) {
         return new RestClientTransport(restClient, new JacksonJsonpMapper());
     }
 
     @Bean
-    public ElasticsearchClient elasticsearchClient(RestClientTransport transport) {
-        return new ElasticsearchClient(transport);
+    public OpenSearchClient openSearchClient(RestClientTransport transport) {
+        return new OpenSearchClient(transport);
     }
 }

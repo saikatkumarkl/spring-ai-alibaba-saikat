@@ -52,6 +52,8 @@ public class ChatClientFactoryDelegate {
         register(openAiChatClientFactory);
         register(dashScopeChatClientFactory);
         register(deepSeekChatClientFactory);
+        // Ollama exposes an OpenAI-compatible API, so reuse the OpenAI factory
+        chatClientFactories.put("ollama", openAiChatClientFactory);
     }
     
     public void register(ChatClientFactory factory) {

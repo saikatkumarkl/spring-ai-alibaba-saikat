@@ -1,0 +1,45 @@
+models:
+  # ─────────────────────────────────────────────
+  # Chat model (LLM) — served by Ollama
+  # Ollama exposes an OpenAI-compatible API, so
+  # provider=ollama falls back to the OpenAI factory
+  # ─────────────────────────────────────────────
+  - id: 1
+    name: qwen2.5:7b
+    provider: ollama
+    modelName: qwen2.5:7b
+    baseUrl: http://ollama:11434
+    apiKey: ollama
+    status: 1
+    defaultParameters:
+      temperature: 0.7
+      maxTokens: 4096
+    supportedParameters:
+      - name: temperature
+        type: number
+        minValue: 0
+        maxValue: 2
+        defaultValue: 0.7
+        required: false
+        description: Sampling temperature
+      - name: maxTokens
+        type: number
+        minValue: 1
+        maxValue: 8192
+        defaultValue: 4096
+        required: false
+        description: Maximum output tokens
+
+  # ─────────────────────────────────────────────
+  # Embedding model — served by Ollama
+  # nomic-embed-text: 768 dimensions
+  # ─────────────────────────────────────────────
+  - id: 2
+    name: nomic-embed-text
+    provider: ollama
+    modelName: nomic-embed-text
+    baseUrl: http://ollama:11434
+    apiKey: ollama
+    status: 1
+    defaultParameters: {}
+    supportedParameters: []

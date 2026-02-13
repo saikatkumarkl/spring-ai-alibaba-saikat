@@ -465,7 +465,7 @@ export default function AssistantAppEdit() {
 
       // Prepare request parameters
       const params: any = {
-        dependencies: 'spring-ai-alibaba-graph,web,spring-ai-alibaba-starter-dashscope,spring-ai-starter-mcp-client',
+        dependencies: 'spring-ai-alibaba-graph,web,spring-ai-starter-model-ollama,spring-ai-starter-mcp-client',
         appMode: 'agent',
         dslDialectType: 'saa-agent',
         type: 'maven-project',

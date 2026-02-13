@@ -9,12 +9,12 @@ import com.alibaba.cloud.ai.studio.admin.repository.TracingRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
-import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
-import co.elastic.clients.elasticsearch._types.aggregations.CardinalityAggregate;
-import co.elastic.clients.elasticsearch._types.aggregations.ValueCountAggregate;
-import co.elastic.clients.elasticsearch._types.aggregations.SumAggregate;
+import org.opensearch.client.opensearch.core.SearchResponse;
+import org.opensearch.client.opensearch.core.SearchRequest;
+import org.opensearch.client.opensearch._types.aggregations.Aggregate;
+import org.opensearch.client.opensearch._types.aggregations.CardinalityAggregate;
+import org.opensearch.client.opensearch._types.aggregations.ValueCountAggregate;
+import org.opensearch.client.opensearch._types.aggregations.SumAggregate;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -27,7 +27,7 @@ public class TracingRepositoryImpl implements TracingRepository {
 
     private static final String TRACES_INDEX = "loongsuite_traces";
     
-    private final ElasticsearchClientWrapper elasticsearchClient;
+    private final OpenSearchClientWrapper elasticsearchClient;
     private final TracingQueryBuilder queryBuilder;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -74,14 +74,14 @@ public class TracingRepositoryImpl implements TracingRepository {
                 //Aggregation using String Terms
                 var termsAgg = servicesAgg.sterms();
                 for (var bucket : termsAgg.buckets().array()) {
-                    String serviceName = bucket.key().stringValue();
+                    String serviceName = bucket.key();
                     List<String> operations = new ArrayList<>();
                     
                     Aggregate operationsAgg = bucket.aggregations().get("operations");
                     if (operationsAgg != null && operationsAgg.isSterms()) {
                         var opTermsAgg = operationsAgg.sterms();
                         operations = opTermsAgg.buckets().array().stream()
-                            .map(opBucket -> opBucket.key().stringValue())
+                            .map(opBucket -> opBucket.key())
                             .collect(Collectors.toList());
                     }
                     
@@ -287,7 +287,7 @@ public class TracingRepositoryImpl implements TracingRepository {
                 if (detail) {
                     detailList = termsAgg.buckets().array().stream()
                         .map(bucket -> OverviewStatsDTO.StatItem.builder()
-                            .operationName(bucket.key().stringValue())
+                            .operationName(bucket.key())
                             .total(bucket.docCount())
                             .build())
                         .collect(Collectors.toList());
@@ -322,7 +322,7 @@ public class TracingRepositoryImpl implements TracingRepository {
                 if (detail) {
                     detailList = termsAgg.buckets().array().stream()
                         .map(bucket -> OverviewStatsDTO.StatItem.builder()
-                            .modelName(bucket.key().stringValue())
+                            .modelName(bucket.key())
                             .total(bucket.docCount())
                             .build())
                         .collect(Collectors.toList());
@@ -362,7 +362,7 @@ public class TracingRepositoryImpl implements TracingRepository {
                 if (detail) {
                     detailList = termsAgg.buckets().array().stream()
                         .map(bucket -> {
-                            String modelName = bucket.key().stringValue();
+                            String modelName = bucket.key();
                             Long tokens = 0L;
                             Aggregate totalTokensAgg = bucket.aggregations().get("total_tokens");
                             if (totalTokensAgg != null && totalTokensAgg.isSum()) {
