@@ -227,9 +227,9 @@ public class KnowledgeBaseRetrievalAdvisor implements BaseAdvisor {
 							ChatClientResponse immediateResponse = ChatClientResponse.builder()
 								.chatResponse(ChatResponse.builder()
 									.generations(List.of(new Generation(new AssistantMessage(""))))
-									.metadata(FILE_SEARCH_RESULT, chatClientRequest.context().get(FILE_SEARCH_RESULT))
+									.metadata(FILE_SEARCH_RESULT, adviseReq.context().get(FILE_SEARCH_RESULT))
 									.build())
-								.context(chatClientRequest.context())
+								.context(adviseReq.context())
 								.build();
 							return Flux.just(immediateResponse).concatWith(chain.nextStream(adviseReq));
 						}));

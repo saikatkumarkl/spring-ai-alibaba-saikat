@@ -42,7 +42,7 @@ const Sidebar: React.FC = () => {
         <div className={styles.configTitle}>Model Configuration</div>
 
         <div style={{ marginBottom: 12 }}>
-          <label style={{ fontSize: 12, color: '#666' }}>Model:</label>
+          <label style={{ fontSize: 12, color: 'var(--ag-ant-color-text-secondary)' }}>Model:</label>
           <Select
             value={config.modelConfig.model}
             onChange={(value) => updateModelConfig({ model: value })}
@@ -56,7 +56,7 @@ const Sidebar: React.FC = () => {
         </div>
 
         <div style={{ marginBottom: 12 }}>
-          <label style={{ fontSize: 12, color: '#666' }}>
+          <label style={{ fontSize: 12, color: 'var(--ag-ant-color-text-secondary)' }}>
             Temperature: {config.modelConfig.temperature}
           </label>
           <Slider
@@ -70,7 +70,7 @@ const Sidebar: React.FC = () => {
         </div>
 
         <div style={{ marginBottom: 12 }}>
-          <label style={{ fontSize: 12, color: '#666' }}>
+          <label style={{ fontSize: 12, color: 'var(--ag-ant-color-text-secondary)' }}>
             Max Tokens: {config.modelConfig.maxTokens}
           </label>
           <Slider
@@ -85,7 +85,7 @@ const Sidebar: React.FC = () => {
 
         <div style={{ marginBottom: 8 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 12, color: '#666' }}>Show Tool Calls</span>
+            <span style={{ fontSize: 12, color: 'var(--ag-ant-color-text-secondary)' }}>Show Tool Calls</span>
             <Switch
               size="small"
               checked={config.showToolCalls}
@@ -96,7 +96,7 @@ const Sidebar: React.FC = () => {
 
         <div style={{ marginBottom: 8 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 12, color: '#666' }}>Debug Info</span>
+            <span style={{ fontSize: 12, color: 'var(--ag-ant-color-text-secondary)' }}>Debug Info</span>
             <Switch
               size="small"
               checked={config.showDebugInfo}
@@ -139,7 +139,7 @@ const Sidebar: React.FC = () => {
         ))}
 
         {state.sessions.length === 0 && (
-          <div style={{ padding: 16, textAlign: 'center', color: '#999', fontSize: 14 }}>
+          <div style={{ padding: 16, textAlign: 'center', color: 'var(--ag-ant-color-text-tertiary)', fontSize: 14 }}>
             No Conversations Yet
             <br />
             Click "New Conversation" to Start

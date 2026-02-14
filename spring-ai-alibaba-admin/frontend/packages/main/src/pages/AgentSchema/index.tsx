@@ -1026,7 +1026,7 @@ const AgentSchemaCreator: React.FC = () => {
                           icon={<DeleteOutlined />}
                           onClick={(e) => handleDeleteAgent(agent, e)}
                           className={styles.deleteButton}
-                          style={{ color: '#ff4d4f' }}
+                          style={{ color: 'var(--ag-ant-color-error)' }}
                         />
                       </Tooltip>
                     ]}

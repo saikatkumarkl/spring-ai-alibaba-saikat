@@ -36,7 +36,7 @@ export default function (props: { appId: string; type: IAppType }) {
       "desc": "user questions",
       "required": false,
       "source": "sys",
-      "value": "What is Spring AI Alibaba?"
+      "value": "Hello, how can you help me?"
     }
   ],
   "stream": true
@@ -51,7 +51,7 @@ export default function (props: { appId: string; type: IAppType }) {
   "messages": [
     {
       "role": "user",
-      "content": "What is Spring AI Alibaba?",
+      "content": "Hello, how can you help me?",
       "content_type": "text"
     }
   ],

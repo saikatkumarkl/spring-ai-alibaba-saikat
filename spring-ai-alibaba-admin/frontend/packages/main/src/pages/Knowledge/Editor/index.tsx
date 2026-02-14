@@ -2,8 +2,10 @@ import InnerLayout from '@/components/InnerLayout';
 import SliderInput from '@/components/SliderInput';
 import $i18n from '@/i18n';
 import ModelSelector from '@/pages/Knowledge/components/ModelSelector';
-import { getKnowledgeDetail, updateKnowledge } from '@/services/knowledge';
+import { getKnowledgeDetail, updateKnowledge, getDocumentsList, deleteDocuments } from '@/services/knowledge';
 import { IKnowledgeDetail } from '@/types/knowledge';
+import { IFileItem } from '@/pages/Knowledge/Detail/type';
+import { getPreviewUrl, downloadFile } from '@/request/upload';
 import {
   Button,
   Form,
@@ -13,8 +15,9 @@ import {
   Tooltip,
 } from '@spark-ai/design';
 import { useRequest, useSetState } from 'ahooks';
-import { Modal as AntModal } from 'antd';
-import { useRef } from 'react';
+import { Modal as AntModal, Table, Space, Tag, Empty, Spin } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { history } from 'umi';
 import styles from './index.module.less';
@@ -34,6 +37,27 @@ export default function Editor() {
     similarity_threshold: 0.2,
     top_k: 3,
   });
+
+  // Documents state
+  const [docs, setDocs] = useState<IFileItem[]>([]);
+  const [docsLoading, setDocsLoading] = useState(false);
+  const [docsPagination, setDocsPagination] = useState({ current: 1, pageSize: 5, total: 0 });
+
+  const fetchDocs = useCallback((page = 1, pageSize = 5) => {
+    if (!kb_id) return;
+    setDocsLoading(true);
+    getDocumentsList({ current: page, size: pageSize, kb_id })
+      .then((res: any) => {
+        setDocs(res.records || []);
+        setDocsPagination({ current: res.current || page, pageSize: res.size || pageSize, total: res.total || 0 });
+      })
+      .finally(() => setDocsLoading(false));
+  }, [kb_id]);
+
+  useEffect(() => {
+    fetchDocs();
+  }, [fetchDocs]);
+
   useRequest(() => getKnowledgeDetail(kb_id || ''), {
     onSuccess: (data: IKnowledgeDetail) => {
       const { index_config, search_config } = data;
@@ -175,6 +199,131 @@ export default function Editor() {
       },
     });
   };
+
+  const handleDeleteDoc = (doc: IFileItem) => {
+    AntModal.confirm({
+      title: 'Delete Document',
+      content: `Are you sure you want to delete "${doc.name}"? This will also remove all its chunks.`,
+      okText: 'Delete',
+      okButtonProps: { danger: true },
+      cancelText: 'Cancel',
+      onOk: () => {
+        deleteDocuments(doc.kb_id, doc.doc_id).then(() => {
+          message.success('Document deleted');
+          fetchDocs(docsPagination.current, docsPagination.pageSize);
+        });
+      },
+    });
+  };
+
+  const handlePreviewDoc = async (doc: IFileItem) => {
+    if (!doc.path) {
+      message.warning('Document path not available for preview');
+      return;
+    }
+    try {
+      const url = await getPreviewUrl(doc.path);
+      if (url) {
+        window.open(url, '_blank');
+      } else {
+        message.warning('Could not generate preview URL');
+      }
+    } catch {
+      message.error('Failed to generate preview URL');
+    }
+  };
+
+  const handleDownloadDoc = async (doc: IFileItem) => {
+    if (!doc.path) {
+      message.warning('Document path not available for download');
+      return;
+    }
+    try {
+      await downloadFile(doc.path, doc.name);
+    } catch {
+      message.error('Failed to download file');
+    }
+  };
+
+  const formatFileSize = (size: number) => {
+    if (size / 1024 / 1024 >= 1) return `${(size / 1024 / 1024).toFixed(2)} MB`;
+    return `${(size / 1024).toFixed(2)} KB`;
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'green';
+      case 'processing': return 'blue';
+      case 'pending': case 'uploaded': return 'orange';
+      case 'failed': return 'red';
+      default: return 'default';
+    }
+  };
+
+  const docColumns: ColumnsType<IFileItem> = [
+    {
+      title: 'Document Name',
+      dataIndex: 'name',
+      key: 'name',
+      ellipsis: true,
+    },
+    {
+      title: 'Status',
+      dataIndex: 'index_status',
+      key: 'index_status',
+      width: 110,
+      render: (status: string) => (
+        <Tag color={getStatusColor(status)}>{status}</Tag>
+      ),
+    },
+    {
+      title: 'Format',
+      dataIndex: 'format',
+      key: 'format',
+      width: 70,
+      render: (f: string) => <span style={{ textTransform: 'uppercase', fontSize: 12 }}>{f}</span>,
+    },
+    {
+      title: 'Size',
+      dataIndex: 'size',
+      key: 'size',
+      width: 100,
+      render: (size: number) => formatFileSize(size),
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      width: 200,
+      render: (_: any, record: IFileItem) => (
+        <Space size={4}>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => handlePreviewDoc(record)}
+            title="Open in browser (if supported)"
+          >
+            Preview
+          </Button>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => handleDownloadDoc(record)}
+          >
+            Download
+          </Button>
+          <Button
+            type="link"
+            size="small"
+            danger
+            onClick={() => handleDeleteDoc(record)}
+          >
+            Delete
+          </Button>
+        </Space>
+      ),
+    },
+  ];
+
   return (
     <InnerLayout
       breadcrumbLinks={[
@@ -393,6 +542,58 @@ export default function Editor() {
             />
           </Form.Item>
         </Form>
+
+        {/* Documents Section */}
+        <div className={styles['docs-section']}>
+          <div className={styles['docs-header']}>
+            <h3 className={styles['docs-title']}>
+              <IconFont type="spark-document-line" style={{ marginRight: 8 }} />
+              Attached Documents
+            </h3>
+            <div className={styles['docs-actions']}>
+              <Button
+                type="default"
+                size="small"
+                onClick={() => history.push(`/knowledge/${kb_id}`)}
+              >
+                Manage Documents
+              </Button>
+            </div>
+          </div>
+          {docsLoading ? (
+            <div style={{ textAlign: 'center', padding: 32 }}>
+              <Spin />
+            </div>
+          ) : docs.length > 0 ? (
+            <Table
+              dataSource={docs}
+              columns={docColumns}
+              rowKey="doc_id"
+              size="small"
+              pagination={{
+                current: docsPagination.current,
+                pageSize: docsPagination.pageSize,
+                total: docsPagination.total,
+                showSizeChanger: false,
+                size: 'small',
+                onChange: (page, pageSize) => fetchDocs(page, pageSize),
+              }}
+            />
+          ) : (
+            <Empty
+              description="No documents attached yet"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            >
+              <Button
+                type="primary"
+                size="small"
+                onClick={() => history.push(`/knowledge/${kb_id}`)}
+              >
+                Upload Documents
+              </Button>
+            </Empty>
+          )}
+        </div>
       </div>
     </InnerLayout>
   );

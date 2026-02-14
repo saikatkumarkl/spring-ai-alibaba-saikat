@@ -14,13 +14,13 @@ const DebugPanel: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'connected':
-        return '#52c41a';
+        return 'var(--ag-ant-color-success)';
       case 'connecting':
-        return '#faad14';
+        return 'var(--ag-ant-color-warning)';
       case 'disconnected':
-        return '#ff4d4f';
+        return 'var(--ag-ant-color-error)';
       default:
-        return '#d9d9d9';
+        return 'var(--ag-ant-color-border)';
     }
   };
 
@@ -36,11 +36,11 @@ const DebugPanel: React.FC = () => {
   const getLogColor = (level: string) => {
     switch (level) {
       case 'error':
-        return '#ff4d4f';
+        return 'var(--ag-ant-color-error)';
       case 'warning':
-        return '#faad14';
+        return 'var(--ag-ant-color-warning)';
       default:
-        return '#1890ff';
+        return 'var(--ag-ant-color-primary)';
     }
   };
 
@@ -70,12 +70,12 @@ const DebugPanel: React.FC = () => {
             </span>
           </div>
           {debugState.connectionStatus.lastConnected && (
-            <div style={{ fontSize: 11, color: '#666' }}>
+            <div style={{ fontSize: 11, color: 'var(--ag-ant-color-text-secondary)' }}>
               Last connected: {debugState.connectionStatus.lastConnected.toLocaleString()}
             </div>
           )}
           {debugState.connectionStatus.errorMessage && (
-            <div style={{ fontSize: 11, color: '#ff4d4f', marginTop: 4 }}>
+            <div style={{ fontSize: 11, color: 'var(--ag-ant-color-error)', marginTop: 4 }}>
               Error: {debugState.connectionStatus.errorMessage}
             </div>
           )}
@@ -96,7 +96,7 @@ const DebugPanel: React.FC = () => {
               <Statistic
                 title="Errors"
                 value={debugState.metrics.errorCount}
-                valueStyle={{ fontSize: 14, color: '#ff4d4f' }}
+                valueStyle={{ fontSize: 14, color: 'var(--ag-ant-color-error)' }}
               />
             </Col>
           </Row>
@@ -110,7 +110,7 @@ const DebugPanel: React.FC = () => {
               />
             </Col>
             <Col span={12}>
-              <div style={{ fontSize: 12, color: '#666' }}>
+              <div style={{ fontSize: 12, color: 'var(--ag-ant-color-text-secondary)' }}>
                 Last activity:
                 <br />
                 {debugState.metrics.lastActivity
@@ -141,7 +141,7 @@ const DebugPanel: React.FC = () => {
             <Panel header={`Logs (${debugState.debugLogs.length})`} key="1">
               <div style={{ maxHeight: 200, overflowY: 'auto' }}>
                 {debugState.debugLogs.length === 0 ? (
-                  <div style={{ color: '#999', fontSize: 12, textAlign: 'center', padding: 16 }}>
+                  <div style={{ color: 'var(--ag-ant-color-text-tertiary)', fontSize: 12, textAlign: 'center', padding: 16 }}>
                     No logs
                   </div>
                 ) : (
@@ -151,7 +151,7 @@ const DebugPanel: React.FC = () => {
                       style={{
                         marginBottom: 8,
                         padding: 6,
-                        backgroundColor: '#f9f9f9',
+                        backgroundColor: 'var(--ag-ant-color-bg-layout)',
                         borderRadius: 4,
                         fontSize: 11,
                       }}
@@ -163,7 +163,7 @@ const DebugPanel: React.FC = () => {
                         >
                           {log.level.toUpperCase()}
                         </Tag>
-                        <span style={{ color: '#666' }}>
+                        <span style={{ color: 'var(--ag-ant-color-text-secondary)' }}>
                           {formatLogTime(log.timestamp)}
                         </span>
                       </div>
@@ -173,7 +173,7 @@ const DebugPanel: React.FC = () => {
                           style={{
                             margin: '4px 0 0 0',
                             fontSize: 10,
-                            color: '#666',
+                            color: 'var(--ag-ant-color-text-secondary)',
                             whiteSpace: 'pre-wrap',
                           }}
                         >

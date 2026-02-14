@@ -1,5 +1,5 @@
 import request from './request';
-export { getPreviewUrl } from './download';
+export { getPreviewUrl, downloadFile } from './download';
 
 // Type definition for upload request parameters
 type TUploadRequest = {

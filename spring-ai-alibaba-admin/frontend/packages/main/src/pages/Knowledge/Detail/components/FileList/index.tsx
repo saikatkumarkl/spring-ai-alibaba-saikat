@@ -3,6 +3,7 @@ import FileTag from '@/components/Tag/FileTag';
 import StatusTag from '@/components/Tag/StatusTag';
 import $i18n from '@/i18n';
 import { batchDeleteDocuments, batchUpdateDocumentEnabled } from '@/services/knowledge';
+import { getPreviewUrl, downloadFile } from '@/request/download';
 import type { FileType } from '@/types/base';
 import { AlertDialog, Button, Dropdown, message } from '@spark-ai/design';
 import { Space } from 'antd';
@@ -158,37 +159,66 @@ const FileList: React.FC<FileListProps> = ({
       width: 300,
       render: (_, record) => (
         <Space size={12}>
-          <Button
-            type="link"
-            className={styles['operation-btn']}
-            onClick={() =>
-              navigate(
-                `/knowledge/sliceConfiguration/${record.kb_id}/${record.doc_id}`,
-              )
-            }
-          >
-            {$i18n.get({
-              id: 'main.pages.Knowledge.Detail.components.FileList.index.sliceConfiguration',
-              dm: 'Slice Configuration',
-            })}
-          </Button>
-          <Button
-            type="link"
-            className={styles['operation-btn']}
-            onClick={() =>
-              navigate(
-                `/knowledge/sliceEditing/${record.kb_id}/${record.doc_id}`,
-              )
-            }
-          >
-            {$i18n.get({
-              id: 'main.pages.Knowledge.Detail.components.FileList.index.sliceEdit',
-              dm: 'Slice Editing',
-            })}
-          </Button>
+          {record.path && (
+            <Button
+              type="link"
+              className={styles['operation-btn']}
+              onClick={async () => {
+                try {
+                  const url = await getPreviewUrl(record.path!);
+                  if (url) window.open(url, '_blank');
+                } catch {
+                  message.error('Failed to preview file');
+                }
+              }}
+            >
+              {$i18n.get({
+                id: 'main.pages.Knowledge.Detail.components.FileList.index.preview',
+                dm: 'Preview',
+              })}
+            </Button>
+          )}
           <Dropdown
             menu={{
               items: [
+                record.path
+                  ? {
+                      key: 'download',
+                      label: $i18n.get({
+                        id: 'main.pages.Knowledge.Detail.components.FileList.index.download',
+                        dm: 'Download',
+                      }),
+                      onClick: async () => {
+                        try {
+                          await downloadFile(record.path!, record.name);
+                        } catch {
+                          message.error('Failed to download file');
+                        }
+                      },
+                    }
+                  : null,
+                {
+                  key: 'sliceConfiguration',
+                  label: $i18n.get({
+                    id: 'main.pages.Knowledge.Detail.components.FileList.index.sliceConfiguration',
+                    dm: 'Slice Configuration',
+                  }),
+                  onClick: () =>
+                    navigate(
+                      `/knowledge/sliceConfiguration/${record.kb_id}/${record.doc_id}`,
+                    ),
+                },
+                {
+                  key: 'sliceEditing',
+                  label: $i18n.get({
+                    id: 'main.pages.Knowledge.Detail.components.FileList.index.sliceEdit',
+                    dm: 'Slice Editing',
+                  }),
+                  onClick: () =>
+                    navigate(
+                      `/knowledge/sliceEditing/${record.kb_id}/${record.doc_id}`,
+                    ),
+                },
                 {
                   key: 'delete',
                   label: $i18n.get({
@@ -200,7 +230,7 @@ const FileList: React.FC<FileListProps> = ({
                     handleClickAction &&
                     handleClickAction('delete', record?.kb_id, record?.doc_id),
                 },
-              ],
+              ].filter(Boolean),
             }}
             trigger={['click']}
           >

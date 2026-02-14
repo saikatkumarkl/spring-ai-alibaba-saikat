@@ -133,6 +133,9 @@
   padding: 16px;
   border-radius: 8px;
   transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .cardHeader {
@@ -162,7 +165,7 @@
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--ag-ant-color-text);
 }
 
 .status {
@@ -172,6 +175,7 @@
 
 .cardBody {
   margin-bottom: 16px;
+  flex: 1;
 }
 
 .infoItem {
@@ -185,31 +189,33 @@
 }
 
 .label {
-  color: #666;
+  color: var(--ag-ant-color-text-secondary);
   margin-right: 8px;
   flex-shrink: 0;
 }
 
 .content {
-  color: #333;
+  color: var(--ag-ant-color-text);
   flex: 1;
   word-break: break-all;
 }
 
 .cardFooter {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 12px;
   padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--ag-ant-color-border-secondary);
+  margin-top: auto;
 }
 
 .footerDesc {
-  flex: 1;
+  width: 100%;
 }
 
 .footerOperate {
   display: flex;
   gap: 8px;
   align-items: center;
+  width: 100%;
 }

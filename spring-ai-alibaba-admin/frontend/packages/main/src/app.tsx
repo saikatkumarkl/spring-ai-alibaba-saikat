@@ -55,7 +55,7 @@ export function onRouteChange({ clientRoutes, location }) {
 
   Object.entries(firstLevelRouteMaps).some((item) => {
     if (route?.path?.startsWith(item[0])) {
-      document.title = `SAA - ${item[1]}`;
+      document.title = `Admin Dashboard - ${item[1]}`;
       return true;
     } else {
       return false;

@@ -44,6 +44,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
 			.addPathPatterns("/console/v1/**")
 			.addPathPatterns("/starter.zip")
 			.excludePathPatterns("/console/v1/auth/login", "/console/v1/auth/refresh-token", "/console/v1/system/**")
+			.excludePathPatterns("/console/v1/chatbot/**")
 			.excludePathPatterns("/swagger-ui/**", "/v3/api-docs/**")
 			.excludePathPatterns("/test/**");
 

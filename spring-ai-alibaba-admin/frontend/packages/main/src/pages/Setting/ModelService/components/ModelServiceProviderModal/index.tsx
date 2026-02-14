@@ -143,7 +143,7 @@ const ModelServiceProviderModal: React.FC<ModelServiceProviderModalProps> = ({
           label={
             <span>
               API-KEY{' '}
-              <span style={{ color: '#999', fontWeight: 'normal', fontSize: '12px' }}>
+              <span style={{ color: 'var(--ag-ant-color-text-tertiary)', fontWeight: 'normal', fontSize: '12px' }}>
                 ({$i18n.get({
                   id: 'main.pages.Setting.ModelService.components.ModelServiceProviderModal.index.optionalForLocalProviders',
                   dm: 'Optional for local providers like Ollama',

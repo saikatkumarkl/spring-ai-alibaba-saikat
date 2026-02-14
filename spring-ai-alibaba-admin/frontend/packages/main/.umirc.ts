@@ -2,7 +2,7 @@ import path from 'path';
 import { defineConfig } from 'umi';
 
 export default defineConfig({
-  title: 'SAA',
+  title: 'Admin Dashboard',
   define: {
     'process.env.WEB_SERVER': process.env.WEB_SERVER,
     'process.env.BACK_END': process.env.BACK_END,
@@ -167,6 +167,10 @@ export default defineConfig({
     {
       path: '/setting/apiKeys',
       component: 'Setting/APIKeys',
+    },
+    {
+      path: '/setting/auditLog',
+      component: 'Setting/AuditLog',
     },
     {
       path: '/agent-schema',

@@ -1,4 +1,5 @@
 import InnerLayout from '@/components/InnerLayout';
+import UserAccessManager from '@/components/UserAccessManager';
 import { useInnerLayout } from '@/components/InnerLayout/utils';
 import $i18n from '@/i18n';
 import { getAppComponentInputAndOutputParams } from '@/services/appComponent';
@@ -193,12 +194,12 @@ export const FlowBase = memo((props: IFlowBaseProps) => {
                 </Button>
                 <CheckListBtn />
               </Space.Compact>
-              {/* Add "Export SAA Project Code" button */}
+              {/* Add "Export Project Code" button */}
               <Button
                 disabled={actionLoading}
                 onClick={handleExportSAA}
               >
-                Export SAA Project Code
+                Export Project Code
               </Button>
               <Button
                 disabled={actionLoading}
@@ -317,7 +318,7 @@ export const FlowEditor = memo((props: IProps) => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'spring-ai-alibaba-demo.zip';
+      link.download = 'project-demo.zip';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -648,6 +649,16 @@ function Workflow() {
                   onSave={handleSaveFlowData}
                   setActiveTab={setActiveTab}
                 />
+              ),
+            },
+            {
+              label: $i18n.get({
+                id: 'main.pages.App.Workflow.index.userAccess',
+                dm: 'User Access',
+              }),
+              key: 'access',
+              children: state.appDetail && (
+                <UserAccessManager appId={state.appDetail.app_id} />
               ),
             },
             {

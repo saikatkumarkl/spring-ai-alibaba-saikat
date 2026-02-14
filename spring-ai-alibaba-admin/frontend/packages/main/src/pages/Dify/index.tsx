@@ -94,7 +94,7 @@ const DifyConverter: React.FC = () => {
 
       message.success('Conversion successful! Project file download started');
       setConvertResult([
-        'Spring AI Alibaba project generated',
+        'Project generated',
         'Project Type: Maven Project',
         'Language: Java 17',
         'Includes Dependencies: spring-ai-alibaba-graph, web, spring-ai-starter-model-ollama',
@@ -143,7 +143,7 @@ const DifyConverter: React.FC = () => {
     >
       <div className={styles.container}>
         <div className={styles.header}>
-          <h2>Convert DIFY Application to Spring AI Alibaba Project</h2>
+          <h2>Convert DIFY Application to Project</h2>
         </div>
 
         {/* Description area */}
@@ -160,7 +160,7 @@ const DifyConverter: React.FC = () => {
             </div>
             <div className={styles.instruction}>
               <span className={styles.step}>3.</span>
-              <span>Click the "Start Conversion" button, the system will automatically parse the DSL and generate a Spring AI Alibaba project</span>
+              <span>Click the "Start Conversion" button, the system will automatically parse the DSL and generate a project</span>
             </div>
             <div className={styles.instruction}>
               <span className={styles.step}>4.</span>

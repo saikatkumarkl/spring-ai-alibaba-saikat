@@ -67,7 +67,7 @@ const MessageArea: React.FC = () => {
             alignItems: 'center',
             height: '100%',
             flexDirection: 'column',
-            color: '#999'
+            color: 'var(--ag-ant-color-text-tertiary)'
           }}>
             <div style={{ fontSize: 16, marginBottom: 8 }}>🤖</div>
             <div>Welcome to Agent Chat UI</div>

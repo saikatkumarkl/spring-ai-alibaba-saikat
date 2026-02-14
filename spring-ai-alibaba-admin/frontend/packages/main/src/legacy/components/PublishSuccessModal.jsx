@@ -211,8 +211,8 @@ spring.ai.alibaba.arms.model.capture-output=true`;
               />
 
               <Alert
-                message="Spring AI Alibaba Integration Guide"
-                description="Spring AI Alibaba Agent integrates with Nacos to implement prompt loading and dynamic updates."
+                message="Integration Guide"
+                description="Agent integrates with Nacos to implement prompt loading and dynamic updates."
                 type="info"
                 icon={<InfoCircleOutlined />}
                 showIcon
@@ -228,7 +228,7 @@ spring.ai.alibaba.arms.model.capture-output=true`;
               <Card
                 title={
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Text strong>1. Import spring ai alibaba agent nacos proxy module</Text>
+                    <Text strong>1. Import agent nacos proxy module</Text>
                     <Button
                       type="default"
                       size="small"
@@ -325,7 +325,7 @@ spring.ai.alibaba.arms.model.capture-output=true`;
               <Card
                 title={
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Text strong>3. Import spring ai alibaba observability module</Text>
+                    <Text strong>3. Import observability module</Text>
                     <Button
                       type="default"
                       size="small"

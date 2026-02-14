@@ -6,8 +6,10 @@ import {
 } from '@/services/knowledge';
 import { useRequest, useSetState } from 'ahooks';
 import { Modal } from 'antd';
+import { Button, IconFont } from '@spark-ai/design';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { history } from 'umi';
 import FileList from './components/FileList';
 import Search from './components/Search';
 import styles from './index.module.less';
@@ -176,6 +178,18 @@ const KnowledgeDetail: React.FC = () => {
           }),
         },
       ]}
+      right={
+        <Button
+          type="default"
+          icon={<IconFont type="spark-edit-line" />}
+          onClick={() => history.push(`/knowledge/edit/${kb_id}`)}
+        >
+          {$i18n.get({
+            id: 'main.pages.Knowledge.Detail.index.editSettings',
+            dm: 'Edit Settings',
+          })}
+        </Button>
+      }
     >
       <div className={styles.container}>
         <Search

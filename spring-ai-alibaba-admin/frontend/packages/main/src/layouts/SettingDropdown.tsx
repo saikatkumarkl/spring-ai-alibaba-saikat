@@ -26,6 +26,13 @@ const menuItems: MenuProps['items'] = [
       dm: 'API Key Management',
     }),
   },
+  {
+    key: '/setting/auditLog',
+    label: $i18n.get({
+      id: 'main.layouts.SettingDropdown.auditLog',
+      dm: 'Audit Log',
+    }),
+  },
 ];
 
 const SettingDropdown: React.FC = () => {

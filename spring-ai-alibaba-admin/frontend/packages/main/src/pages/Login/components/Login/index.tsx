@@ -46,7 +46,7 @@ const Login: React.FC<IProps> = ({ onSubmit, loading }) => {
       <div className={styles['login-title']}>
         {$i18n.get({
           id: 'main.pages.Login.components.Login.index.welcomeToAgentScope',
-          dm: '🎉 Welcome to Spring AI Alibaba Studio',
+          dm: '🎉 Welcome to Admin Dashboard',
         })}
       </div>
 

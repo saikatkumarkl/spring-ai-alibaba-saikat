@@ -1,0 +1,282 @@
+.container {
+  padding: 0;
+}
+
+/* App selector */
+.appSelector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.appCard {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 12px 20px;
+  background: #fff;
+  min-width: 160px;
+
+  &:hover {
+    border-color: var(--ag-ant-color-primary, #1677ff);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  &.active {
+    border-color: var(--ag-ant-color-primary, #1677ff);
+    background: #e6f4ff;
+  }
+}
+
+.appCardName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.appCardType {
+  font-size: 11px;
+  color: #999;
+  margin-top: 2px;
+}
+
+/* Settings panel */
+.settingsPanel {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+
+.settingsTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.settingItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settingLabel {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.settingDescription {
+  font-size: 11px;
+  color: #999;
+  margin-bottom: 2px;
+}
+
+.settingsActions {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* KB section */
+.kbSection {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+
+.kbTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kbCard {
+  background: #fafafa;
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+
+  &:hover {
+    border-color: #d9d9d9;
+    background: #f5f5f5;
+  }
+
+  &.active {
+    border-color: var(--ag-ant-color-primary, #1677ff);
+    background: #e6f4ff;
+  }
+}
+
+.kbCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.kbName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.kbDocCount {
+  font-size: 12px;
+  color: #666;
+  background: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid #d9d9d9;
+}
+
+.kbDescription {
+  font-size: 12px;
+  color: #999;
+}
+
+/* Document list */
+.docSection {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+
+.docTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.docItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  background: #fafafa;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #f0f0f0;
+  }
+}
+
+.docName {
+  font-weight: 500;
+  color: #333;
+  flex: 1;
+  max-width: 350px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.docFormat {
+  font-size: 10px;
+  line-height: 1;
+  padding: 2px 6px;
+}
+
+.docSize {
+  color: #999;
+  font-size: 11px;
+  min-width: 60px;
+}
+
+.docStatus {
+  font-size: 11px;
+
+  &[data-status='3'] {
+    color: #52c41a;
+  }
+  &[data-status='4'] {
+    color: #ff4d4f;
+  }
+}
+
+.docActions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+/* Chunk preview */
+.chunkPreview {
+  background: #f9f9f9;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-top: 12px;
+}
+
+.chunkItem {
+  padding: 12px;
+  margin-bottom: 10px;
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid #f0f0f0;
+}
+
+.chunkHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: #999;
+}
+
+.chunkContent {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Empty states */
+.emptyState {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-style: italic;
+}
+
+/* Back button */
+.backButton {
+  margin-bottom: 16px;
+}

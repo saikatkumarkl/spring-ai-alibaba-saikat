@@ -130,12 +130,13 @@ const Layout = ({ children }) => {
         collapsedWidth={80}
         collapsed={collapsed}
         theme="light"
-        className="shadow-lg border-r border-gray-200"
+        className="shadow-lg"
+        style={{ borderRight: '1px solid var(--ag-ant-color-border-secondary)', backgroundColor: 'var(--ag-ant-color-bg-base)' }}
       >
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-800 flex items-center whitespace-nowrap overflow-hidden">
+        <div className="p-6" style={{ borderBottom: '1px solid var(--ag-ant-color-border-secondary)' }}>
+          <h1 className="text-xl font-bold flex items-center whitespace-nowrap overflow-hidden" style={{ color: 'var(--ag-ant-color-text)' }}>
             <SettingOutlined className="mr-1 text-blue-500" />
-            {!collapsed && "SAA Admin"}
+            {!collapsed && "Admin Dashboard"}
           </h1>
         </div>
 
@@ -149,22 +150,22 @@ const Layout = ({ children }) => {
           inlineCollapsed={collapsed}
         />
 
-        <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200 bg-white">
+        <div className="absolute bottom-0 left-0 right-0" style={{ borderTop: '1px solid var(--ag-ant-color-border-secondary)', backgroundColor: 'var(--ag-ant-color-bg-base)' }}>
           <div
-            className="flex items-center justify-center p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+            className="flex items-center justify-center p-4 cursor-pointer transition-colors"
             onClick={() => setCollapsed(!collapsed)}
           >
             {collapsed ?
-              <MenuUnfoldOutlined className="text-gray-600 text-lg" /> :
-              <MenuFoldOutlined className="text-gray-600 text-lg" />
+              <MenuUnfoldOutlined style={{ color: 'var(--ag-ant-color-text-secondary)', fontSize: '18px' }} /> :
+              <MenuFoldOutlined style={{ color: 'var(--ag-ant-color-text-secondary)', fontSize: '18px' }} />
             }
-            {!collapsed && <span className="ml-2 text-gray-600">Collapse Menu</span>}
+            {!collapsed && <span className="ml-2" style={{ color: 'var(--ag-ant-color-text-secondary)' }}>Collapse Menu</span>}
           </div>
         </div>
       </Sider>
 
       <Content className="overflow-hidden">
-        <div className="h-full overflow-y-auto bg-gray-50">
+        <div className="h-full overflow-y-auto" style={{ backgroundColor: 'var(--ag-ant-color-bg-layout)' }}>
           {children}
         </div>
       </Content>

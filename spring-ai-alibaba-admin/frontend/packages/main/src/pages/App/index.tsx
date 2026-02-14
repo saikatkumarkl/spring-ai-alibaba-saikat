@@ -86,7 +86,7 @@ const HomePage: React.FC = () => {
                   <div className={styles.cardIcon}>
                     <img
                       src="/images/agentLogo.svg"
-                      alt="Spring AI Alibaba Platform"
+                      alt="Low-Code Platform"
                       className={styles.iconImage}
                     />
                   </div>
@@ -106,7 +106,7 @@ const HomePage: React.FC = () => {
 
             <div className={styles.cardItem}>
               <ProCard
-                title="Convert DIFY App to SAA Project"
+                title="Convert DIFY App to Project"
                 logo={
                   <div className={styles.cardIcon}>
                     <img
@@ -120,7 +120,7 @@ const HomePage: React.FC = () => {
                   {
                     content: $i18n.get({
                       id: 'main.pages.App.index.difyDescription',
-                      dm: 'Convert agents developed on Dify platform to Spring AI Alibaba applications, and then import them into IDE for development and maintenance.',
+                      dm: 'Convert agents developed on Dify platform to applications, and then import them into IDE for development and maintenance.',
                     }),
                   },
                 ]}

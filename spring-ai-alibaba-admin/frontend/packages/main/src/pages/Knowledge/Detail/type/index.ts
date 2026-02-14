@@ -39,6 +39,10 @@ export interface IFileItem {
    * Document ID
    */
   doc_id: string;
+  /**
+   * Storage path (for download/preview)
+   */
+  path?: string;
 }
 
 export interface IMetadata {

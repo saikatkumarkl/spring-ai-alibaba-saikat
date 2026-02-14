@@ -1,4 +1,5 @@
 import InnerLayout from '@/components/InnerLayout';
+import UserAccessManager from '@/components/UserAccessManager';
 import $i18n from '@/i18n';
 import { ISparkChatRef } from '@/pages/App/AssistantAppEdit/components/SparkChat';
 import {
@@ -634,6 +635,16 @@ export default function AssistantAppEdit() {
                     dm: 'Configuration',
                   }),
                   children: !state.loading && <AssistantConfig />,
+                },
+                {
+                  key: 'access',
+                  label: $i18n.get({
+                    id: 'main.pages.App.AssistantAppEdit.index.userAccess',
+                    dm: 'User Access',
+                  }),
+                  children: !state.loading && (
+                    <UserAccessManager appId={id || ''} />
+                  ),
                 },
                 {
                   key: 'share',
