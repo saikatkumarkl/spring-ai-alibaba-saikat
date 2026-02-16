@@ -544,6 +544,7 @@
   "main.pages.App.utils.index.city": "City",
   "main.pages.App.utils.index.date": "Date",
   "main.pages.App.utils.index.end": "End",
+  "main.pages.App.utils.index.defaultSystemPrompt": "You are a helpful, accurate, and reliable AI assistant.\n\n## Response Guidelines\n- Always quote names, dates, numbers, and other factual details exactly as they appear in the source documents.\n- If you are unsure about any detail, say so rather than guessing.\n- Provide clear, concise, and well-structured responses.\n- When referencing documents, preserve the original spelling and formatting of all proper nouns.",
   "main.pages.Component.AppComponent.components.AppSelector.index.noSearchResult": "No applications found that match the criteria",
   "main.pages.Component.AppComponent.components.AppSelector.index.noApplication": "No applications",
   "main.pages.Component.AppComponent.components.AppSelector.index.tryAnotherSearchCondition": "Try another search condition",

@@ -18,6 +18,8 @@ import {
   ToolOutlined,
   SwapOutlined,
   FileSearchOutlined,
+  CloudServerOutlined,
+  HddOutlined,
 } from '@ant-design/icons';
 import $i18n from '@/i18n';
 import Header from './Header';
@@ -53,6 +55,16 @@ const getSelectedMenuKey = (pathname: string): string => {
   // Knowledge base related pages
   if (pathname.startsWith('/knowledge')) {
     return '/knowledge';
+  }
+
+  // Source management pages
+  if (pathname.startsWith('/source')) {
+    return '/source';
+  }
+
+  // Destination management pages
+  if (pathname.startsWith('/destination')) {
+    return '/destination';
   }
 
   // Audit Log page (must check before generic /setting)
@@ -243,6 +255,22 @@ export default function SideMenuLayout({ children }: { children: React.ReactNode
             icon: <NodeIndexOutlined />,
           },
         ],
+      },
+      {
+        key: '/source',
+        label: $i18n.get({
+          id: 'main.layouts.SideMenu.sources',
+          dm: 'Sources',
+        }),
+        icon: <CloudServerOutlined />,
+      },
+      {
+        key: '/destination',
+        label: $i18n.get({
+          id: 'main.layouts.SideMenu.destinations',
+          dm: 'Destinations',
+        }),
+        icon: <HddOutlined />,
       },
       {
         key: '/setting',

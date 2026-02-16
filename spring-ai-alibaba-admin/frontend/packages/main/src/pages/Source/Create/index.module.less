@@ -1,0 +1,134 @@
+.container {
+  padding: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.steps {
+  margin-bottom: 32px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.steps-title {
+  font-size: 13px;
+}
+
+.content {
+  background-color: var(--ag-ant-color-bg-base);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.footer {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background-color: var(--ag-ant-color-border-secondary);
+  margin: 0 4px;
+}
+
+.confirm-title {
+  font-weight: 600;
+}
+
+.confirm-content {
+  color: var(--ag-ant-color-text-secondary);
+}
+
+.form-section {
+  margin-bottom: 24px;
+}
+
+.form-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ag-ant-color-text);
+  margin-bottom: 16px;
+}
+
+.connector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.connector-card {
+  padding: 16px;
+  border: 1px solid var(--ag-ant-color-border-secondary);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.connector-card:hover {
+  border-color: var(--ag-ant-color-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.connector-card-selected {
+  border-color: var(--ag-ant-color-primary);
+  background-color: var(--ag-ant-color-primary-bg);
+}
+
+.connector-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ag-ant-color-text);
+}
+
+.connector-class {
+  font-size: 11px;
+  color: var(--ag-ant-color-text-tertiary);
+  margin-top: 4px;
+  word-break: break-all;
+}
+
+.config-entry {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.config-key {
+  flex: 1;
+}
+
+.config-value {
+  flex: 2;
+}
+
+.config-remove {
+  flex: none;
+}
+
+.test-result {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.test-pass {
+  background-color: #f6ffed;
+  border: 1px solid #b7eb8f;
+  color: #52c41a;
+}
+
+.test-fail {
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  color: #ff4d4f;
+}

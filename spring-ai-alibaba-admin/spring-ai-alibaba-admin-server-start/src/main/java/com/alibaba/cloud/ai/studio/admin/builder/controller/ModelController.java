@@ -175,6 +175,23 @@ public class ModelController {
 				}
 			}
 
+			// Fix misclassified model types (e.g., rerank model registered as llm)
+			Map<String, ModelConfigInfo> dbModelMap = dbModels.stream()
+				.collect(Collectors.toMap(ModelConfigInfo::getModelId, m -> m, (a, b) -> a));
+			for (String modelName : liveModelNames) {
+				ModelConfigInfo existing = dbModelMap.get(modelName);
+				if (existing != null) {
+					String inferredType = inferModelType(modelName);
+					if (!inferredType.equals(existing.getType())) {
+						existing.setType(inferredType);
+						existing.setTags(inferTags(modelName, inferredType));
+						modelManager.updateModel(existing);
+						log.info("[AUTO-SYNC] Fixed model type for {}: {} -> {}", providerName, modelName,
+								inferredType);
+					}
+				}
+			}
+
 			// Remove models from DB that are no longer served by the provider
 			for (ModelConfigInfo dbModel : dbModels) {
 				if (!liveModelIds.contains(dbModel.getModelId())) {

@@ -165,4 +165,8 @@ export const MODEL_TAGS = {
     id: 'main.types.modelService.tool',
     dm: 'Tools',
   }),
+  rerank: $i18n.get({
+    id: 'main.types.modelService.rerank',
+    dm: 'Rerank',
+  }),
 };

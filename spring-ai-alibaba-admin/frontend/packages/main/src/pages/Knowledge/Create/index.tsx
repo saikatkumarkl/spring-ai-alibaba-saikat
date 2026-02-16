@@ -1,6 +1,6 @@
 import InnerLayout from '@/components/InnerLayout';
 import $i18n from '@/i18n';
-import { createDocuments, createKnowledge } from '@/services/knowledge';
+import { createDocuments, createKnowledge, createKnowledgeSync } from '@/services/knowledge';
 import { AlertDialog, Button, message } from '@spark-ai/design';
 import { useSetState } from 'ahooks';
 import { Steps } from 'antd';
@@ -31,6 +31,10 @@ interface FormValue {
   chunk_size: number;
   chunk_overlap: number;
   fileList: any[];
+  dataSourceType: string;
+  source_id: string;
+  destination_id: string;
+  sync_cron: string;
 }
 
 interface State {
@@ -43,6 +47,7 @@ interface State {
 export default function Ceeate() {
   const firstFormRef = useRef<any>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [createdKbId, setCreatedKbId] = useState<string>('');
   const [state, setState] = useSetState<State>({
     isChanged: false,
     quitConfirm: false,
@@ -68,6 +73,10 @@ export default function Ceeate() {
       chunk_size: 600,
       chunk_overlap: 100,
       fileList: [],
+      dataSourceType: 'file',
+      source_id: '',
+      destination_id: '',
+      sync_cron: '',
     },
     countdown: 3,
   });
@@ -182,9 +191,47 @@ export default function Ceeate() {
       };
       createKnowledge(params).then((id) => {
         setIsSuccess(true);
-        if (type === 'done' && fileList.length) {
+        setCreatedKbId(id);
+
+        // Handle file upload for local files
+        if (type === 'done' && formValue.dataSourceType === 'file' && fileList.length) {
           handleCreateDocument(id);
         }
+
+        // Create sync job for source-based data
+        if (formValue.dataSourceType === 'source' && formValue.source_id && formValue.destination_id) {
+          createKnowledgeSync(id, {
+            source_id: formValue.source_id,
+            destination_id: formValue.destination_id,
+            sync_cron: formValue.sync_cron || undefined,
+          }).then(() => {
+            // Redirect directly to sync page so user can trigger sync
+            setIsSuccess(true);
+            let countdown = (state.countdown = 3);
+            const interval = setInterval(() => {
+              countdown -= 1;
+              setState({ countdown });
+              if (countdown === 0) {
+                clearInterval(interval);
+                history.push(`/knowledge/sync/${id}`);
+              }
+            }, 1000);
+          }).catch((err) => {
+            console.error('Failed to create sync job:', err);
+            // Still redirect to knowledge list on sync creation failure
+            let countdown = (state.countdown = 3);
+            const interval = setInterval(() => {
+              countdown -= 1;
+              setState({ countdown });
+              if (countdown === 0) {
+                clearInterval(interval);
+                history.push('/knowledge');
+              }
+            }, 1000);
+          });
+          return; // Don't start the normal countdown below
+        }
+
         let countdown = (state.countdown = 3);
         const interval = setInterval(() => {
           countdown -= 1;
@@ -422,23 +469,42 @@ export default function Ceeate() {
               type="primary"
               onClick={() => {
                 setIsSuccess(false);
-                history.push('/knowledge');
+                if (state.formValue.dataSourceType === 'source' && createdKbId) {
+                  history.push(`/knowledge/sync/${createdKbId}`);
+                } else {
+                  history.push('/knowledge');
+                }
               }}
             >
-              {$i18n.get(
-                {
-                  id: 'main.pages.Knowledge.Create.index.returnToKnowledgeBaseManagementVar1S',
-                  dm: 'Return to Knowledge Base Management ({var1}s)',
-                },
-                { var1: state.countdown },
-              )}
+              {state.formValue.dataSourceType === 'source'
+                ? $i18n.get(
+                    {
+                      id: 'main.pages.Knowledge.Create.index.goToSyncPageVar1S',
+                      dm: 'Go to Sync Page ({var1}s)',
+                    },
+                    { var1: state.countdown },
+                  )
+                : $i18n.get(
+                    {
+                      id: 'main.pages.Knowledge.Create.index.returnToKnowledgeBaseManagementVar1S',
+                      dm: 'Return to Knowledge Base Management ({var1}s)',
+                    },
+                    { var1: state.countdown },
+                  )
+              }
             </Button>
           }
         >
-          {$i18n.get({
-            id: 'main.pages.Knowledge.Create.index.congratulationsYouHaveCompletedKnowledgeBaseCreationYouCanGoToConfigureApplication',
-            dm: 'Congratulations! You have completed knowledge base creation. You can now configure your application.',
-          })}
+          {state.formValue.dataSourceType === 'source'
+            ? $i18n.get({
+                id: 'main.pages.Knowledge.Create.index.knowledgeBaseCreatedSyncReady',
+                dm: 'Knowledge base created! You will be redirected to the sync page where you can start syncing documents from your source system.',
+              })
+            : $i18n.get({
+                id: 'main.pages.Knowledge.Create.index.congratulationsYouHaveCompletedKnowledgeBaseCreationYouCanGoToConfigureApplication',
+                dm: 'Congratulations! You have completed knowledge base creation. You can now configure your application.',
+              })
+          }
         </AlertDialog>
       )}
     </InnerLayout>

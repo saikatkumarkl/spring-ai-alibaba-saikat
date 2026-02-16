@@ -92,6 +92,13 @@
             <artifactId>jackson-module-jsonSchema</artifactId>
         </dependency>
 
+        <!-- Tika 3.x OOXML parser needs commons-io 2.16+ for BoundedInputStream.builder() -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.18.0</version>
+        </dependency>
+
         <dependency>
             <groupId>io.spring.initializr</groupId>
             <artifactId>initializr-generator-spring</artifactId>

@@ -141,12 +141,48 @@ export default defineConfig({
       component: 'Knowledge/Editor/index',
     },
     {
+      path: '/knowledge/sync/:kb_id',
+      component: 'Knowledge/Sync/index',
+    },
+    {
       path: '/knowledge/sliceConfiguration/:kb_id/:doc_id',
       component: 'Knowledge/Detail/SliceConfiguration/index',
     },
     {
       path: '/knowledge/sliceEditing/:kb_id/:doc_id',
       component: 'Knowledge/Detail/SliceEditing/index',
+    },
+    {
+      path: '/source',
+      component: 'Source/List/index',
+    },
+    {
+      path: '/source/create',
+      component: 'Source/Create/index',
+    },
+    {
+      path: '/source/edit/:id',
+      component: 'Source/Create/index',
+    },
+    {
+      path: '/source/:id',
+      component: 'Source/Detail/index',
+    },
+    {
+      path: '/destination',
+      component: 'Destination/List/index',
+    },
+    {
+      path: '/destination/create',
+      component: 'Destination/Create/index',
+    },
+    {
+      path: '/destination/edit/:id',
+      component: 'Destination/Create/index',
+    },
+    {
+      path: '/destination/:id',
+      component: 'Destination/Detail/index',
     },
     {
       path: '/setting',

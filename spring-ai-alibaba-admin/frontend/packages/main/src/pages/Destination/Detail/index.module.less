@@ -1,0 +1,73 @@
+.container {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.section {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: var(--ag-ant-color-bg-container);
+  border: 1px solid var(--ag-ant-color-border);
+  border-radius: 8px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--ag-ant-color-text);
+}
+
+.info-row {
+  display: flex;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.info-label {
+  width: 140px;
+  color: var(--ag-ant-color-text-secondary);
+  flex-shrink: 0;
+}
+
+.info-value {
+  color: var(--ag-ant-color-text);
+  word-break: break-all;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.status-connected {
+  background-color: #f6ffed;
+  color: #389e0d;
+}
+
+.status-not-tested {
+  background-color: var(--ag-ant-color-fill-secondary);
+  color: var(--ag-ant-color-text-secondary);
+}

@@ -1,11 +1,29 @@
 import ProCard from '@/components/Card/ProCard';
 import $i18n from '@/i18n';
 import { Button, Dropdown, IconButton, IconFont } from '@spark-ai/design';
+import { Tag } from 'antd';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
 import React from 'react';
 import { history } from 'umi';
 import styles from './index.module.less';
+
+/**
+ * Map numeric/string status to display label and color
+ */
+const getStatusDisplay = (status?: number | string): { label: string; color: string } => {
+  // CommonStatus enum: 0=DISABLED, 1=ENABLED (default), 2=PROCESSING
+  switch (Number(status)) {
+    case 0:
+      return { label: 'Disabled', color: 'default' };
+    case 1:
+      return { label: 'Active', color: 'green' };
+    case 2:
+      return { label: 'Processing', color: 'blue' };
+    default:
+      return { label: 'Active', color: 'green' };
+  }
+};
 
 /**
  * Knowledge base list component props interface
@@ -40,6 +58,10 @@ interface KnowledgeCardProps {
    */
   total_docs: number;
   /**
+   * Status of the knowledge base
+   */
+  status?: number | string;
+  /**
    * Click action handler
    */
   handleClickAction?: (key: string, id: string) => void;
@@ -51,12 +73,19 @@ const KnowledgeCard: React.FC<KnowledgeCardProps> = ({
   description,
   gmt_modified,
   total_docs,
+  status,
   handleClickAction,
 }) => {
+  const statusDisplay = getStatusDisplay(status);
   return (
     <ProCard
       title={name}
       logo={<img className={styles['logo']} src={'/images/knowledge.svg'} />}
+      statusNode={
+        <Tag color={statusDisplay.color} style={{ marginLeft: 8 }}>
+          {statusDisplay.label}
+        </Tag>
+      }
       info={[
         {
           label: $i18n.get({
@@ -136,25 +165,27 @@ const KnowledgeCard: React.FC<KnowledgeCardProps> = ({
               dm: 'Hit Test',
             })}
           </Button>
-          <Dropdown
-            getPopupContainer={(ele) => ele}
-            menu={{
-              items: [
-                {
-                  danger: true,
-                  label: $i18n.get({
-                    id: 'main.pages.Knowledge.List.components.Card.index.delete',
-                    dm: 'Delete',
-                  }),
-                  key: 'delete',
-                  onClick: () =>
-                    handleClickAction && handleClickAction('delete', kb_id),
-                },
-              ],
-            }}
-          >
-            <IconButton shape="default" icon="spark-more-line" />
-          </Dropdown>
+          <div onClick={(e) => e.stopPropagation()}>
+            <Dropdown
+              getPopupContainer={(ele) => ele}
+              menu={{
+                items: [
+                  {
+                    danger: true,
+                    label: $i18n.get({
+                      id: 'main.pages.Knowledge.List.components.Card.index.delete',
+                      dm: 'Delete',
+                    }),
+                    key: 'delete',
+                    onClick: () =>
+                      handleClickAction && handleClickAction('delete', kb_id),
+                  },
+                ],
+              }}
+            >
+              <IconButton shape="default" icon="spark-more-line" />
+            </Dropdown>
+          </div>
         </>
       }
       onClick={() => history.push(`/knowledge/${kb_id}`)}

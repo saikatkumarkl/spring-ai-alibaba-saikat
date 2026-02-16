@@ -376,9 +376,9 @@ public class ProviderController {
 	 * @return Result indicating success or failure of the operation
 	 * @throws BizException if required parameters are missing or invalid
 	 */
-	@PutMapping("/{provider}/models/{modelId}")
+	@PutMapping("/{provider}/models")
 	public Result<Boolean> updateModel(@PathVariable("provider") String provider,
-			@PathVariable("modelId") String modelId, @RequestBody UpdateModelRequest request) {
+			@RequestParam("modelId") String modelId, @RequestBody UpdateModelRequest request) {
 		if (request == null) {
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("input_params", "request is valid"));
 		}
@@ -420,9 +420,9 @@ public class ProviderController {
 	 * @return Result indicating success or failure of the operation
 	 * @throws BizException if model is not found or deletion fails
 	 */
-	@DeleteMapping("/{provider}/models/{modelId}")
+	@DeleteMapping("/{provider}/models")
 	public Result<Boolean> deleteModel(@PathVariable("provider") String provider,
-			@PathVariable("modelId") String modelId) {
+			@RequestParam("modelId") String modelId) {
 		RequestContext requestContext = RequestContextHolder.getRequestContext();
 		if (StringUtils.isBlank(modelId)) {
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("input_params", "modelId is required"));
@@ -455,9 +455,9 @@ public class ProviderController {
 	 * @return Result containing the model details
 	 * @throws BizException if model is not found
 	 */
-	@GetMapping("/{provider}/models/{modelId}")
+	@GetMapping("/{provider}/models/detail")
 	public Result<ModelConfigInfo> getModelDetail(@PathVariable("provider") String provider,
-			@PathVariable("modelId") String modelId) {
+			@RequestParam("modelId") String modelId) {
 		if (StringUtils.isBlank(modelId)) {
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("input_params", "modelId is required"));
 		}
@@ -476,9 +476,9 @@ public class ProviderController {
 	 * @return Result containing the parameter rules
 	 * @throws BizException if model is not found
 	 */
-	@GetMapping("/{provider}/models/{modelId}/parameter_rules")
+	@GetMapping("/{provider}/models/parameter_rules")
 	public Result<List<ParameterRule>> getModelParamRules(@PathVariable("provider") String provider,
-			@PathVariable("modelId") String modelId) {
+			@RequestParam("modelId") String modelId) {
 		if (StringUtils.isBlank(provider) || StringUtils.isBlank(modelId)) {
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("input_params", "provider or modelId is required"));
 		}

@@ -2,7 +2,7 @@ import InnerLayout from '@/components/InnerLayout';
 import SliderInput from '@/components/SliderInput';
 import $i18n from '@/i18n';
 import ModelSelector from '@/pages/Knowledge/components/ModelSelector';
-import { getKnowledgeDetail, updateKnowledge, getDocumentsList, deleteDocuments } from '@/services/knowledge';
+import { getKnowledgeDetail, updateKnowledge, getDocumentsList, deleteDocuments, listKnowledgeSyncs } from '@/services/knowledge';
 import { IKnowledgeDetail } from '@/types/knowledge';
 import { IFileItem } from '@/pages/Knowledge/Detail/type';
 import { getPreviewUrl, downloadFile } from '@/request/upload';
@@ -15,7 +15,7 @@ import {
   Tooltip,
 } from '@spark-ai/design';
 import { useRequest, useSetState } from 'ahooks';
-import { Modal as AntModal, Table, Space, Tag, Empty, Spin } from 'antd';
+import { Modal as AntModal, Table, Space, Tag, Empty, Spin, Progress } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
@@ -38,6 +38,10 @@ export default function Editor() {
     top_k: 3,
   });
 
+  // Sync job state
+  const [syncInfo, setSyncInfo] = useState<any>(null);
+  const [syncLoading, setSyncLoading] = useState(false);
+
   // Documents state
   const [docs, setDocs] = useState<IFileItem[]>([]);
   const [docsLoading, setDocsLoading] = useState(false);
@@ -54,9 +58,23 @@ export default function Editor() {
       .finally(() => setDocsLoading(false));
   }, [kb_id]);
 
+  // Fetch sync info
+  const fetchSyncInfo = useCallback(() => {
+    if (!kb_id) return;
+    setSyncLoading(true);
+    listKnowledgeSyncs(kb_id)
+      .then((syncs: any[]) => {
+        if (syncs && syncs.length > 0) {
+          setSyncInfo(syncs[0]);
+        }
+      })
+      .finally(() => setSyncLoading(false));
+  }, [kb_id]);
+
   useEffect(() => {
     fetchDocs();
-  }, [fetchDocs]);
+    fetchSyncInfo();
+  }, [fetchDocs, fetchSyncInfo]);
 
   useRequest(() => getKnowledgeDetail(kb_id || ''), {
     onSuccess: (data: IKnowledgeDetail) => {
@@ -543,7 +561,89 @@ export default function Editor() {
           </Form.Item>
         </Form>
 
-        {/* Documents Section */}
+        {/* Sync Configuration Summary */}
+        {syncLoading ? (
+          <div style={{ textAlign: 'center', padding: 24 }}>
+            <Spin size="small" />
+          </div>
+        ) : syncInfo ? (
+          <div className={styles['docs-section']}>
+            <div className={styles['docs-header']}>
+              <h3 className={styles['docs-title']}>
+                <IconFont type="spark-sync-line" style={{ marginRight: 8 }} />
+                Sync Status
+              </h3>
+              <Button
+                type="primary"
+                size="small"
+                onClick={() => history.push(`/knowledge/sync/${kb_id}`)}
+              >
+                View Sync Dashboard
+              </Button>
+            </div>
+            <div
+              style={{
+                background: 'var(--ag-ant-color-fill-quaternary, #fafafa)',
+                borderRadius: 10,
+                padding: '16px 20px',
+                cursor: 'pointer',
+              }}
+              onClick={() => history.push(`/knowledge/sync/${kb_id}`)}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Tag color={
+                    syncInfo.status === 'completed' ? 'green' :
+                    syncInfo.status === 'failed' ? 'red' :
+                    syncInfo.status === 'indexing' || syncInfo.status === 'rag_processing' ? 'blue' :
+                    'orange'
+                  }>
+                    {syncInfo.status === 'indexing' ? 'Indexing Documents' :
+                     syncInfo.status === 'rag_processing' ? 'RAG Processing' :
+                     syncInfo.status === 'completed' ? 'Completed' :
+                     syncInfo.status === 'failed' ? 'Failed' : 'Pending'}
+                  </Tag>
+                  {syncInfo.last_sync_time && (
+                    <span style={{ fontSize: 12, color: 'var(--ag-ant-color-text-tertiary)' }}>
+                      Last sync: {new Date(syncInfo.last_sync_time).toLocaleString()}
+                    </span>
+                  )}
+                </div>
+                <span style={{ fontSize: 12, color: 'var(--ag-ant-color-text-tertiary)' }}>
+                  Click to view details &rarr;
+                </span>
+              </div>
+              {(syncInfo.status === 'indexing' || syncInfo.status === 'rag_processing') && (
+                <Progress
+                  percent={Math.round(((syncInfo.index_progress || 0) + (syncInfo.rag_progress || 0)) / 2)}
+                  status="active"
+                  strokeLinecap="round"
+                  size="small"
+                />
+              )}
+              {syncInfo.status === 'completed' && (
+                <Progress percent={100} status="success" strokeLinecap="round" size="small" />
+              )}
+              {syncInfo.status === 'failed' && (
+                <Progress percent={((syncInfo.index_progress || 0) + (syncInfo.rag_progress || 0)) / 2} status="exception" strokeLinecap="round" size="small" />
+              )}
+              {syncInfo.error_message && (
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--ag-ant-color-error, red)' }}>
+                  {syncInfo.error_message}
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: 24, marginTop: 10, fontSize: 12, color: 'var(--ag-ant-color-text-secondary)' }}>
+                <span>Total: {syncInfo.total_docs ?? '—'}</span>
+                <span>Indexed: {syncInfo.indexed_docs ?? '—'}</span>
+                <span>RAG: {syncInfo.rag_docs ?? '—'}</span>
+                {(syncInfo.failed_docs > 0) && <span style={{ color: 'var(--ag-ant-color-error)' }}>Failed: {syncInfo.failed_docs}</span>}
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Documents Section - only show for file-upload-based KBs (no sync configured) */}
+        {!syncInfo && (
         <div className={styles['docs-section']}>
           <div className={styles['docs-header']}>
             <h3 className={styles['docs-title']}>
@@ -594,6 +694,7 @@ export default function Editor() {
             </Empty>
           )}
         </div>
+        )}
       </div>
     </InnerLayout>
   );

@@ -81,9 +81,28 @@ const generateWorkflowConfig = () => {
   } as IWorkFlowConfig;
 };
 
+const DEFAULT_SYSTEM_PROMPT = $i18n.get({
+  id: 'main.pages.App.utils.index.defaultSystemPrompt',
+  dm: `You are a helpful, accurate, and reliable AI assistant.
+
+## Response Guidelines
+- Always quote names, dates, numbers, and other factual details exactly as they appear in the source documents.
+- If you are unsure about any detail, say so rather than guessing.
+- Provide clear, concise, and well-structured responses.
+- When referencing documents, preserve the original spelling and formatting of all proper nouns.`,
+});
+
 const generateAgentConfig = () => {
   return {
-    instructions: '', // system prompt
+    instructions: DEFAULT_SYSTEM_PROMPT, // system prompt with sensible defaults
+    parameter: {
+      temperature: 0.3, // lower = more faithful to source text, higher = more creative
+      top_p: 0.85,
+      max_tokens: 4096,
+    },
+    memory: {
+      dialog_round: 5, // remember last 5 conversation rounds
+    },
     tools: {}, // plugin tools
     file_search: {},
     mcp_servers: [], // mcp servers

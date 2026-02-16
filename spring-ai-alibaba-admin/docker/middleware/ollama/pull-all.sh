@@ -60,6 +60,42 @@ while IFS= read -r MODEL; do
 done < "$MODELS_CONF"
 
 echo
+echo "=== Removing models NOT in $MODELS_CONF ==="
+
+# Build a list of wanted model names (normalized, no :latest suffix)
+WANTED=$(grep -v '^ *#' "$MODELS_CONF" | grep -v '^ *$' | sed 's/[[:space:]]//g')
+
+# Get installed models and check each against the wanted list
+curl -s "$OLLAMA_URL/api/tags" | python3 -c "
+import sys,json
+data = json.load(sys.stdin)
+for m in data.get('models',[]):
+  name = m['name']
+  if name.endswith(':latest'):
+    name = name[:-7]
+  print(name)
+" 2>/dev/null | while IFS= read -r INSTALLED; do
+  KEEP=false
+  echo "$WANTED" | while IFS= read -r W; do
+    NORM_W="$W"
+    # Strip :latest from wanted entry too
+    case "$NORM_W" in *:latest) NORM_W="${NORM_W%:latest}" ;; esac
+    if [ "$INSTALLED" = "$NORM_W" ]; then
+      touch /tmp/ollama_keep_match
+    fi
+  done
+
+  if [ -f /tmp/ollama_keep_match ]; then
+    rm -f /tmp/ollama_keep_match
+    echo "[KEEP]   $INSTALLED"
+  else
+    echo "[REMOVE] $INSTALLED — not in models.conf"
+    curl -s -X DELETE "$OLLAMA_URL/api/delete" \
+      -d "{\"name\":\"$INSTALLED\"}" >/dev/null 2>&1 || true
+  fi
+done
+
+echo
 echo "=== Final model list ==="
 curl -s "$OLLAMA_URL/api/tags" | python3 -c "
 import sys,json

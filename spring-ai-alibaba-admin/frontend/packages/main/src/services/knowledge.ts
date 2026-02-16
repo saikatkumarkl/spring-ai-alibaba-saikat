@@ -1,5 +1,6 @@
 import { IChunkItem } from '@/pages/Knowledge/Detail/type';
 import { request } from '@/request';
+import { baseURL, session } from '@/request/request';
 import { IApiResponse } from '@/types/common';
 import {
   IChunksListItem,
@@ -291,4 +292,179 @@ export const getKnowledgeListByCodes = (kb_ids: string[]) => {
       kb_ids,
     },
   }).then((res) => res.data.data as IKnowledgeListItem[]);
+};
+
+// ---- Knowledge Sync APIs ----
+
+/** Create a sync job for a knowledge base */
+export const createKnowledgeSync = (kbId: string, params: {
+  source_id: string;
+  destination_id: string;
+  sync_cron?: string;
+}) => {
+  return request({
+    url: `/console/v1/knowledge-bases/${kbId}/sync`,
+    method: 'POST',
+    data: params,
+  }).then((res) => res.data.data as string);
+};
+
+/** Get sync info for a knowledge base */
+export const getKnowledgeSync = (kbId: string) => {
+  return request({
+    url: `/console/v1/knowledge-bases/${kbId}/sync`,
+    method: 'GET',
+  }).then((res) => res.data.data);
+};
+
+/** List all syncs for a knowledge base */
+export const listKnowledgeSyncs = (kbId: string) => {
+  return request({
+    url: `/console/v1/knowledge-bases/${kbId}/syncs`,
+    method: 'GET',
+  }).then((res) => res.data.data as any[]);
+};
+
+/** Start a sync job */
+export const startKnowledgeSync = (syncId: string) => {
+  return request({
+    url: `/console/v1/knowledge-bases/sync/${syncId}/start`,
+    method: 'POST',
+  }).then((res) => res.data.data);
+};
+
+/** Get sync status */
+export const getKnowledgeSyncStatus = (syncId: string) => {
+  return request({
+    url: `/console/v1/knowledge-bases/sync/${syncId}/status`,
+    method: 'GET',
+  }).then((res) => res.data.data);
+};
+
+/** Delete a sync job */
+export const deleteKnowledgeSync = (syncId: string) => {
+  return request({
+    url: `/console/v1/knowledge-bases/sync/${syncId}`,
+    method: 'DELETE',
+  }).then((res) => res.data);
+};
+
+/** Update sync cron schedule */
+export const updateKnowledgeSyncCron = (syncId: string, cron: string) => {
+  return request({
+    url: `/console/v1/knowledge-bases/sync/${syncId}/schedule`,
+    method: 'PUT',
+    data: { cron },
+  }).then((res) => res.data);
+};
+
+/** Start only the document sync phase (ManifoldCF crawl → OpenSearch) */
+export const syncKnowledgeDocuments = (syncId: string) => {
+  return request({
+    url: `/console/v1/knowledge-bases/sync/${syncId}/sync-documents`,
+    method: 'POST',
+  }).then((res) => res.data.data);
+};
+
+/** Start only the RAG reindex phase (OpenSearch → RAG vector embeddings) */
+export const reindexKnowledgeRag = (syncId: string) => {
+  return request({
+    url: `/console/v1/knowledge-bases/sync/${syncId}/reindex-rag`,
+    method: 'POST',
+  }).then((res) => res.data.data);
+};
+
+/** List documents from OpenSearch index for source-based KBs */
+export const listSyncDocuments = (kbId: string, params: {
+  current: number;
+  size: number;
+  query?: string;
+}) => {
+  return request({
+    url: `/console/v1/knowledge-bases/${kbId}/sync-documents`,
+    method: 'GET',
+    params,
+  }).then((res) => res.data.data);
+};
+
+/** Hard reset: delete all indices and reset sync to pending */
+export const hardResetSync = (syncId: string) => {
+  return request({
+    url: `/console/v1/knowledge-bases/sync/${syncId}/hard-reset`,
+    method: 'POST',
+  }).then((res) => res.data.data);
+};
+
+/** Stop a running sync job */
+export const stopSync = (syncId: string) => {
+  return request({
+    url: `/console/v1/knowledge-bases/sync/${syncId}/stop`,
+    method: 'POST',
+  }).then((res) => res.data.data);
+};
+
+/** Browse documents in the document index for a sync job */
+export const browseDocumentIndex = (syncId: string, params: {
+  current: number;
+  size: number;
+  query?: string;
+}) => {
+  return request({
+    url: `/console/v1/knowledge-bases/sync/${syncId}/browse`,
+    method: 'GET',
+    params,
+  }).then((res) => res.data.data);
+};
+
+/** Get a single document's full detail from the document index */
+export const getDocumentDetail = (syncId: string, docId: string) => {
+  return request({
+    url: `/console/v1/knowledge-bases/sync/${syncId}/document`,
+    method: 'GET',
+    params: { docId },
+  }).then((res) => res.data.data);
+};
+
+/** Update document metadata in the document index */
+export const updateDocumentMetadata = (syncId: string, docId: string, metadata: Record<string, any>) => {
+  return request({
+    url: `/console/v1/knowledge-bases/sync/${syncId}/document/metadata`,
+    method: 'PUT',
+    params: { docId },
+    data: metadata,
+  }).then((res) => res.data.data);
+};
+
+/** Get RAG chunks for a specific document */
+export const getDocumentChunks = (syncId: string, docId: string, params: {
+  current: number;
+  size: number;
+}) => {
+  return request({
+    url: `/console/v1/knowledge-bases/sync/${syncId}/document/chunks`,
+    method: 'GET',
+    params: { docId, ...params },
+  }).then((res) => res.data.data);
+};
+
+/** Update a single RAG chunk's content */
+export const updateChunkContent = (syncId: string, chunkId: string, content: string) => {
+  return request({
+    url: `/console/v1/knowledge-bases/sync/${syncId}/chunk`,
+    method: 'PUT',
+    params: { chunkId },
+    data: { content },
+  }).then((res) => res.data.data);
+};
+
+/** Download the original document from the CMIS source system (triggers browser download) */
+export const downloadSourceDocument = (syncId: string, docId: string, fileName?: string) => {
+  const url = `${baseURL.get()}/console/v1/knowledge-bases/sync/${syncId}/document/download?docId=${encodeURIComponent(docId)}&access_token=${session.get()}`;
+  const a = document.createElement('a');
+  a.href = url;
+  if (fileName) a.download = fileName;
+  a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 };

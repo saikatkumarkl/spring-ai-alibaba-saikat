@@ -147,8 +147,9 @@ export async function updateModel(
   params: IUpdateModelParams,
 ): Promise<IApiResponse<boolean>> {
   const response = await request({
-    url: `/console/v1/providers/${provider}/models/${modelId}`,
+    url: `/console/v1/providers/${encodeURIComponent(provider)}/models`,
     method: 'PUT',
+    params: { modelId },
     data: {
       model_id: modelId,
       model_name: params.name,
@@ -173,8 +174,9 @@ export async function deleteModel(
   modelId: string,
 ): Promise<IApiResponse<boolean>> {
   const response = await request({
-    url: `/console/v1/providers/${provider}/models/${modelId}`,
+    url: `/console/v1/providers/${encodeURIComponent(provider)}/models`,
     method: 'DELETE',
+    params: { modelId },
   });
   return response.data;
 }
@@ -205,8 +207,9 @@ export async function getModelDetail(
   modelId: string,
 ): Promise<IApiResponse<IModel>> {
   const response = await request({
-    url: `/console/v1/providers/${provider}/models/${modelId}`,
+    url: `/console/v1/providers/${encodeURIComponent(provider)}/models/detail`,
     method: 'GET',
+    params: { modelId },
   });
   return response.data;
 }
@@ -237,8 +240,9 @@ export async function getModelParameterRules(
   modelId: string,
 ): Promise<IApiResponse<IModelParameterRule[]>> {
   const response = await request({
-    url: `/console/v1/providers/${provider}/models/${modelId}/parameter_rules`,
+    url: `/console/v1/providers/${encodeURIComponent(provider)}/models/parameter_rules`,
     method: 'GET',
+    params: { modelId },
   });
   return response.data;
 }

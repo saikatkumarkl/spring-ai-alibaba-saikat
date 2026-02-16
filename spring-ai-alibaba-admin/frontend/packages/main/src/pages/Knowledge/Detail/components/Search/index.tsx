@@ -18,6 +18,8 @@ interface SearchProps {
   onBatchOperation?: () => void;
   /** Set upload file modal visible */
   setUploadModalVisible: (visible: boolean) => void;
+  /** Whether KB is source-based (hides upload button) */
+  isSourceBased?: boolean;
 }
 
 const items: MenuProps['items'] = [
@@ -65,6 +67,7 @@ const Search: React.FC<SearchProps> = ({
   onFilter,
   onBatchOperation,
   setUploadModalVisible,
+  isSourceBased = false,
 }) => {
   const [statusName, setStatusName] = useState('');
 
@@ -110,22 +113,26 @@ const Search: React.FC<SearchProps> = ({
         </div>
         {!operationable && (
           <Flex align="center" gap={8}>
-            <Button type="default" onClick={onBatchOperation}>
-              {$i18n.get({
-                id: 'main.pages.Knowledge.Detail.components.Search.index.batchOperation',
-                dm: 'Batch Operation',
-              })}
-            </Button>
-            <Button
-              type="primary"
-              icon={<IconFont type="spark-plus-line" />}
-              onClick={() => setUploadModalVisible(true)}
-            >
-              {$i18n.get({
-                id: 'main.pages.Knowledge.Detail.components.Search.index.uploadFile',
-                dm: 'Upload File',
-              })}
-            </Button>
+            {!isSourceBased && (
+              <Button type="default" onClick={onBatchOperation}>
+                {$i18n.get({
+                  id: 'main.pages.Knowledge.Detail.components.Search.index.batchOperation',
+                  dm: 'Batch Operation',
+                })}
+              </Button>
+            )}
+            {!isSourceBased && (
+              <Button
+                type="primary"
+                icon={<IconFont type="spark-plus-line" />}
+                onClick={() => setUploadModalVisible(true)}
+              >
+                {$i18n.get({
+                  id: 'main.pages.Knowledge.Detail.components.Search.index.uploadFile',
+                  dm: 'Upload File',
+                })}
+              </Button>
+            )}
           </Flex>
         )}
       </div>

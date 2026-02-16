@@ -544,6 +544,7 @@
   "main.pages.App.utils.index.city": "城市",
   "main.pages.App.utils.index.date": "日期",
   "main.pages.App.utils.index.end": "结束",
+  "main.pages.App.utils.index.defaultSystemPrompt": "你是一个有用、准确、可靠的AI助手。\n\n## 回复准则\n- 始终准确引用源文档中出现的姓名、日期、数字和其他事实细节。\n- 如果你对某个细节不确定，请如实说明而不是猜测。\n- 提供清晰、简洁、结构良好的回复。\n- 引用文档时，保留所有专有名词的原始拼写和格式。",
   "main.pages.Component.AppComponent.components.AppSelector.index.noSearchResult": "未搜索出来符合条件的应用",
   "main.pages.Component.AppComponent.components.AppSelector.index.noApplication": "暂无应用",
   "main.pages.Component.AppComponent.components.AppSelector.index.tryAnotherSearchCondition": "换个搜索条件试试",

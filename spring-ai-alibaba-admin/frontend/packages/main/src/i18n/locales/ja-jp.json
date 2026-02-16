@@ -544,6 +544,7 @@
   "main.pages.App.utils.index.city": "都市",
   "main.pages.App.utils.index.date": "日付",
   "main.pages.App.utils.index.end": "終了",
+  "main.pages.App.utils.index.defaultSystemPrompt": "あなたは有用で、正確で、信頼できるAIアシスタントです。\n\n## 回答ガイドライン\n- ソースドキュメントに記載されている名前、日付、数字、その他の事実を常に正確に引用してください。\n- 不確かな場合は、推測せずにそのことを伝えてください。\n- 明確で簡潔で、構造化された回答を提供してください。\n- ドキュメントを参照する際は、すべての固有名詞の元のスペルと書式を保持してください。",
   "main.pages.Component.AppComponent.components.AppSelector.index.noSearchResult": "条件に一致するアプリケーションが見つかりませんでした",
   "main.pages.Component.AppComponent.components.AppSelector.index.noApplication": "アプリケーションがありません",
   "main.pages.Component.AppComponent.components.AppSelector.index.tryAnotherSearchCondition": "別の検索条件を試してみてください",

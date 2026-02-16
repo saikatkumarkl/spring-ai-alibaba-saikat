@@ -1,0 +1,79 @@
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.update-time {
+  color: var(--ag-ant-color-text-secondary);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.provider-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background-color: var(--ag-ant-color-fill-secondary);
+  font-size: 11px;
+  color: var(--ag-ant-color-text-secondary);
+  text-transform: capitalize;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-active {
+  background-color: #52c41a;
+}
+
+.status-inactive {
+  background-color: var(--ag-ant-color-text-tertiary);
+}
+
+.status-text {
+  font-size: 12px;
+  color: var(--ag-ant-color-text-secondary);
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.operate-button {
+  flex: none;
+}
+
+.destination-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  height: auto;
+}
+
+.description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.no-description {
+  color: var(--ag-ant-color-text-tertiary);
+}
+
+.logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+}

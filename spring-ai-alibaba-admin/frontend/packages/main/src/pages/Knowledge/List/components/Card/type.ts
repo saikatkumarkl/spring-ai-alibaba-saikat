@@ -20,6 +20,10 @@ export interface IKnowledgeCard {
    */
   total_docs: number;
   /**
+   * Status of the knowledge base
+   */
+  status?: number | string;
+  /**
    * id
    */
   id?: string;

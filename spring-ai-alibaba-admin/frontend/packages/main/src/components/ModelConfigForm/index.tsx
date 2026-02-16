@@ -137,6 +137,9 @@ const ModelConfigBtn = memo(
                     <InputNumber
                       disabled={!targetValue?.enable || disabled}
                       style={{ width: 70 }}
+                      min={item.min}
+                      max={item.max}
+                      step={getStepFromPrecision(item.precision)}
                       precision={item.precision}
                       value={
                         (targetValue?.value as number) || item.default_value

@@ -3,7 +3,8 @@ import React from 'react';
 import styles from './index.module.less';
 
 export interface ProCardInfo {
-  content: string;
+  label?: string;
+  content: React.ReactNode;
 }
 
 export interface ProCardProps {

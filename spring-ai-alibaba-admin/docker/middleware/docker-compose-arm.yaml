@@ -13,6 +13,7 @@ services:
       - TZ=Asia/Shanghai
     volumes:
       - ./postgres/data:/var/lib/postgresql/data
+      - ./init/postgres:/docker-entrypoint-initdb.d
     ports:
       - "5433:5432"
     healthcheck:
@@ -207,84 +208,44 @@ services:
 
   # ============================
   # Ollama (Local LLM + Embedding)
+  # Commented out — using remote Ollama instance
   # ============================
 
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ollama
-    restart: always
-    ports:
-      - "11434:11434"
-    volumes:
-      - ./ollama/data:/root/.ollama
-    environment:
-      - OLLAMA_HOST=0.0.0.0
-    healthcheck:
-      test: ["CMD-SHELL", "ollama list || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-      start_period: 15s
-    networks:
-      - saa-network
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: ollama
+  #   restart: always
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ./ollama/data:/root/.ollama
+  #   environment:
+  #     - OLLAMA_HOST=0.0.0.0
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "ollama list || exit 1"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 12
+  #     start_period: 15s
+  #   networks:
+  #     - saa-network
 
-  ollama-init:
-    image: ollama/ollama:latest
-    container_name: ollama-init
-    restart: "no"
-    volumes:
-      - ./ollama/data:/root/.ollama
-      - ./ollama/models.conf:/models.conf:ro
-    entrypoint: >
-      sh -c "
-        export OLLAMA_HOST=http://ollama:11434 &&
-
-        echo '=== Quick-checking local model manifest cache ===' &&
-        ALL_LOCAL=true &&
-        grep -v '^ *#' /models.conf | grep -v '^ *$$' | while read -r MODEL; do
-          TAG=$${MODEL##*:}
-          NAME=$${MODEL%%:*}
-          [ \"$$TAG\" = \"$$MODEL\" ] && TAG=latest
-          MANIFEST=/root/.ollama/models/manifests/registry.ollama.ai/library/$$NAME/$$TAG
-          if [ ! -f \"$$MANIFEST\" ]; then
-            echo \"[MISSING] $$MODEL (no local manifest)\"
-            echo NEEDS_PULL > /tmp/needs_pull
-          else
-            echo \"[LOCAL]   $$MODEL\"
-          fi
-        done &&
-
-        if [ ! -f /tmp/needs_pull ]; then
-          echo '=== All models already cached locally — skipping pull ===' &&
-          exit 0
-        fi &&
-
-        rm -f /tmp/needs_pull &&
-        sleep 5 &&
-        echo '=== Some models missing — checking / pulling via Ollama ===' &&
-
-        pull_if_missing() {
-          MODEL=$$1
-          if ollama list | grep -q \"$$MODEL\"; then
-            echo \"[SKIP] $$MODEL already present\"
-          else
-            echo \"[PULL] $$MODEL ...\"
-            ollama pull $$MODEL
-          fi
-        } &&
-
-        grep -v '^ *#' /models.conf | grep -v '^ *$$' | while read -r MODEL; do
-          pull_if_missing \"$$MODEL\"
-        done &&
-
-        echo '=== Done ===' &&
-        ollama list
-      "
-    depends_on:
-      ollama:
-        condition: service_healthy
-    networks:
-      - saa-network
+  # ollama-init:
+  #   image: ollama/ollama:latest
+  #   container_name: ollama-init
+  #   restart: "no"
+  #   volumes:
+  #     - ./ollama/data:/root/.ollama
+  #     - ./ollama/models.conf:/models.conf:ro
+  #   entrypoint: >
+  #     sh -c "
+  #       ... (model pull/cleanup logic)
+  #     "
+  #   depends_on:
+  #     ollama:
+  #       condition: service_healthy
+  #   networks:
+  #     - saa-network
 
   backend:
     build:
@@ -316,6 +277,12 @@ services:
       - OLLAMA_EMBEDDING_MODEL=${OLLAMA_EMBEDDING_MODEL:-nomic-embed-text}
       # model-config.yml is mounted at /app/model-config.yml
       - MODEL_CONFIG_FILE=/app/model-config.yml
+      # ManifoldCF API credentials (must match properties.xml apilogin settings)
+      - MANIFOLDCF_API_URL=http://manifoldcf:8345/mcf-api-service
+      - MANIFOLDCF_API_USERNAME=${MCF_API_USERNAME:-admin}
+      - MANIFOLDCF_API_PASSWORD=${MCF_API_PASSWORD:-admin}
+      # OpenSearch URL as seen by ManifoldCF (Docker internal network)
+      - MANIFOLDCF_OPENSEARCH_URL=http://opensearch:9200/
     volumes:
       - ./model-config-ollama.yml:/app/model-config.yml:ro
       - saa_storage:/home/spring/saa/storage
@@ -330,8 +297,8 @@ services:
         condition: service_healthy
       rmq-proxy:
         condition: service_started
-      ollama:
-        condition: service_healthy
+      # ollama:  # Commented out — using remote Ollama
+      #   condition: service_healthy
     networks:
       - saa-network
     healthcheck:
@@ -383,6 +350,8 @@ services:
     entrypoint: ["/bin/sh", "/init-opensearch-output.sh"]
     environment:
       - MCF_API_URL=http://manifoldcf:8345/mcf-api-service
+      - MCF_API_USER=${MCF_API_USERNAME:-admin}
+      - MCF_API_PASS=${MCF_API_PASSWORD:-admin}
       # OpenSearch output
       - OPENSEARCH_URL=http://opensearch:9200/
       # Alfresco CMIS repository (set credentials before deploying)

@@ -1,4 +1,43 @@
 /******************************************/
+/*   table = source_system                 */
+/******************************************/
+DROP TABLE IF EXISTS `source_system`;
+CREATE TABLE `source_system`
+(
+    `id`                  BIGINT(20) UNSIGNED AUTO_INCREMENT NOT NULL COMMENT 'pk',
+    `source_id`           VARCHAR(64)                        NOT NULL COMMENT 'source id',
+    `workspace_id`        VARCHAR(64)                        NOT NULL COMMENT 'workspace id',
+    `name`                VARCHAR(255)                       NOT NULL COMMENT 'source name',
+    `description`         VARCHAR(4096)                               DEFAULT NULL COMMENT 'source description',
+    `connector_type`      VARCHAR(128)                       NOT NULL COMMENT 'connector type',
+    `connector_class`     VARCHAR(512)                       NOT NULL COMMENT 'connector class',
+    `status`              TINYINT(4)                         NOT NULL DEFAULT 1 COMMENT 'status',
+    `connection_config`   TEXT                                        DEFAULT NULL COMMENT 'connection config JSON',
+    `test_result`         VARCHAR(32)                                 DEFAULT NULL COMMENT 'test result',
+    `mcf_connection_name` VARCHAR(255)                                DEFAULT NULL COMMENT 'MCF connection name',
+    `mcf_output_name`     VARCHAR(255)                                DEFAULT NULL COMMENT 'MCF output name',
+    `mcf_job_id`          VARCHAR(64)                                 DEFAULT NULL COMMENT 'MCF job id',
+    `mcf_job_status`      VARCHAR(64)                                 DEFAULT NULL COMMENT 'MCF job status',
+    `last_sync_time`      DATETIME                                    DEFAULT NULL COMMENT 'last sync time',
+    `sync_cron`           VARCHAR(128)                                DEFAULT NULL COMMENT 'sync cron expression',
+    `docs_total`          BIGINT(20)                         NOT NULL DEFAULT 0 COMMENT 'total docs',
+    `docs_processed`      BIGINT(20)                         NOT NULL DEFAULT 0 COMMENT 'docs processed',
+    `docs_failed`         BIGINT(20)                         NOT NULL DEFAULT 0 COMMENT 'docs failed',
+    `error_message`       TEXT                                        DEFAULT NULL COMMENT 'error message',
+    `gmt_create`          DATETIME                           NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `gmt_modified`        DATETIME                           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `creator`             VARCHAR(64)                        NOT NULL COMMENT 'creator uid',
+    `modifier`            VARCHAR(64)                        NOT NULL COMMENT 'modifier uid',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_source_id` (`source_id`),
+    KEY `idx_source_workspace` (`workspace_id`),
+    KEY `idx_source_status` (`status`)
+) ENGINE = InnoDB
+  AUTO_INCREMENT = 10000
+  DEFAULT CHARSET = utf8mb4
+    COMMENT ='source system info';
+
+/******************************************/
 /*   table = account                      */
 /******************************************/
 DROP TABLE IF EXISTS `account`;
@@ -500,3 +539,71 @@ CREATE TABLE `agent_schema`
   AUTO_INCREMENT = 10000
   DEFAULT CHARSET = utf8mb4
     COMMENT ='agent schema info';
+
+/******************************************/
+/*   table = destination                   */
+/******************************************/
+DROP TABLE IF EXISTS `destination`;
+CREATE TABLE `destination`
+(
+    `id`                BIGINT(20) UNSIGNED AUTO_INCREMENT NOT NULL COMMENT 'pk',
+    `destination_id`    VARCHAR(64)                        NOT NULL COMMENT 'destination id',
+    `workspace_id`      VARCHAR(64)                        NOT NULL COMMENT 'workspace id',
+    `name`              VARCHAR(255)                       NOT NULL COMMENT 'destination name',
+    `description`       VARCHAR(4096)                               DEFAULT NULL COMMENT 'destination description',
+    `provider_type`     VARCHAR(128)                       NOT NULL DEFAULT 'opensearch' COMMENT 'provider type: opensearch',
+    `status`            TINYINT(4)                         NOT NULL DEFAULT 1 COMMENT 'status: -1=deleted, 0=disabled, 1=active',
+    `connection_config` TEXT                                        DEFAULT NULL COMMENT 'connection config JSON',
+    `test_result`       VARCHAR(32)                                 DEFAULT NULL COMMENT 'last test result',
+    `gmt_create`        DATETIME                           NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `gmt_modified`      DATETIME                           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `creator`           VARCHAR(64)                        NOT NULL COMMENT 'creator uid',
+    `modifier`          VARCHAR(64)                        NOT NULL COMMENT 'modifier uid',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_destination_id` (`destination_id`),
+    KEY `idx_destination_workspace` (`workspace_id`),
+    KEY `idx_destination_status` (`status`)
+) ENGINE = InnoDB
+  AUTO_INCREMENT = 10000
+  DEFAULT CHARSET = utf8mb4
+    COMMENT ='destination system info';
+
+/******************************************/
+/*   table = knowledge_sync               */
+/******************************************/
+DROP TABLE IF EXISTS `knowledge_sync`;
+CREATE TABLE `knowledge_sync`
+(
+    `id`                BIGINT(20) UNSIGNED AUTO_INCREMENT NOT NULL COMMENT 'pk',
+    `sync_id`           VARCHAR(64)                        NOT NULL COMMENT 'sync id',
+    `workspace_id`      VARCHAR(64)                        NOT NULL COMMENT 'workspace id',
+    `kb_id`             VARCHAR(64)                        NOT NULL COMMENT 'knowledge base id',
+    `source_id`         VARCHAR(64)                                 DEFAULT NULL COMMENT 'source system id',
+    `destination_id`    VARCHAR(64)                        NOT NULL COMMENT 'destination id',
+    `sync_cron`         VARCHAR(128)                                DEFAULT NULL COMMENT 'cron expression for scheduled sync',
+    `index_name`        VARCHAR(255)                                DEFAULT NULL COMMENT 'opensearch document index name ({name}_document)',
+    `authority_index_name` VARCHAR(255)                             DEFAULT NULL COMMENT 'opensearch authority index name ({name}_authority)',
+    `rag_index_name`    VARCHAR(255)                                DEFAULT NULL COMMENT 'opensearch RAG index name ({name}_rag)',
+    `mcf_job_id`        VARCHAR(64)                                 DEFAULT NULL COMMENT 'ManifoldCF crawl job ID',
+    `status`            VARCHAR(32)                        NOT NULL DEFAULT 'pending' COMMENT 'status: pending, indexing, rag_processing, completed, failed',
+    `index_progress`    INT                                NOT NULL DEFAULT 0 COMMENT 'index progress 0-100',
+    `rag_progress`      INT                                NOT NULL DEFAULT 0 COMMENT 'RAG processing progress 0-100',
+    `total_docs`        BIGINT(20)                         NOT NULL DEFAULT 0 COMMENT 'total documents',
+    `indexed_docs`      BIGINT(20)                         NOT NULL DEFAULT 0 COMMENT 'documents indexed',
+    `rag_docs`          BIGINT(20)                         NOT NULL DEFAULT 0 COMMENT 'documents RAG processed',
+    `failed_docs`       BIGINT(20)                         NOT NULL DEFAULT 0 COMMENT 'documents failed',
+    `error_message`     TEXT                                        DEFAULT NULL COMMENT 'last error message',
+    `last_sync_time`    DATETIME                                    DEFAULT NULL COMMENT 'last sync completion time',
+    `gmt_create`        DATETIME                           NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `gmt_modified`      DATETIME                           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `creator`           VARCHAR(64)                        NOT NULL COMMENT 'creator uid',
+    `modifier`          VARCHAR(64)                        NOT NULL COMMENT 'modifier uid',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_sync_id` (`sync_id`),
+    KEY `idx_sync_kb_id` (`kb_id`),
+    KEY `idx_sync_workspace` (`workspace_id`),
+    KEY `idx_sync_status` (`status`)
+) ENGINE = InnoDB
+  AUTO_INCREMENT = 10000
+  DEFAULT CHARSET = utf8mb4
+    COMMENT ='knowledge sync job info';

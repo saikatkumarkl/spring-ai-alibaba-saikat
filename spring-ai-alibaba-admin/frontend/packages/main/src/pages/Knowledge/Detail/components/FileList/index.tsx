@@ -3,6 +3,7 @@ import FileTag from '@/components/Tag/FileTag';
 import StatusTag from '@/components/Tag/StatusTag';
 import $i18n from '@/i18n';
 import { batchDeleteDocuments, batchUpdateDocumentEnabled } from '@/services/knowledge';
+import { downloadSourceDocument } from '@/services/knowledge';
 import { getPreviewUrl, downloadFile } from '@/request/download';
 import type { FileType } from '@/types/base';
 import { AlertDialog, Button, Dropdown, message } from '@spark-ai/design';
@@ -13,6 +14,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { areIndexStatusesEqual } from '../../../utils/constant';
 import type { IFileItem } from '../../type';
 import BatchOperation from '../BatchOperation';
+import DocumentPreviewDrawer from '../DocumentPreviewDrawer';
+import MetadataEditDrawer from '../MetadataEditDrawer';
+import ChunksDrawer from '../ChunksDrawer';
 import styles from './index.module.less';
 
 interface FileListProps {
@@ -61,6 +65,16 @@ interface FileListProps {
    * Refresh list
    */
   refreshList: () => void;
+
+  /**
+   * Whether KB is source-based (adjusts available actions)
+   */
+  isSourceBased?: boolean;
+
+  /**
+   * Sync ID for source-based APIs (preview, metadata, chunks)
+   */
+  syncId?: string | null;
 }
 
 const FileList: React.FC<FileListProps> = ({
@@ -74,12 +88,25 @@ const FileList: React.FC<FileListProps> = ({
   onExitOperation,
   handleClickAction,
   refreshList,
+  isSourceBased = false,
+  syncId = null,
 }) => {
   const navigate = useNavigate();
   const { kb_id } = useParams<{ kb_id: string; name: string }>();
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [selectedRows, setSelectedRows] = useState<IFileItem[]>([]);
   const [notOperation, setNotOperation] = useState(false);
+
+  // Drawer states
+  const [previewDrawer, setPreviewDrawer] = useState<{ visible: boolean; docId: string; docName: string }>({
+    visible: false, docId: '', docName: '',
+  });
+  const [metadataDrawer, setMetadataDrawer] = useState<{ visible: boolean; docId: string; docName: string }>({
+    visible: false, docId: '', docName: '',
+  });
+  const [chunksDrawer, setChunksDrawer] = useState<{ visible: boolean; docId: string; docName: string }>({
+    visible: false, docId: '', docName: '',
+  });
 
   const handleSelectionChange = (
     newSelectedRowKeys: React.Key[],
@@ -157,8 +184,66 @@ const FileList: React.FC<FileListProps> = ({
       }),
       key: 'action',
       width: 300,
-      render: (_, record) => (
-        <Space size={12}>
+      render: (_, record) => {
+        // Source-based KBs: Preview (content drawer), Edit Metadata, Edit Chunks
+        if (isSourceBased && syncId) {
+          return (
+            <Space size={12}>
+              <Button
+                type="link"
+                className={styles['operation-btn']}
+                onClick={() => setPreviewDrawer({ visible: true, docId: record.doc_id, docName: record.name })}
+              >
+                {$i18n.get({
+                  id: 'main.pages.Knowledge.Detail.components.FileList.index.preview',
+                  dm: 'Preview',
+                })}
+              </Button>
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: 'download',
+                      label: $i18n.get({
+                        id: 'main.pages.Knowledge.Detail.components.FileList.index.download',
+                        dm: 'Download',
+                      }),
+                      onClick: () => downloadSourceDocument(syncId!, record.doc_id, record.name),
+                    },
+                    {
+                      key: 'editMetadata',
+                      label: $i18n.get({
+                        id: 'main.pages.Knowledge.Detail.components.FileList.index.editMetadata',
+                        dm: 'Edit Metadata',
+                      }),
+                      onClick: () => setMetadataDrawer({ visible: true, docId: record.doc_id, docName: record.name }),
+                    },
+                    {
+                      key: 'editChunks',
+                      label: $i18n.get({
+                        id: 'main.pages.Knowledge.Detail.components.FileList.index.editChunks',
+                        dm: 'Edit Chunks',
+                      }),
+                      onClick: () => setChunksDrawer({ visible: true, docId: record.doc_id, docName: record.name }),
+                    },
+                  ],
+                }}
+                trigger={['click']}
+              >
+                <Button type="link" className={styles['operation-btn']}>
+                  {$i18n.get({
+                    id: 'main.pages.Knowledge.Detail.components.FileList.index.more',
+                    dm: 'More',
+                  })}
+                </Button>
+              </Dropdown>
+            </Space>
+          );
+        }
+
+        // Upload-based KBs: original actions
+        return (
+          <Space size={12}>
           {record.path && (
             <Button
               type="link"
@@ -242,7 +327,8 @@ const FileList: React.FC<FileListProps> = ({
             </Button>
           </Dropdown>
         </Space>
-      ),
+        );
+      },
     },
   ];
 
@@ -464,6 +550,34 @@ const FileList: React.FC<FileListProps> = ({
             dm: 'The files you selected have multiple statuses and cannot perform the same batch operation. Please confirm!',
           })}
         </AlertDialog>
+      )}
+
+      {/* Source-based document drawers */}
+      {isSourceBased && syncId && (
+        <>
+          <DocumentPreviewDrawer
+            visible={previewDrawer.visible}
+            syncId={syncId}
+            docId={previewDrawer.docId}
+            docName={previewDrawer.docName}
+            onClose={() => setPreviewDrawer({ visible: false, docId: '', docName: '' })}
+          />
+          <MetadataEditDrawer
+            visible={metadataDrawer.visible}
+            syncId={syncId}
+            docId={metadataDrawer.docId}
+            docName={metadataDrawer.docName}
+            onClose={() => setMetadataDrawer({ visible: false, docId: '', docName: '' })}
+            onSaved={refreshList}
+          />
+          <ChunksDrawer
+            visible={chunksDrawer.visible}
+            syncId={syncId}
+            docId={chunksDrawer.docId}
+            docName={chunksDrawer.docName}
+            onClose={() => setChunksDrawer({ visible: false, docId: '', docName: '' })}
+          />
+        </>
       )}
     </>
   );

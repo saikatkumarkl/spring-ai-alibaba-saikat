@@ -24,6 +24,8 @@
 #   5. Document crawl job is created (queued until authorities index exists)
 
 MCF_API="${MCF_API_URL:-http://localhost:8345/mcf-api-service}"
+MCF_API_USER="${MCF_API_USERNAME:-admin}"
+MCF_API_PASS="${MCF_API_PASSWORD:-admin}"
 MAX_WAIT=120
 INTERVAL=5
 
@@ -99,7 +101,7 @@ echo "=============================================="
 echo "Waiting for ManifoldCF API at ${MCF_API}..."
 elapsed=0
 while [ "$elapsed" -lt "$MAX_WAIT" ]; do
-  status=$(curl -sf -o /dev/null -w "%{http_code}" "${MCF_API}/json/outputconnectors" 2>/dev/null)
+  status=$(curl -sf -u "${MCF_API_USER}:${MCF_API_PASS}" -o /dev/null -w "%{http_code}" "${MCF_API}/json/outputconnectors" 2>/dev/null)
   if [ "$status" = "200" ]; then
     echo "ManifoldCF API is ready."
     break
@@ -204,12 +206,12 @@ fi
 # =====================================================
 echo ""
 echo "--- [1/6] OpenSearch Output Connection (Documents) ---"
-existing=$(curl -sf "${MCF_API}/json/outputconnections/${OUTPUT_CONN_NAME}" 2>/dev/null)
+existing=$(curl -sf -u "${MCF_API_USER}:${MCF_API_PASS}" "${MCF_API}/json/outputconnections/${OUTPUT_CONN_NAME}" 2>/dev/null)
 if echo "$existing" | grep -q '"isnew"'; then
   echo "Output connection '${OUTPUT_CONN_NAME}' already exists — skipping."
 else
   echo "Creating output connection '${OUTPUT_CONN_NAME}' -> index '${DOC_INDEX_NAME}'..."
-  result=$(curl -sf -X PUT "${MCF_API}/json/outputconnections/${OUTPUT_CONN_NAME}" \
+  result=$(curl -sf -u "${MCF_API_USER}:${MCF_API_PASS}" -X PUT "${MCF_API}/json/outputconnections/${OUTPUT_CONN_NAME}" \
     -H "Content-Type: application/json" \
     -d "{
       \"outputconnection\": {
@@ -233,7 +235,7 @@ else
     echo "WARNING: Failed to create output connection: $result"
   fi
 fi
-check=$(curl -sf "${MCF_API}/json/status/outputconnections/${OUTPUT_CONN_NAME}" 2>/dev/null)
+check=$(curl -sf -u "${MCF_API_USER}:${MCF_API_PASS}" "${MCF_API}/json/status/outputconnections/${OUTPUT_CONN_NAME}" 2>/dev/null)
 echo "Status: $check"
 
 # =====================================================
@@ -242,12 +244,12 @@ echo "Status: $check"
 echo ""
 echo "--- [2/6] OpenSearch Output Connection (Authorities) ---"
 OUTPUT_CONN_AUTH_ENCODED=$(echo "$OUTPUT_CONN_AUTH_NAME" | sed 's/ /%20/g')
-existing=$(curl -sf "${MCF_API}/json/outputconnections/${OUTPUT_CONN_AUTH_ENCODED}" 2>/dev/null)
+existing=$(curl -sf -u "${MCF_API_USER}:${MCF_API_PASS}" "${MCF_API}/json/outputconnections/${OUTPUT_CONN_AUTH_ENCODED}" 2>/dev/null)
 if echo "$existing" | grep -q '"isnew"'; then
   echo "Output connection '${OUTPUT_CONN_AUTH_NAME}' already exists — skipping."
 else
   echo "Creating output connection '${OUTPUT_CONN_AUTH_NAME}' -> index '${AUTH_INDEX_NAME}'..."
-  result=$(curl -sf -X PUT "${MCF_API}/json/outputconnections/${OUTPUT_CONN_AUTH_ENCODED}" \
+  result=$(curl -sf -u "${MCF_API_USER}:${MCF_API_PASS}" -X PUT "${MCF_API}/json/outputconnections/${OUTPUT_CONN_AUTH_ENCODED}" \
     -H "Content-Type: application/json" \
     -d "{
       \"outputconnection\": {
@@ -272,17 +274,49 @@ else
 fi
 
 # =====================================================
-# 3. Alfresco CMIS Repository Connection
+# 3. Tika Transformation Connection (embedded)
+#    Extracts text from binary docs (PDF, DOCX, PPTX, etc.)
+#    before indexing to OpenSearch. No external Tika server needed.
 # =====================================================
 echo ""
-echo "--- [3/6] CMIS Repository Connection ---"
+echo "--- [3/8] Tika Transformation Connection ---"
+TIKA_CONN_NAME="Tika"
+existing=$(curl -sf -u "${MCF_API_USER}:${MCF_API_PASS}" "${MCF_API}/json/transformationconnections/${TIKA_CONN_NAME}" 2>/dev/null)
+if echo "$existing" | grep -q '"isnew"'; then
+  echo "Transformation connection '${TIKA_CONN_NAME}' already exists — skipping."
+else
+  echo "Creating transformation connection '${TIKA_CONN_NAME}'..."
+  result=$(curl -sf -u "${MCF_API_USER}:${MCF_API_PASS}" -X PUT "${MCF_API}/json/transformationconnections/${TIKA_CONN_NAME}" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"transformationconnection\": {
+        \"name\": \"${TIKA_CONN_NAME}\",
+        \"class_name\": \"org.apache.manifoldcf.agents.transformation.tika.TikaExtractor\",
+        \"description\": \"Tika content extractor (embedded)\",
+        \"max_connections\": \"10\"
+      }
+    }" 2>&1)
+  if [ $? -eq 0 ]; then
+    echo "Transformation connection '${TIKA_CONN_NAME}' created: $result"
+  else
+    echo "WARNING: Failed to create transformation connection: $result"
+  fi
+fi
+check=$(curl -sf -u "${MCF_API_USER}:${MCF_API_PASS}" "${MCF_API}/json/status/transformationconnections/${TIKA_CONN_NAME}" 2>/dev/null)
+echo "Status: $check"
+
+# =====================================================
+# 4. Alfresco CMIS Repository Connection
+# =====================================================
+echo ""
+echo "--- [4/8] CMIS Repository Connection ---"
 REPO_CONN_ENCODED=$(echo "$REPO_CONN_NAME" | sed 's/ /%20/g')
-existing=$(curl -sf "${MCF_API}/json/repositoryconnections/${REPO_CONN_ENCODED}" 2>/dev/null)
+existing=$(curl -sf -u "${MCF_API_USER}:${MCF_API_PASS}" "${MCF_API}/json/repositoryconnections/${REPO_CONN_ENCODED}" 2>/dev/null)
 if echo "$existing" | grep -q '"isnew"'; then
   echo "Repository connection '${REPO_CONN_NAME}' already exists — skipping."
 else
   echo "Creating repository connection '${REPO_CONN_NAME}' -> ${CMIS_PROTOCOL}://${CMIS_SERVER}:${CMIS_PORT}${CMIS_PATH}..."
-  result=$(curl -sf -X PUT "${MCF_API}/json/repositoryconnections/${REPO_CONN_ENCODED}" \
+  result=$(curl -sf -u "${MCF_API_USER}:${MCF_API_PASS}" -X PUT "${MCF_API}/json/repositoryconnections/${REPO_CONN_ENCODED}" \
     -H "Content-Type: application/json" \
     -d "{
       \"repositoryconnection\": {
@@ -315,7 +349,7 @@ else
     echo "WARNING: Failed to create repository connection: $result"
   fi
 fi
-check=$(curl -sf "${MCF_API}/json/status/repositoryconnections/${REPO_CONN_ENCODED}" 2>/dev/null)
+check=$(curl -sf -u "${MCF_API_USER}:${MCF_API_PASS}" "${MCF_API}/json/status/repositoryconnections/${REPO_CONN_ENCODED}" 2>/dev/null)
 echo "Status: $check"
 
 # =====================================================
@@ -325,8 +359,8 @@ echo "Status: $check"
 #    It is auto-started and runs on a schedule.
 # =====================================================
 echo ""
-echo "--- [4/6] Authorities Sync Job ---"
-existing_jobs=$(curl -sf "${MCF_API}/json/jobs" 2>/dev/null)
+echo "--- [5/8] Authorities Sync Job ---"
+existing_jobs=$(curl -sf -u "${MCF_API_USER}:${MCF_API_PASS}" "${MCF_API}/json/jobs" 2>/dev/null)
 AUTH_JOB_ID=""
 if echo "$existing_jobs" | grep -q "\"${AUTH_JOB_DESCRIPTION}\""; then
   echo "Job '${AUTH_JOB_DESCRIPTION}' already exists — skipping creation."
@@ -338,7 +372,7 @@ else
   cat > /tmp/auth-job.json << ENDJSON
 {"job":{"_children_":[{"_type_":"description","_value_":"${AUTH_JOB_DESCRIPTION}"},{"_type_":"repository_connection","_value_":"${REPO_CONN_NAME}"},{"_type_":"pipelinestage","_children_":[{"_type_":"stage_id","_value_":"0"},{"_type_":"stage_isoutput","_value_":"true"},{"_type_":"stage_connectionname","_value_":"${OUTPUT_CONN_AUTH_NAME}"}]},{"_type_":"run_mode","_value_":"scan once"},{"_type_":"start_mode","_value_":"manual"},{"_type_":"hopcount_mode","_value_":"accurate"},{"_type_":"priority","_value_":"3"},{"_type_":"recrawl_interval","_value_":"${RECRAWL_INTERVAL_MS}"},{"_type_":"document_specification","_children_":[{"_type_":"startpoint","_attribute_cmisQuery":"SELECT cmis:objectId FROM cmis:folder WHERE cmis:name = '__AUTHORITIES_SYNC__'","_value_":""}]},{"_type_":"schedule","_children_":[{"_type_":"requestminimum","_value_":"false"},{"_type_":"dayofweek","_value_":"${CRAWL_CRON_DAY_OF_WEEK}"},{"_type_":"monthofyear","_value_":"${CRAWL_CRON_MONTH}"},{"_type_":"dayofmonth","_value_":"${CRAWL_CRON_DAY_OF_MONTH}"},{"_type_":"year","_value_":"${CRAWL_CRON_YEAR}"},{"_type_":"hourofday","_value_":"${CRAWL_CRON_HOUR}"},{"_type_":"minutesofhour","_value_":"${CRAWL_CRON_MINUTE}"}]}]}}
 ENDJSON
-  result=$(curl -sf -X POST "${MCF_API}/json/jobs" \
+  result=$(curl -sf -u "${MCF_API_USER}:${MCF_API_PASS}" -X POST "${MCF_API}/json/jobs" \
     -H "Content-Type: application/json" \
     --data-binary @/tmp/auth-job.json 2>&1)
   if [ $? -eq 0 ]; then
@@ -354,7 +388,7 @@ fi
 # Auto-start the authorities sync job
 if [ -n "$AUTH_JOB_ID" ]; then
   echo "Starting authorities sync job (ID: ${AUTH_JOB_ID})..."
-  curl -sf -X PUT "${MCF_API}/json/start/${AUTH_JOB_ID}" 2>/dev/null
+  curl -sf -u "${MCF_API_USER}:${MCF_API_PASS}" -X PUT "${MCF_API}/json/start/${AUTH_JOB_ID}" 2>/dev/null
   echo ""
 fi
 
@@ -362,7 +396,7 @@ fi
 # 5. Wait for Authorities Index (unless SKIP_ACL_WAIT)
 # =====================================================
 echo ""
-echo "--- [5/6] Authorities Index Check ---"
+echo "--- [6/8] Authorities Index Check ---"
 if [ "$SKIP_ACL_WAIT" = "true" ]; then
   echo "SKIP_ACL_WAIT=true — proceeding without waiting for authorities index."
 else
@@ -392,22 +426,24 @@ else
 fi
 
 # =====================================================
-# 6. Document Crawl Job (CMIS → OpenSearch)
-#    Uses incremental crawl with cron scheduling.
-#    Only indexes documents modified since last run.
+# 7. Document Crawl Job (CMIS → Tika → OpenSearch)
+#    Uses Tika transformation to extract text from binary
+#    documents before indexing. Enables full-text search.
 # =====================================================
 echo ""
-echo "--- [6/6] Document Crawl Job ---"
-existing_jobs=$(curl -sf "${MCF_API}/json/jobs" 2>/dev/null)
+echo "--- [7/8] Document Crawl Job (with Tika) ---"
+existing_jobs=$(curl -sf -u "${MCF_API_USER}:${MCF_API_PASS}" "${MCF_API}/json/jobs" 2>/dev/null)
 if echo "$existing_jobs" | grep -q "\"${JOB_DESCRIPTION}\""; then
   echo "Job '${JOB_DESCRIPTION}' already exists — skipping."
 else
   echo "Creating document crawl job '${JOB_DESCRIPTION}'..."
   # Write JSON to temp file to avoid shell escaping issues in Alpine sh
+  # Pipeline: Stage 0 = Tika transformation (text extraction)
+  #           Stage 1 = OpenSearch output (depends on stage 0)
   cat > /tmp/doc-job.json << ENDJSON
-{"job":{"_children_":[{"_type_":"description","_value_":"${JOB_DESCRIPTION}"},{"_type_":"repository_connection","_value_":"${REPO_CONN_NAME}"},{"_type_":"pipelinestage","_children_":[{"_type_":"stage_id","_value_":"0"},{"_type_":"stage_isoutput","_value_":"true"},{"_type_":"stage_connectionname","_value_":"${OUTPUT_CONN_NAME}"}]},{"_type_":"run_mode","_value_":"scan once"},{"_type_":"start_mode","_value_":"manual"},{"_type_":"hopcount_mode","_value_":"accurate"},{"_type_":"priority","_value_":"5"},{"_type_":"recrawl_interval","_value_":"${RECRAWL_INTERVAL_MS}"},{"_type_":"document_specification","_children_":[{"_type_":"startpoint","_attribute_cmisQuery":"SELECT * FROM cmis:document WHERE IN_TREE('workspace://SpacesStore/1305f68b-4998-4ffd-85f6-8b49986ffd1b')","_value_":""}]},{"_type_":"schedule","_children_":[{"_type_":"requestminimum","_value_":"false"},{"_type_":"dayofweek","_value_":"${CRAWL_CRON_DAY_OF_WEEK}"},{"_type_":"monthofyear","_value_":"${CRAWL_CRON_MONTH}"},{"_type_":"dayofmonth","_value_":"${CRAWL_CRON_DAY_OF_MONTH}"},{"_type_":"year","_value_":"${CRAWL_CRON_YEAR}"},{"_type_":"hourofday","_value_":"${CRAWL_CRON_HOUR}"},{"_type_":"minutesofhour","_value_":"${CRAWL_CRON_MINUTE}"}]}]}}
+{"job":{"_children_":[{"_type_":"description","_value_":"${JOB_DESCRIPTION}"},{"_type_":"repository_connection","_value_":"${REPO_CONN_NAME}"},{"_type_":"pipelinestage","_children_":[{"_type_":"stage_id","_value_":"0"},{"_type_":"stage_isoutput","_value_":"false"},{"_type_":"stage_connectionname","_value_":"${TIKA_CONN_NAME}"}]},{"_type_":"pipelinestage","_children_":[{"_type_":"stage_id","_value_":"1"},{"_type_":"stage_isoutput","_value_":"true"},{"_type_":"stage_connectionname","_value_":"${OUTPUT_CONN_NAME}"},{"_type_":"stage_prerequisite","_value_":"0"}]},{"_type_":"run_mode","_value_":"scan once"},{"_type_":"start_mode","_value_":"manual"},{"_type_":"hopcount_mode","_value_":"accurate"},{"_type_":"priority","_value_":"5"},{"_type_":"recrawl_interval","_value_":"${RECRAWL_INTERVAL_MS}"},{"_type_":"document_specification","_children_":[{"_type_":"startpoint","_attribute_cmisQuery":"SELECT * FROM cmis:document WHERE IN_TREE('workspace://SpacesStore/1305f68b-4998-4ffd-85f6-8b49986ffd1b')","_value_":""}]},{"_type_":"schedule","_children_":[{"_type_":"requestminimum","_value_":"false"},{"_type_":"dayofweek","_value_":"${CRAWL_CRON_DAY_OF_WEEK}"},{"_type_":"monthofyear","_value_":"${CRAWL_CRON_MONTH}"},{"_type_":"dayofmonth","_value_":"${CRAWL_CRON_DAY_OF_MONTH}"},{"_type_":"year","_value_":"${CRAWL_CRON_YEAR}"},{"_type_":"hourofday","_value_":"${CRAWL_CRON_HOUR}"},{"_type_":"minutesofhour","_value_":"${CRAWL_CRON_MINUTE}"}]}]}}
 ENDJSON
-  result=$(curl -sf -X POST "${MCF_API}/json/jobs" \
+  result=$(curl -sf -u "${MCF_API_USER}:${MCF_API_PASS}" -X POST "${MCF_API}/json/jobs" \
     -H "Content-Type: application/json" \
     --data-binary @/tmp/doc-job.json 2>&1)
   if [ $? -eq 0 ]; then
@@ -416,7 +452,7 @@ ENDJSON
     # Auto-start the document crawl job
     if [ -n "$DOC_JOB_ID" ]; then
       echo "Starting document crawl job (ID: ${DOC_JOB_ID})..."
-      curl -sf -X PUT "${MCF_API}/json/start/${DOC_JOB_ID}" 2>/dev/null
+      curl -sf -u "${MCF_API_USER}:${MCF_API_PASS}" -X PUT "${MCF_API}/json/start/${DOC_JOB_ID}" 2>/dev/null
       echo ""
     fi
   else

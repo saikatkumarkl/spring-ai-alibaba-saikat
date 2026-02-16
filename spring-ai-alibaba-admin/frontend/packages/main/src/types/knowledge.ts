@@ -12,6 +12,7 @@ export interface IKnowledgeListItem {
   description: string;
   gmt_modified: string;
   total_docs: number;
+  status?: number | string;
 }
 
 // Interface for document processing configuration

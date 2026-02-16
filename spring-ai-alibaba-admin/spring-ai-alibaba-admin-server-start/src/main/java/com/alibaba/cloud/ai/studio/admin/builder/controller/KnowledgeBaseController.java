@@ -27,17 +27,21 @@ import com.alibaba.cloud.ai.studio.runtime.domain.knowledgebase.DocumentChunk;
 import com.alibaba.cloud.ai.studio.runtime.domain.knowledgebase.DocumentRetrieverQuery;
 import com.alibaba.cloud.ai.studio.runtime.domain.knowledgebase.IndexConfig;
 import com.alibaba.cloud.ai.studio.runtime.domain.knowledgebase.KnowledgeBase;
+import com.alibaba.cloud.ai.studio.runtime.domain.knowledgebase.KnowledgeSync;
 import com.alibaba.cloud.ai.studio.core.context.RequestContextHolder;
 import com.alibaba.cloud.ai.studio.core.base.manager.DocumentRetrieverManager;
 import com.alibaba.cloud.ai.studio.core.rag.KnowledgeBaseService;
+import com.alibaba.cloud.ai.studio.core.rag.KnowledgeSyncService;
 import com.alibaba.cloud.ai.studio.admin.builder.annotation.ApiModelAttribute;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.ai.rag.Query;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -57,10 +61,15 @@ public class KnowledgeBaseController {
 	/** Manager for handling document retrieval operations */
 	private final DocumentRetrieverManager documentRetrieverManager;
 
+	/** Service for knowledge sync jobs */
+	private final KnowledgeSyncService knowledgeSyncService;
+
 	public KnowledgeBaseController(KnowledgeBaseService knowledgeBaseService,
-			DocumentRetrieverManager documentRetrieverManager) {
+			DocumentRetrieverManager documentRetrieverManager,
+			KnowledgeSyncService knowledgeSyncService) {
 		this.knowledgeBaseService = knowledgeBaseService;
 		this.documentRetrieverManager = documentRetrieverManager;
+		this.knowledgeSyncService = knowledgeSyncService;
 	}
 
 	/**
@@ -223,6 +232,241 @@ public class KnowledgeBaseController {
 		List<DocumentChunk> documentChunks = documentRetrieverManager
 			.retrieve(Query.builder().text(query.getQuery()).build(), query.getSearchOptions());
 		return Result.success(context.getRequestId(), documentChunks);
+	}
+
+	// ---- Knowledge Sync Endpoints ----
+
+	/**
+	 * Creates a sync job for a knowledge base.
+	 */
+	@PostMapping("/{kbId}/sync")
+	public Result<String> createSync(@PathVariable("kbId") String kbId, @RequestBody KnowledgeSync sync) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+		sync.setKbId(kbId);
+		String syncId = knowledgeSyncService.createSync(sync);
+		return Result.success(context.getRequestId(), syncId);
+	}
+
+	/**
+	 * Gets sync job for a knowledge base.
+	 */
+	@GetMapping("/{kbId}/sync")
+	public Result<KnowledgeSync> getSyncByKbId(@PathVariable("kbId") String kbId) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+		KnowledgeSync sync = knowledgeSyncService.getSyncByKbId(kbId);
+		return Result.success(context.getRequestId(), sync);
+	}
+
+	/**
+	 * Lists all sync jobs for a knowledge base.
+	 */
+	@GetMapping("/{kbId}/syncs")
+	public Result<List<KnowledgeSync>> listSyncs(@PathVariable("kbId") String kbId) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+		List<KnowledgeSync> syncs = knowledgeSyncService.listSyncs(kbId);
+		return Result.success(context.getRequestId(), syncs);
+	}
+
+	/**
+	 * Starts a sync job.
+	 */
+	@PostMapping("/sync/{syncId}/start")
+	public Result<Map<String, String>> startSync(@PathVariable("syncId") String syncId) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+		Map<String, String> result = knowledgeSyncService.startSync(syncId);
+		return Result.success(context.getRequestId(), result);
+	}
+
+	/**
+	 * Gets detailed sync progress/status.
+	 */
+	@GetMapping("/sync/{syncId}/status")
+	public Result<Map<String, Object>> getSyncStatus(@PathVariable("syncId") String syncId) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+		Map<String, Object> status = knowledgeSyncService.getSyncStatus(syncId);
+		return Result.success(context.getRequestId(), status);
+	}
+
+	/**
+	 * Deletes a sync job.
+	 */
+	@DeleteMapping("/sync/{syncId}")
+	public Result<Void> deleteSync(@PathVariable("syncId") String syncId) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+		knowledgeSyncService.deleteSync(syncId);
+		return Result.success(context.getRequestId(), null);
+	}
+
+	/**
+	 * Updates sync cron schedule.
+	 */
+	@PutMapping("/sync/{syncId}/schedule")
+	public Result<Void> updateSyncCron(@PathVariable("syncId") String syncId,
+			@RequestBody Map<String, String> body) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+		String cron = body.get("cron");
+		if (StringUtils.isBlank(cron)) {
+			throw new BizException(ErrorCode.MISSING_PARAMS.toError("cron"));
+		}
+		knowledgeSyncService.updateSyncCron(syncId, cron);
+		return Result.success(context.getRequestId(), null);
+	}
+
+	/**
+	 * Start only the document sync phase (ManifoldCF crawl → OpenSearch).
+	 */
+	@PostMapping("/sync/{syncId}/sync-documents")
+	public Result<Map<String, String>> syncDocumentsOnly(@PathVariable("syncId") String syncId) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+		Map<String, String> result = knowledgeSyncService.syncDocumentsOnly(syncId);
+		return Result.success(context.getRequestId(), result);
+	}
+
+	/**
+	 * Start only the RAG reindex phase (OpenSearch → RAG vector embeddings).
+	 */
+	@PostMapping("/sync/{syncId}/reindex-rag")
+	public Result<Map<String, String>> reindexRagOnly(@PathVariable("syncId") String syncId) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+		Map<String, String> result = knowledgeSyncService.reindexRagOnly(syncId);
+		return Result.success(context.getRequestId(), result);
+	}
+
+	/**
+	 * Lists documents from the OpenSearch index for a source-based knowledge base.
+	 */
+	@GetMapping("/{kbId}/sync-documents")
+	public Result<Map<String, Object>> listSyncDocuments(
+			@PathVariable("kbId") String kbId,
+			@RequestParam(value = "current", defaultValue = "1") int current,
+			@RequestParam(value = "size", defaultValue = "10") int size,
+			@RequestParam(value = "query", required = false) String query) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+		Map<String, Object> result = knowledgeSyncService.listSyncDocuments(kbId, current, size, query);
+		return Result.success(context.getRequestId(), result);
+	}
+
+	/**
+	 * Hard reset: abort MCF job, delete all indices, reset to pending.
+	 */
+	@PostMapping("/sync/{syncId}/hard-reset")
+	public Result<Map<String, Object>> hardReset(@PathVariable("syncId") String syncId) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+		Map<String, Object> result = knowledgeSyncService.hardReset(syncId);
+		return Result.success(context.getRequestId(), result);
+	}
+
+	/**
+	 * Stop a running sync: abort MCF job, mark as failed.
+	 */
+	@PostMapping("/sync/{syncId}/stop")
+	public Result<Map<String, Object>> stopSync(@PathVariable("syncId") String syncId) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+		Map<String, Object> result = knowledgeSyncService.stopSync(syncId);
+		return Result.success(context.getRequestId(), result);
+	}
+
+	/**
+	 * Browse documents in the document index for a sync job.
+	 */
+	@GetMapping("/sync/{syncId}/browse")
+	public Result<Map<String, Object>> browseDocumentIndex(
+			@PathVariable("syncId") String syncId,
+			@RequestParam(value = "current", defaultValue = "1") int current,
+			@RequestParam(value = "size", defaultValue = "10") int size,
+			@RequestParam(value = "query", required = false) String query) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+		Map<String, Object> result = knowledgeSyncService.browseDocumentIndex(syncId, current, size, query);
+		return Result.success(context.getRequestId(), result);
+	}
+
+	/**
+	 * Get a single document's full detail from the document index.
+	 */
+	@GetMapping("/sync/{syncId}/document")
+	public Result<Map<String, Object>> getDocumentDetail(
+			@PathVariable("syncId") String syncId,
+			@RequestParam("docId") String docId) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+		Map<String, Object> result = knowledgeSyncService.getDocumentDetail(syncId, docId);
+		return Result.success(context.getRequestId(), result);
+	}
+
+	/**
+	 * Download the original document from the CMIS source system.
+	 * Proxies through the backend using source credentials.
+	 */
+	@GetMapping("/sync/{syncId}/document/download")
+	public void downloadSourceDocument(
+			@PathVariable("syncId") String syncId,
+			@RequestParam("docId") String docId,
+			HttpServletResponse response) {
+		Map<String, Object> download = knowledgeSyncService.downloadSourceDocument(syncId, docId);
+		byte[] content = (byte[]) download.get("content");
+		String contentType = (String) download.getOrDefault("contentType", "application/octet-stream");
+		String fileName = (String) download.getOrDefault("fileName", "document");
+
+		response.setContentType(contentType);
+		response.setContentLengthLong(content.length);
+
+		// Encode filename for Content-Disposition (RFC 5987)
+		String encodedFileName;
+		try {
+			encodedFileName = java.net.URLEncoder.encode(fileName, java.nio.charset.StandardCharsets.UTF_8)
+					.replace("+", "%20");
+		} catch (Exception e) {
+			encodedFileName = "document";
+		}
+		response.setHeader("Content-Disposition",
+				"attachment; filename=\"" + fileName + "\"; filename*=UTF-8''" + encodedFileName);
+
+		try (var out = response.getOutputStream()) {
+			out.write(content);
+			out.flush();
+		} catch (Exception e) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("download", "Failed to write document: " + e.getMessage()));
+		}
+	}
+
+	/**
+	 * Update document metadata fields in the document index.
+	 */
+	@PutMapping("/sync/{syncId}/document/metadata")
+	public Result<Map<String, Object>> updateDocumentMetadata(
+			@PathVariable("syncId") String syncId,
+			@RequestParam("docId") String docId,
+			@RequestBody Map<String, Object> metadata) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+		Map<String, Object> result = knowledgeSyncService.updateDocumentMetadata(syncId, docId, metadata);
+		return Result.success(context.getRequestId(), result);
+	}
+
+	/**
+	 * Get RAG chunks for a specific document from the RAG index.
+	 */
+	@GetMapping("/sync/{syncId}/document/chunks")
+	public Result<Map<String, Object>> getDocumentChunks(
+			@PathVariable("syncId") String syncId,
+			@RequestParam("docId") String docId,
+			@RequestParam(value = "current", defaultValue = "1") int current,
+			@RequestParam(value = "size", defaultValue = "20") int size) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+		Map<String, Object> result = knowledgeSyncService.getDocumentChunks(syncId, docId, current, size);
+		return Result.success(context.getRequestId(), result);
+	}
+
+	/**
+	 * Update a single RAG chunk's content.
+	 */
+	@PutMapping("/sync/{syncId}/chunk")
+	public Result<Map<String, Object>> updateChunkContent(
+			@PathVariable("syncId") String syncId,
+			@RequestParam("chunkId") String chunkId,
+			@RequestBody Map<String, String> body) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+		String content = body.getOrDefault("content", "");
+		Map<String, Object> result = knowledgeSyncService.updateChunkContent(syncId, chunkId, content);
+		return Result.success(context.getRequestId(), result);
 	}
 
 }
