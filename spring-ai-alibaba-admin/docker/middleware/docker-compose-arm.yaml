@@ -271,8 +271,8 @@ services:
       - SPRING_ELASTICSEARCH_URIS=http://opensearch:9200
       - NACOS_SERVER_ADDR=nacos:8848
       - ROCKETMQ_ENDPOINTS=rmq-proxy:18081
-      # Ollama LLM configuration
-      - OLLAMA_BASE_URL=http://ollama:11434
+      # Ollama model names (the endpoint URL is configured via Settings UI
+      # or the seed file model-config-ollama.yml, NOT via env vars)
       - OLLAMA_CHAT_MODEL=${OLLAMA_CHAT_MODEL:-qwen2.5:7b}
       - OLLAMA_EMBEDDING_MODEL=${OLLAMA_EMBEDDING_MODEL:-nomic-embed-text}
       # model-config.yml is mounted at /app/model-config.yml
@@ -319,7 +319,6 @@ services:
       - saa_storage:/home/spring/saa/storage
     extra_hosts:
       - "host.docker.internal:host-gateway"
-      - "ollama:100.86.92.126"
     depends_on:
       postgres:
         condition: service_healthy

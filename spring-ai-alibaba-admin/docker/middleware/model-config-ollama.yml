@@ -4,11 +4,14 @@ models:
   # Ollama exposes an OpenAI-compatible API, so
   # provider=ollama falls back to the OpenAI factory
   # ─────────────────────────────────────────────
+  # Seed config — this file is only used until providers are configured
+  # via the Settings UI. Once configured in the UI, those DB-backed values
+  # take precedence. Change the URL below to your Ollama instance IP.
   - id: 1
     name: qwen2.5:7b
     provider: ollama
     modelName: qwen2.5:7b
-    baseUrl: http://ollama:11434
+    baseUrl: http://host.docker.internal:11434
     apiKey: ollama
     status: 1
     defaultParameters:
@@ -38,7 +41,7 @@ models:
     name: nomic-embed-text
     provider: ollama
     modelName: nomic-embed-text
-    baseUrl: http://ollama:11434
+    baseUrl: http://host.docker.internal:11434
     apiKey: ollama
     status: 1
     defaultParameters: {}
