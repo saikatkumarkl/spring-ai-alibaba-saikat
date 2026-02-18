@@ -323,6 +323,56 @@ public class ChatController {
 	}
 
 	/**
+	 * ACL-filtered document search endpoint.
+	 * Returns documents the logged-in user is authorized to see.
+	 */
+	@GetMapping("/documents")
+	public Mono<ResponseEntity<Map<String, Object>>> searchDocuments(
+			@RequestParam String appId,
+			@RequestParam(required = false) String query,
+			@RequestParam(defaultValue = "0") int from,
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String mimeType,
+			@RequestParam(required = false) String createdBy,
+			HttpSession session) {
+		String email = (String) session.getAttribute("email");
+		if (email == null) {
+			return Mono.just(ResponseEntity.status(401).build());
+		}
+		// Log audit action for document search
+		if (query != null && !query.isBlank()) {
+			adminApi.logAuditAction(email, "DOCUMENT_SEARCH", "app", appId, "query=" + query).subscribe();
+		}
+		return adminApi.searchDocuments(email, appId, query, from, size, mimeType, createdBy)
+			.map(data -> ResponseEntity.ok(data))
+			.onErrorResume(error -> {
+				log.error("Failed to search documents", error);
+				return Mono.just(ResponseEntity.internalServerError().build());
+			});
+	}
+
+	/**
+	 * ACL-filtered RAG chunk search endpoint.
+	 */
+	@GetMapping("/rag-search")
+	public Mono<ResponseEntity<Map<String, Object>>> searchRagChunks(
+			@RequestParam String appId,
+			@RequestParam String query,
+			@RequestParam(defaultValue = "10") int size,
+			HttpSession session) {
+		String email = (String) session.getAttribute("email");
+		if (email == null) {
+			return Mono.just(ResponseEntity.status(401).build());
+		}
+		return adminApi.searchRagChunks(email, appId, query, size)
+			.map(data -> ResponseEntity.ok(data))
+			.onErrorResume(error -> {
+				log.error("Failed to search RAG chunks", error);
+				return Mono.just(ResponseEntity.internalServerError().build());
+			});
+	}
+
+	/**
 	 * Extract document info from FILE_SEARCH_RESULT SSE events.
 	 * The output field is double-serialized JSON containing DocumentChunk data.
 	 * Returns compact JSON objects like: {"doc_id":"x","doc_name":"y","score":0.9,"chunk_id":"z"}

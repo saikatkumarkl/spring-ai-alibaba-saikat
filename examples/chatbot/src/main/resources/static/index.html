@@ -179,15 +179,15 @@
         
         <form id="loginForm">
             <div class="form-group">
-                <label for="email">Email Address</label>
+                <label for="email">Username</label>
                 <input 
-                    type="email" 
+                    type="text" 
                     id="email" 
                     name="email" 
                     required 
                     autofocus
-                    placeholder="john@example.com"
-                    autocomplete="email"
+                    placeholder="afc-it-user"
+                    autocomplete="username"
                 >
             </div>
             
@@ -212,8 +212,8 @@
         
         <div class="info">
             <strong>Getting Started</strong>
-            Sign in with any email address. New users are auto-provisioned on first login.<br>
-            <strong>Demo Account:</strong> john@example.com / password123
+            Sign in with your username. New users are auto-provisioned on first login.<br>
+            <strong>Demo Account:</strong> afc-it-user / afc12345
         </div>
     </div>
 
@@ -269,7 +269,7 @@
                     console.log('Login successful for:', data.data.email);
                     window.location.href = '/chat.html';
                 } else {
-                    showError(data.message || 'Invalid email or password');
+                    showError(data.message || 'Invalid username or password');
                     setLoading(false);
                 }
             } catch (error) {
@@ -281,8 +281,8 @@
 
         // Auto-fill demo credentials on page load (for development)
         if (window.location.hostname === 'localhost') {
-            emailInput.value = 'john@example.com';
-            passwordInput.value = 'password123';
+            emailInput.value = 'afc-it-user';
+            passwordInput.value = 'afc12345';
         }
     </script>
 </body>

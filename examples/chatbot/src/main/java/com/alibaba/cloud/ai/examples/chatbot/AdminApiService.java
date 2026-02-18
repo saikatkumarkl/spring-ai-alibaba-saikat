@@ -304,4 +304,58 @@ public class AdminApiService {
 			.doOnError(error -> log.error("Failed to get audit logs", error));
 	}
 
+	/**
+	 * Search documents with ACL filtering.
+	 */
+	@SuppressWarnings("unchecked")
+	public Mono<Map<String, Object>> searchDocuments(String email, String appId, String query,
+			int from, int size, String mimeType, String createdBy) {
+		return webClient.get()
+			.uri(uriBuilder -> {
+				var builder = uriBuilder.path("/console/v1/chatbot/documents")
+					.queryParam("email", email)
+					.queryParam("appId", appId)
+					.queryParam("from", from)
+					.queryParam("size", size);
+				if (query != null && !query.isBlank()) builder.queryParam("query", query);
+				if (mimeType != null && !mimeType.isBlank()) builder.queryParam("mimeType", mimeType);
+				if (createdBy != null && !createdBy.isBlank()) builder.queryParam("createdBy", createdBy);
+				return builder.build();
+			})
+			.retrieve()
+			.bodyToMono(Map.class)
+			.map(response -> {
+				Integer code = (Integer) response.get("code");
+				if (code != null && code == 200 && response.get("data") != null) {
+					return (Map<String, Object>) response.get("data");
+				}
+				return Map.<String, Object>of("documents", List.of(), "total", 0, "facets", Map.of());
+			})
+			.doOnError(error -> log.error("Failed to search documents", error));
+	}
+
+	/**
+	 * Search RAG chunks with ACL filtering.
+	 */
+	@SuppressWarnings("unchecked")
+	public Mono<Map<String, Object>> searchRagChunks(String email, String appId, String query, int size) {
+		return webClient.get()
+			.uri(uriBuilder -> uriBuilder.path("/console/v1/chatbot/rag-search")
+				.queryParam("email", email)
+				.queryParam("appId", appId)
+				.queryParam("query", query)
+				.queryParam("size", size)
+				.build())
+			.retrieve()
+			.bodyToMono(Map.class)
+			.map(response -> {
+				Integer code = (Integer) response.get("code");
+				if (code != null && code == 200 && response.get("data") != null) {
+					return (Map<String, Object>) response.get("data");
+				}
+				return Map.<String, Object>of("chunks", List.of(), "total", 0);
+			})
+			.doOnError(error -> log.error("Failed to search RAG chunks", error));
+	}
+
 }
