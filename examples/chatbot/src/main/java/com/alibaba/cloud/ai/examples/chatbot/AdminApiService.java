@@ -42,6 +42,8 @@ public class AdminApiService {
 		this.webClient = WebClient.builder()
 			.baseUrl(baseUrl)
 			.defaultHeader("Content-Type", "application/json")
+			// Increase in-memory buffer limit for document downloads (default 256KB is too small)
+			.codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(50 * 1024 * 1024))
 			.build();
 	}
 
