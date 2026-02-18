@@ -31,6 +31,17 @@ VALUES
     ('test@example.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye7WJ8RUe0LhqDJCKN9OXS9lMi0D8QyiO', 'Test User')
 ON CONFLICT (email) DO NOTHING;
 
+-- AFC test users (password: afc12345)
+-- Email matches the Alfresco username used in ACL tokens (no domain)
+-- bcrypt hash of "afc12345": $2a$10$u1HwQW5b2Rqm9bjXXI5o0.Aqwir/yy97xbJqrz7fDAiqVEvFq5vSO
+INSERT INTO simple_users (email, password_hash, full_name)
+VALUES
+    ('afc-it-user', '$2a$10$u1HwQW5b2Rqm9bjXXI5o0.Aqwir/yy97xbJqrz7fDAiqVEvFq5vSO', 'AFC IT User'),
+    ('afc-media-user', '$2a$10$u1HwQW5b2Rqm9bjXXI5o0.Aqwir/yy97xbJqrz7fDAiqVEvFq5vSO', 'AFC Media User'),
+    ('afc-proc-user', '$2a$10$u1HwQW5b2Rqm9bjXXI5o0.Aqwir/yy97xbJqrz7fDAiqVEvFq5vSO', 'AFC Procurement User'),
+    ('saikat.kumar', '$2a$10$u1HwQW5b2Rqm9bjXXI5o0.Aqwir/yy97xbJqrz7fDAiqVEvFq5vSO', 'Saikat Kumar')
+ON CONFLICT (email) DO NOTHING;
+
 -- Grant access to demo app for demo users
 -- Replace with actual app_id from your system
 INSERT INTO app_user_access (app_id, user_email, created_by)

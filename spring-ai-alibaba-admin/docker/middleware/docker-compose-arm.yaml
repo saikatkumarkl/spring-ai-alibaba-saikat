@@ -283,11 +283,43 @@ services:
       - MANIFOLDCF_API_PASSWORD=${MCF_API_PASSWORD:-admin}
       # OpenSearch URL as seen by ManifoldCF (Docker internal network)
       - MANIFOLDCF_OPENSEARCH_URL=http://opensearch:9200/
+      # ── RAG Vector Storage ──────────────────────────────────────────────
+      # Controls how knn_vector embeddings are stored in OpenSearch.
+      #
+      # Pick a profile based on your hardware:
+      #
+      # ┌─────────────────┬──────────────┬────────────────────┬───────────────────────────────────┐
+      # │ Profile         │ VECTOR_MODE  │ COMPRESSION_LEVEL  │ When to use                       │
+      # ├─────────────────┼──────────────┼────────────────────┼───────────────────────────────────┤
+      # │ Low-RAM / Edge  │ on_disk      │ 32x                │ ≤8 GB RAM, no GPU, ARM SBC,       │
+      # │                 │              │                    │ large corpus (>100k docs)          │
+      # │                 │              │                    │ ~32x RAM savings, auto-rescore     │
+      # ├─────────────────┼──────────────┼────────────────────┼───────────────────────────────────┤
+      # │ Balanced        │ on_disk      │ 16x                │ 16–32 GB RAM, no GPU              │
+      # │                 │              │                    │ Better recall than 32x, still      │
+      # │                 │              │                    │ significant RAM savings             │
+      # ├─────────────────┼──────────────┼────────────────────┼───────────────────────────────────┤
+      # │ High-RAM        │ in_memory    │ (leave empty)      │ ≥32 GB RAM or GPU-accelerated     │
+      # │                 │              │                    │ Full-precision vectors in RAM       │
+      # │                 │              │                    │ Fastest search, highest quality     │
+      # ├─────────────────┼──────────────┼────────────────────┼───────────────────────────────────┤
+      # │ Default         │ (leave empty)│ (leave empty)      │ Let OpenSearch pick engine defaults│
+      # └─────────────────┴──────────────┴────────────────────┴───────────────────────────────────┘
+      #
+      # Examples:
+      #   Low-RAM:    RAG_VECTOR_MODE=on_disk   RAG_COMPRESSION_LEVEL=32x
+      #   Balanced:   RAG_VECTOR_MODE=on_disk   RAG_COMPRESSION_LEVEL=16x
+      #   High-RAM:   RAG_VECTOR_MODE=in_memory RAG_COMPRESSION_LEVEL=
+      #
+      # NOTE: Changing these requires re-indexing (delete the _rag index, then re-sync).
+      - RAG_VECTOR_MODE=${RAG_VECTOR_MODE:-on_disk}
+      - RAG_COMPRESSION_LEVEL=${RAG_COMPRESSION_LEVEL:-32x}
     volumes:
       - ./model-config-ollama.yml:/app/model-config.yml:ro
       - saa_storage:/home/spring/saa/storage
     extra_hosts:
       - "host.docker.internal:host-gateway"
+      - "ollama:100.86.92.126"
     depends_on:
       postgres:
         condition: service_healthy
@@ -328,7 +360,7 @@ services:
       - ./manifoldcf/config/start-options.env.unix:/usr/share/manifoldcf/example/start-options.env.unix:ro
       - ./manifoldcf/logs:/usr/share/manifoldcf/example/logs
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:8345/mcf-api-service/json/outputconnectors"]
+      test: ["CMD", "curl", "-sf", "-u", "admin:admin", "http://localhost:8345/mcf-api-service/json/outputconnectors"]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -370,7 +402,7 @@ services:
       # Skip ACL wait — set "true" to skip waiting for authorities index
       - SKIP_ACL_WAIT=false
       # Max file size in MB — files larger than this are skipped (0 = no limit)
-      - MAX_FILE_SIZE_MB=10
+      - MAX_FILE_SIZE_MB=0
       # Cron schedule for incremental crawl (default: every 6 hours)
       - CRAWL_CRON_MINUTE=0
       - CRAWL_CRON_HOUR=*/6

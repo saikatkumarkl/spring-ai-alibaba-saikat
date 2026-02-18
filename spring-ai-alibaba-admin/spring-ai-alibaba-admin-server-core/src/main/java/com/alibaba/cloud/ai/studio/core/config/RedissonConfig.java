@@ -51,8 +51,12 @@ public class RedissonConfig {
 	public RedissonClient redissonClient() {
 		Config config = new Config();
 
+		// Register Spring AI message deserializers before creating codec
+		var objectMapper = JsonUtils.getObjectMapper();
+		objectMapper.registerModule(new SpringAiMessageModule());
+
 		// use custom codec
-		var codec = new JsonJacksonCodec(JsonUtils.getObjectMapper());
+		var codec = new JsonJacksonCodec(objectMapper);
 		config.setCodec(codec);
 
 		config.useSingleServer().setAddress("redis://" + host + ":" + port).setDatabase(database);
