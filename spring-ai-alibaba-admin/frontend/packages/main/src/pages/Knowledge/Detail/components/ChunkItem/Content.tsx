@@ -43,8 +43,7 @@ const Content: React.FC<IProps> = ({
     <div
       ref={contentRef}
       className={classNames(styles['chunk-content'], className)}
-      dangerouslySetInnerHTML={{ __html: content?.replace(/\n/g, '<br/>') }}
-    ></div>
+    >{content}</div>
   );
 };
 

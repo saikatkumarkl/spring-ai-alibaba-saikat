@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Drawer, Spin, Form, Input } from 'antd';
 import { Button, message } from '@spark-ai/design';
 import { getDocumentDetail, updateDocumentMetadata } from '@/services/knowledge';
@@ -14,16 +14,14 @@ interface MetadataEditDrawerProps {
   onSaved?: () => void;
 }
 
-// Editable metadata fields (non-system, non-ACL)
-const EDITABLE_FIELDS = [
-  { key: 'file_title', label: 'Title' },
-  { key: 'cm:title', label: 'CM Title' },
-  { key: 'file_name', label: 'File Name' },
-  { key: 'file_path', label: 'File Path' },
-  { key: 'file_type', label: 'MIME Type' },
-  { key: 'cmis:name', label: 'CMIS Name' },
-  { key: 'cmis:createdBy', label: 'Created By' },
-];
+// Fields that should NOT be editable (system/internal/ACL fields)
+const NON_EDITABLE_KEYS = new Set([
+  'content', // document body
+  'allow_token_document', 'deny_token_document',
+  'allow_token_parent', 'deny_token_parent',
+  'allow_token_share', 'deny_token_share',
+  'authorities',
+]);
 
 const MetadataEditDrawer: React.FC<MetadataEditDrawerProps> = ({
   visible,
@@ -38,6 +36,14 @@ const MetadataEditDrawer: React.FC<MetadataEditDrawerProps> = ({
   const [form] = Form.useForm();
   const [originalDoc, setOriginalDoc] = useState<Record<string, any>>({});
 
+  // Derive editable fields dynamically from the document data
+  const editableFields = useMemo(() => {
+    return Object.keys(originalDoc)
+      .filter((k) => !NON_EDITABLE_KEYS.has(k))
+      .sort()
+      .map((k) => ({ key: k, label: k }));
+  }, [originalDoc]);
+
   useEffect(() => {
     if (visible && syncId && docId) {
       setLoading(true);
@@ -45,9 +51,11 @@ const MetadataEditDrawer: React.FC<MetadataEditDrawerProps> = ({
         .then((data: any) => {
           setOriginalDoc(data || {});
           const formValues: Record<string, any> = {};
-          EDITABLE_FIELDS.forEach((f) => {
-            const val = data?.[f.key];
-            formValues[f.key] = val !== null && val !== undefined ? String(val) : '';
+          Object.keys(data || {}).forEach((k) => {
+            if (!NON_EDITABLE_KEYS.has(k)) {
+              const val = data[k];
+              formValues[k] = val !== null && val !== undefined ? String(val) : '';
+            }
           });
           form.setFieldsValue(formValues);
         })
@@ -64,7 +72,7 @@ const MetadataEditDrawer: React.FC<MetadataEditDrawerProps> = ({
     const values = form.getFieldsValue();
     // Only send changed fields
     const changed: Record<string, any> = {};
-    EDITABLE_FIELDS.forEach((f) => {
+    editableFields.forEach((f) => {
       const newVal = values[f.key] ?? '';
       const oldVal = originalDoc[f.key] !== null && originalDoc[f.key] !== undefined
         ? String(originalDoc[f.key]) : '';
@@ -110,9 +118,9 @@ const MetadataEditDrawer: React.FC<MetadataEditDrawerProps> = ({
     >
       <Spin spinning={loading}>
         <Form form={form} layout="vertical">
-          {EDITABLE_FIELDS.map((field) => (
+          {editableFields.map((field) => (
             <Form.Item key={field.key} name={field.key} label={field.label}>
-              <Input placeholder={`Enter ${field.label.toLowerCase()}`} />
+              <Input placeholder={`Enter ${field.label}`} />
             </Form.Item>
           ))}
         </Form>

@@ -8,7 +8,7 @@ import {
   updateChunksContent,
   updateStatusChunks,
 } from '@/services/knowledge';
-import { AlertDialog, Empty, Pagination } from '@spark-ai/design';
+import { AlertDialog, Empty, message, Pagination } from '@spark-ai/design';
 import { useSetState } from 'ahooks';
 import { Flex } from 'antd';
 import classNames from 'classnames';
@@ -51,7 +51,7 @@ const SliceEditing: React.FC<ChunkListProps> = ({ className }) => {
         total: res.total,
         loading: false,
       });
-    });
+    }).catch((e: any) => { message.error(e?.message || 'Operation failed'); });
   };
 
   useEffect(() => {
@@ -81,10 +81,8 @@ const SliceEditing: React.FC<ChunkListProps> = ({ className }) => {
       }),
       onOk: () => {
         deleteChunks({ doc_id, chunk_id }).then(() => {
-          setTimeout(() => {
-            fetchChunksList();
-          }, 1000);
-        });
+          fetchChunksList();
+        }).catch((e: any) => { message.error(e?.message || 'Operation failed'); });
       },
     });
   };
@@ -109,10 +107,8 @@ const SliceEditing: React.FC<ChunkListProps> = ({ className }) => {
     };
 
     updateStatusChunks(params).then(() => {
-      setTimeout(() => {
-        fetchChunksList();
-      }, 1000);
-    });
+      fetchChunksList();
+    }).catch((e: any) => { message.error(e?.message || 'Operation failed'); });
   };
   return (
     <InnerLayout

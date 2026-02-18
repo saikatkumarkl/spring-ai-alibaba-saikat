@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Drawer, Spin, Descriptions, Tabs } from 'antd';
 import { Button, message } from '@spark-ai/design';
 import { getDocumentDetail } from '@/services/knowledge';
@@ -13,19 +13,24 @@ interface DocumentPreviewDrawerProps {
   onClose: () => void;
 }
 
-const METADATA_FIELDS = [
-  { key: 'cmis:name', label: 'Name' },
-  { key: 'cm:title', label: 'Title' },
-  { key: 'file_path', label: 'Path' },
-  { key: 'file_type', label: 'MIME Type' },
-  { key: 'cmis:contentStreamMimeType', label: 'Content Type' },
-  { key: 'file_size', label: 'Size' },
-  { key: 'cmis:contentStreamLength', label: 'Stream Length' },
-  { key: 'cmis:objectId', label: 'Object ID' },
-  { key: 'cmis:createdBy', label: 'Created By' },
-  { key: 'created_at', label: 'Created At' },
-  { key: 'updated_at', label: 'Updated At' },
+// Fields to always show at the top of metadata (in this order)
+const PRIORITY_METADATA_KEYS = [
+  'cmis:name', 'cm:title', 'file_title', 'file_name', 'file_path',
+  'file_type', 'file_size', 'cmis:contentStreamMimeType', 'cmis:contentStreamLength',
+  'cmis:contentStreamFileName', 'cmis:objectId', 'cmis:objectTypeId',
+  'cmis:baseTypeId', 'cmis:createdBy', 'cmis:lastModifiedBy',
+  'cmis:creationDate', 'cmis:lastModificationDate',
+  'created_at', 'updated_at',
 ];
+
+// Fields to exclude from metadata tab (shown elsewhere or internal)
+const EXCLUDED_KEYS = new Set([
+  'content', // shown in Content tab
+  'allow_token_document', 'deny_token_document', // shown in ACL tab
+  'allow_token_parent', 'deny_token_parent',
+  'allow_token_share', 'deny_token_share',
+  'authorities', // shown in ACL tab
+]);
 
 const ACL_FIELDS = [
   { key: 'allow_token_document', label: 'Allow (Document)' },
@@ -73,6 +78,30 @@ const DocumentPreviewDrawer: React.FC<DocumentPreviewDrawerProps> = ({
 
   const content = doc.content || '';
 
+  // Build metadata entries dynamically from all document fields
+  const metadataEntries = useMemo(() => {
+    const entries: { key: string; label: string; value: any }[] = [];
+    const addedKeys = new Set<string>();
+
+    // First, add priority keys in order (if they exist in the doc)
+    for (const key of PRIORITY_METADATA_KEYS) {
+      if (key in doc && !EXCLUDED_KEYS.has(key)) {
+        entries.push({ key, label: key, value: doc[key] });
+        addedKeys.add(key);
+      }
+    }
+
+    // Then add all remaining keys alphabetically
+    const remainingKeys = Object.keys(doc)
+      .filter((k) => !addedKeys.has(k) && !EXCLUDED_KEYS.has(k))
+      .sort();
+    for (const key of remainingKeys) {
+      entries.push({ key, label: key, value: doc[key] });
+    }
+
+    return entries;
+  }, [doc]);
+
   const tabItems = [
     {
       key: 'content',
@@ -92,9 +121,9 @@ const DocumentPreviewDrawer: React.FC<DocumentPreviewDrawerProps> = ({
       label: $i18n.get({ id: 'preview.tab.metadata', dm: 'Metadata' }),
       children: (
         <Descriptions column={1} size="small" bordered>
-          {METADATA_FIELDS.map((field) => (
-            <Descriptions.Item key={field.key} label={field.label}>
-              {formatValue(doc[field.key])}
+          {metadataEntries.map((entry) => (
+            <Descriptions.Item key={entry.key} label={entry.label}>
+              {formatValue(entry.value)}
             </Descriptions.Item>
           ))}
         </Descriptions>

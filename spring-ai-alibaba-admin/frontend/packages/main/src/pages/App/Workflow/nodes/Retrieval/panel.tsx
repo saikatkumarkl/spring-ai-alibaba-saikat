@@ -263,7 +263,7 @@ export default memo(function RetrievalPanel({
                   }}
                   step={1}
                   className="flex-1 ml-[20px] mr-[12px]"
-                  min={1}
+                  min={5}
                   precision={0}
                   max={20}
                   inputNumberWrapperStyle={{ width: 54 }}
@@ -294,7 +294,7 @@ export default memo(function RetrievalPanel({
                   }}
                   step={0.01}
                   className="flex-1 ml-[20px] mr-[12px]"
-                  min={0.01}
+                  min={0.1}
                   precision={2}
                   max={1}
                   inputNumberWrapperStyle={{ width: 54 }}

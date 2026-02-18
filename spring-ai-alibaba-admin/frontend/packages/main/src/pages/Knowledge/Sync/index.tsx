@@ -4,7 +4,6 @@ import {
   listKnowledgeSyncs,
   getKnowledgeSyncStatus,
   startKnowledgeSync,
-  deleteKnowledgeSync,
   updateKnowledgeSyncCron,
   getKnowledgeDetail,
   syncKnowledgeDocuments,
@@ -33,17 +32,8 @@ import {
 } from 'antd';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { CRON_PRESETS } from '../utils/constant';
 import styles from './index.module.less';
-
-const CRON_PRESETS = [
-  { label: 'Every Hour', value: '0 0 * * * ?', description: 'Runs at the start of every hour' },
-  { label: 'Every 6 Hours', value: '0 0 */6 * * ?', description: 'Runs every 6 hours' },
-  { label: 'Daily at Midnight', value: '0 0 0 * * ?', description: 'Runs once a day at 00:00' },
-  { label: 'Daily at 6 AM', value: '0 0 6 * * ?', description: 'Runs once a day at 06:00' },
-  { label: 'Weekly (Sunday)', value: '0 0 0 ? * SUN', description: 'Runs every Sunday at midnight' },
-  { label: 'Monthly (1st)', value: '0 0 0 1 * ?', description: 'Runs on the 1st of every month' },
-  { label: 'Custom', value: 'custom', description: 'Enter a custom cron expression' },
-];
 
 interface SyncData {
   sync_id: string;
@@ -249,24 +239,6 @@ export default function SyncStatus() {
             message.error(detail.length > 120 ? detail.substring(0, 120) + '...' : detail);
             fetchSyncData();
           });
-      },
-    });
-  };
-
-  const handleDeleteSync = () => {
-    if (!syncData?.sync_id) return;
-    AntModal.confirm({
-      title: 'Delete Sync Configuration',
-      content: 'This will remove the sync job and its history. This action cannot be undone.',
-      okText: 'Delete',
-      okButtonProps: { danger: true },
-      onOk: () => {
-        deleteKnowledgeSync(syncData.sync_id)
-          .then(() => {
-            message.success('Sync configuration deleted');
-            navigate(`/knowledge/edit/${kb_id}`);
-          })
-          .catch(() => message.error('Failed to delete sync'));
       },
     });
   };
@@ -799,12 +771,6 @@ export default function SyncStatus() {
             disabled={syncData.status === 'indexing' || syncData.status === 'authority_syncing' || syncData.status === 'rag_processing'}
           >
             Hard Reset
-          </Button>
-          <Button
-            danger
-            onClick={handleDeleteSync}
-          >
-            Delete Sync
           </Button>
         </div>
       </div>

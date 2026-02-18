@@ -55,9 +55,8 @@ export default function ChunkViewDrawer(props: ChunkViewDrawerProps) {
       }
     >
       <div
-        dangerouslySetInnerHTML={{ __html: content?.replace(/\n/g, '<br/>') }}
         className={styles['content']}
-      />
+      >{content}</div>
     </Drawer>
   );
 }

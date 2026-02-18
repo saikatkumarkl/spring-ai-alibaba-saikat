@@ -1,5 +1,6 @@
 import defaultSettings from '@/defaultSettings';
 import $i18n from '@/i18n';
+import SliderInput from '@/components/SliderInput';
 import { KnowledgeSelectorDrawer } from '@/pages/App/components/KnowledgeSelector';
 import { IKnowledgeListItem } from '@/types/knowledge';
 import { Button, IconFont, Switch, Tag } from '@spark-ai/design';
@@ -107,7 +108,12 @@ export default function KnowledgeBaseSelectorComp() {
                 );
               }
               onAppConfigChange({
-                file_search: { ...file_search, enable_search: val },
+                file_search: {
+                  ...file_search,
+                  enable_search: val,
+                  top_k: file_search?.top_k ?? 5,
+                  similarity_threshold: file_search?.similarity_threshold ?? 0.2,
+                },
               });
             }}
           ></Switch>
@@ -165,6 +171,59 @@ export default function KnowledgeBaseSelectorComp() {
                 ),
             )}
           </Flex>
+          {file_search?.enable_search && (
+            <Flex vertical gap={12} style={{ marginTop: 12 }}>
+              <Flex vertical gap={4}>
+                <span
+                  className="text-[12px] font-medium"
+                  style={{ color: 'var(--ag-ant-color-text-secondary)' }}
+                >
+                  Top K
+                </span>
+                <SliderInput
+                  min={5}
+                  max={10}
+                  step={1}
+                  style={{ width: '100%' }}
+                  value={file_search?.top_k ?? 5}
+                  onChange={(val) => {
+                    onAppConfigChange({
+                      file_search: {
+                        ...file_search,
+                        top_k: val,
+                      },
+                    });
+                  }}
+                />
+              </Flex>
+              <Flex vertical gap={4}>
+                <span
+                  className="text-[12px] font-medium"
+                  style={{ color: 'var(--ag-ant-color-text-secondary)' }}
+                >
+                  {$i18n.get({
+                    id: 'main.pages.Knowledge.components.StepOne.index.similarityThreshold',
+                    dm: 'Similarity Threshold',
+                  })}
+                </span>
+                <SliderInput
+                  min={0.1}
+                  max={0.99}
+                  step={0.01}
+                  style={{ width: '100%' }}
+                  value={file_search?.similarity_threshold ?? 0.2}
+                  onChange={(val) => {
+                    onAppConfigChange({
+                      file_search: {
+                        ...file_search,
+                        similarity_threshold: val,
+                      },
+                    });
+                  }}
+                />
+              </Flex>
+            </Flex>
+          )}
         </>
       )}
       {state.selectVisible && (

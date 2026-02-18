@@ -3,7 +3,7 @@ import FileTag from '@/components/Tag/FileTag';
 import StatusTag from '@/components/Tag/StatusTag';
 import $i18n from '@/i18n';
 import { batchDeleteDocuments, batchUpdateDocumentEnabled } from '@/services/knowledge';
-import { downloadSourceDocument } from '@/services/knowledge';
+import { downloadSourceDocument, reragDocuments } from '@/services/knowledge';
 import { getPreviewUrl, downloadFile } from '@/request/download';
 import type { FileType } from '@/types/base';
 import { AlertDialog, Button, Dropdown, message } from '@spark-ai/design';
@@ -126,6 +126,42 @@ const FileList: React.FC<FileListProps> = ({
     onSelectionChange?.(newSelectedRowKeys, filteredRows);
   };
 
+  const handleReragDocument = (docId: string, docName: string) => {
+    if (!syncId) return;
+    AlertDialog.warning({
+      title: $i18n.get({
+        id: 'main.pages.Knowledge.Detail.components.FileList.index.confirmRerag',
+        dm: 'Re-RAG Document',
+      }),
+      children: $i18n.get({
+        id: 'main.pages.Knowledge.Detail.components.FileList.index.reragDescription',
+        dm: `Re-chunk and re-embed "${docName}"? This will replace its existing RAG chunks.`,
+      }),
+      okText: $i18n.get({
+        id: 'main.pages.Knowledge.Detail.components.FileList.index.confirm',
+        dm: 'Confirm',
+      }),
+      cancelText: $i18n.get({
+        id: 'main.pages.Knowledge.Detail.components.FileList.index.cancel',
+        dm: 'Cancel',
+      }),
+      onOk: () => {
+        reragDocuments(syncId!, [docId])
+          .then(() => {
+            message.success(
+              $i18n.get({
+                id: 'main.pages.Knowledge.Detail.components.FileList.index.reragStarted',
+                dm: 'Re-RAG started for the document',
+              }),
+            );
+          })
+          .catch((e: any) => {
+            message.error(e?.message || 'Re-RAG failed');
+          });
+      },
+    });
+  };
+
   const columns: ColumnsType<IFileItem> = [
     {
       title: $i18n.get({
@@ -225,6 +261,28 @@ const FileList: React.FC<FileListProps> = ({
                         dm: 'Edit Chunks',
                       }),
                       onClick: () => setChunksDrawer({ visible: true, docId: record.doc_id, docName: record.name }),
+                    },
+                    {
+                      key: 'sliceConfiguration',
+                      label: $i18n.get({
+                        id: 'main.pages.Knowledge.Detail.components.FileList.index.sliceConfiguration',
+                        dm: 'Slice Configuration',
+                      }),
+                      onClick: () =>
+                        navigate(
+                          `/knowledge/sliceConfiguration/${record.kb_id}/${record.doc_id}`,
+                        ),
+                    },
+                    {
+                      type: 'divider' as const,
+                    },
+                    {
+                      key: 'rerag',
+                      label: $i18n.get({
+                        id: 'main.pages.Knowledge.Detail.components.FileList.index.rerag',
+                        dm: 'Re-RAG',
+                      }),
+                      onClick: () => handleReragDocument(record.doc_id, record.name),
                     },
                   ],
                 }}
@@ -382,7 +440,7 @@ const FileList: React.FC<FileListProps> = ({
           );
           refreshList();
           setSelectedRows([]);
-        });
+        }).catch((e: any) => { message.error(e?.message || 'Operation failed'); });
       },
     });
   };
@@ -432,7 +490,7 @@ const FileList: React.FC<FileListProps> = ({
           );
           refreshList();
           setSelectedRows([]);
-        });
+        }).catch((e: any) => { message.error(e?.message || 'Operation failed'); });
       },
     });
   };
@@ -482,7 +540,7 @@ const FileList: React.FC<FileListProps> = ({
           );
           refreshList();
           setSelectedRows([]);
-        });
+        }).catch((e: any) => { message.error(e?.message || 'Operation failed'); });
       },
     });
   };

@@ -30,13 +30,13 @@ export interface IndexConfig {
 
 // Interface for search configuration
 export interface ISearchConfig {
-  top_k: number; // Number of chunks to retrieve
-  similarity_threshold: number; // Similarity threshold, default 0.3
+  top_k?: number; // Number of chunks to retrieve (backend defaults to 3)
+  similarity_threshold?: number; // Similarity threshold (backend defaults to 0.2)
   search_type?: 'hybrid' | 'semantic' | 'full_text'; // Search type, default hybrid
   hybrid_weight?: number; // Hybrid search weight, default 0.7
   enable_rerank?: boolean; // Whether to enable rerank
-  rerank_provider: string; // Rerank model provider
-  rerank_model: string; // Rerank model
+  rerank_provider?: string; // Rerank model provider
+  rerank_model?: string; // Rerank model
 }
 
 // Parameters for creating knowledge base

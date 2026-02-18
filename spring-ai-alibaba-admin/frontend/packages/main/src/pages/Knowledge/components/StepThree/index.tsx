@@ -1,7 +1,7 @@
 import SliderInput from '@/components/SliderInput';
 import $i18n from '@/i18n';
 import { Form, Input } from '@spark-ai/design';
-import { Flex } from 'antd';
+import { Alert, Checkbox, Flex } from 'antd';
 import classNames from 'classnames';
 import React from 'react';
 import RadioItem from '../RadioItem';
@@ -162,8 +162,50 @@ export default function StepThree({
                 });
               }}
             />
+            {formValue.chunk_overlap >= formValue.chunk_size && (
+              <Alert
+                type="warning"
+                showIcon
+                style={{ marginTop: 8 }}
+                message={$i18n.get({
+                  id: 'main.pages.Knowledge.components.StepThree.index.overlapExceedsSize',
+                  dm: 'Chunk overlap should be less than chunk size. Current overlap is equal to or exceeds the chunk size, which may produce unexpected results.',
+                })}
+              />
+            )}
           </Form.Item>
         )}
+        <Form.Item
+          label={$i18n.get({
+            id: 'main.pages.Knowledge.components.StepThree.index.fullTextSearch',
+            dm: 'Full-Text Search',
+          })}
+        >
+          <Checkbox
+            checked={formValue.full_text_search !== false}
+            onChange={(e) => {
+              changeFormValue({
+                full_text_search: e.target.checked,
+              });
+            }}
+          >
+            {$i18n.get({
+              id: 'main.pages.Knowledge.components.StepThree.index.enableFullTextSearch',
+              dm: 'Keep full document content in the index for full-text search',
+            })}
+          </Checkbox>
+          {formValue.full_text_search === false && (
+            <Alert
+              type="info"
+              showIcon
+              style={{ marginTop: 8 }}
+              message={$i18n.get({
+                id: 'main.pages.Knowledge.components.StepThree.index.fullTextSearchDisabledInfo',
+                dm: 'When disabled, the raw document content will be removed from the document index after RAG processing to save storage. Search will use RAG chunks only.',
+              })}
+            />
+          )}
+        </Form.Item>
       </Form>
     </div>
   );

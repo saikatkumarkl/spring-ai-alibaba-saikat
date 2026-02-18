@@ -1,6 +1,7 @@
 import InnerLayout from '@/components/InnerLayout';
 import { IChunkItem } from '@/pages/Knowledge/Detail/type';
 import { getKnowledgeDetail, getKnowledgeRetrieve } from '@/services/knowledge';
+import { message } from '@spark-ai/design';
 import { useState } from 'react';
 
 import $i18n from '@/i18n';
@@ -31,7 +32,7 @@ export default function () {
     getKnowledgeRetrieve(params).then((res) => {
       setList(res);
       setHasTest(true);
-    });
+    }).catch((e: any) => { message.error(e?.message || 'Operation failed'); });
   };
   useRequest(() => getKnowledgeDetail(kb_id as string), {
     onSuccess(res) {

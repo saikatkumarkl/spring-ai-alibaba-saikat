@@ -54,7 +54,7 @@ const KnowledgeDetail: React.FC = () => {
     index_status: '',
     format: '',
   });
-  const [knowledgeNmae, setKnowledgeNmae] = useState('');
+  const [knowledgeName, setKnowledgeName] = useState('');
   const [uploadModalVisible, setUploadModalVisible] = useState(false);
   const [isSourceBased, setIsSourceBased] = useState<boolean | null>(null);
   const [syncId, setSyncId] = useState<string | null>(null);
@@ -199,7 +199,7 @@ const KnowledgeDetail: React.FC = () => {
 
   useRequest(() => getKnowledgeDetail(kb_id as string), {
     onSuccess(res) {
-      setKnowledgeNmae(res.name);
+      setKnowledgeName(res.name);
     },
   });
 
@@ -218,7 +218,7 @@ const KnowledgeDetail: React.FC = () => {
     <InnerLayout
       breadcrumbLinks={[
         {
-          title: knowledgeNmae,
+          title: knowledgeName,
           path: '/knowledge',
         },
         {

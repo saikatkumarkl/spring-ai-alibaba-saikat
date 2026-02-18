@@ -19,7 +19,9 @@ interface BatchOperationProps {
 const BatchOperation: React.FC<BatchOperationProps> = ({
   selectedCount,
   onCancelSelect,
+  onBatchDisable,
   onBatchDelete,
+  onBatchEnable,
   onExitOperation,
 }) => {
   return (
@@ -42,6 +44,18 @@ const BatchOperation: React.FC<BatchOperationProps> = ({
         })}
       </span>
       <div className={styles['button-group']}>
+        <Button type="default" onClick={onBatchEnable}>
+          {$i18n.get({
+            id: 'main.pages.Knowledge.Detail.components.BatchOperation.index.batchEnable',
+            dm: 'Batch Enable',
+          })}
+        </Button>
+        <Button type="default" onClick={onBatchDisable}>
+          {$i18n.get({
+            id: 'main.pages.Knowledge.Detail.components.BatchOperation.index.batchDisable',
+            dm: 'Batch Disable',
+          })}
+        </Button>
         <Button type="default" onClick={onBatchDelete}>
           {$i18n.get({
             id: 'main.pages.Knowledge.Detail.components.BatchOperation.index.batchDelete',

@@ -458,13 +458,37 @@ export const updateChunkContent = (syncId: string, chunkId: string, content: str
 };
 
 /** Download the original document from the CMIS source system (triggers browser download) */
-export const downloadSourceDocument = (syncId: string, docId: string, fileName?: string) => {
-  const url = `${baseURL.get()}/console/v1/knowledge-bases/sync/${syncId}/document/download?docId=${encodeURIComponent(docId)}&access_token=${session.get()}`;
-  const a = document.createElement('a');
-  a.href = url;
-  if (fileName) a.download = fileName;
-  a.target = '_blank';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+export const downloadSourceDocument = async (syncId: string, docId: string, fileName?: string) => {
+  const url = `${baseURL.get()}/console/v1/knowledge-bases/sync/${syncId}/document/download?docId=${encodeURIComponent(docId)}`;
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${session.get()}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.statusText}`);
+    }
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    if (fileName) a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+  } catch (e) {
+    console.error('Download failed:', e);
+    throw e;
+  }
+};
+
+/** Re-RAG specific documents: delete old chunks and re-chunk/re-embed selected documents */
+export const reragDocuments = (syncId: string, docIds: string[]) => {
+  return request({
+    url: `/console/v1/knowledge-bases/sync/${syncId}/rerag-documents`,
+    method: 'POST',
+    data: docIds,
+  }).then((res) => res.data.data);
 };

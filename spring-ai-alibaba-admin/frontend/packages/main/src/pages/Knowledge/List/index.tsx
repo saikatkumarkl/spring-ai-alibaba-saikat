@@ -4,7 +4,7 @@ import Search from '@/components/Search';
 import $i18n from '@/i18n';
 import { deleteKnowledge, getKnowledgeList } from '@/services/knowledge';
 import { IGetKnowledgeListParams } from '@/types/knowledge';
-import { AlertDialog, Button, IconFont } from '@spark-ai/design';
+import { AlertDialog, Button, IconFont, message } from '@spark-ai/design';
 import { useMount, useSetState } from 'ahooks';
 import { Flex } from 'antd';
 import classNames from 'classnames';
@@ -73,19 +73,20 @@ export default function () {
     AlertDialog.warning({
       title: $i18n.get({
         id: 'main.pages.Knowledge.List.index.deleteData',
-        dm: 'Delete Data',
+        dm: 'Delete Knowledge Base',
       }),
       children: $i18n.get({
         id: 'main.pages.Knowledge.List.index.confirmDeleteData',
-        dm: 'Are you sure you want to delete this data?',
+        dm: 'This will permanently delete this knowledge base and all associated data including document indices, authority indices, RAG vector indices, and crawl jobs. This action cannot be undone.',
       }),
       danger: true,
       okText: $i18n.get({
         id: 'main.pages.Knowledge.List.index.confirmDelete',
-        dm: 'Confirm Delete',
+        dm: 'Delete Everything',
       }),
       onOk: () => {
         deleteKnowledge(id).then(() => {
+          message.success('Knowledge base deleted. Associated indices are being cleaned up in the background.');
           let current = state.current;
           if (state.list.length === 1 && current > 1) {
             current -= 1;
@@ -96,7 +97,7 @@ export default function () {
           fetchList({
             current,
           });
-        });
+        }).catch((e: any) => { message.error(e?.message || 'Operation failed'); });
       },
     });
   };

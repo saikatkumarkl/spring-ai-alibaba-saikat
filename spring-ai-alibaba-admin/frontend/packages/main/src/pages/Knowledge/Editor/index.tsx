@@ -2,6 +2,7 @@ import InnerLayout from '@/components/InnerLayout';
 import SliderInput from '@/components/SliderInput';
 import $i18n from '@/i18n';
 import ModelSelector from '@/pages/Knowledge/components/ModelSelector';
+import { ChunkType } from '@/pages/Knowledge/components/StepThree';
 import { getKnowledgeDetail, updateKnowledge, getDocumentsList, deleteDocuments, listKnowledgeSyncs } from '@/services/knowledge';
 import { IKnowledgeDetail } from '@/types/knowledge';
 import { IFileItem } from '@/pages/Knowledge/Detail/type';
@@ -15,7 +16,7 @@ import {
   Tooltip,
 } from '@spark-ai/design';
 import { useRequest, useSetState } from 'ahooks';
-import { Modal as AntModal, Table, Space, Tag, Empty, Spin, Progress } from 'antd';
+import { Modal as AntModal, Table, Space, Tag, Empty, Spin, Progress, Alert, Checkbox } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
@@ -34,8 +35,10 @@ export default function Editor() {
     rerank_value: '',
     rerank_model: '',
     rerank_provider: '',
-    similarity_threshold: 0.2,
-    top_k: 3,
+    chunk_type: 'length',
+    chunk_size: 600,
+    chunk_overlap: 100,
+    full_text_search: true,
   });
 
   // Sync job state
@@ -55,6 +58,7 @@ export default function Editor() {
         setDocs(res.records || []);
         setDocsPagination({ current: res.current || page, pageSize: res.size || pageSize, total: res.total || 0 });
       })
+      .catch((e: any) => { message.error(e?.message || 'Operation failed'); })
       .finally(() => setDocsLoading(false));
   }, [kb_id]);
 
@@ -68,6 +72,7 @@ export default function Editor() {
           setSyncInfo(syncs[0]);
         }
       })
+      .catch((e: any) => { message.error(e?.message || 'Operation failed'); })
       .finally(() => setSyncLoading(false));
   }, [kb_id]);
 
@@ -78,7 +83,7 @@ export default function Editor() {
 
   useRequest(() => getKnowledgeDetail(kb_id || ''), {
     onSuccess: (data: IKnowledgeDetail) => {
-      const { index_config, search_config } = data;
+      const { index_config, search_config, process_config } = data;
       setState({
         name: data.name,
         description: data.description,
@@ -90,10 +95,12 @@ export default function Editor() {
         rerank_value: search_config.rerank_model
           ? `${search_config.rerank_provider}@@@${search_config.rerank_model}`
           : '',
-        rerank_model: search_config?.rerank_model,
-        rerank_provider: search_config?.rerank_provider,
-        similarity_threshold: search_config.similarity_threshold,
-        top_k: search_config.top_k,
+        rerank_model: search_config?.rerank_model || '',
+        rerank_provider: search_config?.rerank_provider || '',
+        chunk_type: process_config?.chunk_type || 'length',
+        chunk_size: process_config?.chunk_size || 600,
+        chunk_overlap: process_config?.chunk_overlap || 100,
+        full_text_search: process_config?.full_text_search !== false,
       });
     },
   });
@@ -108,25 +115,31 @@ export default function Editor() {
     validatedFormValues()
       .then(() => {
         const {
-          top_k,
-          similarity_threshold,
           rerank_provider,
           rerank_model,
           embedding_provider,
           embedding_model,
+          chunk_type,
+          chunk_size,
+          chunk_overlap,
+          full_text_search,
           ...rest
         } = state;
         const params = {
           kb_id: kb_id?.toString() || '',
           search_config: {
-            top_k,
-            similarity_threshold,
             rerank_provider,
             rerank_model,
           },
           index_config: {
             embedding_provider,
             embedding_model,
+          },
+          process_config: {
+            chunk_type,
+            chunk_size,
+            chunk_overlap,
+            full_text_search,
           },
           ...rest,
         };
@@ -138,10 +151,10 @@ export default function Editor() {
             }),
           );
           history.push('/knowledge');
-        });
+        }).catch((e: any) => { message.error(e?.message || 'Operation failed'); });
       })
       .catch((err) => {
-        message.error(err.message);
+        message.error(typeof err === 'string' ? err : err?.message || 'Validation failed');
       });
   };
   const validatedFormValues = () => {
@@ -229,7 +242,7 @@ export default function Editor() {
         deleteDocuments(doc.kb_id, doc.doc_id).then(() => {
           message.success('Document deleted');
           fetchDocs(docsPagination.current, docsPagination.pageSize);
-        });
+        }).catch((e: any) => { message.error(e?.message || 'Operation failed'); });
       },
     });
   };
@@ -496,68 +509,89 @@ export default function Editor() {
               }}
             />
           </Form.Item>
+
+          {/* Chunk Splitting Method */}
           <Form.Item
-            label={
-              <div className={styles['form-item-label']}>
-                <span>
-                  {$i18n.get({
-                    id: 'main.pages.Knowledge.Editor.index.similarityThreshold',
-                    dm: 'Similarity Threshold',
-                  })}
-                </span>
-                <Tooltip
-                  title={$i18n.get({
-                    id: 'main.pages.Knowledge.Editor.index.thresholdMeasureSimilarity',
-                    dm: 'A threshold value used to measure the degree of similarity between texts or data. When the calculated text similarity reaches or exceeds this value, the text will be returned.',
-                  })}
-                >
-                  <IconFont
-                    type="spark-info-line"
-                    className={styles['info-icon']}
-                  />
-                </Tooltip>
-              </div>
-            }
+            label={$i18n.get({
+              id: 'main.pages.Knowledge.components.StepThree.index.chunkSplittingMethod',
+              dm: 'Chunk Splitting Method',
+            })}
           >
-            <SliderInput
-              min={0.01}
-              max={0.99}
-              step={0.01}
-              style={{ width: 480 }}
-              value={state.similarity_threshold}
-              onChange={(val) => {
-                changeFormValue({ similarity_threshold: val });
+            <ChunkType
+              onChange={(value: any) => {
+                changeFormValue({ chunk_type: value });
               }}
+              value={state.chunk_type}
             />
           </Form.Item>
-          <Form.Item
-            label={
-              <div className={styles['form-item-label']}>
-                <span>Topk</span>
-                <Tooltip
-                  title={$i18n.get({
-                    id: 'main.pages.Knowledge.Editor.index.topKReturnObjects',
-                    dm: 'Top-k represents the number of objects that meet similarity requirements returned after reranking',
+          {state.chunk_type !== 'regex' && (
+            <Form.Item
+              label={$i18n.get({
+                id: 'main.pages.Knowledge.components.StepThree.index.segmentEstimatedLength',
+                dm: 'Segment Estimated Length',
+              })}
+            >
+              <SliderInput
+                min={10}
+                max={6000}
+                step={1}
+                style={{ width: 480 }}
+                isShowMarker={true}
+                value={state.chunk_size}
+                onChange={(value: number) => {
+                  changeFormValue({ chunk_size: value });
+                }}
+              />
+            </Form.Item>
+          )}
+          {(state.chunk_type === 'length' || state.chunk_type === 'regex') && (
+            <Form.Item
+              label={$i18n.get({
+                id: 'main.pages.Knowledge.components.StepThree.index.segmentOverlapLength',
+                dm: 'Segment Overlap Length',
+              })}
+            >
+              <SliderInput
+                min={1}
+                max={1024}
+                step={1}
+                style={{ width: 480 }}
+                isShowMarker={true}
+                value={state.chunk_overlap}
+                onChange={(value: number) => {
+                  changeFormValue({ chunk_overlap: value });
+                }}
+              />
+              {state.chunk_overlap >= state.chunk_size && (
+                <Alert
+                  type="warning"
+                  showIcon
+                  style={{ marginTop: 8 }}
+                  message={$i18n.get({
+                    id: 'main.pages.Knowledge.components.StepThree.index.overlapExceedsSize',
+                    dm: 'Chunk overlap should be less than chunk size.',
                   })}
-                >
-                  <IconFont
-                    type="spark-info-line"
-                    className={styles['info-icon']}
-                  />
-                </Tooltip>
-              </div>
-            }
-          >
-            <SliderInput
-              min={1}
-              max={10}
-              step={1}
-              style={{ width: 480 }}
-              value={state.top_k}
-              onChange={(val) => {
-                changeFormValue({ top_k: val });
+                />
+              )}
+            </Form.Item>
+          )}
+          <Form.Item label="Full-Text Search">
+            <Checkbox
+              checked={state.full_text_search !== false}
+              onChange={(e) => {
+                changeFormValue({ full_text_search: e.target.checked });
               }}
-            />
+            >
+              Keep raw document content in index for full-text search
+            </Checkbox>
+            {state.full_text_search === false && (
+              <Alert
+                type="info"
+                showIcon
+                style={{ marginTop: 8 }}
+                message="When disabled, the raw document content will be removed from the document index after RAG processing to save storage. Changes take effect on next RAG reindex."
+              />
+            )}
           </Form.Item>
         </Form>
 

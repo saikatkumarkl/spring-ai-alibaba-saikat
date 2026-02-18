@@ -1,5 +1,5 @@
 import { getModelSelector } from '@/services/modelService';
-import { Select } from '@spark-ai/design';
+import { message, Select } from '@spark-ai/design';
 import React, { useEffect, useState } from 'react';
 import styles from './index.module.less';
 
@@ -39,7 +39,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
         })),
       }));
       setOptions(modelList);
-    });
+    }).catch((e: any) => { message.error(e?.message || 'Operation failed'); });
   }, [modelType]);
 
   return <Select value={value} onChange={onChange} options={options} />;

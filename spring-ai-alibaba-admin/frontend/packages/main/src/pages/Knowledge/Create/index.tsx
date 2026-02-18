@@ -3,7 +3,7 @@ import $i18n from '@/i18n';
 import { createDocuments, createKnowledge, createKnowledgeSync } from '@/services/knowledge';
 import { AlertDialog, Button, message } from '@spark-ai/design';
 import { useSetState } from 'ahooks';
-import { Steps } from 'antd';
+import { Steps, Spin } from 'antd';
 import { useRef, useState } from 'react';
 import { history } from 'umi';
 import StepOne from '../components/StepOne';
@@ -20,8 +20,6 @@ interface FormValue {
   rerank_value: string;
   rerank_model: string;
   rerank_provider: string;
-  similarity_threshold: number;
-  top_k: number;
   sourceType: string;
   upload: string;
   tags: string[];
@@ -30,6 +28,7 @@ interface FormValue {
   regex: string;
   chunk_size: number;
   chunk_overlap: number;
+  full_text_search: boolean;
   fileList: any[];
   dataSourceType: string;
   source_id: string;
@@ -42,9 +41,8 @@ interface State {
   quitConfirm: boolean;
   step: number;
   formValue: FormValue;
-  countdown: number;
 }
-export default function Ceeate() {
+export default function Create() {
   const firstFormRef = useRef<any>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [createdKbId, setCreatedKbId] = useState<string>('');
@@ -62,8 +60,6 @@ export default function Ceeate() {
       rerank_value: '',
       rerank_model: '',
       rerank_provider: '',
-      similarity_threshold: 0.2,
-      top_k: 3,
       sourceType: 'file',
       upload: '',
       tags: [],
@@ -72,16 +68,17 @@ export default function Ceeate() {
       regex: '',
       chunk_size: 600,
       chunk_overlap: 100,
+      full_text_search: true,
       fileList: [],
       dataSourceType: 'file',
       source_id: '',
       destination_id: '',
       sync_cron: '',
     },
-    countdown: 3,
   });
   const [fileList, setFileList] = useState<any[]>([]);
   const [uploadingCount, setUploadingCount] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
   const handleCancel = () => {
     AlertDialog.warning({
       title: (
@@ -168,6 +165,7 @@ export default function Ceeate() {
   };
 
   const handleSubmit = (type: string) => {
+    setSubmitting(true);
     validatedFormValues().then(() => {
       const formValue = state.formValue;
       const params = {
@@ -177,14 +175,13 @@ export default function Ceeate() {
           chunk_type: formValue.chunk_type,
           chunk_size: formValue.chunk_size,
           chunk_overlap: formValue.chunk_overlap,
+          full_text_search: formValue.full_text_search,
         },
         index_config: {
           embedding_provider: formValue.embedding_provider,
           embedding_model: formValue.embedding_model,
         },
         search_config: {
-          top_k: formValue.top_k,
-          similarity_threshold: formValue.similarity_threshold,
           rerank_provider: formValue.rerank_provider,
           rerank_model: formValue.rerank_model,
         },
@@ -205,44 +202,20 @@ export default function Ceeate() {
             destination_id: formValue.destination_id,
             sync_cron: formValue.sync_cron || undefined,
           }).then(() => {
-            // Redirect directly to sync page so user can trigger sync
+            // Redirect directly to sync page
             setIsSuccess(true);
-            let countdown = (state.countdown = 3);
-            const interval = setInterval(() => {
-              countdown -= 1;
-              setState({ countdown });
-              if (countdown === 0) {
-                clearInterval(interval);
-                history.push(`/knowledge/sync/${id}`);
-              }
-            }, 1000);
+            history.push(`/knowledge/sync/${id}`);
           }).catch((err) => {
             console.error('Failed to create sync job:', err);
             // Still redirect to knowledge list on sync creation failure
-            let countdown = (state.countdown = 3);
-            const interval = setInterval(() => {
-              countdown -= 1;
-              setState({ countdown });
-              if (countdown === 0) {
-                clearInterval(interval);
-                history.push('/knowledge');
-              }
-            }, 1000);
+            history.push('/knowledge');
           });
-          return; // Don't start the normal countdown below
+          return; // Don't start the normal redirect below
         }
 
-        let countdown = (state.countdown = 3);
-        const interval = setInterval(() => {
-          countdown -= 1;
-          setState({ countdown });
-          if (countdown === 0) {
-            clearInterval(interval);
-            history.push('/knowledge');
-          }
-        }, 1000);
+        history.push('/knowledge');
       });
-    });
+    }).catch((e: any) => { message.error(e?.message || 'Operation failed'); setSubmitting(false); });
   };
 
   const handleCreateDocument = (id: any) => {
@@ -255,6 +228,7 @@ export default function Ceeate() {
         chunk_type: formValue.chunk_type,
         chunk_size: formValue.chunk_size,
         chunk_overlap: formValue.chunk_overlap,
+        full_text_search: formValue.full_text_search,
       },
     };
     createDocuments(params);
@@ -286,7 +260,7 @@ export default function Ceeate() {
               })}
             </Button>
             <div className={styles['divider']} />
-            <Button type="default" onClick={() => handleSubmit('next')}>
+            <Button type="default" loading={submitting} onClick={() => handleSubmit('next')}>
               {$i18n.get({
                 id: 'main.pages.Knowledge.Create.index.directCreate',
                 dm: 'Create Directly',
@@ -345,7 +319,7 @@ export default function Ceeate() {
                 dm: 'Previous',
               })}
             </Button>
-            <Button type="primary" onClick={() => handleSubmit('done')}>
+            <Button type="primary" loading={submitting} onClick={() => handleSubmit('done')}>
               {$i18n.get({
                 id: 'main.pages.Knowledge.Create.index.complete',
                 dm: 'Complete',
@@ -464,47 +438,17 @@ export default function Ceeate() {
             dm: 'Knowledge Base Created Successfully',
           })}
           open={true}
-          footer={
-            <Button
-              type="primary"
-              onClick={() => {
-                setIsSuccess(false);
-                if (state.formValue.dataSourceType === 'source' && createdKbId) {
-                  history.push(`/knowledge/sync/${createdKbId}`);
-                } else {
-                  history.push('/knowledge');
-                }
-              }}
-            >
-              {state.formValue.dataSourceType === 'source'
-                ? $i18n.get(
-                    {
-                      id: 'main.pages.Knowledge.Create.index.goToSyncPageVar1S',
-                      dm: 'Go to Sync Page ({var1}s)',
-                    },
-                    { var1: state.countdown },
-                  )
-                : $i18n.get(
-                    {
-                      id: 'main.pages.Knowledge.Create.index.returnToKnowledgeBaseManagementVar1S',
-                      dm: 'Return to Knowledge Base Management ({var1}s)',
-                    },
-                    { var1: state.countdown },
-                  )
-              }
-            </Button>
-          }
+          footer={null}
         >
-          {state.formValue.dataSourceType === 'source'
-            ? $i18n.get({
-                id: 'main.pages.Knowledge.Create.index.knowledgeBaseCreatedSyncReady',
-                dm: 'Knowledge base created! You will be redirected to the sync page where you can start syncing documents from your source system.',
-              })
-            : $i18n.get({
-                id: 'main.pages.Knowledge.Create.index.congratulationsYouHaveCompletedKnowledgeBaseCreationYouCanGoToConfigureApplication',
-                dm: 'Congratulations! You have completed knowledge base creation. You can now configure your application.',
-              })
-          }
+          <div style={{ textAlign: 'center', padding: '16px 0' }}>
+            <Spin size="large" />
+            <div style={{ marginTop: 12 }}>
+              {$i18n.get({
+                id: 'main.pages.Knowledge.Create.index.redirecting',
+                dm: 'Redirecting...',
+              })}
+            </div>
+          </div>
         </AlertDialog>
       )}
     </InnerLayout>

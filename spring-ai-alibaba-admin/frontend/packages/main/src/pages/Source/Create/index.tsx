@@ -1,9 +1,9 @@
 import InnerLayout from '@/components/InnerLayout';
 import $i18n from '@/i18n';
-import { createSource, getConnectorTypes, getSourceDetail, updateSource, testConnection, testGroupApi, testQuery, enableSource } from '@/services/source';
+import { createSource, getConnectorTypes, getSourceDetail, updateSource, testConnection, testQuery } from '@/services/source';
 import { AlertDialog, Button, message } from '@spark-ai/design';
 import { useMount, useSetState } from 'ahooks';
-import { Collapse, Input, Select, Steps, Switch, Table, Tag } from 'antd';
+import { Collapse, Input, Select, Spin, Steps, Switch, Table, Tag } from 'antd';
 import classNames from 'classnames';
 import React, { useState } from 'react';
 import { history, useParams } from 'umi';
@@ -66,6 +66,9 @@ interface FormState {
   queryTestResult: string | null;
   queryTestItems: Record<string, any>[];
   queryTestCount: number;
+  /** Admin groups — selected by user after group API test; members get access to all docs */
+  adminGroups: string[];
+  availableGroups: { name: string; objectId: string }[];
   /** Edit mode */
   editDataLoaded: boolean;
 }
@@ -704,11 +707,11 @@ export default function SourceCreate() {
     queryTestResult: null,
     queryTestItems: [],
     queryTestCount: 0,
+    adminGroups: [],
+    availableGroups: [],
 
     editDataLoaded: false,
   });
-
-  const [countdown, setCountdown] = useState(0);
 
   useMount(() => {
     getConnectorTypes()
@@ -750,6 +753,7 @@ export default function SourceCreate() {
               enforceAcl: !!(config.groupApiUrl || config.ACLENDPOINT),
               aclGroupApiUrl: config.groupApiUrl || '',
               aclGroupMembersApiUrl: config.groupMembersApiUrl || '',
+              adminGroups: Array.isArray(config.adminGroups) ? config.adminGroups : [],
 
               editDataLoaded: true,
               step: 1, // Go directly to config step for edit
@@ -873,6 +877,7 @@ export default function SourceCreate() {
       if (state.selectedConnector.class_name === CLS.CMIS) {
         if (state.aclGroupApiUrl) map.groupApiUrl = state.aclGroupApiUrl;
         if (state.aclGroupMembersApiUrl) map.groupMembersApiUrl = state.aclGroupMembersApiUrl;
+        if (state.adminGroups.length > 0) map.adminGroups = state.adminGroups;
       }
       // REST API connector already has ACLENDPOINT in configValues
     }
@@ -967,13 +972,7 @@ export default function SourceCreate() {
       .then((sourceId) => {
         setState({ loading: false, createdSourceId: sourceId });
         message.success('Source saved as draft');
-        let c = 3;
-        setCountdown(c);
-        const interval = setInterval(() => {
-          c -= 1;
-          setCountdown(c);
-          if (c <= 0) { clearInterval(interval); history.push('/source'); }
-        }, 1000);
+        history.push('/source');
       })
       .catch(() => {
         setState({ loading: false });
@@ -1060,6 +1059,17 @@ export default function SourceCreate() {
 
   /** Test a specific query (CMIS query, REST API seed, Group API, User API) */
   const handleTestQuery = (testType: string, queryOverride?: string) => {
+
+    /** When Group API test succeeds, populate available groups and auto-select admin groups */
+    const applyGroupApiResults = (items: Record<string, any>[]) => {
+      const groups = items.map((g) => ({ name: String(g.name || ''), objectId: String(g.objectId || '') }));
+      // Auto-select groups containing "admin" (case-insensitive) if user hasn't manually selected any yet
+      const autoSelected = state.adminGroups.length > 0
+        ? state.adminGroups
+        : groups.filter((g) => /admin/i.test(g.name) || /admin/i.test(g.objectId)).map((g) => g.objectId);
+      setState({ availableGroups: groups, adminGroups: autoSelected });
+    };
+
     if (!state.createdSourceId) {
       // Need to save first
       setState({ queryTestLoading: true, activeTestType: testType });
@@ -1081,6 +1091,9 @@ export default function SourceCreate() {
           queryTestItems: result.items || [],
           queryTestCount: result.count || 0,
         });
+        if (testType === 'group_api' && passed && result.items?.length > 0) {
+          applyGroupApiResults(result.items);
+        }
       }).catch((err) => {
         setState({
           queryTestLoading: false,
@@ -1111,6 +1124,9 @@ export default function SourceCreate() {
         queryTestItems: result.items || [],
         queryTestCount: result.count || 0,
       });
+      if (testType === 'group_api' && passed && result.items?.length > 0) {
+        applyGroupApiResults(result.items);
+      }
     }).catch((err) => {
       setState({
         queryTestLoading: false,
@@ -1484,6 +1500,13 @@ export default function SourceCreate() {
                   addonBefore="CMIS Query"
                 />
               </div>
+              <div style={{ marginBottom: 8, padding: '8px 12px', fontSize: 12, color: 'var(--ag-ant-color-text-secondary)', background: 'var(--ag-ant-color-fill-quaternary)', borderRadius: 6 }}>
+                <strong>Processable file types:</strong> PDF, Word (.doc/.docx), Excel (.xls/.xlsx), PowerPoint (.ppt/.pptx), OpenDocument, Text/CSV, HTML/XML/JSON/YAML/Markdown, RTF, EPUB, Email (.eml/.msg), Source Code, Visio
+                <br />
+                <span style={{ fontStyle: 'italic', color: 'var(--ag-ant-color-text-tertiary)' }}>
+                  All other file types (images, videos, audio, etc.) will be indexed with metadata only — no content extraction or RAG chunks.
+                </span>
+              </div>
               {!state.testPassed && (
                 <div style={{ fontSize: 12, color: 'var(--ag-ant-color-text-tertiary)' }}>
                   Run Connection Test first before testing queries.
@@ -1555,6 +1578,49 @@ export default function SourceCreate() {
                     {statusColors[aclStatus].label}
                   </Tag>
                   <span style={{ fontSize: 13 }}>{state.aclTestResult.replace(/^(PASS|WARN|FAIL)\|/, '')}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Admin Group Selection (shown after Group API test succeeds) ── */}
+          {state.enforceAcl && state.availableGroups.length > 0 && (
+            <div style={{
+              marginBottom: 20, padding: 16, borderRadius: 8,
+              border: '1px solid var(--ag-ant-color-border)',
+              background: 'var(--ag-ant-color-primary-bg)',
+            }}>
+              <div style={{ marginBottom: 8 }}>
+                <strong style={{ fontSize: 14 }}>
+                  {$i18n.get({ id: 'main.pages.Source.Create.index.adminGroups', dm: 'Admin Groups' })}
+                </strong>
+                <div style={{ fontSize: 12, color: 'var(--ag-ant-color-text-secondary)', marginTop: 4 }}>
+                  {$i18n.get({
+                    id: 'main.pages.Source.Create.index.adminGroupsDesc',
+                    dm: 'Select groups whose members should have access to all documents. Groups containing "admin" are pre-selected.',
+                  })}
+                </div>
+              </div>
+              <Select
+                mode="multiple"
+                style={{ width: '100%' }}
+                placeholder="Select admin groups..."
+                value={state.adminGroups}
+                onChange={(values: string[]) => setState({ adminGroups: values })}
+                options={state.availableGroups.map((g) => ({
+                  label: `${g.name} (${g.objectId})`,
+                  value: g.objectId,
+                }))}
+                filterOption={(input, option) =>
+                  (option?.label as string || '').toLowerCase().includes(input.toLowerCase())
+                }
+                showSearch
+                allowClear
+              />
+              {state.adminGroups.length > 0 && (
+                <div style={{ fontSize: 12, color: 'var(--ag-ant-color-text-secondary)', marginTop: 8 }}>
+                  {state.adminGroups.length} group{state.adminGroups.length !== 1 ? 's' : ''} selected —
+                  members of these groups will have access to all documents during sync.
                 </div>
               )}
             </div>
@@ -1651,7 +1717,7 @@ export default function SourceCreate() {
 
   /* ── Success state ── */
 
-  if (state.createdSourceId && countdown > 0) {
+  if (state.createdSourceId && state.loading) {
     return (
       <InnerLayout
         breadcrumbLinks={[
@@ -1659,21 +1725,12 @@ export default function SourceCreate() {
           { title: $i18n.get({ id: 'main.pages.Source.Create.index.createSource', dm: 'Create Source' }) },
         ]}
       >
-        <AlertDialog
-          type="success"
-          title={$i18n.get({ id: 'main.pages.Source.Create.index.sourceCreated', dm: 'Source Created Successfully' })}
-          open={true}
-          footer={
-            <Button type="primary" onClick={() => history.push('/source')}>
-              {$i18n.get(
-                { id: 'main.pages.Source.Create.index.returnToSources', dm: 'Return to Sources ({var1}s)' },
-                { var1: countdown },
-              )}
-            </Button>
-          }
-        >
-          {$i18n.get({ id: 'main.pages.Source.Create.index.sourceCreatedDesc', dm: 'Your source has been created. You can now start syncing data or configure a schedule.' })}
-        </AlertDialog>
+        <div style={{ textAlign: 'center', padding: '80px 0' }}>
+          <Spin size="large" />
+          <div style={{ marginTop: 16 }}>
+            {$i18n.get({ id: 'main.pages.Source.Create.index.saving', dm: 'Saving...' })}
+          </div>
+        </div>
       </InnerLayout>
     );
   }

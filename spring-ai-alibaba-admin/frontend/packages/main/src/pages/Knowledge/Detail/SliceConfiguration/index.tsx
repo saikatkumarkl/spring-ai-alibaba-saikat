@@ -35,7 +35,7 @@ export default function SliceConfiguration() {
           dm: 'Chunk configuration successful',
         }),
       );
-    });
+    }).catch((e: any) => { message.error(e?.message || 'Operation failed'); });
     setHasTest(true);
   };
 
@@ -50,7 +50,7 @@ export default function SliceConfiguration() {
     };
     previewChunks(params).then((res) => {
       setList(res);
-    });
+    }).catch((e: any) => { message.error(e?.message || 'Operation failed'); });
     setHasTest(true);
   };
   return (
