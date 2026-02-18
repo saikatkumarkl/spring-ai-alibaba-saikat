@@ -3795,27 +3795,59 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("source_id", "Source system not found"));
 		}
 
-		// The doc_id IS the CMIS content stream URL
 		if (StringUtils.isBlank(docId)) {
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("doc_id", "Document ID is required"));
 		}
 
-		// Get source credentials from source system config
+		// Extract connection details from the source system config
 		Map<String, Object> sourceConfig = deserializeConfig(source.getConnectionConfig());
 		String sourceUsername = getConfigString(sourceConfig, "username", "");
 		String sourcePassword = getConfigString(sourceConfig, "password", "");
 		String sourceProtocol = getConfigString(sourceConfig, "protocol", "https");
+		String sourceServer = getConfigString(sourceConfig, "server", "");
+		String sourcePort = getConfigString(sourceConfig, "port", "443");
+		String sourcePath = getConfigString(sourceConfig, "path", "");
 
-		// The doc_id URL from CMIS may use http:// even if the server uses https (reverse proxy).
-		// If source protocol is https, rewrite http:// to https:// in the download URL.
-		String downloadUrl = docId;
-		if ("https".equalsIgnoreCase(sourceProtocol) && downloadUrl.startsWith("http://")) {
-			downloadUrl = "https://" + downloadUrl.substring(7);
-			log.debug("Rewrote download URL to HTTPS: {}", downloadUrl);
+		// Build the CMIS AtomPub content stream URL from source config + objectId.
+		// For a CMIS AtomPub endpoint like {proto}://{server}:{port}{path},
+		// the content stream is at {proto}://{server}:{port}{path}/content?id={objectId}
+		// If docId is already a full URL (content stream URL), use it directly.
+		String downloadUrl;
+		String fileName;
+		if (docId.startsWith("http://") || docId.startsWith("https://")) {
+			// Legacy: docId is already a content stream URL
+			downloadUrl = docId;
+			if ("https".equalsIgnoreCase(sourceProtocol) && downloadUrl.startsWith("http://")) {
+				downloadUrl = "https://" + downloadUrl.substring(7);
+			}
+			fileName = extractFileNameFromUrl(docId);
 		}
+		else {
+			// docId is a CMIS objectId (e.g., "ca7b6a70-56f0-4f81-...:1.1")
+			// Two-step resolution:
+			// 1. Discover the real CMIS base URL from the service document's URI templates
+			//    (the connection config path may differ from the actual endpoint path,
+			//    e.g., /cmis/ vs /public/cmis/ in Alfresco).
+			// 2. Fetch the Atom entry at {realBase}/id?id={objectId} and extract the
+			//    <content src="..."> attribute which has the full content stream URL.
+			String encodedId = URLEncoder.encode(docId, StandardCharsets.UTF_8);
+			String serviceDocUrl = sourceProtocol + "://" + sourceServer + ":" + sourcePort + sourcePath;
+			String realBase = resolveRealCmisBaseUrl(serviceDocUrl, sourceUsername, sourcePassword, sourceProtocol);
+			if (realBase == null) {
+				// Fallback: use the config path directly (may work for some CMIS implementations)
+				realBase = serviceDocUrl;
+			}
+			String entryUrl = realBase + "/id?id=" + encodedId;
+			log.info("Resolving CMIS content URL via Atom entry: {} (objectId: {})", entryUrl, docId);
 
-		// Extract filename from the URL path for Content-Disposition
-		String fileName = extractFileNameFromUrl(docId);
+			downloadUrl = resolveCmisContentUrlFromEntry(entryUrl, sourceUsername, sourcePassword, sourceProtocol);
+			if (downloadUrl == null) {
+				throw new BizException(ErrorCode.INVALID_PARAMS.toError("download",
+						"Could not resolve content stream URL from CMIS entry for objectId: " + docId));
+			}
+			fileName = extractFileNameFromUrl(downloadUrl);
+			log.info("Resolved CMIS content URL: {} (filename: {})", downloadUrl, fileName);
+		}
 
 		try {
 			// Use raw HttpURLConnection to support SSL trust-all for self-signed certs
@@ -3837,7 +3869,15 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 
 			int httpStatus = conn.getResponseCode();
 			if (httpStatus < 200 || httpStatus >= 300) {
-				log.warn("CMIS download failed with HTTP {}: {}", httpStatus, downloadUrl);
+				String errorBody = "";
+				try (InputStream errStream = conn.getErrorStream()) {
+					if (errStream != null) {
+						errorBody = new String(errStream.readAllBytes(), StandardCharsets.UTF_8);
+					}
+				}
+				catch (Exception ignored) {
+				}
+				log.warn("CMIS download failed with HTTP {}: {} — {}", httpStatus, downloadUrl, errorBody);
 				throw new BizException(ErrorCode.INVALID_PARAMS.toError("download",
 						"Source system returned HTTP " + httpStatus));
 			}
@@ -3846,6 +3886,18 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			String contentType = conn.getContentType();
 			if (StringUtils.isBlank(contentType)) {
 				contentType = "application/octet-stream";
+			}
+
+			// Extract filename from Content-Disposition header if available
+			String disposition = conn.getHeaderField("Content-Disposition");
+			log.debug("Content-Disposition header: {}", disposition);
+			if (StringUtils.isNotBlank(disposition) && disposition.contains("filename")) {
+				// Handle both filename="name" and filename=name (with/without quotes)
+				String cdFileName = disposition.replaceFirst("(?i).*filename\\*?=\"?([^\";\n]+)\"?.*", "$1").trim();
+				if (StringUtils.isNotBlank(cdFileName) && !cdFileName.equals(disposition)) {
+					fileName = cdFileName;
+					log.debug("Extracted filename from Content-Disposition: {}", fileName);
+				}
 			}
 
 			// Read content into byte array
@@ -3875,6 +3927,131 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			log.error("Failed to download source document for sync {}: {}", syncId, e.getMessage(), e);
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("download",
 					"Failed to download document: " + e.getMessage()));
+		}
+	}
+
+	/**
+	 * Resolve the real CMIS base URL by fetching the service document and extracting
+	 * the {@code objectbyid} URI template. Alfresco (and some other vendors) expose their
+	 * CMIS endpoints on a different path than the connection config path
+	 * (e.g., {@code /public/cmis/} vs {@code /cmis/}). The service document URI templates
+	 * contain the actual endpoint URLs.
+	 *
+	 * @return the real base URL (up to and including {@code /atom}), or null on failure
+	 */
+	private String resolveRealCmisBaseUrl(String serviceDocUrl, String username,
+			String password, String sourceProtocol) {
+		try {
+			URI uri = URI.create(serviceDocUrl);
+			HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
+			configureTrustAllSsl(conn);
+			conn.setRequestMethod("GET");
+			conn.setConnectTimeout(10_000);
+			conn.setReadTimeout(10_000);
+
+			if (StringUtils.isNotBlank(username)) {
+				String credentials = username + ":" + password;
+				String encoded = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+				conn.setRequestProperty("Authorization", "Basic " + encoded);
+			}
+
+			int status = conn.getResponseCode();
+			if (status < 200 || status >= 300) {
+				log.warn("CMIS service document fetch failed with HTTP {}: {}", status, serviceDocUrl);
+				return null;
+			}
+
+			String serviceXml;
+			try (InputStream in = conn.getInputStream()) {
+				serviceXml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+			}
+
+			// Look for the objectbyid URI template:
+			// <cmisra:template>http://.../atom/id?id={id}&amp;...</cmisra:template>
+			// <cmisra:type>objectbyid</cmisra:type>
+			java.util.regex.Matcher matcher = java.util.regex.Pattern
+					.compile("<cmisra:template>([^<]+)</cmisra:template>\\s*<cmisra:type>objectbyid</cmisra:type>")
+					.matcher(serviceXml);
+			if (matcher.find()) {
+				String templateUrl = matcher.group(1).replace("&amp;", "&");
+				// Extract the base URL up to "/atom" from something like:
+				// http://server:8080/.../atom/id?id={id}&filter=...
+				int atomIdx = templateUrl.indexOf("/atom/");
+				if (atomIdx > 0) {
+					String realBase = templateUrl.substring(0, atomIdx + "/atom".length());
+					// Fix protocol if needed
+					if ("https".equalsIgnoreCase(sourceProtocol) && realBase.startsWith("http://")) {
+						realBase = "https://" + realBase.substring(7);
+					}
+					log.info("Resolved real CMIS base URL from service document: {}", realBase);
+					return realBase;
+				}
+			}
+
+			log.warn("Could not find objectbyid URI template in CMIS service document: {}", serviceDocUrl);
+			return null;
+		}
+		catch (Exception e) {
+			log.error("Failed to resolve real CMIS base URL from {}: {}", serviceDocUrl, e.getMessage(), e);
+			return null;
+		}
+	}
+
+	/**
+	 * Resolve the actual content stream URL from a CMIS AtomPub entry.
+	 * Fetches the Atom entry XML and extracts the {@code <content src="...">} attribute
+	 * which points to the real content download URL (including filename in path).
+	 */
+	private String resolveCmisContentUrlFromEntry(String entryUrl, String username,
+			String password, String sourceProtocol) {
+		try {
+			URI uri = URI.create(entryUrl);
+			HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
+			configureTrustAllSsl(conn);
+			conn.setRequestMethod("GET");
+			conn.setConnectTimeout(15_000);
+			conn.setReadTimeout(15_000);
+
+			if (StringUtils.isNotBlank(username)) {
+				String credentials = username + ":" + password;
+				String encoded = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+				conn.setRequestProperty("Authorization", "Basic " + encoded);
+			}
+
+			int status = conn.getResponseCode();
+			if (status < 200 || status >= 300) {
+				log.warn("CMIS entry fetch failed with HTTP {}: {}", status, entryUrl);
+				return null;
+			}
+
+			// Read the Atom XML response
+			String atomXml;
+			try (InputStream in = conn.getInputStream()) {
+				atomXml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+			}
+
+			// Extract <content src="..."> attribute using regex (avoid XML parser dependency)
+			// The content element looks like: <atom:content src="http://..."/> (with namespace prefix)
+			java.util.regex.Matcher matcher = java.util.regex.Pattern
+					.compile("<(?:atom:)?content[^>]+src=\"([^\"]+)\"")
+					.matcher(atomXml);
+			if (matcher.find()) {
+				String contentUrl = matcher.group(1);
+				// Un-escape XML entities
+				contentUrl = contentUrl.replace("&amp;", "&");
+				// Fix http:// to https:// when source uses HTTPS (reverse proxy)
+				if ("https".equalsIgnoreCase(sourceProtocol) && contentUrl.startsWith("http://")) {
+					contentUrl = "https://" + contentUrl.substring(7);
+				}
+				return contentUrl;
+			}
+
+			log.warn("No <content src=..> found in CMIS Atom entry for {}", entryUrl);
+			return null;
+		}
+		catch (Exception e) {
+			log.error("Failed to resolve CMIS content URL from entry {}: {}", entryUrl, e.getMessage(), e);
+			return null;
 		}
 	}
 

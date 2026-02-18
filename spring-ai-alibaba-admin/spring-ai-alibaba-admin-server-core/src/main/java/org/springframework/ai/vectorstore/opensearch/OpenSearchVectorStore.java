@@ -411,7 +411,10 @@ public class OpenSearchVectorStore extends AbstractObservationVectorStore implem
 			SearchResponse<Document> res = this.openSearchClient.search(
 					sr -> sr.index(this.options.getIndexName())
 						.query(q -> q.bool(m -> m
-							.must(qm -> qm.match(mm -> mm.field("content").query(fv -> fv.stringValue(searchRequest.getQuery()))))
+						.must(qm -> qm.multiMatch(mm -> mm
+							.query(searchRequest.getQuery())
+							.fields("content^2", "file_title^1")
+							.type(org.opensearch.client.opensearch._types.query_dsl.TextQueryType.BestFields)))
 							.filter(fl -> fl.queryString(
 								qs -> qs.query(getCombinedQueryString(searchRequest))))))
 						.minScore(searchRequest.getSimilarityThreshold())

@@ -22,6 +22,7 @@ import com.alibaba.cloud.ai.studio.runtime.domain.agent.AgentResponse;
 import com.alibaba.cloud.ai.studio.runtime.utils.JsonUtils;
 import com.alibaba.cloud.ai.studio.core.base.service.AgentService;
 import com.alibaba.cloud.ai.studio.core.context.RequestContextHolder;
+import com.alibaba.cloud.ai.studio.core.rag.KnowledgeSyncService;
 import com.alibaba.cloud.ai.studio.core.utils.common.IdGenerator;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,6 +58,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -82,6 +84,8 @@ public class ChatbotAuthController {
 
 	private final ObjectMapper objectMapper;
 
+	private final KnowledgeSyncService knowledgeSyncService;
+
 	private final long jwtExpiration = 24 * 60 * 60 * 1000; // 24 hours
 
 	/** Default account ID used for chatbot agent requests (admin account) */
@@ -92,11 +96,13 @@ public class ChatbotAuthController {
 
 	public ChatbotAuthController(JdbcTemplate jdbcTemplate, AgentService agentService,
 			RestClient openSearchRestClient, ObjectMapper objectMapper,
+			KnowledgeSyncService knowledgeSyncService,
 @Value("${chatbot.jwt.secret:my-super-secret-key-change-in-production}") String jwtSecret) {
 		this.jdbcTemplate = jdbcTemplate;
 		this.agentService = agentService;
 		this.openSearchRestClient = openSearchRestClient;
 		this.objectMapper = objectMapper;
+		this.knowledgeSyncService = knowledgeSyncService;
 		this.passwordEncoder = new BCryptPasswordEncoder();
 		this.secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
 	}
@@ -862,11 +868,12 @@ email, appId));
 			List<Object> filterClauses = new ArrayList<>();
 			filterClauses.add(aclFilter);
 
-			// Fulltext search
+			// Fulltext search across content, filenames, metadata, and CMIS fields
 			if (query != null && !query.isBlank()) {
 				mustClauses.add(Map.of("multi_match", Map.of(
 					"query", query,
-					"fields", List.of("content^2", "cmis:contentStreamFileName^3", "cmis:name^3", "file_title^2"),
+					"fields", List.of("content^2", "cmis:contentStreamFileName^3", "cmis:name^3", "file_title^2",
+							"cmis:description^1", "cmis:createdBy^1", "file_name^2"),
 					"type", "best_fields",
 					"fuzziness", "AUTO"
 				)));
@@ -940,6 +947,7 @@ email, appId));
 					Map<String, Object> source = (Map<String, Object>) hit.get("_source");
 					Map<String, Object> doc = new LinkedHashMap<>();
 					doc.put("id", hit.get("_id"));
+					doc.put("kbId", kbId);
 					doc.put("fileName", source.getOrDefault("cmis:contentStreamFileName",
 							source.getOrDefault("cmis:name", "Unknown")));
 					doc.put("mimeType", source.getOrDefault("mime-type",
@@ -961,6 +969,26 @@ email, appId));
 					metadata.remove("allow_token_share");
 					metadata.remove("deny_token_share");
 					metadata.remove("authorities");
+					// Remove processing/internal metadata — keep only source system metadata
+					// Use prefix-based filtering for Tika-added fields
+					metadata.keySet().removeIf(key -> {
+						String k = key.toLowerCase();
+						// Remove Tika processing metadata prefixes
+						if (k.startsWith("pdf:") || k.startsWith("access_permission:")
+								|| k.startsWith("dc:") || k.startsWith("dcterms:")
+								|| k.startsWith("xmp:") || k.startsWith("xmptpg:")
+								|| k.startsWith("meta:")) {
+							return true;
+						}
+						// Remove ManifoldCF internal / RAG pipeline fields
+						return Set
+							.of("content", "indexed", "created", "last-modified", "url", "workspace_id", "enabled",
+									"total_chunks", "doc_name", "doc_id", "chunk_index", "file_title", "file_name",
+									"file_path", "file_size", "file_type", "embedding", "date", "modified",
+									"last-save-date", "creation-date", "language", "producer", "hassignature",
+									"mime-type")
+							.contains(k);
+					});
 					doc.put("metadata", metadata);
 					allDocs.add(doc);
 				}
@@ -1009,12 +1037,14 @@ email, appId));
 			Map<String, Object> aclFilter = buildRagAclFilter(lowerEmail);
 
 			// Fulltext search on RAG chunks with ACL filter
+			// Search content, file title, AND metadata fields (file_name, created_by, mime_type, object_id)
 			Map<String, Object> boolQuery = Map.of(
 				"must", List.of(
 					Map.of("multi_match", Map.of(
 						"query", query,
-						"fields", List.of("content^2", "file_title^1"),
-						"type", "best_fields"
+						"fields", List.of("content^2", "file_title^2", "metadata.file_name^3", "metadata.created_by^1", "metadata.mime_type^0.5", "metadata.object_id^0.5"),
+						"type", "best_fields",
+						"fuzziness", "AUTO"
 					))
 				),
 				"filter", List.of(aclFilter)
@@ -1054,7 +1084,18 @@ email, appId));
 					chunk.put("chunkIndex", source.getOrDefault("chunk_index", 0));
 					chunk.put("score", hit.get("_score"));
 					@SuppressWarnings("unchecked")
-					Map<String, Object> meta = (Map<String, Object>) source.getOrDefault("metadata", Map.of());
+					Map<String, Object> rawMeta = (Map<String, Object>) source.getOrDefault("metadata", Map.of());
+					// Filter out processing metadata, keep only source system metadata
+					Map<String, Object> meta = new LinkedHashMap<>();
+					for (Map.Entry<String, Object> entry : rawMeta.entrySet()) {
+						String key = entry.getKey();
+						// Skip processing/internal fields
+						if ("workspace_id".equals(key) || "enabled".equals(key) || "total_chunks".equals(key)
+								|| "doc_name".equals(key) || "doc_id".equals(key) || "chunk_index".equals(key)) {
+							continue;
+						}
+						meta.put(key, entry.getValue());
+					}
 					chunk.put("metadata", meta);
 					chunks.add(chunk);
 				}
@@ -1094,6 +1135,216 @@ email, appId));
 			}
 		}
 		return facets;
+	}
+
+	// ==================== Document Download (for Viewer) ====================
+
+	/**
+	 * Resolve a sync ID from a knowledge base ID.
+	 * Finds the most recent sync job for the given KB.
+	 */
+	private String resolveSyncId(String kbId) {
+		try {
+			List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+				"SELECT sync_id FROM knowledge_sync WHERE kb_id = ? ORDER BY gmt_modified DESC LIMIT 1", kbId);
+			if (!rows.isEmpty()) {
+				return String.valueOf(rows.get(0).get("sync_id"));
+			}
+		}
+		catch (Exception e) {
+			log.error("Failed to resolve syncId for kbId {}: {}", kbId, e.getMessage());
+		}
+		return null;
+	}
+
+	/**
+	 * Download a source document for the chatbot document viewer.
+	 * The document is fetched from the source system (e.g., CMIS/Alfresco) via the sync service.
+	 * Requires kbId + docId (the CMIS content stream URL stored as the document's objectId).
+	 */
+	@Operation(summary = "Download source document for viewer")
+	@GetMapping("/document/download")
+	public void downloadDocument(
+			@RequestParam String kbId,
+			@RequestParam String docId,
+			HttpServletRequest request,
+			HttpServletResponse response) {
+		try {
+			// Verify user is authenticated
+			String email = extractChatbotUserEmail(request);
+			if (email == null) {
+				response.setStatus(401);
+				return;
+			}
+
+			// Resolve syncId from kbId
+			String syncId = resolveSyncId(kbId);
+			if (syncId == null) {
+				response.setStatus(404);
+				response.getWriter().write("No sync job found for knowledge base");
+				return;
+			}
+
+			// Download from source via KnowledgeSyncService
+			Map<String, Object> download = knowledgeSyncService.downloadSourceDocument(syncId, docId);
+			byte[] content = (byte[]) download.get("content");
+			String contentType = (String) download.getOrDefault("contentType", "application/octet-stream");
+			String fileName = (String) download.getOrDefault("fileName", "document");
+
+			response.setContentType(contentType);
+			response.setContentLengthLong(content.length);
+
+			// Allow CORS for the viewer (inline display, not download)
+			response.setHeader("Content-Disposition", "inline; filename=\"" + fileName + "\"");
+
+			try (var out = response.getOutputStream()) {
+				out.write(content);
+				out.flush();
+			}
+
+			log.info("Chatbot document download: user={}, kbId={}, file={}, size={}", email, kbId, fileName, content.length);
+		}
+		catch (Exception e) {
+			log.error("Document download failed: kbId={}, docId={}", kbId, docId, e);
+			try {
+				response.setStatus(500);
+				response.getWriter().write("Download failed: " + e.getMessage());
+			}
+			catch (Exception ignored) {}
+		}
+	}
+
+	// ==================== Authority (Groups/Users) Browser ====================
+
+	/**
+	 * Browse authorities (users and groups) from the knowledge base's _authority index.
+	 * Provides paginated access to the synced ACL principals.
+	 */
+	@Operation(summary = "Browse authorities for a knowledge base")
+	@GetMapping("/authorities")
+	public Result<Map<String, Object>> browseAuthorities(
+			@RequestParam String appId,
+			@RequestParam(required = false) String kbId,
+			@RequestParam(required = false) String query,
+			@RequestParam(required = false) String principalType,
+			@RequestParam(defaultValue = "0") int from,
+			@RequestParam(defaultValue = "50") int size,
+			HttpServletRequest request) {
+		try {
+			String email = extractChatbotUserEmail(request);
+			if (email == null) {
+				return Result.error(401, "Unauthorized");
+			}
+
+			List<String> kbIds;
+			if (kbId != null && !kbId.isBlank()) {
+				kbIds = List.of(kbId);
+			} else {
+				kbIds = resolveKbIds(appId);
+			}
+			if (kbIds.isEmpty()) {
+				return Result.error(400, "No knowledge base configured for this app");
+			}
+
+			List<Map<String, Object>> allAuthorities = new ArrayList<>();
+			long totalHits = 0;
+
+			for (String kb : kbIds) {
+				String index = kb + "_authority";
+
+				// Build search query
+				List<Object> mustClauses = new ArrayList<>();
+				List<Object> filterClauses = new ArrayList<>();
+
+				if (query != null && !query.isBlank()) {
+					mustClauses.add(Map.of("multi_match", Map.of(
+						"query", query,
+						"fields", List.of("principal_id^3", "display_name^2", "member_of^1"),
+						"type", "best_fields",
+						"fuzziness", "AUTO"
+					)));
+				}
+
+				if (principalType != null && !principalType.isBlank()) {
+					filterClauses.add(Map.of("term", Map.of("principal_type", principalType)));
+				}
+
+				Map<String, Object> boolQuery = new LinkedHashMap<>();
+				if (!mustClauses.isEmpty()) {
+					boolQuery.put("must", mustClauses);
+				} else {
+					boolQuery.put("must", List.of(Map.of("match_all", Map.of())));
+				}
+				if (!filterClauses.isEmpty()) {
+					boolQuery.put("filter", filterClauses);
+				}
+
+				// Aggregations for summary (use missing parameter to include docs without the field)
+				Map<String, Object> aggs = Map.of(
+					"types", Map.of("terms", Map.of(
+						"field", "principal_type",
+						"size", 10,
+						"missing", "unknown"
+					))
+				);
+
+				Map<String, Object> requestBody = new LinkedHashMap<>();
+				requestBody.put("query", Map.of("bool", boolQuery));
+				requestBody.put("from", from);
+				requestBody.put("size", size);
+				requestBody.put("sort", List.of(
+					Map.of("principal_type", Map.of("order", "asc", "unmapped_type", "keyword")),
+					Map.of("principal_id", Map.of("order", "asc", "unmapped_type", "keyword"))
+				));
+				requestBody.put("aggs", aggs);
+
+				try {
+					String queryJson = objectMapper.writeValueAsString(requestBody);
+					log.debug("OpenSearch authority query on {}: {}", index, queryJson);
+
+					Map<String, Object> result = executeOpenSearchQuery(index, queryJson);
+
+					@SuppressWarnings("unchecked")
+					Map<String, Object> hits = (Map<String, Object>) result.get("hits");
+					@SuppressWarnings("unchecked")
+					Map<String, Object> total = (Map<String, Object>) hits.get("total");
+					totalHits += ((Number) total.get("value")).longValue();
+
+					@SuppressWarnings("unchecked")
+					List<Map<String, Object>> hitList = (List<Map<String, Object>>) hits.get("hits");
+					for (Map<String, Object> hit : hitList) {
+						@SuppressWarnings("unchecked")
+						Map<String, Object> source = (Map<String, Object>) hit.get("_source");
+						Map<String, Object> auth = new LinkedHashMap<>();
+						auth.put("id", hit.get("_id"));
+						auth.put("kbId", kb);
+						auth.put("principalId", source.getOrDefault("principal_id", ""));
+						auth.put("principalType", source.getOrDefault("principal_type", ""));
+						auth.put("displayName", source.getOrDefault("display_name", ""));
+						auth.put("memberOf", source.getOrDefault("member_of", List.of()));
+						auth.put("members", source.getOrDefault("members", List.of()));
+						auth.put("memberCount", source.getOrDefault("member_count", 0));
+						auth.put("syncedAt", source.getOrDefault("synced_at", ""));
+						allAuthorities.add(auth);
+					}
+				}
+				catch (Exception e) {
+					log.warn("Failed to query authority index {}: {}", index, e.getMessage());
+				}
+			}
+
+			Map<String, Object> response = new LinkedHashMap<>();
+			response.put("authorities", allAuthorities);
+			response.put("total", totalHits);
+			response.put("from", from);
+			response.put("size", size);
+
+			return Result.success(response);
+		}
+		catch (Exception e) {
+			log.error("Authority browse failed for app {}", appId, e);
+			return Result.error(500, "Authority browse failed: " + e.getMessage());
+		}
 	}
 
 }

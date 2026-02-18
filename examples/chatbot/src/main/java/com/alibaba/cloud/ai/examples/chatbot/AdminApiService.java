@@ -358,4 +358,58 @@ public class AdminApiService {
 			.doOnError(error -> log.error("Failed to search RAG chunks", error));
 	}
 
+	/**
+	 * Download a document from the source system via the admin backend.
+	 * Returns the raw bytes as a Mono<byte[]>.
+	 */
+	public Mono<org.springframework.http.ResponseEntity<byte[]>> downloadDocument(
+			String jwtToken, String kbId, String docId) {
+		return webClient.get()
+			.uri(uriBuilder -> uriBuilder.path("/console/v1/chatbot/document/download")
+				.queryParam("kbId", kbId)
+				.queryParam("docId", docId)
+				.build())
+			.header("Authorization", "Bearer " + jwtToken)
+			.retrieve()
+			.toEntity(byte[].class)
+			.doOnError(error -> log.error("Failed to download document kbId={}, docId={}", kbId, docId, error));
+	}
+
+	/**
+	 * Browse authorities (users/groups) for a knowledge base.
+	 */
+	@SuppressWarnings("unchecked")
+	public Mono<Map<String, Object>> browseAuthorities(String jwtToken, String appId, String kbId,
+			String query, String principalType, int from, int size) {
+		return webClient.get()
+			.uri(uriBuilder -> {
+				var builder = uriBuilder.path("/console/v1/chatbot/authorities")
+					.queryParam("appId", appId)
+					.queryParam("from", from)
+					.queryParam("size", size);
+				if (kbId != null && !kbId.isBlank()) builder.queryParam("kbId", kbId);
+				if (query != null && !query.isBlank()) builder.queryParam("query", query);
+				if (principalType != null && !principalType.isBlank()) builder.queryParam("principalType", principalType);
+				return builder.build();
+			})
+			.header("Authorization", "Bearer " + jwtToken)
+			.retrieve()
+			.bodyToMono(Map.class)
+			.map(response -> {
+				Integer code = (Integer) response.get("code");
+				if (code != null && code == 200 && response.get("data") != null) {
+					return (Map<String, Object>) response.get("data");
+				}
+				return Map.<String, Object>of("authorities", List.of(), "total", 0);
+			})
+			.doOnError(error -> log.error("Failed to browse authorities", error));
+	}
+
+	/**
+	 * Get the base URL for constructing document download URLs.
+	 */
+	public String getBaseUrl() {
+		return baseUrl;
+	}
+
 }

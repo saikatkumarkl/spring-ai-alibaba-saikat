@@ -49,6 +49,7 @@ import org.springframework.ai.vectorstore.opensearch.OpenSearchVectorStoreOption
 import org.springframework.ai.vectorstore.opensearch.SimilarityFunction;
 import org.springframework.ai.vectorstore.filter.FilterExpressionConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -81,6 +82,12 @@ public class OpenSearchVectorStoreService implements VectorStoreService {
 
 	/** Converter for filter expressions to OpenSearch queries */
 	private final FilterExpressionConverter filterExpressionConverter = new OpenSearchFilterExpressionConverter();
+
+	@Value("${rag.opensearch.shards:1}")
+	private int shards;
+
+	@Value("${rag.opensearch.replicas:0}")
+	private int replicas;
 
 	public OpenSearchVectorStoreService(ModelFactory modelFactory, OpenSearchClient openSearchClient,
 			RestClient restClient) {
@@ -138,7 +145,8 @@ public class OpenSearchVectorStoreService implements VectorStoreService {
 		try {
 			var indexResponse = openSearchClient.indices()
 				.create(createIndexBuilder -> createIndexBuilder.index(indexName)
-					.settings(s -> s.numberOfShards("1").numberOfReplicas("1").knn(true))
+					.settings(s -> s.numberOfShards(String.valueOf(shards))
+						.numberOfReplicas(String.valueOf(replicas)).knn(true))
 					.mappings(m -> m
 						.withJson(new ByteArrayInputStream(mappingJson.getBytes(StandardCharsets.UTF_8)))));
 

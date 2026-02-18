@@ -147,6 +147,15 @@ rag:
   vector:
     mode: ${RAG_VECTOR_MODE:}
     compression-level: ${RAG_COMPRESSION_LEVEL:}
+  opensearch:
+    # Number of primary shards for knowledge base indices.
+    # Default 1 is suitable for dev / single-node.
+    # For production: ~25 GB per shard; increase as data grows.
+    # Override via env var RAG_OPENSEARCH_SHARDS.
+    shards: ${RAG_OPENSEARCH_SHARDS:1}
+    # Number of replica shards. Default 0 for dev; set >= 1 for HA.
+    # Override via env var RAG_OPENSEARCH_REPLICAS.
+    replicas: ${RAG_OPENSEARCH_REPLICAS:0}
 initializr:
   web:
     enabled: false

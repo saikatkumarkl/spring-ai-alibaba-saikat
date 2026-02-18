@@ -16,6 +16,7 @@
 package com.alibaba.cloud.ai.examples.chatbot;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -368,6 +369,60 @@ public class ChatController {
 			.map(data -> ResponseEntity.ok(data))
 			.onErrorResume(error -> {
 				log.error("Failed to search RAG chunks", error);
+				return Mono.just(ResponseEntity.internalServerError().build());
+			});
+	}
+
+	/**
+	 * Document download proxy for the viewer.
+	 * Fetches the document from the admin backend (which fetches from source CMIS system).
+	 */
+	@GetMapping("/document/download")
+	public Mono<ResponseEntity<byte[]>> downloadDocument(
+			@RequestParam String kbId,
+			@RequestParam String docId,
+			HttpSession session) {
+		String jwtToken = (String) session.getAttribute("token");
+		if (jwtToken == null) {
+			return Mono.just(ResponseEntity.status(401).build());
+		}
+		return adminApi.downloadDocument(jwtToken, kbId, docId)
+			.map(entity -> {
+				HttpHeaders headers = new HttpHeaders();
+				if (entity.getHeaders().getContentType() != null) {
+					headers.setContentType(entity.getHeaders().getContentType());
+				}
+				if (entity.getHeaders().getFirst("Content-Disposition") != null) {
+					headers.set("Content-Disposition", entity.getHeaders().getFirst("Content-Disposition"));
+				}
+				return ResponseEntity.ok().headers(headers).body(entity.getBody());
+			})
+			.onErrorResume(error -> {
+				log.error("Failed to download document kbId={}, docId={}", kbId, docId, error);
+				return Mono.just(ResponseEntity.internalServerError().build());
+			});
+	}
+
+	/**
+	 * Browse authorities (users/groups) for knowledge bases.
+	 */
+	@GetMapping("/authorities")
+	public Mono<ResponseEntity<Map<String, Object>>> browseAuthorities(
+			@RequestParam String appId,
+			@RequestParam(required = false) String kbId,
+			@RequestParam(required = false) String query,
+			@RequestParam(required = false) String principalType,
+			@RequestParam(defaultValue = "0") int from,
+			@RequestParam(defaultValue = "50") int size,
+			HttpSession session) {
+		String jwtToken = (String) session.getAttribute("token");
+		if (jwtToken == null) {
+			return Mono.just(ResponseEntity.status(401).build());
+		}
+		return adminApi.browseAuthorities(jwtToken, appId, kbId, query, principalType, from, size)
+			.map(data -> ResponseEntity.ok(data))
+			.onErrorResume(error -> {
+				log.error("Failed to browse authorities", error);
 				return Mono.just(ResponseEntity.internalServerError().build());
 			});
 	}

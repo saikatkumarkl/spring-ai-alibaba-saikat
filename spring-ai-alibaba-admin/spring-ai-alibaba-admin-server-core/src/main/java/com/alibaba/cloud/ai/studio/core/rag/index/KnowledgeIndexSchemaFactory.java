@@ -67,6 +67,25 @@ public class KnowledgeIndexSchemaFactory {
 	@Value("${rag.vector.compression-level:}")
 	private String ragCompressionLevel;
 
+	/**
+	 * Number of primary shards for knowledge base indices.
+	 * Override via env var {@code RAG_OPENSEARCH_SHARDS}.
+	 * Default is 1 (suitable for development / single-node).
+	 * For production with billions of documents, increase proportionally
+	 * (guideline: ~25 GB per shard, max ~50 shards per index).
+	 */
+	@Value("${rag.opensearch.shards:" + KnowledgeIndexSchema.DEFAULT_SHARDS + "}")
+	private int shards;
+
+	/**
+	 * Number of replica shards for knowledge base indices.
+	 * Override via env var {@code RAG_OPENSEARCH_REPLICAS}.
+	 * Default is 0 (suitable for single-node development).
+	 * For production HA, set to at least 1.
+	 */
+	@Value("${rag.opensearch.replicas:" + KnowledgeIndexSchema.DEFAULT_REPLICAS + "}")
+	private int replicas;
+
 	public KnowledgeIndexSchemaFactory() {
 		this.restTemplate = new RestTemplate();
 	}
@@ -87,7 +106,8 @@ public class KnowledgeIndexSchemaFactory {
 					"Document index name must end with '" + KnowledgeIndexSchema.DOCUMENT_SUFFIX
 							+ "', got: " + indexName);
 		}
-		createIndex(opensearchUrl, username, password, indexName, KnowledgeIndexSchema.DOCUMENT_INDEX_MAPPING);
+		createIndex(opensearchUrl, username, password, indexName,
+				KnowledgeIndexSchema.documentIndexMapping(shards, replicas));
 	}
 
 	/**
@@ -106,7 +126,8 @@ public class KnowledgeIndexSchemaFactory {
 					"Authority index name must end with '" + KnowledgeIndexSchema.AUTHORITY_SUFFIX
 							+ "', got: " + indexName);
 		}
-		createIndex(opensearchUrl, username, password, indexName, KnowledgeIndexSchema.AUTHORITY_INDEX_MAPPING);
+		createIndex(opensearchUrl, username, password, indexName,
+				KnowledgeIndexSchema.authorityIndexMapping(shards, replicas));
 	}
 
 	/**
@@ -129,8 +150,10 @@ public class KnowledgeIndexSchemaFactory {
 		}
 		String effectiveMode = (ragVectorMode != null && !ragVectorMode.isBlank()) ? ragVectorMode : null;
 		String effectiveCompression = (ragCompressionLevel != null && !ragCompressionLevel.isBlank()) ? ragCompressionLevel : null;
-		log.info("RAG vector config: mode={}, compression={}", effectiveMode, effectiveCompression);
-		String mapping = KnowledgeIndexSchema.ragIndexMapping(embeddingDimension, effectiveMode, effectiveCompression);
+		log.info("RAG vector config: mode={}, compression={}, shards={}, replicas={}",
+				effectiveMode, effectiveCompression, shards, replicas);
+		String mapping = KnowledgeIndexSchema.ragIndexMapping(
+				embeddingDimension, effectiveMode, effectiveCompression, shards, replicas);
 		createIndex(opensearchUrl, username, password, indexName, mapping);
 	}
 

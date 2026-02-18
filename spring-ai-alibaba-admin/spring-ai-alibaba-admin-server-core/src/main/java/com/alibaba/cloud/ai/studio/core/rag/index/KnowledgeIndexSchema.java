@@ -107,15 +107,25 @@ public final class KnowledgeIndexSchema {
 		return sanitized;
 	}
 
+	// ── Default Settings ─────────────────────────────────────────────────
+
+	/** Default number of shards for new indices. */
+	public static final int DEFAULT_SHARDS = 1;
+
+	/** Default number of replicas for new indices. */
+	public static final int DEFAULT_REPLICAS = 0;
+
 	// ── Index Mapping Definitions ────────────────────────────────────────
 
 	/**
-	 * OpenSearch mapping for the <strong>_document</strong> index.
+	 * OpenSearch mapping template for the <strong>_document</strong> index.
 	 * Stores all crawled documents with their properties and ACLs.
 	 * This schema is the same for ALL connectors (CMIS, REST API, etc.).
+	 *
+	 * <p>Contains two placeholders: {@code %d} for shards, {@code %d} for replicas.</p>
 	 */
-	public static final String DOCUMENT_INDEX_MAPPING = "{"
-			+ "\"settings\":{\"number_of_shards\":1,\"number_of_replicas\":0,"
+	private static final String DOCUMENT_INDEX_MAPPING_TEMPLATE = "{"
+			+ "\"settings\":{\"number_of_shards\":%d,\"number_of_replicas\":%d,"
 			+ "\"index.highlight.max_analyzed_offset\":10000000,"
 			+ "\"analysis\":{\"normalizer\":{\"lowercase\":{\"type\":\"custom\",\"filter\":[\"lowercase\"]}}}},"
 			+ "\"mappings\":{\"properties\":{"
@@ -136,12 +146,32 @@ public final class KnowledgeIndexSchema {
 			+ "}";
 
 	/**
-	 * OpenSearch mapping for the <strong>_authority</strong> index.
+	 * Backward-compatible constant with default shard settings (1 shard, 0 replicas).
+	 * @deprecated Use {@link #documentIndexMapping(int, int)} for explicit shard control.
+	 */
+	@Deprecated
+	public static final String DOCUMENT_INDEX_MAPPING = String.format(
+			DOCUMENT_INDEX_MAPPING_TEMPLATE, DEFAULT_SHARDS, DEFAULT_REPLICAS);
+
+	/**
+	 * Get the document index mapping with configurable shard settings.
+	 * @param shards number of primary shards
+	 * @param replicas number of replica shards
+	 * @return the complete mapping JSON
+	 */
+	public static String documentIndexMapping(int shards, int replicas) {
+		return String.format(DOCUMENT_INDEX_MAPPING_TEMPLATE, shards, replicas);
+	}
+
+	/**
+	 * OpenSearch mapping template for the <strong>_authority</strong> index.
 	 * Stores users and groups (principals) with their memberships.
 	 * Equivalent to ManifoldCF's {@code {repo}_authorities} index.
+	 *
+	 * <p>Contains two placeholders: {@code %d} for shards, {@code %d} for replicas.</p>
 	 */
-	public static final String AUTHORITY_INDEX_MAPPING = "{"
-			+ "\"settings\":{\"number_of_shards\":1,\"number_of_replicas\":0,"
+	private static final String AUTHORITY_INDEX_MAPPING_TEMPLATE = "{"
+			+ "\"settings\":{\"number_of_shards\":%d,\"number_of_replicas\":%d,"
 			+ "\"index.highlight.max_analyzed_offset\":10000000,"
 			+ "\"analysis\":{\"normalizer\":{\"lowercase\":{\"type\":\"custom\",\"filter\":[\"lowercase\"]}}}},"
 			+ "\"mappings\":{\"properties\":{"
@@ -154,6 +184,24 @@ public final class KnowledgeIndexSchema {
 			+ "\"synced_at\":{\"type\":\"date\"}"
 			+ "}}"
 			+ "}";
+
+	/**
+	 * Backward-compatible constant with default shard settings (1 shard, 0 replicas).
+	 * @deprecated Use {@link #authorityIndexMapping(int, int)} for explicit shard control.
+	 */
+	@Deprecated
+	public static final String AUTHORITY_INDEX_MAPPING = String.format(
+			AUTHORITY_INDEX_MAPPING_TEMPLATE, DEFAULT_SHARDS, DEFAULT_REPLICAS);
+
+	/**
+	 * Get the authority index mapping with configurable shard settings.
+	 * @param shards number of primary shards
+	 * @param replicas number of replica shards
+	 * @return the complete mapping JSON
+	 */
+	public static String authorityIndexMapping(int shards, int replicas) {
+		return String.format(AUTHORITY_INDEX_MAPPING_TEMPLATE, shards, replicas);
+	}
 
 	/**
 	 * OpenSearch mapping template for the <strong>_rag</strong> index.
@@ -177,7 +225,7 @@ public final class KnowledgeIndexSchema {
 	 * </table>
 	 */
 	private static final String RAG_INDEX_MAPPING_TEMPLATE = "{"
-			+ "\"settings\":{\"number_of_shards\":1,\"number_of_replicas\":0,"
+			+ "\"settings\":{\"number_of_shards\":%d,\"number_of_replicas\":%d,"
 			+ "\"index\":{\"knn\":true},"
 			+ "\"index.highlight.max_analyzed_offset\":10000000,"
 			+ "\"analysis\":{\"normalizer\":{\"lowercase\":{\"type\":\"custom\",\"filter\":[\"lowercase\"]}}}},"
@@ -194,16 +242,16 @@ public final class KnowledgeIndexSchema {
 			+ "}";
 
 	/**
-	 * Get the RAG index mapping with default vector settings (no mode, no compression).
+	 * Get the RAG index mapping with default shard settings and no vector mode.
 	 * @param dimension the vector dimension (e.g., 1024 for DashScope text-embedding-v2)
 	 * @return the complete mapping JSON
 	 */
 	public static String ragIndexMapping(int dimension) {
-		return ragIndexMapping(dimension, null, null);
+		return ragIndexMapping(dimension, null, null, DEFAULT_SHARDS, DEFAULT_REPLICAS);
 	}
 
 	/**
-	 * Get the RAG index mapping with configurable vector storage mode.
+	 * Get the RAG index mapping with configurable vector storage mode and default shards.
 	 *
 	 * @param dimension        the vector dimension (e.g. 1024)
 	 * @param mode             vector storage mode: {@code "on_disk"}, {@code "in_memory"},
@@ -213,6 +261,23 @@ public final class KnowledgeIndexSchema {
 	 * @return the complete mapping JSON
 	 */
 	public static String ragIndexMapping(int dimension, String mode, String compressionLevel) {
+		return ragIndexMapping(dimension, mode, compressionLevel, DEFAULT_SHARDS, DEFAULT_REPLICAS);
+	}
+
+	/**
+	 * Get the RAG index mapping with configurable vector storage mode and shard settings.
+	 *
+	 * @param dimension        the vector dimension (e.g. 1024)
+	 * @param mode             vector storage mode: {@code "on_disk"}, {@code "in_memory"},
+	 *                         or {@code null}/{@code ""} for OpenSearch default
+	 * @param compressionLevel compression level: {@code "32x"}, {@code "16x"}, {@code "8x"},
+	 *                         or {@code null}/{@code ""} for engine default
+	 * @param shards           number of primary shards
+	 * @param replicas         number of replica shards
+	 * @return the complete mapping JSON
+	 */
+	public static String ragIndexMapping(int dimension, String mode, String compressionLevel,
+			int shards, int replicas) {
 		StringBuilder extra = new StringBuilder();
 		if (mode != null && !mode.isBlank()) {
 			extra.append(",\"mode\":\"").append(mode.strip()).append("\"");
@@ -220,7 +285,7 @@ public final class KnowledgeIndexSchema {
 		if (compressionLevel != null && !compressionLevel.isBlank()) {
 			extra.append(",\"compression_level\":\"").append(compressionLevel.strip()).append("\"");
 		}
-		return String.format(RAG_INDEX_MAPPING_TEMPLATE, dimension, extra.toString());
+		return String.format(RAG_INDEX_MAPPING_TEMPLATE, shards, replicas, dimension, extra.toString());
 	}
 
 	/**
