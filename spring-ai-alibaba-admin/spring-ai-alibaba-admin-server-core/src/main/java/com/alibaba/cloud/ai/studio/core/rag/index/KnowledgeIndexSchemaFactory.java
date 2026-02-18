@@ -16,14 +16,12 @@
 
 package com.alibaba.cloud.ai.studio.core.rag.index;
 
+import com.alibaba.cloud.ai.studio.core.rag.OpenSearchUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 /**
  * Factory that creates OpenSearch indices with enforced schemas.
@@ -47,6 +45,27 @@ import java.util.Base64;
 public class KnowledgeIndexSchemaFactory {
 
 	private final RestTemplate restTemplate;
+
+	/**
+	 * Vector storage mode for RAG indices.
+	 * <ul>
+	 *   <li>{@code on_disk} — binary-quantised search, auto-rescoring from disk (low RAM)</li>
+	 *   <li>{@code in_memory} — full-precision vectors in RAM (fastest, high RAM)</li>
+	 *   <li><em>empty</em> — OpenSearch engine default</li>
+	 * </ul>
+	 * Override via env var {@code RAG_VECTOR_MODE}.
+	 */
+	@Value("${rag.vector.mode:}")
+	private String ragVectorMode;
+
+	/**
+	 * Compression level for binary quantisation.
+	 * Only meaningful when {@code rag.vector.mode=on_disk}.
+	 * Typical values: {@code 32x} (binary), {@code 16x}, {@code 8x}.
+	 * Override via env var {@code RAG_COMPRESSION_LEVEL}.
+	 */
+	@Value("${rag.vector.compression-level:}")
+	private String ragCompressionLevel;
 
 	public KnowledgeIndexSchemaFactory() {
 		this.restTemplate = new RestTemplate();
@@ -108,7 +127,10 @@ public class KnowledgeIndexSchemaFactory {
 					"RAG index name must end with '" + KnowledgeIndexSchema.RAG_SUFFIX
 							+ "', got: " + indexName);
 		}
-		String mapping = KnowledgeIndexSchema.ragIndexMapping(embeddingDimension);
+		String effectiveMode = (ragVectorMode != null && !ragVectorMode.isBlank()) ? ragVectorMode : null;
+		String effectiveCompression = (ragCompressionLevel != null && !ragCompressionLevel.isBlank()) ? ragCompressionLevel : null;
+		log.info("RAG vector config: mode={}, compression={}", effectiveMode, effectiveCompression);
+		String mapping = KnowledgeIndexSchema.ragIndexMapping(embeddingDimension, effectiveMode, effectiveCompression);
 		createIndex(opensearchUrl, username, password, indexName, mapping);
 	}
 
@@ -123,7 +145,7 @@ public class KnowledgeIndexSchemaFactory {
 	public void deleteIndex(String opensearchUrl, String username, String password, String indexName) {
 		try {
 			String endpoint = buildEndpoint(opensearchUrl, indexName);
-			HttpHeaders headers = buildAuthHeaders(username, password);
+			HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(username, password);
 			HttpEntity<String> request = new HttpEntity<>(null, headers);
 			restTemplate.exchange(endpoint, HttpMethod.DELETE, request, String.class);
 			log.info("Deleted OpenSearch index: {}", indexName);
@@ -144,7 +166,7 @@ public class KnowledgeIndexSchemaFactory {
 	public boolean indexExists(String opensearchUrl, String username, String password, String indexName) {
 		try {
 			String endpoint = buildEndpoint(opensearchUrl, indexName);
-			HttpHeaders headers = buildAuthHeaders(username, password);
+			HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(username, password);
 			HttpEntity<String> request = new HttpEntity<>(null, headers);
 			ResponseEntity<String> response = restTemplate.exchange(endpoint, HttpMethod.HEAD, request, String.class);
 			return response.getStatusCode().is2xxSuccessful();
@@ -160,7 +182,7 @@ public class KnowledgeIndexSchemaFactory {
 			String indexName, String mappingJson) {
 		try {
 			String endpoint = buildEndpoint(opensearchUrl, indexName);
-			HttpHeaders headers = buildAuthHeaders(username, password);
+			HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(username, password);
 			headers.setContentType(MediaType.APPLICATION_JSON);
 
 			HttpEntity<String> request = new HttpEntity<>(mappingJson, headers);
@@ -172,23 +194,15 @@ public class KnowledgeIndexSchemaFactory {
 				log.debug("Index '{}' already exists, skipping creation", indexName);
 			}
 			else {
-				log.warn("Index creation warning for {}: {}", indexName, e.getMessage());
+				// B5: Rethrow real errors instead of silently swallowing them
+				log.error("Index creation failed for {}: {}", indexName, e.getMessage());
+				throw new RuntimeException("Failed to create OpenSearch index '" + indexName + "': " + e.getMessage(), e);
 			}
 		}
 	}
 
 	private String buildEndpoint(String baseUrl, String indexName) {
 		return baseUrl.endsWith("/") ? baseUrl + indexName : baseUrl + "/" + indexName;
-	}
-
-	private HttpHeaders buildAuthHeaders(String username, String password) {
-		HttpHeaders headers = new HttpHeaders();
-		if (StringUtils.isNotBlank(username)) {
-			String auth = Base64.getEncoder()
-				.encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
-			headers.set("Authorization", "Basic " + auth);
-		}
-		return headers;
 	}
 
 }

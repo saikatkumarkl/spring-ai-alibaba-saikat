@@ -333,6 +333,18 @@ public class KnowledgeBaseController {
 	}
 
 	/**
+	 * Re-RAG specific documents: delete old chunks and re-chunk/re-embed selected documents.
+	 */
+	@PostMapping("/sync/{syncId}/rerag-documents")
+	public Result<Map<String, Object>> reragDocuments(
+			@PathVariable("syncId") String syncId,
+			@RequestBody List<String> docIds) {
+		RequestContext context = RequestContextHolder.getRequestContext();
+		Map<String, Object> result = knowledgeSyncService.reragDocuments(syncId, docIds);
+		return Result.success(context.getRequestId(), result);
+	}
+
+	/**
 	 * Lists documents from the OpenSearch index for a source-based knowledge base.
 	 */
 	@GetMapping("/{kbId}/sync-documents")

@@ -127,8 +127,6 @@ public final class KnowledgeIndexSchema {
 			+ "\"file_type\":{\"type\":\"keyword\"},"
 			+ "\"created_at\":{\"type\":\"date\"},"
 			+ "\"updated_at\":{\"type\":\"date\"},"
-			+ "\"source_id\":{\"type\":\"keyword\"},"
-			+ "\"connector_type\":{\"type\":\"keyword\"},"
 			+ "\"allow_token_document\":{\"type\":\"keyword\",\"normalizer\":\"lowercase\"},"
 			+ "\"deny_token_document\":{\"type\":\"keyword\",\"normalizer\":\"lowercase\"},"
 			+ "\"allow_token_parent\":{\"type\":\"keyword\",\"normalizer\":\"lowercase\"},"
@@ -153,8 +151,6 @@ public final class KnowledgeIndexSchema {
 			+ "\"member_of\":{\"type\":\"keyword\",\"normalizer\":\"lowercase\"},"
 			+ "\"members\":{\"type\":\"keyword\",\"normalizer\":\"lowercase\"},"
 			+ "\"member_count\":{\"type\":\"integer\"},"
-			+ "\"source_id\":{\"type\":\"keyword\"},"
-			+ "\"connector_type\":{\"type\":\"keyword\"},"
 			+ "\"synced_at\":{\"type\":\"date\"}"
 			+ "}}"
 			+ "}";
@@ -162,9 +158,25 @@ public final class KnowledgeIndexSchema {
 	/**
 	 * OpenSearch mapping template for the <strong>_rag</strong> index.
 	 * Stores chunked content with vector embeddings for RAG retrieval.
-	 * The {@code %d} placeholder must be replaced with the actual embedding dimension.
+	 *
+	 * <p>Contains two placeholders:</p>
+	 * <ul>
+	 *   <li>{@code %d} — embedding dimension (e.g. 1024)</li>
+	 *   <li>{@code %s} — extra knn_vector attributes (mode, compression_level, or empty)</li>
+	 * </ul>
+	 *
+	 * <p><strong>Vector storage modes</strong> (set via {@code rag.vector.mode}):</p>
+	 * <table>
+	 *   <tr><th>Mode</th><th>Behaviour</th></tr>
+	 *   <tr><td>{@code on_disk}</td><td>Binary-quantised candidate search (32x compression
+	 *       by default) with automatic full-precision rescoring from disk.
+	 *       Big RAM savings, slight latency increase.</td></tr>
+	 *   <tr><td>{@code in_memory}</td><td>Full-precision vectors kept in RAM.
+	 *       Fastest search, highest RAM usage.</td></tr>
+	 *   <tr><td><em>empty / not set</em></td><td>OpenSearch default (engine-dependent).</td></tr>
+	 * </table>
 	 */
-	public static final String RAG_INDEX_MAPPING_TEMPLATE = "{"
+	private static final String RAG_INDEX_MAPPING_TEMPLATE = "{"
 			+ "\"settings\":{\"number_of_shards\":1,\"number_of_replicas\":0,"
 			+ "\"index\":{\"knn\":true},"
 			+ "\"index.highlight.max_analyzed_offset\":10000000,"
@@ -173,9 +185,8 @@ public final class KnowledgeIndexSchema {
 			+ "\"chunk_id\":{\"type\":\"keyword\"},"
 			+ "\"doc_id\":{\"type\":\"keyword\"},"
 			+ "\"content\":{\"type\":\"text\"},"
-			+ "\"embedding\":{\"type\":\"knn_vector\",\"dimension\":%d,\"method\":{\"name\":\"hnsw\",\"space_type\":\"cosinesimil\"}},"
+			+ "\"embedding\":{\"type\":\"knn_vector\",\"dimension\":%d,\"space_type\":\"cosinesimil\",\"data_type\":\"float\"%s},"
 			+ "\"metadata\":{\"type\":\"object\"},"
-			+ "\"source_id\":{\"type\":\"keyword\"},"
 			+ "\"file_title\":{\"type\":\"text\",\"fields\":{\"keyword\":{\"type\":\"keyword\"}}},"
 			+ "\"chunk_index\":{\"type\":\"integer\"},"
 			+ "\"authorities\":{\"type\":\"keyword\",\"normalizer\":\"lowercase\"}"
@@ -183,12 +194,33 @@ public final class KnowledgeIndexSchema {
 			+ "}";
 
 	/**
-	 * Get the RAG index mapping with a specific embedding dimension.
+	 * Get the RAG index mapping with default vector settings (no mode, no compression).
 	 * @param dimension the vector dimension (e.g., 1024 for DashScope text-embedding-v2)
 	 * @return the complete mapping JSON
 	 */
 	public static String ragIndexMapping(int dimension) {
-		return String.format(RAG_INDEX_MAPPING_TEMPLATE, dimension);
+		return ragIndexMapping(dimension, null, null);
+	}
+
+	/**
+	 * Get the RAG index mapping with configurable vector storage mode.
+	 *
+	 * @param dimension        the vector dimension (e.g. 1024)
+	 * @param mode             vector storage mode: {@code "on_disk"}, {@code "in_memory"},
+	 *                         or {@code null}/{@code ""} for OpenSearch default
+	 * @param compressionLevel compression level: {@code "32x"}, {@code "16x"}, {@code "8x"},
+	 *                         or {@code null}/{@code ""} for engine default
+	 * @return the complete mapping JSON
+	 */
+	public static String ragIndexMapping(int dimension, String mode, String compressionLevel) {
+		StringBuilder extra = new StringBuilder();
+		if (mode != null && !mode.isBlank()) {
+			extra.append(",\"mode\":\"").append(mode.strip()).append("\"");
+		}
+		if (compressionLevel != null && !compressionLevel.isBlank()) {
+			extra.append(",\"compression_level\":\"").append(compressionLevel.strip()).append("\"");
+		}
+		return String.format(RAG_INDEX_MAPPING_TEMPLATE, dimension, extra.toString());
 	}
 
 	/**

@@ -34,6 +34,7 @@ import com.alibaba.cloud.ai.studio.core.base.entity.KnowledgeBaseEntity;
 import com.alibaba.cloud.ai.studio.core.base.manager.RedisManager;
 import com.alibaba.cloud.ai.studio.core.base.mapper.KnowledgeBaseMapper;
 import com.alibaba.cloud.ai.studio.core.rag.KnowledgeBaseService;
+import com.alibaba.cloud.ai.studio.core.rag.KnowledgeSyncService;
 import com.alibaba.cloud.ai.studio.core.rag.vectorstore.VectorStoreFactory;
 import com.alibaba.cloud.ai.studio.core.utils.common.BeanCopierUtils;
 import com.alibaba.cloud.ai.studio.core.utils.common.IdGenerator;
@@ -41,14 +42,18 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static com.alibaba.cloud.ai.studio.core.base.constants.CacheConstants.CACHE_EMPTY_ID;
 import static com.alibaba.cloud.ai.studio.core.base.constants.CacheConstants.CACHE_KB_WORKSPACE_ID_PREFIX;
@@ -60,6 +65,7 @@ import static com.alibaba.cloud.ai.studio.core.base.constants.CacheConstants.CAC
  *
  * @since 1.0.0.3
  */
+@Slf4j
 @Service
 public class KnowledgeBaseServiceImpl extends ServiceImpl<KnowledgeBaseMapper, KnowledgeBaseEntity>
 		implements KnowledgeBaseService {
@@ -70,9 +76,14 @@ public class KnowledgeBaseServiceImpl extends ServiceImpl<KnowledgeBaseMapper, K
 	/** Factory for creating vector store services */
 	private final VectorStoreFactory vectorStoreFactory;
 
-	public KnowledgeBaseServiceImpl(RedisManager redisManager, VectorStoreFactory vectorStoreFactory) {
+	/** Application context for lazy lookup (avoids circular dependency with KnowledgeSyncService) */
+	private final ApplicationContext applicationContext;
+
+	public KnowledgeBaseServiceImpl(RedisManager redisManager, VectorStoreFactory vectorStoreFactory,
+			ApplicationContext applicationContext) {
 		this.redisManager = redisManager;
 		this.vectorStoreFactory = vectorStoreFactory;
+		this.applicationContext = applicationContext;
 	}
 
 	/**
@@ -116,8 +127,10 @@ public class KnowledgeBaseServiceImpl extends ServiceImpl<KnowledgeBaseMapper, K
 		entity.setCreator(context.getAccountId());
 		entity.setModifier(context.getAccountId());
 
-		// create vector store first
-		vectorStoreFactory.getVectorStoreService().createIndex(kb.getIndexConfig());
+		// NOTE: We do NOT create an OpenSearch index here.
+		// The sync pipeline (KnowledgeSyncServiceImpl) creates properly named indices
+		// ({kbId}_document, {kbId}_authority, {kbId}_rag) when a sync job runs.
+		// Previously this created a bare kbId index which was redundant.
 
 		// save to db
 		this.save(entity);
@@ -204,11 +217,11 @@ public class KnowledgeBaseServiceImpl extends ServiceImpl<KnowledgeBaseMapper, K
 		entity.setName(kb.getName());
 		entity.setTotalDocs(kb.getTotalDocs());
 		entity.setDescription(kb.getDescription());
-		// TODO now do not support changing process config as it needs to re-index for all
-		// documents
-		// if (kb.getProcessConfig() != null) {
-		// entity.setProcessConfig(JsonUtils.toJson(kb.getProcessConfig()));
-		// }
+		// Allow updating process config (chunk type, size, overlap, full_text_search).
+		// Changes take effect on next RAG reindex.
+		if (kb.getProcessConfig() != null) {
+			entity.setProcessConfig(JsonUtils.toJson(kb.getProcessConfig()));
+		}
 
 		IndexConfig config = kb.getIndexConfig();
 		if (config != null) {
@@ -235,12 +248,12 @@ public class KnowledgeBaseServiceImpl extends ServiceImpl<KnowledgeBaseMapper, K
 	}
 
 	/**
-	 * Deletes a knowledge base and its associated resources
+	 * Deletes a knowledge base and its associated resources.
+	 * The DB/cache cleanup happens synchronously; index deletion runs async.
 	 * @param kbId ID of the knowledge base to delete
 	 */
 	@Override
 	public void deleteKnowledgeBase(String kbId) {
-		// TODO delete all documents and chunks first?
 		RequestContext context = RequestContextHolder.getRequestContext();
 		String workspaceId = context.getWorkspaceId();
 
@@ -249,22 +262,50 @@ public class KnowledgeBaseServiceImpl extends ServiceImpl<KnowledgeBaseMapper, K
 			throw new BizException(ErrorCode.KNOWLEDGE_BASE_NOT_FOUND.toError());
 		}
 
-		// delete vector store
-		KnowledgeBase kb = toKnowledgeBaseDTO(entity);
-		vectorStoreFactory.getVectorStoreService().deleteIndex(kb.getIndexConfig());
-
-		// delete from db
+		// 1. Soft-delete KB from DB immediately so UI reflects the change
 		entity.setStatus(CommonStatus.DELETED);
 		entity.setGmtModified(new Date());
 		entity.setModifier(context.getAccountId());
 		this.updateById(entity);
 
-		// delete from cache
+		// 2. Remove from cache
 		String cacheKey = getKnowledgeBaseCacheKey(workspaceId, kbId);
 		redisManager.delete(cacheKey);
 
 		String nonWorkspaceKey = getKnowledgeBaseCacheKey(null, kbId);
 		redisManager.delete(nonWorkspaceKey);
+
+		log.info("Deleted knowledge base '{}' from DB. Starting async index cleanup...", kbId);
+
+		// 3. Async cleanup: delete sync jobs, OpenSearch indices, and vector store index
+		KnowledgeBase kb = toKnowledgeBaseDTO(entity);
+		CompletableFuture.runAsync(() -> {
+			try {
+				// Cascade delete all sync jobs and their indices
+				KnowledgeSyncService syncService = applicationContext.getBean(KnowledgeSyncService.class);
+				List<com.alibaba.cloud.ai.studio.runtime.domain.knowledgebase.KnowledgeSync> syncs = syncService.listSyncs(kbId);
+				if (syncs != null) {
+					for (com.alibaba.cloud.ai.studio.runtime.domain.knowledgebase.KnowledgeSync sync : syncs) {
+						try {
+							syncService.hardReset(sync.getSyncId());
+							syncService.deleteSync(sync.getSyncId());
+							log.info("Async cascade deleted sync '{}' for KB '{}'", sync.getSyncId(), kbId);
+						}
+						catch (Exception e) {
+							log.warn("Failed to async cascade delete sync '{}': {}", sync.getSyncId(), e.getMessage());
+						}
+					}
+				}
+			}
+			catch (Exception e) {
+				log.warn("Could not async cascade delete syncs for KB '{}': {}", kbId, e.getMessage());
+			}
+
+			// NOTE: No separate vector store index to delete.
+			// The sync pipeline's hardReset already deletes _document, _authority, _rag indices.
+
+			log.info("Async index cleanup completed for KB '{}'", kbId);
+		});
 	}
 
 	/**

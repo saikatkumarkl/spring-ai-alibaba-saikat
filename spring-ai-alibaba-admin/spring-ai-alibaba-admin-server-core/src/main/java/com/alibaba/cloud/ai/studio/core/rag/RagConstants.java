@@ -47,8 +47,8 @@ public interface RagConstants {
 	/** Key for chunk index */
 	String KEY_CHUNK_INDEX = "index";
 
-	/** Default dimension for vector embeddings */
-	int DEFAULT_DIMENSION = 1536;
+	/** Default dimension for vector embeddings (matches mxbai-embed-large / text-embedding-v3) */
+	int DEFAULT_DIMENSION = 1024;
 
 	/** Search timeout in seconds */
 	int SEARCH_TIMEOUT = 30;

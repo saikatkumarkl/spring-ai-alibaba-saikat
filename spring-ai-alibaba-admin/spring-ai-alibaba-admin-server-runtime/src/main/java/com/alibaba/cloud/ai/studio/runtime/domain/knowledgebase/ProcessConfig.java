@@ -47,4 +47,12 @@ public class ProcessConfig implements Serializable {
 	@JsonProperty("chunk_overlap")
 	private Integer chunkOverlap = 100;
 
+	/**
+	 * Whether to keep full text content in the _document index for full-text search.
+	 * When false, the content field is removed from _document after RAG processing
+	 * to save storage space. Defaults to true (keep content).
+	 */
+	@JsonProperty("full_text_search")
+	private Boolean fullTextSearch = true;
+
 }

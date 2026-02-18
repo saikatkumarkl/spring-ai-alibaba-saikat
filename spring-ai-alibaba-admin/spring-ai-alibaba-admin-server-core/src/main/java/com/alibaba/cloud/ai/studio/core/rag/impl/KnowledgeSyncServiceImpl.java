@@ -17,20 +17,32 @@
 package com.alibaba.cloud.ai.studio.core.rag.impl;
 
 import com.alibaba.cloud.ai.studio.core.base.entity.DestinationEntity;
+import com.alibaba.cloud.ai.studio.core.base.entity.KnowledgeBaseEntity;
 import com.alibaba.cloud.ai.studio.core.base.entity.KnowledgeSyncEntity;
 import com.alibaba.cloud.ai.studio.core.base.entity.SourceSystemEntity;
 import com.alibaba.cloud.ai.studio.core.base.mapper.DestinationMapper;
+import com.alibaba.cloud.ai.studio.core.base.mapper.KnowledgeBaseMapper;
 import com.alibaba.cloud.ai.studio.core.base.mapper.KnowledgeSyncMapper;
 import com.alibaba.cloud.ai.studio.core.base.mapper.SourceSystemMapper;
 import com.alibaba.cloud.ai.studio.core.context.RequestContextHolder;
+import com.alibaba.cloud.ai.studio.core.model.embedding.DefaultBatchingStrategy;
+import com.alibaba.cloud.ai.studio.core.model.embedding.EmbeddingModelDimension;
+import com.alibaba.cloud.ai.studio.core.model.llm.ModelFactory;
 import com.alibaba.cloud.ai.studio.core.rag.KnowledgeSyncService;
+import com.alibaba.cloud.ai.studio.core.rag.OpenSearchUtils;
 import com.alibaba.cloud.ai.studio.core.rag.index.KnowledgeIndexSchema;
 import com.alibaba.cloud.ai.studio.core.rag.index.KnowledgeIndexSchemaFactory;
 import com.alibaba.cloud.ai.studio.core.source.ManifoldCFBridgeService;
 import com.alibaba.cloud.ai.studio.runtime.domain.RequestContext;
+import com.alibaba.cloud.ai.studio.runtime.domain.knowledgebase.IndexConfig;
 import com.alibaba.cloud.ai.studio.runtime.domain.knowledgebase.KnowledgeSync;
+import com.alibaba.cloud.ai.studio.runtime.domain.knowledgebase.ProcessConfig;
 import com.alibaba.cloud.ai.studio.runtime.enums.ErrorCode;
 import com.alibaba.cloud.ai.studio.runtime.exception.BizException;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.document.MetadataMode;
+import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.embedding.EmbeddingOptions;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -43,7 +55,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -66,6 +77,9 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -92,6 +106,10 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 
 	private final KnowledgeIndexSchemaFactory indexSchemaFactory;
 
+	private final KnowledgeBaseMapper knowledgeBaseMapper;
+
+	private final ModelFactory modelFactory;
+
 	private final ObjectMapper objectMapper;
 
 	private final RestTemplate restTemplate;
@@ -104,14 +122,205 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 	 */
 	private final ConcurrentHashMap<String, String> activeSyncTokens = new ConcurrentHashMap<>();
 
+	// ── Sync pipeline constants ──────────────────────────────────────────
+
+	/** ManifoldCF job poll interval in milliseconds. */
+	private static final int MCF_POLL_INTERVAL_MS = 3_000;
+
+	/** Maximum number of MCF poll iterations (~30 minutes at 3 s intervals). */
+	private static final int MCF_MAX_POLL_COUNT = 600;
+
+	/** Consecutive zero-doc polls before declaring source stuck (~2 minutes). */
+	private static final int MCF_STUCK_THRESHOLD = 40;
+
+	/** Default chunk size in characters for RAG text splitting (used when KB has no ProcessConfig). */
+	private static final int DEFAULT_CHUNK_SIZE_CHARS = 1_000;
+
+	/** Default overlap in characters between adjacent RAG chunks. */
+	private static final int DEFAULT_CHUNK_OVERLAP_CHARS = 200;
+
+	/** Number of documents per OpenSearch scroll fetch. */
+	private static final int SCROLL_BATCH_SIZE = 50;
+
+	/** Maximum number of RAG chunks per bulk indexing request. */
+	private static final int MAX_CHUNKS_PER_BULK = 200;
+
+	/** Maximum bulk request body size in bytes (5 MB). */
+	private static final int MAX_BULK_BYTES = 5 * 1024 * 1024;
+
+	/** Timeout in seconds for pre-flight connectivity checks. */
+	private static final long CONNECTIVITY_TIMEOUT_SECS = 60;
+
+	/** Default vector embedding dimension. */
+	private static final int DEFAULT_EMBEDDING_DIM = 1024;
+
+	/** Max retries for transient OpenSearch failures (5xx, connection reset). */
+	private static final int MAX_RETRIES = 3;
+
+	/** Initial backoff in ms between retries (multiplied by attempt number). */
+	private static final long RETRY_BACKOFF_MS = 1_000;
+
+	/** Alfresco REST API pagination cap for groups/members listing. */
+	private static final int ALFRESCO_MAX_ITEMS = 1_000;
+
+	/**
+	 * MIME types that Apache Tika can reliably extract full text from.
+	 * Documents with other MIME types will have metadata indexed but content
+	 * skipped during RAG processing (no text chunking / embedding).
+	 *
+	 * Categories:
+	 *   - PDF
+	 *   - Microsoft Office (Word, Excel, PowerPoint — legacy and OOXML)
+	 *   - OpenDocument (ODF: text, spreadsheet, presentation)
+	 *   - Plain text and markup (TXT, CSV, TSV, HTML, XML, JSON, YAML, MD)
+	 *   - Rich Text Format (RTF)
+	 *   - E-books (EPUB)
+	 *   - Email (EML, MSG)
+	 *   - Source code (Java, Python, JS, TS, C/C++, etc.)
+	 */
+	public static final Set<String> TIKA_PROCESSABLE_MIME_TYPES = Set.of(
+			// PDF
+			"application/pdf",
+			// Microsoft Word
+			"application/msword",
+			"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+			// Microsoft Excel
+			"application/vnd.ms-excel",
+			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+			// Microsoft PowerPoint
+			"application/vnd.ms-powerpoint",
+			"application/vnd.openxmlformats-officedocument.presentationml.presentation",
+			// OpenDocument
+			"application/vnd.oasis.opendocument.text",
+			"application/vnd.oasis.opendocument.spreadsheet",
+			"application/vnd.oasis.opendocument.presentation",
+			// Plain text, markup, data
+			"text/plain", "text/csv", "text/tab-separated-values",
+			"text/html", "text/xml", "application/xml",
+			"application/json", "text/yaml", "application/x-yaml",
+			"text/markdown", "text/x-markdown",
+			// RTF
+			"text/rtf", "application/rtf",
+			// E-books
+			"application/epub+zip",
+			// Email
+			"message/rfc822",           // .eml
+			"application/vnd.ms-outlook", // .msg
+			// Source code
+			"text/x-java-source", "text/x-python", "text/javascript",
+			"application/javascript", "text/x-c", "text/x-csrc",
+			"text/x-c++src", "text/x-csharp", "text/x-go",
+			"text/x-rustsrc", "text/x-scala", "text/x-kotlin",
+			"text/x-shellscript", "application/x-sh",
+			// Visio
+			"application/vnd.visio",
+			"application/vnd.ms-visio.drawing.main+xml"
+	);
+
+	/**
+	 * File extensions that Tika can process for full text extraction.
+	 * Used as fallback when MIME type is missing or generic (application/octet-stream).
+	 */
+	public static final Set<String> TIKA_PROCESSABLE_EXTENSIONS = Set.of(
+			"pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
+			"odt", "ods", "odp",
+			"txt", "text", "csv", "tsv", "log",
+			"html", "htm", "xhtml", "xml",
+			"json", "yaml", "yml",
+			"md", "markdown", "rst",
+			"rtf",
+			"epub",
+			"eml", "msg",
+			"java", "py", "js", "ts", "jsx", "tsx",
+			"c", "cpp", "cc", "h", "hpp", "cs",
+			"go", "rs", "scala", "kt", "kts",
+			"sh", "bash", "zsh", "bat", "cmd", "ps1",
+			"sql", "r", "rb", "pl", "lua", "swift",
+			"vsd", "vsdx"
+	);
+
+	/** Maximum number of buckets in OpenSearch terms aggregation. */
+	private static final int MAX_AGGREGATION_BUCKETS = 10_000;
+
+	// B16: Sync status constants — single source of truth for status strings
+	// (stored in DB and sent to frontend as-is)
+	private static final String STATUS_PENDING = "pending";
+	private static final String STATUS_INDEXING = "indexing";
+	private static final String STATUS_AUTHORITY_SYNCING = "authority_syncing";
+	private static final String STATUS_RAG_PROCESSING = "rag_processing";
+	private static final String STATUS_COMPLETED = "completed";
+	private static final String STATUS_FAILED = "failed";
+
+	/** Dedicated thread pool for async sync operations (avoids ForkJoinPool starvation). */
+	private final ExecutorService syncExecutor = Executors.newFixedThreadPool(4, r -> {
+		Thread t = new Thread(r, "kb-sync-worker");
+		t.setDaemon(true);
+		return t;
+	});
+
 	public KnowledgeSyncServiceImpl(SourceSystemMapper sourceSystemMapper, DestinationMapper destinationMapper,
-			ManifoldCFBridgeService mcfBridge, KnowledgeIndexSchemaFactory indexSchemaFactory) {
+			ManifoldCFBridgeService mcfBridge, KnowledgeIndexSchemaFactory indexSchemaFactory,
+			KnowledgeBaseMapper knowledgeBaseMapper, ModelFactory modelFactory) {
 		this.sourceSystemMapper = sourceSystemMapper;
 		this.destinationMapper = destinationMapper;
 		this.mcfBridge = mcfBridge;
 		this.indexSchemaFactory = indexSchemaFactory;
+		this.knowledgeBaseMapper = knowledgeBaseMapper;
+		this.modelFactory = modelFactory;
 		this.objectMapper = new ObjectMapper();
-		this.restTemplate = new RestTemplate();
+
+		// Configure RestTemplate with connection/read timeouts to prevent threads hanging indefinitely
+		SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+		factory.setConnectTimeout(Duration.ofSeconds(30));
+		factory.setReadTimeout(Duration.ofSeconds(120));
+		this.restTemplate = new RestTemplate(factory);
+	}
+
+	/**
+	 * On startup, recover any syncs that were left in an active state
+	 * ("indexing", "rag_processing", "authority_syncing") due to a server restart.
+	 * These syncs will never complete because the async thread died with the old JVM.
+	 */
+	@PostConstruct
+	void recoverOrphanedSyncs() {
+		try {
+			LambdaQueryWrapper<KnowledgeSyncEntity> wrapper = new LambdaQueryWrapper<>();
+			wrapper.in(KnowledgeSyncEntity::getStatus, STATUS_INDEXING, STATUS_RAG_PROCESSING, STATUS_AUTHORITY_SYNCING);
+			List<KnowledgeSyncEntity> orphans = this.list(wrapper);
+			if (!orphans.isEmpty()) {
+				log.warn("Found {} orphaned syncs from previous run, marking as failed", orphans.size());
+				for (KnowledgeSyncEntity orphan : orphans) {
+					orphan.setStatus(STATUS_FAILED);
+					orphan.setErrorMessage("Server restarted during sync — please restart the sync manually");
+					orphan.setGmtModified(new Date());
+					this.updateById(orphan);
+					log.info("Recovered orphaned sync '{}' (was '{}')", orphan.getSyncId(), orphan.getStatus());
+				}
+			}
+		}
+		catch (Exception e) {
+			log.warn("Failed to recover orphaned syncs on startup: {}", e.getMessage());
+		}
+	}
+
+	/**
+	 * Gracefully shut down the sync executor on application context close.
+	 * Waits up to 30 seconds for running tasks to finish, then force-terminates.
+	 */
+	@PreDestroy
+	void shutdownExecutor() {
+		log.info("Shutting down knowledge sync executor...");
+		syncExecutor.shutdown();
+		try {
+			if (!syncExecutor.awaitTermination(30, TimeUnit.SECONDS)) {
+				log.warn("Sync executor did not terminate in 30s, forcing shutdown");
+				syncExecutor.shutdownNow();
+			}
+		}
+		catch (InterruptedException e) {
+			syncExecutor.shutdownNow();
+			Thread.currentThread().interrupt();
+		}
 	}
 
 	@Override
@@ -139,7 +348,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		entity.setIndexName(indexName);
 		entity.setAuthorityIndexName(authorityIndexName);
 		entity.setRagIndexName(ragIndexName);
-		entity.setStatus("pending");
+		entity.setStatus(STATUS_PENDING);
 		entity.setIndexProgress(0);
 		entity.setRagProgress(0);
 		entity.setTotalDocs(0L);
@@ -189,6 +398,14 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("sync_id", "Sync job not found"));
 		}
 
+		// B6: Prevent concurrent syncs — reject if already running
+		String currentStatus = entity.getStatus();
+		if (STATUS_INDEXING.equals(currentStatus) || STATUS_RAG_PROCESSING.equals(currentStatus)
+				|| STATUS_AUTHORITY_SYNCING.equals(currentStatus)) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("status",
+					"Sync is already running (status: " + currentStatus + "). Stop it first or wait for completion."));
+		}
+
 		// Validate destination exists
 		DestinationEntity dest = findDestination(entity.getDestinationId());
 		if (dest == null) {
@@ -210,7 +427,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		if (!failures.isEmpty()) {
 			String errorMsg = "Connectivity check failed: " + String.join("; ", failures);
 			log.warn("Cannot start sync {}: {}", syncId, errorMsg);
-			entity.setStatus("failed");
+			entity.setStatus(STATUS_FAILED);
 			entity.setErrorMessage(errorMsg);
 			entity.setGmtModified(new Date());
 			this.updateById(entity);
@@ -218,7 +435,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		}
 
 		// Update status to indexing and clear stale error messages
-		entity.setStatus("indexing");
+		entity.setStatus(STATUS_INDEXING);
 		entity.setIndexProgress(0);
 		entity.setRagProgress(0);
 		entity.setErrorMessage("");
@@ -234,7 +451,8 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		// Start async indexing in a separate thread
 		// Note: @Async on self-invocation doesn't work with Spring AOP,
 		// so we use CompletableFuture.runAsync() instead.
-		CompletableFuture.runAsync(() -> startAsyncSync(entity, destUrl, destUsername, destPassword, syncToken));
+		CompletableFuture.runAsync(
+				() -> startAsyncSync(entity, destUrl, destUsername, destPassword, syncToken), syncExecutor);
 
 		Map<String, String> result = new LinkedHashMap<>();
 		result.put("status", "started");
@@ -256,13 +474,12 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 	 */
 	private List<String> runConnectivityChecks(String destUrl, String destUsername, String destPassword,
 			SourceSystemEntity source) {
-		long timeoutSeconds = 60;
+		long timeoutSeconds = CONNECTIVITY_TIMEOUT_SECS;
 		List<String> failures = Collections.synchronizedList(new ArrayList<>());
-		ExecutorService executor = Executors.newFixedThreadPool(3);
 
 		try {
 			// Check 1: Internal system (ManifoldCF)
-			Future<?> mcfFuture = executor.submit(() -> {
+			Future<?> mcfFuture = syncExecutor.submit(() -> {
 				try {
 					checkManifoldCFConnectivity();
 				}
@@ -272,7 +489,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			});
 
 			// Check 2: Target (OpenSearch)
-			Future<?> targetFuture = executor.submit(() -> {
+			Future<?> targetFuture = syncExecutor.submit(() -> {
 				try {
 					checkOpenSearchConnectivity(destUrl, destUsername, destPassword);
 				}
@@ -284,7 +501,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			// Check 3: Source (via MCF repo connection status)
 			Future<?> sourceFuture = null;
 			if (source != null && StringUtils.isNotBlank(source.getMcfConnectionName())) {
-				sourceFuture = executor.submit(() -> {
+				sourceFuture = syncExecutor.submit(() -> {
 					try {
 						checkSourceConnectivity(source);
 					}
@@ -306,7 +523,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			}
 		}
 		finally {
-			executor.shutdownNow();
+			// syncExecutor is shared — not shut down per invocation
 		}
 
 		if (failures.isEmpty()) {
@@ -344,7 +561,6 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 	 * Check ManifoldCF API is reachable by calling its connector-types endpoint.
 	 */
 	private void checkManifoldCFConnectivity() {
-		RestTemplate timeoutRt = createTimeoutRestTemplate();
 		try {
 			List<Map<String, String>> types = mcfBridge.getConnectorTypes();
 			if (types == null || types.isEmpty()) {
@@ -426,6 +642,66 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		return msg.length() > 200 ? msg.substring(0, 200) + "..." : msg;
 	}
 
+	/**
+	 * Configure an HttpURLConnection to trust all SSL certificates.
+	 * Used for connecting to source systems with self-signed certificates.
+	 */
+	private void configureTrustAllSsl(HttpURLConnection conn) throws Exception {
+		if (conn instanceof HttpsURLConnection httpsConn) {
+			SSLContext sslContext = SSLContext.getInstance("TLS");
+			sslContext.init(null, new TrustManager[]{ new X509TrustManager() {
+				public void checkClientTrusted(X509Certificate[] chain, String authType) {}
+				public void checkServerTrusted(X509Certificate[] chain, String authType) {}
+				public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+			}}, new java.security.SecureRandom());
+			httpsConn.setSSLSocketFactory(sslContext.getSocketFactory());
+			httpsConn.setHostnameVerifier((hostname, session) -> true);
+		}
+	}
+
+	/**
+	 * Wrapper around {@link RestTemplate#exchange} that retries transient failures
+	 * (5xx, connection reset, timeout) up to {@link #MAX_RETRIES} times with
+	 * exponential backoff.
+	 */
+	private <T> ResponseEntity<T> exchangeWithRetry(String url, HttpMethod method,
+			HttpEntity<?> request, Class<T> responseType) {
+		for (int attempt = 1; ; attempt++) {
+			try {
+				return restTemplate.exchange(url, method, request, responseType);
+			}
+			catch (Exception e) {
+				if (attempt >= MAX_RETRIES || !isRetryableError(e)) {
+					throw e;
+				}
+				long backoff = RETRY_BACKOFF_MS * attempt;
+				log.warn("OpenSearch {} {} failed (attempt {}/{}), retrying in {}ms: {}",
+						method, url, attempt, MAX_RETRIES, backoff, e.getMessage());
+				try {
+					Thread.sleep(backoff);
+				}
+				catch (InterruptedException ie) {
+					Thread.currentThread().interrupt();
+					throw e;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Returns {@code true} if the exception indicates a transient failure
+	 * that is safe to retry.
+	 */
+	private boolean isRetryableError(Exception e) {
+		String msg = e.getMessage();
+		if (msg == null) {
+			return false;
+		}
+		return msg.contains("503") || msg.contains("502") || msg.contains("429")
+				|| msg.contains("Connection refused") || msg.contains("Connection reset")
+				|| msg.contains("Read timed out") || msg.contains("connect timed out");
+	}
+
 	private void startAsyncSync(KnowledgeSyncEntity entity, String destUrl, String destUsername,
 			String destPassword, String syncToken) {
 		try {
@@ -454,19 +730,58 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 						log.info("Async sync for {} superseded before MCF crawl, aborting", entity.getSyncId());
 						return;
 					}
-					entity.setStatus("indexing");
+					entity.setStatus(STATUS_INDEXING);
 					entity.setIndexProgress(5);
 					entity.setGmtModified(new Date());
 					this.updateById(entity);
 
-					// Clean up old MCF job if exists
-					if (StringUtils.isNotBlank(entity.getMcfJobId())) {
+					// Step 2.0: Update the CMIS repo connection with the authority index name
+					// so the connector knows where to sync group membership data.
+					// This ensures no auto-generated "manifold_*" indices are created.
+					try {
+						Map<String, Object> sourceConfig = deserializeConfig(source.getConnectionConfig());
+						sourceConfig.put("authorityIndexName", entity.getAuthorityIndexName());
+						mcfBridge.createRepositoryConnection(source.getMcfConnectionName(),
+								source.getDescription(), source.getConnectorClass(), sourceConfig);
+						log.info("Updated CMIS repo connection '{}' with authorityIndexName='{}'",
+								source.getMcfConnectionName(), entity.getAuthorityIndexName());
+					}
+					catch (Exception e) {
+						log.warn("Could not update repo connection with authority index name: {}",
+								e.getMessage());
+					}
+
+					// Clean up old MCF job ONLY if it's in a terminal error state.
+					// Otherwise, KEEP the existing job to preserve MCF's version tracking,
+					// enabling incremental sync (only modified/new documents get re-indexed).
+					boolean hasExistingJob = StringUtils.isNotBlank(entity.getMcfJobId());
+					boolean reuseExistingJob = false;
+					if (hasExistingJob) {
 						try {
-							mcfBridge.abortJob(entity.getMcfJobId());
-							mcfBridge.deleteJob(entity.getMcfJobId());
+							Map<String, String> jobStatus = mcfBridge.getJobStatus(entity.getMcfJobId());
+							String jobStatusStr = jobStatus != null ? String.valueOf(jobStatus.get("status")) : "";
+							if ("error".equalsIgnoreCase(jobStatusStr)) {
+								log.info("Old MCF job {} is in error state, will recreate", entity.getMcfJobId());
+								mcfBridge.abortJob(entity.getMcfJobId());
+								mcfBridge.deleteJob(entity.getMcfJobId());
+							}
+							else {
+								// Job exists and is not in error — reuse it for incremental sync
+								reuseExistingJob = true;
+								log.info("Reusing existing MCF job {} for incremental sync (status={})",
+										entity.getMcfJobId(), jobStatusStr);
+							}
 						}
 						catch (Exception e) {
-							log.debug("Could not clean up old MCF job: {}", e.getMessage());
+							log.debug("Could not check old MCF job status, will recreate: {}",
+									e.getMessage());
+							try {
+								mcfBridge.abortJob(entity.getMcfJobId());
+								mcfBridge.deleteJob(entity.getMcfJobId());
+							}
+							catch (Exception e2) {
+								log.debug("Could not clean up old MCF job: {}", e2.getMessage());
+							}
 						}
 					}
 
@@ -477,7 +792,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 					String perKbOutputDesc = "KB " + entity.getKbId() + " document index: "
 							+ entity.getIndexName();
 					mcfBridge.createOutputConnection(perKbOutputConnName, perKbOutputDesc,
-							entity.getIndexName(), entity.getAuthorityIndexName());
+							entity.getIndexName());
 					log.info("Created per-KB MCF output connection '{}' -> index '{}'",
 							perKbOutputConnName, entity.getIndexName());
 
@@ -486,18 +801,35 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 					// during crawl so the document index has clean text for full-text search.
 					mcfBridge.ensureTikaTransformationConnection();
 
-					// Step 2c: Create and start MCF crawl job with Tika pipeline:
-					// CMIS Repository → [Tika text extraction] → [OpenSearch output]
-					String jobDescription = "KB Sync: " + entity.getKbId() + " / " + entity.getSyncId();
-					// Read CMIS query from source connection config; default to all documents
-					Map<String, Object> sourceConfig = deserializeConfig(source.getConnectionConfig());
-					String cmisQuery = getConfigString(sourceConfig, "cmisQuery",
-							"SELECT * FROM cmis:document");
-					log.info("Using CMIS query for sync {}: {}", entity.getSyncId(), cmisQuery);
-					String jobId = mcfBridge.createCrawlJob(jobDescription,
-							source.getMcfConnectionName(), perKbOutputConnName, cmisQuery, "cmisQuery",
-							mcfBridge.getTikaConnectionName());
-					mcfBridge.startJob(jobId);
+					String jobId;
+					if (reuseExistingJob) {
+						// Reuse existing MCF job for incremental sync.
+						// MCF's version tracking will skip unchanged documents
+						// (version = docId + lastModifiedDate + cmisQuery).
+						jobId = entity.getMcfJobId();
+						mcfBridge.startJob(jobId);
+						log.info("Re-started existing MCF job {} for incremental sync {}", jobId,
+								entity.getSyncId());
+					}
+					else {
+						// Step 2c: Create and start MCF crawl job with Tika pipeline:
+						// CMIS Repository → [Tika text extraction] → [OpenSearch output]
+						String jobDescription = "KB Sync: " + entity.getKbId() + " / "
+								+ entity.getSyncId();
+						// Read CMIS query from source connection config; default to all
+						// documents
+						Map<String, Object> sourceConfig2 = deserializeConfig(
+								source.getConnectionConfig());
+						String cmisQuery = getConfigString(sourceConfig2, "cmisQuery",
+								"SELECT * FROM cmis:document");
+						log.info("Using CMIS query for sync {}: {}", entity.getSyncId(), cmisQuery);
+						jobId = mcfBridge.createCrawlJob(jobDescription,
+								source.getMcfConnectionName(), perKbOutputConnName, cmisQuery,
+								"cmisQuery", mcfBridge.getTikaConnectionName());
+						mcfBridge.startJob(jobId);
+						log.info("Created and started new MCF crawl job {} for sync {}", jobId,
+								entity.getSyncId());
+					}
 
 					entity.setMcfJobId(jobId);
 					entity.setIndexProgress(10);
@@ -537,7 +869,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 				log.info("Async sync for {} superseded before authority phase, aborting", entity.getSyncId());
 				return;
 			}
-			entity.setStatus("authority_syncing");
+			entity.setStatus(STATUS_AUTHORITY_SYNCING);
 			entity.setGmtModified(new Date());
 			this.updateById(entity);
 
@@ -554,30 +886,69 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 					entity.getIndexName(), entity.getAuthorityIndexName(), authSourceConfig);
 			log.info("Authority extraction complete: {} unique principals", authCount);
 
-			// ---- Step 4: RAG chunking ----
+			// Refresh the _document index so that the resolved authorities written by
+			// updateDocumentAuthorities are visible to the RAG scroll search below.
+			// Without this, OpenSearch's near-real-time lag can cause populateRagIndex
+			// to read stale ACL tokens (groups) instead of users-only authorities.
+			refreshIndex(destUrl, destUsername, destPassword, entity.getIndexName());
+
+			// ---- Step 4: RAG chunking + embedding ----
 			if (!isSyncActive(entity.getSyncId(), syncToken)) {
 				log.info("Async sync for {} superseded before RAG phase, aborting", entity.getSyncId());
 				return;
 			}
-			indexSchemaFactory.createRagIndex(destUrl, destUsername, destPassword, entity.getRagIndexName(), 1024);
-			entity.setStatus("rag_processing");
+
+			// B10: Single KB lookup for both embedding and process configs
+			KnowledgeBaseEntity kbEntity = findKnowledgeBase(entity.getKbId());
+			IndexConfig embeddingConfig = resolveEmbeddingConfigFromEntity(kbEntity);
+			EmbeddingModel embeddingModel = null;
+			int embeddingDim = DEFAULT_EMBEDDING_DIM;
+			if (embeddingConfig != null) {
+				embeddingDim = EmbeddingModelDimension.getDimension(embeddingConfig.getEmbeddingModel(), DEFAULT_EMBEDDING_DIM);
+				embeddingModel = modelFactory.getEmbeddingModel(MetadataMode.EMBED, embeddingConfig);
+				log.info("Embedding enabled: provider={}, model={}, dim={}",
+						embeddingConfig.getEmbeddingProvider(), embeddingConfig.getEmbeddingModel(), embeddingDim);
+			}
+			else {
+				log.info("No embedding config found for KB {} — RAG index will have text only (no vectors)", entity.getKbId());
+			}
+
+			// Resolve chunk config from the KB (size, overlap)
+			ProcessConfig processConfig = resolveProcessConfigFromEntity(kbEntity);
+			int chunkSize = (processConfig != null && processConfig.getChunkSize() != null && processConfig.getChunkSize() > 0)
+					? processConfig.getChunkSize() : DEFAULT_CHUNK_SIZE_CHARS;
+			int chunkOverlap = (processConfig != null && processConfig.getChunkOverlap() != null && processConfig.getChunkOverlap() >= 0)
+					? processConfig.getChunkOverlap() : DEFAULT_CHUNK_OVERLAP_CHARS;
+
+			indexSchemaFactory.createRagIndex(destUrl, destUsername, destPassword, entity.getRagIndexName(), embeddingDim);
+			entity.setStatus(STATUS_RAG_PROCESSING);
 			entity.setRagProgress(5);
 			entity.setGmtModified(new Date());
 			this.updateById(entity);
 
-			long ragCount = populateRagIndex(entity, destUrl, destUsername, destPassword, syncToken);
+			long ragCount = populateRagIndex(entity, destUrl, destUsername, destPassword, syncToken,
+					embeddingModel, chunkSize, chunkOverlap, kbEntity.getWorkspaceId());
 			entity.setRagDocs(ragCount);
 			entity.setRagProgress(100);
 			entity.setGmtModified(new Date());
 			this.updateById(entity);
 			log.info("RAG chunking complete: {} chunks in index '{}'", ragCount, entity.getRagIndexName());
 
+			// ---- Step 5: Remove content from _document if full-text search is disabled ----
+			boolean fullTextSearch = (processConfig == null || processConfig.getFullTextSearch() == null
+					|| processConfig.getFullTextSearch());
+			if (!fullTextSearch) {
+				log.info("full_text_search=false for KB {} — removing content from document index '{}'",
+						entity.getKbId(), entity.getIndexName());
+				removeContentFromDocumentIndex(destUrl, destUsername, destPassword, entity.getIndexName());
+			}
+
 			// ---- Done ----
 			if (!isSyncActive(entity.getSyncId(), syncToken)) {
 				log.info("Async sync for {} superseded before completion, aborting", entity.getSyncId());
 				return;
 			}
-			entity.setStatus("completed");
+			entity.setStatus(STATUS_COMPLETED);
 			entity.setIndexProgress(100);
 			entity.setRagProgress(100);
 			entity.setLastSyncTime(new Date());
@@ -593,7 +964,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 				log.info("Async sync for {} superseded, not writing failure to DB", entity.getSyncId());
 				return;
 			}
-			entity.setStatus("failed");
+			entity.setStatus(STATUS_FAILED);
 			entity.setErrorMessage(t.getMessage());
 			entity.setGmtModified(new Date());
 			this.updateById(entity);
@@ -620,14 +991,14 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 	 */
 	private void pollMcfJobUntilDone(KnowledgeSyncEntity entity, String syncToken) {
 		String jobId = entity.getMcfJobId();
-		int maxPolls = 600; // 30 minutes max (600 * 3s)
+		int maxPolls = MCF_MAX_POLL_COUNT;
 		int pollCount = 0;
-		int stuckCount = 0; // consecutive polls with 0 docs in a "starting up" state
-		int maxStuckPolls = 40; // 40 * 3s = 2 minutes
+		int stuckCount = 0;
+		int maxStuckPolls = MCF_STUCK_THRESHOLD;
 
 		while (pollCount < maxPolls) {
 			try {
-				Thread.sleep(3000);
+				Thread.sleep(MCF_POLL_INTERVAL_MS);
 			}
 			catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
@@ -678,7 +1049,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 				String errorMsg = "Source system not responding — MCF job stuck in '"
 						+ jobStatus + "' with 0 documents for " + (stuckCount * 3) + " seconds";
 				log.warn("MCF job {} timed out waiting for source: {}", jobId, errorMsg);
-				entity.setStatus("failed");
+				entity.setStatus(STATUS_FAILED);
 				entity.setErrorMessage(errorMsg);
 				entity.setGmtModified(new Date());
 				this.updateById(entity);
@@ -741,9 +1112,9 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			String endpoint = destUrl.endsWith("/")
 					? destUrl + indexName + "/_count"
 					: destUrl + "/" + indexName + "/_count";
-			HttpHeaders headers = buildAuthHeaders(username, password);
+			HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(username, password);
 			HttpEntity<String> request = new HttpEntity<>(null, headers);
-			ResponseEntity<String> response = restTemplate.exchange(
+			ResponseEntity<String> response = exchangeWithRetry(
 					endpoint, HttpMethod.GET, request, String.class);
 
 			if (response.getBody() != null) {
@@ -835,6 +1206,9 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			}
 		}
 
+		// Admin users — resolved from admin groups, added to ALL documents' authorities
+		Set<String> adminUsers = new LinkedHashSet<>();
+
 		// Resolve members for each group via Alfresco REST API
 		if (canResolveGroups) {
 			String baseUrl = sourceProtocol + "://" + sourceServer + ":" + sourcePort;
@@ -846,6 +1220,21 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			Map<String, String> groupIdCaseMap = fetchGroupIdCaseMap(baseUrl, groupApiUrl,
 					sourceUsername, sourcePassword);
 			log.info("Fetched {} groups from Alfresco for case-insensitive lookup", groupIdCaseMap.size());
+
+			// Read admin groups from source config — members of these groups
+			// get access to ALL documents regardless of per-document ACLs
+			Set<String> adminGroupNames = new LinkedHashSet<>();
+			Object adminGroupsObj = sourceConfig.get("adminGroups");
+			if (adminGroupsObj instanceof List) {
+				for (Object g : (List<?>) adminGroupsObj) {
+					if (g != null && !String.valueOf(g).isEmpty()) {
+						adminGroupNames.add(String.valueOf(g).toLowerCase());
+					}
+				}
+			}
+			if (!adminGroupNames.isEmpty()) {
+				log.info("Admin groups configured: {}", adminGroupNames);
+			}
 
 			for (String groupToken : groupTokens) {
 				// Skip GROUP_EVERYONE — it means all authenticated users
@@ -866,6 +1255,12 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 						sourceUsername, sourcePassword, originalCaseGroupId);
 				groupMembersMap.put(groupToken, members);
 
+				// Collect admin users — check if this group matches any configured admin group
+				if (adminGroupNames.contains(groupToken.toLowerCase())) {
+					adminUsers.addAll(members);
+					log.info("Admin group '{}' resolved to {} users: {}", groupToken, members.size(), members);
+				}
+
 				// Build reverse mapping: user -> groups they belong to
 				for (String member : members) {
 					userMemberOfMap.computeIfAbsent(member, k -> new LinkedHashSet<>()).add(groupToken);
@@ -879,6 +1274,33 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			log.info("Resolved {} groups via Group Members API, found {} unique users",
 					groupTokens.size(),
 					userTokens.size());
+
+			// Resolve admin groups that may NOT appear in document ACL tokens
+			// (e.g., an admin group with no direct ACL on any document)
+			for (String adminGroupName : adminGroupNames) {
+				String adminGroupToken = adminGroupName.startsWith("group_")
+						? adminGroupName : "group_" + adminGroupName;
+				if (!groupMembersMap.containsKey(adminGroupToken)) {
+					String originalCaseGroupId = groupIdCaseMap.get(adminGroupToken.toLowerCase());
+					if (originalCaseGroupId == null) {
+						originalCaseGroupId = adminGroupToken;
+					}
+					Set<String> members = resolveGroupMembers(baseUrl, groupMembersApiUrl,
+							sourceUsername, sourcePassword, originalCaseGroupId);
+					if (!members.isEmpty()) {
+						adminUsers.addAll(members);
+						log.info("Extra admin group '{}' (not in ACL tokens) resolved to {} users: {}",
+								adminGroupToken, members.size(), members);
+					}
+				}
+			}
+
+			if (!adminUsers.isEmpty()) {
+				log.info("Total admin users (from {} admin groups): {} — these users will have access to all documents",
+						adminGroupNames.size(), adminUsers);
+				// Ensure admin users are also in userTokens for the authority index
+				userTokens.addAll(adminUsers);
+			}
 		}
 
 		// ---- Build bulk request for authority index ----
@@ -893,26 +1315,21 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			bulk.append("{\"index\":{\"_index\":\"").append(authIndexName)
 					.append("\",\"_id\":\"").append(escapeJsonString(id)).append("\"}}\n");
 
-			// Build JSON with members array
-			StringBuilder doc = new StringBuilder();
-			doc.append("{\"principal_id\":\"").append(escapeJsonString(groupToken))
-					.append("\",\"principal_type\":\"group\"")
-					.append(",\"display_name\":\"").append(escapeJsonString(groupToken))
-					.append("\",\"member_count\":").append(members.size());
-
+			Map<String, Object> doc = new LinkedHashMap<>();
+			doc.put("principal_id", groupToken);
+			doc.put("principal_type", "group");
+			doc.put("display_name", groupToken);
+			doc.put("member_count", members.size());
 			if (!members.isEmpty()) {
-				doc.append(",\"members\":[");
-				boolean first = true;
-				for (String m : members) {
-					if (!first) doc.append(",");
-					doc.append("\"").append(escapeJsonString(m)).append("\"");
-					first = false;
-				}
-				doc.append("]");
+				doc.put("members", new ArrayList<>(members));
 			}
-
-			doc.append(",\"synced_at\":\"").append(now).append("\"}");
-			bulk.append(doc).append("\n");
+			doc.put("synced_at", now);
+			try {
+				bulk.append(objectMapper.writeValueAsString(doc)).append("\n");
+			}
+			catch (JsonProcessingException e) {
+				log.debug("Failed to serialize authority entry for {}: {}", groupToken, e.getMessage());
+			}
 		}
 
 		// Index user entries with member_of
@@ -923,33 +1340,27 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			bulk.append("{\"index\":{\"_index\":\"").append(authIndexName)
 					.append("\",\"_id\":\"").append(escapeJsonString(id)).append("\"}}\n");
 
-			StringBuilder doc = new StringBuilder();
-			doc.append("{\"principal_id\":\"").append(escapeJsonString(userToken))
-					.append("\",\"principal_type\":\"user\"")
-					.append(",\"display_name\":\"").append(escapeJsonString(userToken)).append("\"");
-
+			Map<String, Object> doc = new LinkedHashMap<>();
+			doc.put("principal_id", userToken);
+			doc.put("principal_type", "user");
+			doc.put("display_name", userToken);
 			if (!memberOf.isEmpty()) {
-				doc.append(",\"member_of\":[");
-				boolean first = true;
-				for (String g : memberOf) {
-					if (!first) doc.append(",");
-					doc.append("\"").append(escapeJsonString(g)).append("\"");
-					first = false;
-				}
-				doc.append("]");
+				doc.put("member_of", new ArrayList<>(memberOf));
 			}
-
-			doc.append(",\"synced_at\":\"").append(now).append("\"}");
-			bulk.append(doc).append("\n");
+			doc.put("synced_at", now);
+			try {
+				bulk.append(objectMapper.writeValueAsString(doc)).append("\n");
+			}
+			catch (JsonProcessingException e) {
+				log.debug("Failed to serialize authority entry for {}: {}", userToken, e.getMessage());
+			}
 		}
 
-		// Execute bulk request
+		// Execute bulk request with validation
 		if (bulk.length() > 0) {
 			String endpoint = destUrl.endsWith("/") ? destUrl + "_bulk" : destUrl + "/_bulk";
-			HttpHeaders headers = buildAuthHeaders(username, password);
-			headers.setContentType(MediaType.valueOf("application/x-ndjson"));
-			HttpEntity<String> request = new HttpEntity<>(bulk.toString(), headers);
-			restTemplate.exchange(endpoint, HttpMethod.POST, request, String.class);
+			int accepted = sendBulkAndCountSuccess(endpoint, bulk.toString(), username, password);
+			log.debug("Authority bulk: {} entries accepted", accepted);
 		}
 
 		long totalPrincipals = groupTokens.size() + userTokens.size();
@@ -958,7 +1369,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 
 		// ---- Step 3b: Update each document with resolved authorities ----
 		if (canResolveGroups) {
-			updateDocumentAuthorities(destUrl, username, password, docIndexName, groupMembersMap);
+			updateDocumentAuthorities(destUrl, username, password, docIndexName, groupMembersMap, adminUsers);
 		}
 
 		return totalPrincipals;
@@ -984,87 +1395,98 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 	private Set<String> resolveGroupMembers(String baseUrl, String groupMembersApiUrl,
 			String srcUsername, String srcPassword, String groupToken) {
 		Set<String> members = new LinkedHashSet<>();
-		HttpURLConnection conn = null;
-		try {
-			// Build the members URL from template
-			String membersUrl = baseUrl + groupMembersApiUrl.replace("{groupId}", groupToken);
-			// Add memberType=PERSON filter and pagination
-			membersUrl += (membersUrl.contains("?") ? "&" : "?")
-					+ "where=(memberType%3D%27PERSON%27)&maxItems=1000";
+		int skipCount = 0;
+		boolean hasMore = true;
 
-			URI uri = URI.create(membersUrl);
-			conn = (HttpURLConnection) uri.toURL().openConnection();
+		while (hasMore) {
+			HttpURLConnection conn = null;
+			try {
+				// Build the members URL from template
+				String membersUrl = baseUrl + groupMembersApiUrl.replace("{groupId}", groupToken);
+				// Add memberType=PERSON filter and pagination
+				membersUrl += (membersUrl.contains("?") ? "&" : "?")
+						+ "where=(memberType%3D%27PERSON%27)&maxItems=" + ALFRESCO_MAX_ITEMS
+						+ "&skipCount=" + skipCount;
 
-			// Trust all certs for HTTPS (source may have self-signed cert)
-			if (conn instanceof HttpsURLConnection httpsConn) {
-				SSLContext sslContext = SSLContext.getInstance("TLS");
-				sslContext.init(null, new TrustManager[]{ new X509TrustManager() {
-					public void checkClientTrusted(X509Certificate[] chain, String authType) {}
-					public void checkServerTrusted(X509Certificate[] chain, String authType) {}
-					public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
-				}}, new java.security.SecureRandom());
-				httpsConn.setSSLSocketFactory(sslContext.getSocketFactory());
-				httpsConn.setHostnameVerifier((hostname, session) -> true);
-			}
+				URI uri = URI.create(membersUrl);
+				conn = (HttpURLConnection) uri.toURL().openConnection();
 
-			conn.setRequestMethod("GET");
-			conn.setConnectTimeout(15_000);
-			conn.setReadTimeout(15_000);
+				configureTrustAllSsl(conn);
 
-			// Basic auth
-			if (StringUtils.isNotBlank(srcUsername)) {
-				String credentials = srcUsername + ":" + srcPassword;
-				String encoded = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
-				conn.setRequestProperty("Authorization", "Basic " + encoded);
-			}
-			conn.setRequestProperty("Accept", "application/json");
+				conn.setRequestMethod("GET");
+				conn.setConnectTimeout(15_000);
+				conn.setReadTimeout(15_000);
 
-			int httpStatus = conn.getResponseCode();
-			if (httpStatus == 200) {
-				try (InputStream in = conn.getInputStream();
-						ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-					byte[] buffer = new byte[4096];
-					int bytesRead;
-					while ((bytesRead = in.read(buffer)) != -1) {
-						baos.write(buffer, 0, bytesRead);
-					}
-					String responseBody = baos.toString(StandardCharsets.UTF_8);
+				// Basic auth
+				if (StringUtils.isNotBlank(srcUsername)) {
+					String credentials = srcUsername + ":" + srcPassword;
+					String encoded = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+					conn.setRequestProperty("Authorization", "Basic " + encoded);
+				}
+				conn.setRequestProperty("Accept", "application/json");
 
-					// Parse Alfresco API response:
-					// { "list": { "entries": [ { "entry": { "id": "username", "memberType": "PERSON" } } ] } }
-					Map<String, Object> root = objectMapper.readValue(responseBody,
-							new TypeReference<Map<String, Object>>() {});
-					Map<String, Object> list = (Map<String, Object>) root.get("list");
-					if (list != null) {
-						List<Map<String, Object>> entries = (List<Map<String, Object>>) list.get("entries");
-						if (entries != null) {
-							for (Map<String, Object> entryWrapper : entries) {
-								Map<String, Object> entry = (Map<String, Object>) entryWrapper.get("entry");
-								if (entry != null) {
-									String memberType = String.valueOf(entry.getOrDefault("memberType", ""));
-									if ("PERSON".equalsIgnoreCase(memberType)) {
-										String memberId = String.valueOf(entry.get("id")).toLowerCase();
-										members.add(memberId);
+				int httpStatus = conn.getResponseCode();
+				if (httpStatus == 200) {
+					try (InputStream in = conn.getInputStream();
+							ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+						byte[] buffer = new byte[4096];
+						int bytesRead;
+						while ((bytesRead = in.read(buffer)) != -1) {
+							baos.write(buffer, 0, bytesRead);
+						}
+						String responseBody = baos.toString(StandardCharsets.UTF_8);
+
+						Map<String, Object> root = objectMapper.readValue(responseBody,
+								new TypeReference<Map<String, Object>>() {});
+						Map<String, Object> list = (Map<String, Object>) root.get("list");
+						if (list != null) {
+							List<Map<String, Object>> entries = (List<Map<String, Object>>) list.get("entries");
+							if (entries != null) {
+								for (Map<String, Object> entryWrapper : entries) {
+									Map<String, Object> entry = (Map<String, Object>) entryWrapper.get("entry");
+									if (entry != null) {
+										String memberType = String.valueOf(entry.getOrDefault("memberType", ""));
+										if ("PERSON".equalsIgnoreCase(memberType)) {
+											String memberId = String.valueOf(entry.get("id")).toLowerCase();
+											members.add(memberId);
+										}
 									}
 								}
+								skipCount += entries.size();
 							}
+
+							// Check pagination
+							Map<String, Object> pagination = (Map<String, Object>) list.get("pagination");
+							if (pagination != null) {
+								Boolean hasMoreItems = (Boolean) pagination.get("hasMoreItems");
+								hasMore = Boolean.TRUE.equals(hasMoreItems);
+							}
+							else {
+								hasMore = false;
+							}
+						}
+						else {
+							hasMore = false;
 						}
 					}
 				}
+				else if (httpStatus == 404) {
+					log.debug("Group '{}' not found via Group Members API (HTTP 404)", groupToken);
+					hasMore = false;
+				}
+				else {
+					log.warn("Group Members API returned HTTP {} for group '{}'", httpStatus, groupToken);
+					hasMore = false;
+				}
 			}
-			else if (httpStatus == 404) {
-				log.debug("Group '{}' not found via Group Members API (HTTP 404)", groupToken);
+			catch (Exception e) {
+				log.warn("Failed to resolve group '{}' members (skipCount={}): {}", groupToken, skipCount, e.getMessage());
+				hasMore = false;
 			}
-			else {
-				log.warn("Group Members API returned HTTP {} for group '{}'", httpStatus, groupToken);
-			}
-		}
-		catch (Exception e) {
-			log.warn("Failed to resolve group '{}' members: {}", groupToken, e.getMessage());
-		}
-		finally {
-			if (conn != null) {
-				conn.disconnect();
+			finally {
+				if (conn != null) {
+					conn.disconnect();
+				}
 			}
 		}
 		return members;
@@ -1092,78 +1514,92 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			return caseMap;
 		}
 
-		HttpURLConnection conn = null;
-		try {
-			String fullUrl = baseUrl + groupApiUrl;
-			// Paginate to get all groups
-			fullUrl += (fullUrl.contains("?") ? "&" : "?") + "maxItems=1000";
+		int skipCount = 0;
+		boolean hasMore = true;
 
-			URI uri = URI.create(fullUrl);
-			conn = (HttpURLConnection) uri.toURL().openConnection();
+		while (hasMore) {
+			HttpURLConnection conn = null;
+			try {
+				String fullUrl = baseUrl + groupApiUrl;
+				// Paginate to get all groups
+				fullUrl += (fullUrl.contains("?") ? "&" : "?")
+						+ "maxItems=" + ALFRESCO_MAX_ITEMS + "&skipCount=" + skipCount;
 
-			// Trust all certs for HTTPS
-			if (conn instanceof HttpsURLConnection httpsConn) {
-				SSLContext sslContext = SSLContext.getInstance("TLS");
-				sslContext.init(null, new TrustManager[]{ new X509TrustManager() {
-					public void checkClientTrusted(X509Certificate[] chain, String authType) {}
-					public void checkServerTrusted(X509Certificate[] chain, String authType) {}
-					public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
-				}}, new java.security.SecureRandom());
-				httpsConn.setSSLSocketFactory(sslContext.getSocketFactory());
-				httpsConn.setHostnameVerifier((hostname, session) -> true);
-			}
+				URI uri = URI.create(fullUrl);
+				conn = (HttpURLConnection) uri.toURL().openConnection();
 
-			conn.setRequestMethod("GET");
-			conn.setConnectTimeout(15_000);
-			conn.setReadTimeout(30_000);
+				configureTrustAllSsl(conn);
 
-			if (StringUtils.isNotBlank(srcUsername)) {
-				String credentials = srcUsername + ":" + srcPassword;
-				String encoded = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
-				conn.setRequestProperty("Authorization", "Basic " + encoded);
-			}
-			conn.setRequestProperty("Accept", "application/json");
+				conn.setRequestMethod("GET");
+				conn.setConnectTimeout(15_000);
+				conn.setReadTimeout(30_000);
 
-			int httpStatus = conn.getResponseCode();
-			if (httpStatus == 200) {
-				try (InputStream in = conn.getInputStream();
-						ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-					byte[] buffer = new byte[8192];
-					int bytesRead;
-					while ((bytesRead = in.read(buffer)) != -1) {
-						baos.write(buffer, 0, bytesRead);
-					}
-					String responseBody = baos.toString(StandardCharsets.UTF_8);
+				if (StringUtils.isNotBlank(srcUsername)) {
+					String credentials = srcUsername + ":" + srcPassword;
+					String encoded = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+					conn.setRequestProperty("Authorization", "Basic " + encoded);
+				}
+				conn.setRequestProperty("Accept", "application/json");
 
-					Map<String, Object> root = objectMapper.readValue(responseBody,
-							new TypeReference<Map<String, Object>>() {});
-					Map<String, Object> list = (Map<String, Object>) root.get("list");
-					if (list != null) {
-						List<Map<String, Object>> entries = (List<Map<String, Object>>) list.get("entries");
-						if (entries != null) {
-							for (Map<String, Object> entryWrapper : entries) {
-								Map<String, Object> entry = (Map<String, Object>) entryWrapper.get("entry");
-								if (entry != null && entry.containsKey("id")) {
-									String originalId = String.valueOf(entry.get("id"));
-									caseMap.put(originalId.toLowerCase(), originalId);
+				int httpStatus = conn.getResponseCode();
+				if (httpStatus == 200) {
+					try (InputStream in = conn.getInputStream();
+							ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+						byte[] buffer = new byte[8192];
+						int bytesRead;
+						while ((bytesRead = in.read(buffer)) != -1) {
+							baos.write(buffer, 0, bytesRead);
+						}
+						String responseBody = baos.toString(StandardCharsets.UTF_8);
+
+						Map<String, Object> root = objectMapper.readValue(responseBody,
+								new TypeReference<Map<String, Object>>() {});
+						Map<String, Object> list = (Map<String, Object>) root.get("list");
+						if (list != null) {
+							List<Map<String, Object>> entries = (List<Map<String, Object>>) list.get("entries");
+							if (entries != null) {
+								for (Map<String, Object> entryWrapper : entries) {
+									Map<String, Object> entry = (Map<String, Object>) entryWrapper.get("entry");
+									if (entry != null && entry.containsKey("id")) {
+										String originalId = String.valueOf(entry.get("id"));
+										caseMap.put(originalId.toLowerCase(), originalId);
+									}
 								}
+								skipCount += entries.size();
 							}
+
+							// Check pagination: hasMoreItems flag
+							Map<String, Object> pagination = (Map<String, Object>) list.get("pagination");
+							if (pagination != null) {
+								Boolean hasMoreItems = (Boolean) pagination.get("hasMoreItems");
+								hasMore = Boolean.TRUE.equals(hasMoreItems);
+							}
+							else {
+								hasMore = false;
+							}
+						}
+						else {
+							hasMore = false;
 						}
 					}
 				}
+				else {
+					log.warn("Groups list API returned HTTP {} — case-insensitive lookup unavailable", httpStatus);
+					hasMore = false;
+				}
 			}
-			else {
-				log.warn("Groups list API returned HTTP {} — case-insensitive lookup unavailable", httpStatus);
+			catch (Exception e) {
+				log.warn("Failed to fetch groups for case mapping (skipCount={}): {}", skipCount, e.getMessage());
+				hasMore = false;
+			}
+			finally {
+				if (conn != null) {
+					conn.disconnect();
+				}
 			}
 		}
-		catch (Exception e) {
-			log.warn("Failed to fetch groups for case mapping: {}", e.getMessage());
-		}
-		finally {
-			if (conn != null) {
-				conn.disconnect();
-			}
-		}
+
+		log.debug("Fetched {} groups for case-insensitive lookup", caseMap.size());
 		return caseMap;
 	}
 
@@ -1187,9 +1623,11 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 	 */
 	@SuppressWarnings("unchecked")
 	private void updateDocumentAuthorities(String destUrl, String username, String password,
-			String docIndexName, Map<String, Set<String>> groupMembersMap) {
-		log.info("Updating document authorities in index '{}'...", docIndexName);
+			String docIndexName, Map<String, Set<String>> groupMembersMap, Set<String> adminUsers) {
+		log.info("Updating document authorities in index '{}' (adminUsers={})",
+				docIndexName, adminUsers.isEmpty() ? "none" : adminUsers);
 		int updatedCount = 0;
+		String lastScrollId = null;
 
 		try {
 			// Scroll through all documents to read their allow_token_document
@@ -1197,13 +1635,13 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 					? destUrl + docIndexName + "/_search?scroll=2m"
 					: destUrl + "/" + docIndexName + "/_search?scroll=2m";
 
-			HttpHeaders headers = buildAuthHeaders(username, password);
+			HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(username, password);
 			headers.setContentType(MediaType.APPLICATION_JSON);
 
 			// Fetch all docs with their allow_token_document field
-			String searchBody = "{\"size\":200,\"_source\":[\"allow_token_document\"]}";
+			String searchBody = "{\"size\":" + MAX_CHUNKS_PER_BULK + ",\"_source\":[\"allow_token_document\"]}";
 			HttpEntity<String> searchRequest = new HttpEntity<>(searchBody, headers);
-			ResponseEntity<String> response = restTemplate.exchange(
+			ResponseEntity<String> response = exchangeWithRetry(
 					searchEndpoint, HttpMethod.POST, searchRequest, String.class);
 
 			StringBuilder bulkUpdate = new StringBuilder();
@@ -1214,6 +1652,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 						new TypeReference<Map<String, Object>>() {});
 
 				String scrollId = (String) result.get("_scroll_id");
+				lastScrollId = scrollId;
 				Map<String, Object> hits = (Map<String, Object>) result.get("hits");
 				if (hits == null) break;
 
@@ -1256,6 +1695,11 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 						}
 					}
 
+					// Admin users get access to ALL documents regardless of per-document ACLs
+					if (!adminUsers.isEmpty()) {
+						resolvedUsers.addAll(adminUsers);
+					}
+
 					if (!resolvedUsers.isEmpty()) {
 						// Build partial update
 						bulkUpdate.append("{\"update\":{\"_index\":\"").append(docIndexName)
@@ -1273,8 +1717,9 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 						updatedCount++;
 					}
 
-					// Flush bulk in batches of 200
-					if (batchSize >= 200) {
+					// Flush bulk in batches (by count or byte size)
+					if (batchSize >= MAX_CHUNKS_PER_BULK
+							|| bulkUpdate.length() * 2 >= MAX_BULK_BYTES) {
 						executeBulk(destUrl, username, password, bulkUpdate.toString());
 						bulkUpdate.setLength(0);
 						batchSize = 0;
@@ -1288,7 +1733,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 						: destUrl + "/_search/scroll";
 				String scrollBody = "{\"scroll\":\"2m\",\"scroll_id\":\"" + scrollId + "\"}";
 				HttpEntity<String> scrollRequest = new HttpEntity<>(scrollBody, headers);
-				response = restTemplate.exchange(scrollEndpoint, HttpMethod.POST, scrollRequest, String.class);
+				response = exchangeWithRetry(scrollEndpoint, HttpMethod.POST, scrollRequest, String.class);
 			}
 
 			// Flush remaining
@@ -1301,6 +1746,9 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		catch (Exception e) {
 			log.error("Failed to update document authorities in '{}': {}", docIndexName, e.getMessage(), e);
 		}
+		finally {
+			clearScroll(destUrl, username, password, lastScrollId);
+		}
 	}
 
 	/**
@@ -1308,10 +1756,32 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 	 */
 	private void executeBulk(String destUrl, String username, String password, String bulkBody) {
 		String endpoint = destUrl.endsWith("/") ? destUrl + "_bulk" : destUrl + "/_bulk";
-		HttpHeaders headers = buildAuthHeaders(username, password);
+		HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(username, password);
 		headers.setContentType(MediaType.valueOf("application/x-ndjson"));
 		HttpEntity<String> request = new HttpEntity<>(bulkBody, headers);
-		restTemplate.exchange(endpoint, HttpMethod.POST, request, String.class);
+		exchangeWithRetry(endpoint, HttpMethod.POST, request, String.class);
+	}
+
+	/**
+	 * Force a refresh on an OpenSearch index so that recent writes become visible
+	 * to subsequent search/scroll requests.
+	 *
+	 * <p>This is needed after bulk updates (e.g. authority resolution) that must be
+	 * readable by the immediately following scroll-based RAG population pass.</p>
+	 */
+	private void refreshIndex(String destUrl, String username, String password, String indexName) {
+		String endpoint = destUrl.endsWith("/")
+				? destUrl + indexName + "/_refresh"
+				: destUrl + "/" + indexName + "/_refresh";
+		HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(username, password);
+		try {
+			exchangeWithRetry(endpoint, HttpMethod.POST, new HttpEntity<>(headers), String.class);
+			log.debug("Refreshed index '{}' before RAG scroll", indexName);
+		}
+		catch (Exception e) {
+			log.warn("Failed to refresh index '{}': {} — RAG may read stale authorities",
+					indexName, e.getMessage());
+		}
 	}
 
 	/**
@@ -1325,15 +1795,15 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			String endpoint = destUrl.endsWith("/")
 					? destUrl + indexName + "/_search"
 					: destUrl + "/" + indexName + "/_search";
-			HttpHeaders headers = buildAuthHeaders(username, password);
+			HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(username, password);
 			headers.setContentType(MediaType.APPLICATION_JSON);
 
 			// Terms aggregation with large size to get all unique values
 			String body = "{\"size\":0,\"aggs\":{\"tokens\":{\"terms\":{\"field\":\""
-					+ fieldName + "\",\"size\":10000}}}}";
+					+ fieldName + "\",\"size\":" + MAX_AGGREGATION_BUCKETS + "}}}}";
 
 			HttpEntity<String> request = new HttpEntity<>(body, headers);
-			ResponseEntity<String> response = restTemplate.exchange(
+			ResponseEntity<String> response = exchangeWithRetry(
 					endpoint, HttpMethod.POST, request, String.class);
 
 			if (response.getBody() != null) {
@@ -1364,37 +1834,47 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 
 	/**
 	 * Step 4: Populate the RAG index by reading Tika-extracted text from the document
-	 * index, chunking it, and indexing to the RAG index with metadata and ACL tokens.
+	 * index, chunking it, generating vector embeddings, and indexing to the RAG index
+	 * with metadata and ACL tokens.
 	 *
 	 * <p>Key design: The MCF Tika transformation connector extracts text during crawl,
 	 * so the document index already contains clean text in the {@code content} field.
-	 * The RAG index stores chunked text for similarity search — following RAG best
-	 * practices. This avoids re-downloading files from CMIS.</p>
+	 * The RAG index stores chunked text with embeddings for similarity search — following
+	 * RAG best practices. This avoids re-downloading files from CMIS.</p>
+	 *
+	 * @param entity          the sync entity
+	 * @param destUrl         OpenSearch base URL
+	 * @param username        OpenSearch username
+	 * @param password        OpenSearch password
+	 * @param syncToken       token to detect superseded syncs
+	 * @param embeddingModel  the embedding model from KB config; {@code null} to skip embeddings
+	 * @param chunkSize       chunk size in chars (from KB ProcessConfig or default)
+	 * @param chunkOverlap    overlap in chars between chunks
+	 * @return number of chunks indexed
 	 */
 	@SuppressWarnings("unchecked")
 	private long populateRagIndex(KnowledgeSyncEntity entity, String destUrl, String username,
-			String password, String syncToken) {
+			String password, String syncToken, EmbeddingModel embeddingModel,
+			int chunkSize, int chunkOverlap, String workspaceId) {
 		String docIndexName = entity.getIndexName();
 		String ragIndexName = entity.getRagIndexName();
 		long chunksIndexed = 0;
-		int batchSize = 50;
-		int chunkSize = 1000;
-		int chunkOverlap = 200;
+		int batchSize = SCROLL_BATCH_SIZE;
 
-		log.info("RAG population starting for sync {} — reading from document index, chunkSize={}, overlap={}",
-				entity.getSyncId(), chunkSize, chunkOverlap);
+		log.info("RAG population starting for sync {} — chunkSize={}, overlap={}, embeddings={}",
+				entity.getSyncId(), chunkSize, chunkOverlap, embeddingModel != null ? "enabled" : "disabled");
 
 		try {
 			// Initial scroll search
 			String searchEndpoint = destUrl.endsWith("/")
 					? destUrl + docIndexName + "/_search?scroll=5m"
 					: destUrl + "/" + docIndexName + "/_search?scroll=5m";
-			HttpHeaders headers = buildAuthHeaders(username, password);
+			HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(username, password);
 			headers.setContentType(MediaType.APPLICATION_JSON);
 
 			String searchBody = "{\"size\":" + batchSize + ",\"query\":{\"match_all\":{}}}";
 			HttpEntity<String> request = new HttpEntity<>(searchBody, headers);
-			ResponseEntity<String> response = restTemplate.exchange(
+			ResponseEntity<String> response = exchangeWithRetry(
 					searchEndpoint, HttpMethod.POST, request, String.class);
 
 			if (response.getBody() == null) {
@@ -1432,10 +1912,19 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 					break;
 				}
 
-				StringBuilder bulk = new StringBuilder();
-				int chunksInBatch = 0;
-				final int MAX_CHUNKS_PER_BULK = 200;
-				final int MAX_BULK_BYTES = 5 * 1024 * 1024; // 5 MB
+				// Delete existing RAG chunks for documents in this batch to prevent
+				// stale chunks surviving when a document shrinks (fewer chunks than before).
+				// The subsequent index operations will recreate chunks with fresh content.
+				List<String> batchDocIds = new ArrayList<>();
+				for (Map<String, Object> hit : hitList) {
+					batchDocIds.add(String.valueOf(hit.get("_id")));
+				}
+				deleteChunksByDocIds(destUrl, username, password, ragIndexName, batchDocIds);
+
+				// Collect chunk documents before flushing — enables batch embedding
+				List<String> pendingChunkIds = new ArrayList<>();
+				List<Map<String, Object>> pendingChunkDocs = new ArrayList<>();
+				List<String> pendingChunkTexts = new ArrayList<>();
 
 				String bulkEndpoint = destUrl.endsWith("/") ? destUrl + "_bulk" : destUrl + "/_bulk";
 
@@ -1452,6 +1941,16 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 					String mimeType = firstNonEmpty(docSource, "cmis:contentStreamMimeType", "mime-type");
 					String createdBy = firstNonEmpty(docSource, "cmis:createdBy");
 					String objectId = firstNonEmpty(docSource, "cmis:objectId");
+
+					// ── Check if this file type is processable by Tika ──
+					// Skip content extraction for non-processable types (images, videos, etc.)
+					// These documents keep their metadata in _document but get no RAG chunks.
+					if (!isTikaProcessable(mimeType, fileName)) {
+						log.info("Skipping RAG for '{}' (mime={}) — not a Tika-processable type",
+								fileName, mimeType);
+						processedDocs++;
+						continue;
+					}
 
 					// ── Read Tika-extracted text from document index ──
 					// MCF Tika transformation connector already extracted text during crawl,
@@ -1490,7 +1989,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 								.replace("\u0000", "")
 								.replaceAll("[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]", "");
 
-						// Build chunk document as Map and serialize with ObjectMapper
+						// Build chunk document as Map
 						Map<String, Object> chunkDoc = new LinkedHashMap<>();
 						chunkDoc.put("chunk_id", chunkId);
 						chunkDoc.put("doc_id", docId);
@@ -1504,42 +2003,41 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 						metadata.put("created_by", createdBy);
 						metadata.put("object_id", objectId);
 						metadata.put("total_chunks", chunks.size());
+						// Required by VectorStore retriever's FilterExpression
+						metadata.put("workspace_id", workspaceId != null ? workspaceId : "1");
+						metadata.put("enabled", true);
 						chunkDoc.put("metadata", metadata);
 
-// Resolved authorities — only usernames, no raw ACL tokens
+						// Resolved authorities — only usernames, no raw ACL tokens
 						if (authorities != null) {
 							chunkDoc.put("authorities", authorities);
 						}
 
-						// Action line
-						bulk.append("{\"index\":{\"_index\":\"").append(ragIndexName)
-								.append("\",\"_id\":\"").append(escapeJsonString(chunkId)).append("\"}}\n");
-						// Document line (use ObjectMapper for reliable JSON serialization)
-						try {
-							bulk.append(objectMapper.writeValueAsString(chunkDoc)).append("\n");
-						}
-						catch (JsonProcessingException e) {
-							log.debug("Failed to serialize chunk {}: {}", chunkId, e.getMessage());
-							continue;
-						}
-						chunksInBatch++;
+						pendingChunkIds.add(chunkId);
+						pendingChunkDocs.add(chunkDoc);
+						pendingChunkTexts.add(chunkContent);
 
-						// Flush when batch is large enough to avoid 413 Request Entity Too Large
-						if (chunksInBatch >= MAX_CHUNKS_PER_BULK || bulk.length() >= MAX_BULK_BYTES) {
-							int accepted = sendBulkAndCountSuccess(bulkEndpoint, bulk.toString(), username, password);
-							log.debug("RAG bulk flush: {}/{} chunks accepted (buffer {}KB), total {}",
-									accepted, chunksInBatch, bulk.length() / 1024, chunksIndexed + accepted);
+						// Flush when batch is large enough (by count or estimated byte size)
+						// Each chunk with 1024-dim float vector ≈ 12KB of JSON, so check size
+						int estimatedBytes = pendingChunkTexts.stream().mapToInt(String::length).sum() * 2
+								+ pendingChunkDocs.size() * 12_000; // overhead per doc (vector + metadata)
+						if (pendingChunkDocs.size() >= MAX_CHUNKS_PER_BULK
+								|| estimatedBytes >= MAX_BULK_BYTES) {
+							int accepted = flushRagBatch(ragIndexName, bulkEndpoint, username, password,
+									pendingChunkIds, pendingChunkDocs, pendingChunkTexts, embeddingModel);
 							chunksIndexed += accepted;
-							bulk.setLength(0);
-							chunksInBatch = 0;
+							pendingChunkIds.clear();
+							pendingChunkDocs.clear();
+							pendingChunkTexts.clear();
 						}
 					}
 					processedDocs++;
 				}
 
 				// Flush remaining chunks from this scroll batch
-				if (chunksInBatch > 0) {
-					int accepted = sendBulkAndCountSuccess(bulkEndpoint, bulk.toString(), username, password);
+				if (!pendingChunkDocs.isEmpty()) {
+					int accepted = flushRagBatch(ragIndexName, bulkEndpoint, username, password,
+							pendingChunkIds, pendingChunkDocs, pendingChunkTexts, embeddingModel);
 					chunksIndexed += accepted;
 				}
 
@@ -1557,7 +2055,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 						? destUrl + "_search/scroll" : destUrl + "/_search/scroll";
 				String scrollBody = "{\"scroll\":\"5m\",\"scroll_id\":\"" + scrollId + "\"}";
 				HttpEntity<String> scrollRequest = new HttpEntity<>(scrollBody, headers);
-				response = restTemplate.exchange(scrollEndpoint, HttpMethod.POST, scrollRequest, String.class);
+				response = exchangeWithRetry(scrollEndpoint, HttpMethod.POST, scrollRequest, String.class);
 
 				if (response.getBody() == null) {
 					break;
@@ -1579,82 +2077,75 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 	}
 
 	/**
-	 * Split text into chunks of approximately maxChunkSize characters,
-	 * respecting paragraph and sentence boundaries.
+	 * Flush a batch of chunk documents to the RAG index, optionally generating
+	 * vector embeddings before indexing.
+	 *
+	 * <p>When {@code embeddingModel} is non-null, the method converts chunk texts
+	 * into Spring AI {@link Document} objects, calls
+	 * {@link EmbeddingModel#embed(List, EmbeddingOptions, org.springframework.ai.embedding.BatchingStrategy)}
+	 * to generate vectors, and attaches each vector as the {@code embedding} field.
+	 * This ensures the knn_vector field in the RAG index is populated for
+	 * similarity search.</p>
+	 *
+	 * @return the number of chunks accepted by OpenSearch
 	 */
-	private List<String> chunkText(String text, int maxChunkSize) {
-		List<String> chunks = new ArrayList<>();
-		if (text == null || text.isEmpty()) {
-			return chunks;
-		}
+	private int flushRagBatch(String ragIndexName, String bulkEndpoint,
+			String username, String password,
+			List<String> chunkIds, List<Map<String, Object>> chunkDocs,
+			List<String> chunkTexts, EmbeddingModel embeddingModel) {
 
-		// Split by double newlines (paragraphs) first
-		String[] paragraphs = text.split("\\n\\n+");
-		StringBuilder currentChunk = new StringBuilder();
-
-		for (String para : paragraphs) {
-			para = para.trim();
-			if (para.isEmpty()) {
-				continue;
+		// Generate embeddings if model is available
+		List<float[]> embeddings = null;
+		if (embeddingModel != null && !chunkTexts.isEmpty()) {
+			try {
+				List<Document> springDocs = new ArrayList<>(chunkTexts.size());
+				for (String text : chunkTexts) {
+					springDocs.add(new Document(text));
+				}
+				embeddings = embeddingModel.embed(springDocs,
+						EmbeddingOptions.builder().build(),
+						new DefaultBatchingStrategy());
+				log.debug("Generated {} embeddings (dim={}) for RAG batch",
+						embeddings.size(), embeddings.isEmpty() ? 0 : embeddings.get(0).length);
 			}
-
-			if (currentChunk.length() + para.length() + 2 <= maxChunkSize) {
-				if (currentChunk.length() > 0) {
-					currentChunk.append("\n\n");
-				}
-				currentChunk.append(para);
-			}
-			else {
-				// Current chunk is full
-				if (currentChunk.length() > 0) {
-					chunks.add(currentChunk.toString());
-					currentChunk = new StringBuilder();
-				}
-
-				// If paragraph itself exceeds max, split by sentences
-				if (para.length() > maxChunkSize) {
-					String[] sentences = para.split("(?<=[.!?])\\s+");
-					for (String sentence : sentences) {
-						if (currentChunk.length() + sentence.length() + 1 <= maxChunkSize) {
-							if (currentChunk.length() > 0) {
-								currentChunk.append(" ");
-							}
-							currentChunk.append(sentence);
-						}
-						else {
-							if (currentChunk.length() > 0) {
-								chunks.add(currentChunk.toString());
-								currentChunk = new StringBuilder();
-							}
-							// If single sentence > max, force-split
-							if (sentence.length() > maxChunkSize) {
-								for (int i = 0; i < sentence.length(); i += maxChunkSize) {
-									chunks.add(sentence.substring(i,
-											Math.min(i + maxChunkSize, sentence.length())));
-								}
-							}
-							else {
-								currentChunk.append(sentence);
-							}
-						}
-					}
-				}
-				else {
-					currentChunk.append(para);
-				}
+			catch (Exception e) {
+				log.warn("Embedding generation failed for batch of {} chunks, indexing without vectors: {}",
+						chunkTexts.size(), e.getMessage());
+				embeddings = null;
 			}
 		}
 
-		if (currentChunk.length() > 0) {
-			chunks.add(currentChunk.toString());
+		// Build bulk JSON
+		StringBuilder bulk = new StringBuilder();
+		for (int i = 0; i < chunkDocs.size(); i++) {
+			Map<String, Object> chunkDoc = chunkDocs.get(i);
+			String chunkId = chunkIds.get(i);
+
+			// Attach embedding vector if available
+			if (embeddings != null && i < embeddings.size()) {
+				chunkDoc.put("embedding", embeddings.get(i));
+			}
+
+			// Action line
+			bulk.append("{\"index\":{\"_index\":\"").append(ragIndexName)
+					.append("\",\"_id\":\"").append(escapeJsonString(chunkId)).append("\"}}\n");
+			// Document line
+			try {
+				bulk.append(objectMapper.writeValueAsString(chunkDoc)).append("\n");
+			}
+			catch (JsonProcessingException e) {
+				log.debug("Failed to serialize chunk {}: {}", chunkId, e.getMessage());
+			}
 		}
 
-		// Ensure at least one chunk
-		if (chunks.isEmpty() && !text.isEmpty()) {
-			chunks.add(text.substring(0, Math.min(maxChunkSize, text.length())));
+		if (bulk.length() == 0) {
+			return 0;
 		}
 
-		return chunks;
+		int accepted = sendBulkAndCountSuccess(bulkEndpoint, bulk.toString(), username, password);
+		log.debug("RAG bulk flush: {}/{} chunks accepted (buffer {}KB)",
+				accepted, chunkDocs.size(), bulk.length() / 1024);
+		return accepted;
 	}
 
 	/**
@@ -1775,14 +2266,99 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		try {
 			String endpoint = destUrl.endsWith("/")
 					? destUrl + "_search/scroll" : destUrl + "/_search/scroll";
-			HttpHeaders headers = buildAuthHeaders(username, password);
+			HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(username, password);
 			headers.setContentType(MediaType.APPLICATION_JSON);
 			String body = "{\"scroll_id\":\"" + scrollId + "\"}";
 			HttpEntity<String> request = new HttpEntity<>(body, headers);
-			restTemplate.exchange(endpoint, HttpMethod.DELETE, request, String.class);
+			exchangeWithRetry(endpoint, HttpMethod.DELETE, request, String.class);
 		}
 		catch (Exception e) {
 			log.debug("Could not clear scroll context: {}", e.getMessage());
+		}
+	}
+
+	/**
+	 * Delete all RAG chunks whose {@code doc_id} matches any of the given document IDs.
+	 * This prevents stale chunks from surviving when a document's content shrinks
+	 * (producing fewer chunks than before) on a re-sync.
+	 *
+	 * <p>Uses OpenSearch {@code _delete_by_query} with a {@code terms} filter for
+	 * efficient batch deletion. Silently ignores errors (the RAG index may not exist
+	 * yet on the first sync run).</p>
+	 */
+	private void deleteChunksByDocIds(String destUrl, String username, String password,
+			String ragIndexName, List<String> docIds) {
+		if (docIds == null || docIds.isEmpty()) {
+			return;
+		}
+		try {
+			String endpoint = destUrl.endsWith("/")
+					? destUrl + ragIndexName + "/_delete_by_query"
+					: destUrl + "/" + ragIndexName + "/_delete_by_query";
+			HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(username, password);
+			headers.setContentType(MediaType.APPLICATION_JSON);
+
+			// Build terms query for all doc_ids in this batch
+			StringBuilder termsArray = new StringBuilder("[");
+			for (int i = 0; i < docIds.size(); i++) {
+				if (i > 0) {
+					termsArray.append(",");
+				}
+				termsArray.append("\"").append(docIds.get(i).replace("\"", "\\\"")).append("\"");
+			}
+			termsArray.append("]");
+
+			String body = "{\"query\":{\"terms\":{\"doc_id\":" + termsArray + "}}}";
+			HttpEntity<String> request = new HttpEntity<>(body, headers);
+			ResponseEntity<String> response = exchangeWithRetry(
+					endpoint, HttpMethod.POST, request, String.class);
+			if (response.getBody() != null) {
+				Map<String, Object> result = objectMapper.readValue(response.getBody(),
+						new TypeReference<Map<String, Object>>() {});
+				Object deleted = result.get("deleted");
+				if (deleted != null && ((Number) deleted).longValue() > 0) {
+					log.info("Deleted {} stale RAG chunks for {} documents in '{}'",
+							deleted, docIds.size(), ragIndexName);
+				}
+			}
+		}
+		catch (Exception e) {
+			log.debug("Could not delete old RAG chunks (index may not exist yet): {}", e.getMessage());
+		}
+	}
+
+	/**
+	 * Remove the {@code content} field from ALL documents in the _document index.
+	 * This saves significant storage when full-text search on the document index
+	 * is not needed (the RAG index has chunked content for search).
+	 * Uses _update_by_query with a painless script.
+	 */
+	private void removeContentFromDocumentIndex(String destUrl, String username, String password,
+			String indexName) {
+		try {
+			String endpoint = destUrl.endsWith("/")
+					? destUrl + indexName + "/_update_by_query?conflicts=proceed&wait_for_completion=true"
+					: destUrl + "/" + indexName + "/_update_by_query?conflicts=proceed&wait_for_completion=true";
+			HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(username, password);
+			headers.setContentType(MediaType.APPLICATION_JSON);
+
+			String body = "{"
+					+ "\"script\":{\"source\":\"ctx._source.remove('content')\",\"lang\":\"painless\"},"
+					+ "\"query\":{\"exists\":{\"field\":\"content\"}}"
+					+ "}";
+			HttpEntity<String> request = new HttpEntity<>(body, headers);
+			ResponseEntity<String> response = exchangeWithRetry(
+					endpoint, HttpMethod.POST, request, String.class);
+			if (response.getBody() != null) {
+				Map<String, Object> result = objectMapper.readValue(response.getBody(),
+						new TypeReference<Map<String, Object>>() {});
+				Object updated = result.get("updated");
+				log.info("Removed 'content' field from {} documents in '{}' (full_text_search=false)",
+						updated, indexName);
+			}
+		}
+		catch (Exception e) {
+			log.warn("Failed to remove content from document index '{}': {}", indexName, e.getMessage());
 		}
 	}
 
@@ -1797,6 +2373,45 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			}
 		}
 		return "";
+	}
+
+	/**
+	 * Check whether a document's MIME type or file extension indicates that
+	 * Apache Tika can extract meaningful full-text content from it.
+	 * <p>
+	 * Returns {@code true} for documents like PDF, Word, Excel, PowerPoint,
+	 * plain text, HTML, source code, etc. Returns {@code false} for images,
+	 * audio, video, and other binary formats where Tika would only extract
+	 * minimal metadata.
+	 *
+	 * @param mimeType the document's MIME type (e.g. "application/pdf")
+	 * @param fileName the file name, used to extract extension as a fallback
+	 * @return true if the file should be processed for full-text RAG
+	 */
+	public static boolean isTikaProcessable(String mimeType, String fileName) {
+		// Check MIME type first
+		if (mimeType != null && !mimeType.isEmpty()) {
+			String mime = mimeType.toLowerCase().trim();
+			if (TIKA_PROCESSABLE_MIME_TYPES.contains(mime)) {
+				return true;
+			}
+			// Also accept any text/* MIME type not explicitly listed
+			if (mime.startsWith("text/")) {
+				return true;
+			}
+		}
+
+		// Fallback: check file extension (handles application/octet-stream or missing MIME)
+		if (fileName != null && !fileName.isEmpty()) {
+			int dot = fileName.lastIndexOf('.');
+			if (dot >= 0 && dot < fileName.length() - 1) {
+				String ext = fileName.substring(dot + 1).toLowerCase();
+				return TIKA_PROCESSABLE_EXTENSIONS.contains(ext);
+			}
+		}
+
+		// MIME unknown and no extension — skip content extraction to be safe
+		return false;
 	}
 
 	/**
@@ -1819,13 +2434,13 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 	@SuppressWarnings("unchecked")
 	private int sendBulkAndCountSuccess(String bulkEndpoint, String bulkBody,
 			String username, String password) {
-		HttpHeaders headers = buildAuthHeaders(username, password);
+		HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(username, password);
 		// Use UTF-8 charset explicitly — default ISO-8859-1 breaks for non-ASCII chars
 		// like \u00a0 (NBSP) from Tika-extracted text, causing json_parse_exception
 		headers.setContentType(new MediaType("application", "x-ndjson", StandardCharsets.UTF_8));
 
 		HttpEntity<String> request = new HttpEntity<>(bulkBody, headers);
-		ResponseEntity<String> response = restTemplate.exchange(
+		ResponseEntity<String> response = exchangeWithRetry(
 				bulkEndpoint, HttpMethod.POST, request, String.class);
 
 		if (response.getBody() == null) {
@@ -1977,6 +2592,29 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		return destinationMapper.selectOne(wrapper);
 	}
 
+	/**
+	 * B17: Resolved destination config (URL + credentials).
+	 * Deduplicates the repeated findDestination → deserializeConfig → getConfigString x3 pattern.
+	 */
+	private record DestConfig(String url, String username, String password) {}
+
+	/**
+	 * Resolve destination URL and credentials from a destination ID.
+	 * @throws BizException if destination is not found
+	 */
+	private DestConfig resolveDestConfig(String destinationId) {
+		DestinationEntity dest = findDestination(destinationId);
+		if (dest == null) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("destination_id", "Destination not found"));
+		}
+		Map<String, Object> destConfig = deserializeConfig(dest.getConnectionConfig());
+		return new DestConfig(
+				getConfigString(destConfig, "url", ""),
+				getConfigString(destConfig, "username", ""),
+				getConfigString(destConfig, "password", "")
+		);
+	}
+
 	private KnowledgeSync toDto(KnowledgeSyncEntity entity) {
 		KnowledgeSync dto = new KnowledgeSync();
 		dto.setSyncId(entity.getSyncId());
@@ -2005,16 +2643,6 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		return dto;
 	}
 
-	private HttpHeaders buildAuthHeaders(String username, String password) {
-		HttpHeaders headers = new HttpHeaders();
-		if (StringUtils.isNotBlank(username)) {
-			String auth = Base64.getEncoder()
-				.encodeToString((username + ":" + password).getBytes(StandardCharsets.UTF_8));
-			headers.set("Authorization", "Basic " + auth);
-		}
-		return headers;
-	}
-
 	private Map<String, Object> deserializeConfig(String configJson) {
 		if (StringUtils.isBlank(configJson)) {
 			return new HashMap<>();
@@ -2025,6 +2653,68 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		}
 		catch (JsonProcessingException e) {
 			return new HashMap<>();
+		}
+	}
+
+	/**
+	 * Look up the KB entity from the knowledge_base table (single query for both configs).
+	 * Returns null if the KB does not exist.
+	 */
+	private KnowledgeBaseEntity findKnowledgeBase(String kbId) {
+		if (StringUtils.isBlank(kbId)) {
+			return null;
+		}
+		LambdaQueryWrapper<KnowledgeBaseEntity> wrapper = new LambdaQueryWrapper<>();
+		wrapper.eq(KnowledgeBaseEntity::getKbId, kbId).last("LIMIT 1");
+		return knowledgeBaseMapper.selectOne(wrapper);
+	}
+
+	/**
+	 * Look up the KB's embedding configuration from the knowledge_base table.
+	 * Returns an {@link IndexConfig} with embeddingProvider/embeddingModel populated,
+	 * or {@code null} if the KB has no embedding config.
+	 */
+	private IndexConfig resolveEmbeddingConfig(String kbId) {
+		return resolveEmbeddingConfigFromEntity(findKnowledgeBase(kbId));
+	}
+
+	/** Extract IndexConfig from an already-loaded KB entity. */
+	private IndexConfig resolveEmbeddingConfigFromEntity(KnowledgeBaseEntity kb) {
+		if (kb == null || StringUtils.isBlank(kb.getIndexConfig())) {
+			return null;
+		}
+		try {
+			IndexConfig cfg = objectMapper.readValue(kb.getIndexConfig(), IndexConfig.class);
+			if (StringUtils.isBlank(cfg.getEmbeddingProvider()) || StringUtils.isBlank(cfg.getEmbeddingModel())) {
+				return null;
+			}
+			return cfg;
+		}
+		catch (JsonProcessingException e) {
+			log.warn("Failed to parse index_config for KB: {}", e.getMessage());
+			return null;
+		}
+	}
+
+	/**
+	 * Look up the KB's process configuration (chunk size, overlap) from the knowledge_base table.
+	 * Returns a {@link ProcessConfig} or {@code null} if not configured.
+	 */
+	private ProcessConfig resolveProcessConfig(String kbId) {
+		return resolveProcessConfigFromEntity(findKnowledgeBase(kbId));
+	}
+
+	/** Extract ProcessConfig from an already-loaded KB entity. */
+	private ProcessConfig resolveProcessConfigFromEntity(KnowledgeBaseEntity kb) {
+		if (kb == null || StringUtils.isBlank(kb.getProcessConfig())) {
+			return null;
+		}
+		try {
+			return objectMapper.readValue(kb.getProcessConfig(), ProcessConfig.class);
+		}
+		catch (JsonProcessingException e) {
+			log.warn("Failed to parse process_config for KB: {}", e.getMessage());
+			return null;
 		}
 	}
 
@@ -2053,7 +2743,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		String destUsername = getConfigString(destConfig, "username", "");
 		String destPassword = getConfigString(destConfig, "password", "");
 
-		entity.setStatus("indexing");
+		entity.setStatus(STATUS_INDEXING);
 		entity.setIndexProgress(0);
 		entity.setGmtModified(new Date());
 		this.updateById(entity);
@@ -2062,7 +2752,8 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		String syncToken = UUID.randomUUID().toString();
 		activeSyncTokens.put(entity.getSyncId(), syncToken);
 
-		startAsyncDocSyncOnly(entity, destUrl, destUsername, destPassword, syncToken);
+		CompletableFuture.runAsync(
+				() -> startAsyncDocSyncOnly(entity, destUrl, destUsername, destPassword, syncToken), syncExecutor);
 
 		Map<String, String> result = new LinkedHashMap<>();
 		result.put("status", "started");
@@ -2071,10 +2762,15 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		return result;
 	}
 
-	@Async
 	protected void startAsyncDocSyncOnly(KnowledgeSyncEntity entity, String destUrl, String destUsername,
 			String destPassword, String syncToken) {
 		try {
+			// B4: Check sync token before each phase
+			if (!isSyncActive(entity.getSyncId(), syncToken)) {
+				log.info("Doc sync for {} superseded before start, aborting", entity.getSyncId());
+				return;
+			}
+
 			indexSchemaFactory.createDocumentIndex(destUrl, destUsername, destPassword, entity.getIndexName());
 			indexSchemaFactory.createAuthorityIndex(destUrl, destUsername, destPassword, entity.getAuthorityIndexName());
 
@@ -2085,27 +2781,80 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 					entity.setGmtModified(new Date());
 					this.updateById(entity);
 
-					if (StringUtils.isNotBlank(entity.getMcfJobId())) {
+					// Update the CMIS repo connection with the authority index name
+					// so the connector knows where to sync group membership data.
+					try {
+						Map<String, Object> srcConfig = deserializeConfig(source.getConnectionConfig());
+						srcConfig.put("authorityIndexName", entity.getAuthorityIndexName());
+						mcfBridge.createRepositoryConnection(source.getMcfConnectionName(),
+								source.getDescription(), source.getConnectorClass(), srcConfig);
+						log.info("Updated CMIS repo connection '{}' with authorityIndexName='{}'",
+								source.getMcfConnectionName(), entity.getAuthorityIndexName());
+					}
+					catch (Exception e) {
+						log.warn("Could not update repo connection with authority index name: {}",
+								e.getMessage());
+					}
+
+					// Clean up old MCF job ONLY if in error state; otherwise reuse
+					// for incremental sync (preserves version tracking).
+					boolean hasExistingDocJob = StringUtils.isNotBlank(entity.getMcfJobId());
+					boolean reuseExistingDocJob = false;
+					if (hasExistingDocJob) {
 						try {
-							mcfBridge.abortJob(entity.getMcfJobId());
-							mcfBridge.deleteJob(entity.getMcfJobId());
+							Map<String, String> jobStatus = mcfBridge.getJobStatus(entity.getMcfJobId());
+							String jobStatusStr = jobStatus != null
+									? String.valueOf(jobStatus.get("status")) : "";
+							if ("error".equalsIgnoreCase(jobStatusStr)) {
+								log.info("Old MCF doc job {} is in error state, will recreate",
+										entity.getMcfJobId());
+								mcfBridge.abortJob(entity.getMcfJobId());
+								mcfBridge.deleteJob(entity.getMcfJobId());
+							}
+							else {
+								reuseExistingDocJob = true;
+								log.info(
+										"Reusing existing MCF doc job {} for incremental sync (status={})",
+										entity.getMcfJobId(), jobStatusStr);
+							}
 						}
 						catch (Exception e) {
-							log.debug("Could not clean up old MCF job: {}", e.getMessage());
+							log.debug("Could not check old MCF doc job status, will recreate: {}",
+									e.getMessage());
+							try {
+								mcfBridge.abortJob(entity.getMcfJobId());
+								mcfBridge.deleteJob(entity.getMcfJobId());
+							}
+							catch (Exception e2) {
+								log.debug("Could not clean up old MCF doc job: {}", e2.getMessage());
+							}
 						}
 					}
 
-					String jobDescription = "Doc Sync: " + entity.getKbId() + " / " + entity.getSyncId();
-					String outputConn = StringUtils.isNotBlank(source.getMcfOutputName())
-							? source.getMcfOutputName() : null;
-					// Read CMIS query from source connection config; default to all documents
-					Map<String, Object> sourceConfig = deserializeConfig(source.getConnectionConfig());
-					String cmisQuery = getConfigString(sourceConfig, "cmisQuery",
-							"SELECT * FROM cmis:document");
-					log.info("Using CMIS query for doc sync {}: {}", entity.getSyncId(), cmisQuery);
-					String jobId = mcfBridge.createCrawlJob(jobDescription,
-							source.getMcfConnectionName(), outputConn, cmisQuery, "cmisQuery");
-					mcfBridge.startJob(jobId);
+					String jobId;
+					if (reuseExistingDocJob) {
+						jobId = entity.getMcfJobId();
+						mcfBridge.startJob(jobId);
+						log.info("Re-started existing MCF doc job {} for incremental sync {}",
+								jobId, entity.getSyncId());
+					}
+					else {
+						String jobDescription = "Doc Sync: " + entity.getKbId() + " / "
+								+ entity.getSyncId();
+						String outputConn = StringUtils.isNotBlank(source.getMcfOutputName())
+								? source.getMcfOutputName() : null;
+						Map<String, Object> sourceConfig = deserializeConfig(
+								source.getConnectionConfig());
+						String cmisQuery = getConfigString(sourceConfig, "cmisQuery",
+								"SELECT * FROM cmis:document");
+						log.info("Using CMIS query for doc sync {}: {}", entity.getSyncId(),
+								cmisQuery);
+						jobId = mcfBridge.createCrawlJob(jobDescription,
+								source.getMcfConnectionName(), outputConn, cmisQuery, "cmisQuery");
+						mcfBridge.startJob(jobId);
+						log.info("Created and started new MCF doc job {} for sync {}", jobId,
+								entity.getSyncId());
+					}
 
 					entity.setMcfJobId(jobId);
 					entity.setIndexProgress(10);
@@ -2120,7 +2869,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			entity.setTotalDocs(docCount);
 			entity.setIndexedDocs(docCount);
 			entity.setIndexProgress(100);
-			entity.setStatus("completed");
+			entity.setStatus(STATUS_COMPLETED);
 			entity.setLastSyncTime(new Date());
 			entity.setGmtModified(new Date());
 			this.updateById(entity);
@@ -2128,7 +2877,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		}
 		catch (Exception e) {
 			log.error("Document sync only failed: syncId={}", entity.getSyncId(), e);
-			entity.setStatus("failed");
+			entity.setStatus(STATUS_FAILED);
 			entity.setErrorMessage(e.getMessage());
 			entity.setGmtModified(new Date());
 			this.updateById(entity);
@@ -2142,22 +2891,21 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("sync_id", "Sync job not found"));
 		}
 
-		DestinationEntity dest = findDestination(entity.getDestinationId());
-		if (dest == null) {
-			throw new BizException(ErrorCode.INVALID_PARAMS.toError("destination_id", "Destination not found"));
+		DestConfig dc = resolveDestConfig(entity.getDestinationId());
+
+		// B15: Validate destination URL before launching async work
+		if (StringUtils.isBlank(dc.url())) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("destination_url",
+					"Destination URL is blank — cannot reindex"));
 		}
 
-		Map<String, Object> destConfig = deserializeConfig(dest.getConnectionConfig());
-		String destUrl = getConfigString(destConfig, "url", "");
-		String destUsername = getConfigString(destConfig, "username", "");
-		String destPassword = getConfigString(destConfig, "password", "");
-
-		entity.setStatus("rag_processing");
+		entity.setStatus(STATUS_RAG_PROCESSING);
 		entity.setRagProgress(0);
 		entity.setGmtModified(new Date());
 		this.updateById(entity);
 
-		startAsyncRagOnly(entity, destUrl, destUsername, destPassword);
+		CompletableFuture.runAsync(
+				() -> startAsyncRagOnly(entity, dc.url(), dc.username(), dc.password()), syncExecutor);
 
 		Map<String, String> result = new LinkedHashMap<>();
 		result.put("status", "started");
@@ -2166,7 +2914,6 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		return result;
 	}
 
-	@Async
 	protected void startAsyncRagOnly(KnowledgeSyncEntity entity, String destUrl, String destUsername,
 			String destPassword) {
 		try {
@@ -2174,33 +2921,261 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			String syncToken = UUID.randomUUID().toString();
 			activeSyncTokens.put(entity.getSyncId(), syncToken);
 
+			// B10: Single KB lookup for both embedding and process configs
+			KnowledgeBaseEntity kbEntity = findKnowledgeBase(entity.getKbId());
+			IndexConfig embeddingConfig = resolveEmbeddingConfigFromEntity(kbEntity);
+			EmbeddingModel embeddingModel = null;
+			int embeddingDim = DEFAULT_EMBEDDING_DIM;
+			if (embeddingConfig != null) {
+				embeddingDim = EmbeddingModelDimension.getDimension(embeddingConfig.getEmbeddingModel(), DEFAULT_EMBEDDING_DIM);
+				embeddingModel = modelFactory.getEmbeddingModel(MetadataMode.EMBED, embeddingConfig);
+			}
+
+			// Resolve chunk config from the KB
+			ProcessConfig processConfig = resolveProcessConfigFromEntity(kbEntity);
+			int chunkSize = (processConfig != null && processConfig.getChunkSize() != null && processConfig.getChunkSize() > 0)
+					? processConfig.getChunkSize() : DEFAULT_CHUNK_SIZE_CHARS;
+			int chunkOverlap = (processConfig != null && processConfig.getChunkOverlap() != null && processConfig.getChunkOverlap() >= 0)
+					? processConfig.getChunkOverlap() : DEFAULT_CHUNK_OVERLAP_CHARS;
+
 			// Delete existing RAG index and recreate
 			indexSchemaFactory.deleteIndex(destUrl, destUsername, destPassword, entity.getRagIndexName());
-			indexSchemaFactory.createRagIndex(destUrl, destUsername, destPassword, entity.getRagIndexName(), 1024);
+			indexSchemaFactory.createRagIndex(destUrl, destUsername, destPassword, entity.getRagIndexName(), embeddingDim);
 
 			entity.setRagProgress(5);
 			entity.setGmtModified(new Date());
 			this.updateById(entity);
 
-			long ragCount = populateRagIndex(entity, destUrl, destUsername, destPassword, syncToken);
+			long ragCount = populateRagIndex(entity, destUrl, destUsername, destPassword, syncToken,
+					embeddingModel, chunkSize, chunkOverlap, kbEntity.getWorkspaceId());
 
 			long docCount = countOpenSearchDocs(destUrl, destUsername, destPassword, entity.getIndexName());
 			entity.setTotalDocs(docCount);
 			entity.setIndexedDocs(docCount);
 			entity.setRagDocs(ragCount);
 			entity.setRagProgress(100);
-			entity.setStatus("completed");
+			entity.setStatus(STATUS_COMPLETED);
 			entity.setLastSyncTime(new Date());
 			entity.setGmtModified(new Date());
 			this.updateById(entity);
 			log.info("RAG reindex completed: syncId={}, ragChunks={}", entity.getSyncId(), ragCount);
+
+			// Remove content from _document if full-text search is disabled
+			boolean fullTextSearch = (processConfig == null || processConfig.getFullTextSearch() == null
+					|| processConfig.getFullTextSearch());
+			if (!fullTextSearch) {
+				log.info("full_text_search=false — removing content from document index '{}'",
+						entity.getIndexName());
+				removeContentFromDocumentIndex(destUrl, destUsername, destPassword, entity.getIndexName());
+			}
 		}
 		catch (Exception e) {
 			log.error("RAG reindex only failed: syncId={}", entity.getSyncId(), e);
-			entity.setStatus("failed");
+			entity.setStatus(STATUS_FAILED);
 			entity.setErrorMessage(e.getMessage());
 			entity.setGmtModified(new Date());
 			this.updateById(entity);
+		}
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public Map<String, Object> reragDocuments(String syncId, List<String> docIds) {
+		if (docIds == null || docIds.isEmpty()) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("doc_ids", "No document IDs provided"));
+		}
+		KnowledgeSyncEntity entity = findBySyncId(syncId);
+		if (entity == null) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("sync_id", "Sync job not found"));
+		}
+		DestConfig dc = resolveDestConfig(entity.getDestinationId());
+		if (StringUtils.isBlank(dc.url())) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("destination_url",
+					"Destination URL is blank — cannot re-RAG"));
+		}
+
+		// Launch async re-RAG for selected documents
+		CompletableFuture.runAsync(() -> {
+			try {
+				reragSelectedDocuments(entity, dc.url(), dc.username(), dc.password(), docIds);
+			}
+			catch (Exception e) {
+				log.error("Re-RAG selected documents failed: syncId={}, docIds={}", syncId, docIds, e);
+			}
+		}, syncExecutor);
+
+		Map<String, Object> result = new LinkedHashMap<>();
+		result.put("status", "started");
+		result.put("sync_id", syncId);
+		result.put("doc_count", docIds.size());
+		return result;
+	}
+
+	/**
+	 * Re-RAG specific documents: fetch them from _document index, delete old chunks
+	 * from _rag index, then re-chunk and re-embed.
+	 */
+	@SuppressWarnings("unchecked")
+	private void reragSelectedDocuments(KnowledgeSyncEntity entity, String destUrl,
+			String destUsername, String destPassword, List<String> docIds) {
+		String docIndexName = entity.getIndexName();
+		String ragIndexName = entity.getRagIndexName();
+
+		// Resolve embedding model and chunk config
+		KnowledgeBaseEntity kbEntity = findKnowledgeBase(entity.getKbId());
+		IndexConfig embeddingConfig = resolveEmbeddingConfigFromEntity(kbEntity);
+		EmbeddingModel embeddingModel = null;
+		if (embeddingConfig != null) {
+			embeddingModel = modelFactory.getEmbeddingModel(MetadataMode.EMBED, embeddingConfig);
+		}
+		ProcessConfig processConfig = resolveProcessConfigFromEntity(kbEntity);
+		int chunkSize = (processConfig != null && processConfig.getChunkSize() != null && processConfig.getChunkSize() > 0)
+				? processConfig.getChunkSize() : DEFAULT_CHUNK_SIZE_CHARS;
+		int chunkOverlap = (processConfig != null && processConfig.getChunkOverlap() != null && processConfig.getChunkOverlap() >= 0)
+				? processConfig.getChunkOverlap() : DEFAULT_CHUNK_OVERLAP_CHARS;
+
+		// Step 1: Delete existing RAG chunks for these documents
+		deleteChunksByDocIds(destUrl, destUsername, destPassword, ragIndexName, docIds);
+
+		// Step 2: Fetch document content from _document index by IDs
+		HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(destUsername, destPassword);
+		headers.setContentType(MediaType.APPLICATION_JSON);
+
+		// Build mget request
+		StringBuilder idsJson = new StringBuilder("[");
+		for (int i = 0; i < docIds.size(); i++) {
+			if (i > 0) idsJson.append(",");
+			idsJson.append("\"").append(docIds.get(i).replace("\"", "\\\"")).append("\"");
+		}
+		idsJson.append("]");
+
+		String mgetEndpoint = destUrl.endsWith("/")
+				? destUrl + docIndexName + "/_mget"
+				: destUrl + "/" + docIndexName + "/_mget";
+		String mgetBody = "{\"ids\":" + idsJson + "}";
+		HttpEntity<String> mgetRequest = new HttpEntity<>(mgetBody, headers);
+
+		try {
+			ResponseEntity<String> mgetResponse = exchangeWithRetry(
+					mgetEndpoint, HttpMethod.POST, mgetRequest, String.class);
+			if (mgetResponse.getBody() == null) {
+				log.warn("No response from mget for re-RAG, syncId={}", entity.getSyncId());
+				return;
+			}
+
+			Map<String, Object> mgetResult = objectMapper.readValue(mgetResponse.getBody(),
+					new TypeReference<Map<String, Object>>() {});
+			List<Map<String, Object>> docs = (List<Map<String, Object>>) mgetResult.get("docs");
+			if (docs == null || docs.isEmpty()) {
+				log.warn("No documents found for re-RAG, syncId={}", entity.getSyncId());
+				return;
+			}
+
+			// Step 3: Process each document — chunk, embed, index to RAG
+			String bulkEndpoint = destUrl.endsWith("/") ? destUrl + "_bulk" : destUrl + "/_bulk";
+			List<String> pendingChunkIds = new ArrayList<>();
+			List<Map<String, Object>> pendingChunkDocs = new ArrayList<>();
+			List<String> pendingChunkTexts = new ArrayList<>();
+			long chunksIndexed = 0;
+
+			for (Map<String, Object> doc : docs) {
+				Boolean found = (Boolean) doc.get("found");
+				if (found == null || !found) continue;
+
+				String docId = String.valueOf(doc.get("_id"));
+				Map<String, Object> docSource = (Map<String, Object>) doc.get("_source");
+				if (docSource == null) continue;
+
+				String title = firstNonEmpty(docSource, "cm:title", "cmis:name", "cmis:contentStreamFileName");
+				String fileName = firstNonEmpty(docSource, "cmis:contentStreamFileName", "cmis:name");
+				String mimeType = firstNonEmpty(docSource, "cmis:contentStreamMimeType", "mime-type");
+				String createdBy = firstNonEmpty(docSource, "cmis:createdBy");
+				String objectId = firstNonEmpty(docSource, "cmis:objectId");
+
+				// Skip non-processable file types (images, videos, etc.)
+				if (!isTikaProcessable(mimeType, fileName)) {
+					log.info("Re-RAG: Skipping '{}' (mime={}) — not a Tika-processable type",
+							fileName, mimeType);
+					continue;
+				}
+
+				String content = docSource.get("content") != null
+						? String.valueOf(docSource.get("content")) : "";
+				content = content.replace('\u00a0', ' ')
+						.replace('\u2028', '\n')
+						.replace('\u2029', '\n')
+						.replace("\u0000", "");
+
+				if (content.trim().length() < 50) {
+					log.warn("Re-RAG: Skipping '{}' — too little text ({} chars)", fileName, content.trim().length());
+					continue;
+				}
+
+				Object authorities = docSource.get("authorities");
+				List<String> chunks = chunkTextWithOverlap(content, chunkSize, chunkOverlap);
+
+				for (int i = 0; i < chunks.size(); i++) {
+					String chunkId = docId + "_chunk_" + i;
+					String chunkContent = chunks.get(i)
+							.replace("\u0000", "")
+							.replaceAll("[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]", "");
+
+					Map<String, Object> chunkDoc = new LinkedHashMap<>();
+					chunkDoc.put("chunk_id", chunkId);
+					chunkDoc.put("doc_id", docId);
+					chunkDoc.put("content", chunkContent);
+					chunkDoc.put("chunk_index", i);
+					chunkDoc.put("file_title", title);
+
+					Map<String, Object> metadata = new LinkedHashMap<>();
+					metadata.put("file_name", fileName);
+					metadata.put("mime_type", mimeType);
+					metadata.put("created_by", createdBy);
+					metadata.put("object_id", objectId);
+					metadata.put("total_chunks", chunks.size());
+					// Required by VectorStore retriever's FilterExpression
+					metadata.put("workspace_id", kbEntity.getWorkspaceId() != null ? kbEntity.getWorkspaceId() : "1");
+					metadata.put("enabled", true);
+					chunkDoc.put("metadata", metadata);
+
+					if (authorities != null) {
+						chunkDoc.put("authorities", authorities);
+					}
+
+					pendingChunkIds.add(chunkId);
+					pendingChunkDocs.add(chunkDoc);
+					pendingChunkTexts.add(chunkContent);
+
+					if (pendingChunkDocs.size() >= MAX_CHUNKS_PER_BULK) {
+						int accepted = flushRagBatch(ragIndexName, bulkEndpoint, destUsername, destPassword,
+								pendingChunkIds, pendingChunkDocs, pendingChunkTexts, embeddingModel);
+						chunksIndexed += accepted;
+						pendingChunkIds.clear();
+						pendingChunkDocs.clear();
+						pendingChunkTexts.clear();
+					}
+				}
+				log.info("Re-RAG: processed '{}' → {} chunks", fileName, chunks.size());
+			}
+
+			// Flush remaining
+			if (!pendingChunkDocs.isEmpty()) {
+				int accepted = flushRagBatch(ragIndexName, bulkEndpoint, destUsername, destPassword,
+						pendingChunkIds, pendingChunkDocs, pendingChunkTexts, embeddingModel);
+				chunksIndexed += accepted;
+			}
+
+			// Update RAG doc count
+			long totalRagCount = countOpenSearchDocs(destUrl, destUsername, destPassword, ragIndexName);
+			entity.setRagDocs(totalRagCount);
+			entity.setGmtModified(new Date());
+			this.updateById(entity);
+
+			log.info("Re-RAG completed for {} documents: {} new chunks indexed, total RAG chunks: {}",
+					docIds.size(), chunksIndexed, totalRagCount);
+		}
+		catch (Exception e) {
+			log.error("Re-RAG failed for syncId={}: {}", entity.getSyncId(), e.getMessage(), e);
 		}
 	}
 
@@ -2250,7 +3225,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 				String endpoint = destUrl.endsWith("/")
 						? destUrl + indexName + "/_search"
 						: destUrl + "/" + indexName + "/_search";
-				HttpHeaders headers = buildAuthHeaders(username, password);
+				HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(username, password);
 				headers.setContentType(MediaType.APPLICATION_JSON);
 
 				// Build search query — include both normalized and CMIS field names
@@ -2277,7 +3252,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 				}
 
 				HttpEntity<String> request = new HttpEntity<>(searchBody, headers);
-				ResponseEntity<String> response = restTemplate.exchange(
+				ResponseEntity<String> response = exchangeWithRetry(
 						endpoint, HttpMethod.POST, request, String.class);
 
 				if (response.getBody() != null) {
@@ -2310,7 +3285,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 								}
 								Map<String, Object> record = new LinkedHashMap<>();
 								record.put("doc_id", hit.get("_id"));
-								record.put("kb_id", kbIdFromIndex(String.valueOf(hit.get("_index"))));
+								record.put("kb_id", hit.get("_index") != null ? String.valueOf(hit.get("_index")) : "");
 								// Use CMIS field names as fallback since MCF writes raw CMIS properties
 								record.put("name", firstNonEmpty(source,
 										"file_title", "cm:title", "cmis:name",
@@ -2328,9 +3303,19 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 								if (fileSize == null) {
 									fileSize = source.get("cmis:contentStreamLength");
 								}
-								record.put("size", fileSize instanceof Number
-										? ((Number) fileSize).longValue() : 0L);
-								record.put("index_status", "completed");
+								long sizeValue = 0L;
+								if (fileSize instanceof Number) {
+									sizeValue = ((Number) fileSize).longValue();
+								}
+								else if (fileSize instanceof String) {
+									try {
+										sizeValue = Long.parseLong(((String) fileSize).trim());
+									}
+									catch (NumberFormatException ignored) {
+									}
+								}
+								record.put("size", sizeValue);
+								record.put("index_status", "processed");
 								record.put("enabled", true);
 								record.put("path", source.getOrDefault("file_path", ""));
 								record.put("source", "opensearch");
@@ -2361,10 +3346,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		return empty;
 	}
 
-	private String kbIdFromIndex(String indexName) {
-		// The index name may be "manifoldcf" or the KB-specific one
-		return indexName != null ? indexName : "";
-	}
+
 
 	@Override
 	public Map<String, Object> hardReset(String syncId) {
@@ -2416,7 +3398,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		}
 
 		// 3. Reset entity to pending state
-		entity.setStatus("pending");
+		entity.setStatus(STATUS_PENDING);
 		entity.setMcfJobId("");
 		entity.setIndexProgress(0);
 		entity.setRagProgress(0);
@@ -2466,7 +3448,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			}
 		}
 
-		entity.setStatus("failed");
+		entity.setStatus(STATUS_FAILED);
 		entity.setErrorMessage("Manually stopped by user");
 		entity.setGmtModified(new Date());
 		this.updateById(entity);
@@ -2562,12 +3544,12 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			String endpoint = destUrl.endsWith("/")
 					? destUrl + entity.getIndexName() + "/_search"
 					: destUrl + "/" + entity.getIndexName() + "/_search";
-			HttpHeaders headers = buildAuthHeaders(destUsername, destPassword);
+			HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(destUsername, destPassword);
 			headers.setContentType(MediaType.APPLICATION_JSON);
 			String searchBody = "{\"size\":1,\"query\":{\"ids\":{\"values\":["
 					+ objectMapper.writeValueAsString(docId) + "]}}}";
 			HttpEntity<String> request = new HttpEntity<>(searchBody, headers);
-			ResponseEntity<String> response = restTemplate.exchange(
+			ResponseEntity<String> response = exchangeWithRetry(
 					endpoint, HttpMethod.POST, request, String.class);
 
 			if (response.getBody() != null) {
@@ -2621,7 +3603,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			String endpoint = destUrl.endsWith("/")
 					? destUrl + ragIndex + "/_search"
 					: destUrl + "/" + ragIndex + "/_search";
-			HttpHeaders headers = buildAuthHeaders(destUsername, destPassword);
+			HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(destUsername, destPassword);
 			headers.setContentType(MediaType.APPLICATION_JSON);
 
 			// Search RAG chunks by doc_id (keyword field storing the parent document's OpenSearch _id)
@@ -2633,7 +3615,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 					+ ",\"track_total_hits\":true}";
 
 			HttpEntity<String> request = new HttpEntity<>(searchBody, headers);
-			ResponseEntity<String> response = restTemplate.exchange(
+			ResponseEntity<String> response = exchangeWithRetry(
 					endpoint, HttpMethod.POST, request, String.class);
 
 			if (response.getBody() != null) {
@@ -2712,7 +3694,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			String endpoint = destUrl.endsWith("/")
 					? destUrl + ragIndex + "/_update_by_query"
 					: destUrl + "/" + ragIndex + "/_update_by_query";
-			HttpHeaders headers = buildAuthHeaders(destUsername, destPassword);
+			HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(destUsername, destPassword);
 			headers.setContentType(MediaType.APPLICATION_JSON);
 
 			Map<String, Object> updateBody = new LinkedHashMap<>();
@@ -2722,7 +3704,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 					"params", Map.of("content", content)));
 			String body = objectMapper.writeValueAsString(updateBody);
 			HttpEntity<String> request = new HttpEntity<>(body, headers);
-			restTemplate.exchange(endpoint, HttpMethod.POST, request, String.class);
+			exchangeWithRetry(endpoint, HttpMethod.POST, request, String.class);
 
 			return Map.of("chunk_id", chunkId, "status", "updated");
 		}
@@ -2752,17 +3734,23 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			String endpoint = destUrl.endsWith("/")
 					? destUrl + entity.getIndexName() + "/_update_by_query"
 					: destUrl + "/" + entity.getIndexName() + "/_update_by_query";
-			HttpHeaders headers = buildAuthHeaders(destUsername, destPassword);
+			HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(destUsername, destPassword);
 			headers.setContentType(MediaType.APPLICATION_JSON);
 
 			// Only allow updating safe metadata fields (not content or ACLs)
+			// B7: Validate keys against safe pattern to prevent Painless script injection
+			java.util.regex.Pattern safeKeyPattern = java.util.regex.Pattern.compile("^[a-zA-Z0-9_:.\\-]+$");
 			Map<String, Object> safeFields = new LinkedHashMap<>();
 			for (Map.Entry<String, Object> entry : metadata.entrySet()) {
 				String key = entry.getKey();
 				// Block modification of system fields and ACL tokens
 				if (!key.startsWith("allow_token_") && !key.startsWith("deny_token_")
-						&& !"_id".equals(key) && !"_index".equals(key)) {
+						&& !"_id".equals(key) && !"_index".equals(key)
+						&& safeKeyPattern.matcher(key).matches()) {
 					safeFields.put(key, entry.getValue());
+				}
+				else if (!safeKeyPattern.matcher(key).matches()) {
+					log.warn("Rejected unsafe metadata key '{}' — does not match allowed pattern", key);
 				}
 			}
 
@@ -2779,7 +3767,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 
 			String body = objectMapper.writeValueAsString(updateBody);
 			HttpEntity<String> request = new HttpEntity<>(body, headers);
-			restTemplate.exchange(endpoint, HttpMethod.POST, request, String.class);
+			exchangeWithRetry(endpoint, HttpMethod.POST, request, String.class);
 
 			return Map.of("doc_id", docId, "status", "updated", "updated_fields", safeFields.keySet());
 		}
@@ -2834,17 +3822,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			URI uri = URI.create(downloadUrl);
 			HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
 
-			// Trust all certs for HTTPS (source may have self-signed cert)
-			if (conn instanceof HttpsURLConnection httpsConn) {
-				SSLContext sslContext = SSLContext.getInstance("TLS");
-				sslContext.init(null, new TrustManager[]{ new X509TrustManager() {
-					public void checkClientTrusted(X509Certificate[] chain, String authType) {}
-					public void checkServerTrusted(X509Certificate[] chain, String authType) {}
-					public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
-				}}, new java.security.SecureRandom());
-				httpsConn.setSSLSocketFactory(sslContext.getSocketFactory());
-				httpsConn.setHostnameVerifier((hostname, session) -> true);
-			}
+			configureTrustAllSsl(conn);
 
 			conn.setRequestMethod("GET");
 			conn.setConnectTimeout(30_000);

@@ -125,4 +125,13 @@ public interface KnowledgeSyncService {
 	 */
 	Map<String, Object> downloadSourceDocument(String syncId, String docId);
 
+	/**
+	 * Re-RAG specific documents: delete their existing RAG chunks and re-chunk/re-embed.
+	 * This is useful for re-processing individual documents without a full reindex.
+	 * @param syncId the sync job ID
+	 * @param docIds list of OpenSearch document _id values to re-RAG
+	 * @return status map with count of re-processed documents and chunks
+	 */
+	Map<String, Object> reragDocuments(String syncId, List<String> docIds);
+
 }

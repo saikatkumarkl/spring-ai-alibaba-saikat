@@ -127,6 +127,26 @@ rocketmq:
   endpoints: ${ROCKETMQ_ENDPOINTS}
   document-index-topic: ${ROCKETMQ_DOCUMENT_INDEX_TOPIC:topic_saa_studio_document_index}
   document_index_group: ${ROCKETMQ_DOCUMENT_INDEX_GROUP:group_saa_studio_document_index}
+
+# RAG vector index configuration.
+# Controls how knn_vector embeddings are stored in OpenSearch.
+#
+# mode:
+#   on_disk     — binary-quantised candidate search + auto-rescore from disk (low RAM)
+#   in_memory   — full-precision vectors in RAM (fastest, high RAM)
+#   <empty>     — OpenSearch engine default
+#
+# compression-level: (only relevant when mode=on_disk)
+#   32x  — binary quantisation (default for on_disk)
+#   16x  — scalar quantisation (SQ)
+#   8x   — product quantisation (PQ-lite)
+#   <empty> — engine default
+#
+# Override via env vars: RAG_VECTOR_MODE, RAG_COMPRESSION_LEVEL
+rag:
+  vector:
+    mode: ${RAG_VECTOR_MODE:}
+    compression-level: ${RAG_COMPRESSION_LEVEL:}
 initializr:
   web:
     enabled: false

@@ -16,6 +16,7 @@
 
 package com.alibaba.cloud.ai.studio.core.source;
 
+import com.alibaba.cloud.ai.studio.core.rag.impl.KnowledgeSyncServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -562,7 +563,7 @@ public class ManifoldCFBridgeService {
 						java.util.List<Map<String, Object>> entries = (java.util.List<Map<String, Object>>) list
 							.get("entries");
 						if (entries != null) {
-							for (int i = 0; i < entries.size() && i < 10; i++) {
+							for (int i = 0; i < entries.size(); i++) {
 								@SuppressWarnings("unchecked")
 								Map<String, Object> entry = (Map<String, Object>) entries.get(i).get("entry");
 								if (entry != null) {
@@ -1103,6 +1104,11 @@ public class ManifoldCFBridgeService {
 					}
 				}
 
+				// Tag each item with whether its MIME type is Tika-processable
+				String mime = item.containsKey("mimeType") ? String.valueOf(item.get("mimeType")) : "";
+				String name = item.containsKey("name") ? String.valueOf(item.get("name")) : "";
+				item.put("processable", KnowledgeSyncServiceImpl.isTikaProcessable(mime, name) ? "Yes" : "No");
+
 				if (!item.isEmpty()) {
 					items.add(item);
 				}
@@ -1114,8 +1120,20 @@ public class ManifoldCFBridgeService {
 			}
 			result.put("count", totalCount);
 			result.put("items", items);
+
+			// Summarize processable vs non-processable
+			long processableCount = items.stream()
+					.filter(i -> "Yes".equals(i.get("processable"))).count();
+			long nonProcessableCount = items.size() - processableCount;
+			result.put("processableCount", processableCount);
+			result.put("nonProcessableCount", nonProcessableCount);
+
 			if (!items.isEmpty()) {
-				result.put("message", "Found " + totalCount + " document(s)");
+				String msg = "Found " + totalCount + " document(s)";
+				if (nonProcessableCount > 0) {
+					msg += " — " + nonProcessableCount + " not processable for full-text search (images, videos, etc.)";
+				}
+				result.put("message", msg);
 			}
 			else {
 				result.put("message", "No documents found (query returned empty result set)");
@@ -1450,11 +1468,9 @@ public class ManifoldCFBridgeService {
 	 * @param name unique output connection name (e.g., "KB_2023070559378198529")
 	 * @param description human-readable description
 	 * @param indexName OpenSearch index to write documents to
-	 * @param authoritiesIndexName OpenSearch index for authorities (may be null)
 	 * @return the output connection name
 	 */
-	public String createOutputConnection(String name, String description, String indexName,
-			String authoritiesIndexName) {
+	public String createOutputConnection(String name, String description, String indexName) {
 		try {
 			String opensearchUrl = mcfOpensearchUrl;
 			if (!opensearchUrl.endsWith("/")) {
@@ -1486,13 +1502,6 @@ public class ManifoldCFBridgeService {
 			typeParam.put("_attribute_name", "INDEXTYPE");
 			typeParam.put("_value_", "_doc");
 			params.add(typeParam);
-
-			if (authoritiesIndexName != null && !authoritiesIndexName.isEmpty()) {
-				ObjectNode authParam = objectMapper.createObjectNode();
-				authParam.put("_attribute_name", "AUTHORITIESINDEXNAME");
-				authParam.put("_value_", authoritiesIndexName);
-				params.add(authParam);
-			}
 
 			configNode.set("_PARAMETER_", params);
 			connNode.set("configuration", configNode);
