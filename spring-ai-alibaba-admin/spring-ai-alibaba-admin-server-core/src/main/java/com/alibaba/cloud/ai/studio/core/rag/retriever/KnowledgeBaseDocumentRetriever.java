@@ -16,9 +16,11 @@
 
 package com.alibaba.cloud.ai.studio.core.rag.retriever;
 
+import com.alibaba.cloud.ai.studio.core.context.RequestContextHolder;
 import com.alibaba.cloud.ai.studio.core.model.reranker.dashscope.DashscopeReranker;
 import com.alibaba.cloud.ai.studio.runtime.exception.BizException;
 import com.alibaba.cloud.ai.studio.runtime.enums.ErrorCode;
+import com.alibaba.cloud.ai.studio.runtime.domain.RequestContext;
 import com.alibaba.cloud.ai.studio.runtime.domain.app.FileSearchOptions;
 import com.alibaba.cloud.ai.studio.runtime.domain.knowledgebase.KnowledgeBase;
 import com.alibaba.cloud.ai.studio.core.model.llm.ModelFactory;
@@ -141,6 +143,15 @@ public class KnowledgeBaseDocumentRetriever implements DocumentRetriever {
 			.query(query.text())
 			.filterExpression(exp)
 			.searchType(searchType);
+
+		// ACL filter: restrict RAG results to documents the current user can access
+		RequestContext ctx = RequestContextHolder.getRequestContext();
+		if (ctx != null && ctx.getUsername() != null && !"chatbot-service".equals(ctx.getUsername())) {
+			String lowerUser = ctx.getUsername().toLowerCase();
+			// authorities field is a top-level keyword array in OpenSearch;
+			// use nativeFilterString to bypass the metadata. prefix
+			searchRequestBuilder.nativeFilterString("authorities:" + lowerUser);
+		}
 		if (searchOptions.getSimilarityThreshold() != null) {
 			searchRequestBuilder.similarityThreshold(searchOptions.getSimilarityThreshold());
 		}

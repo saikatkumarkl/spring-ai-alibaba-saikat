@@ -23,13 +23,21 @@ import com.alibaba.cloud.ai.studio.runtime.utils.JsonUtils;
 import com.alibaba.cloud.ai.studio.core.base.service.AgentService;
 import com.alibaba.cloud.ai.studio.core.context.RequestContextHolder;
 import com.alibaba.cloud.ai.studio.core.utils.common.IdGenerator;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.opensearch.client.Request;
+import org.opensearch.client.Response;
+import org.opensearch.client.RestClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -41,10 +49,12 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 
 import javax.crypto.SecretKey;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -68,6 +78,10 @@ public class ChatbotAuthController {
 
 	private final AgentService agentService;
 
+	private final RestClient openSearchRestClient;
+
+	private final ObjectMapper objectMapper;
+
 	private final long jwtExpiration = 24 * 60 * 60 * 1000; // 24 hours
 
 	/** Default account ID used for chatbot agent requests (admin account) */
@@ -77,9 +91,12 @@ public class ChatbotAuthController {
 	private static final String CHATBOT_WORKSPACE_ID = "1";
 
 	public ChatbotAuthController(JdbcTemplate jdbcTemplate, AgentService agentService,
+			RestClient openSearchRestClient, ObjectMapper objectMapper,
 @Value("${chatbot.jwt.secret:my-super-secret-key-change-in-production}") String jwtSecret) {
 		this.jdbcTemplate = jdbcTemplate;
 		this.agentService = agentService;
+		this.openSearchRestClient = openSearchRestClient;
+		this.objectMapper = objectMapper;
 		this.passwordEncoder = new BCryptPasswordEncoder();
 		this.secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
 	}
@@ -164,15 +181,8 @@ public class ChatbotAuthController {
 
 		jdbcTemplate.update("UPDATE simple_users SET last_login = NOW() WHERE email = ?", request.getEmail());
 
-		// Auto-grant access: if user has no app access, grant access to ALL apps
-		Integer accessCount = jdbcTemplate.queryForObject(
-			"SELECT COUNT(*) FROM app_user_access WHERE user_email = ?", Integer.class, request.getEmail());
-		if (accessCount == null || accessCount == 0) {
-			log.info("Auto-granting app access for new user: {}", request.getEmail());
-			jdbcTemplate.update(
-				"INSERT INTO app_user_access (app_id, user_email) SELECT app_id, ? FROM application ON CONFLICT DO NOTHING",
-				request.getEmail());
-		}
+		// Note: App access must be explicitly granted by admin via /app-access endpoint
+		// or pre-seeded in app_user_access table. No auto-grant of all apps.
 
 		// Get user accessible apps (join with application table)
 		List<Map<String, Object>> apps = jdbcTemplate.queryForList(
@@ -609,16 +619,22 @@ email, appId));
 	/**
 	 * Proxy endpoint for chat completions that bypasses normal auth.
 	 * Sets up RequestContext with the admin service account and delegates to AgentService.
+	 * Extracts the chatbot user's email from the JWT to enable ACL-filtered RAG retrieval.
 	 */
 	@PostMapping(value = "/chat/completions")
-	public Object chatCompletions(@RequestBody AgentRequest request, HttpServletResponse response) {
+	public Object chatCompletions(@RequestBody AgentRequest request,
+			HttpServletRequest httpRequest, HttpServletResponse response) {
 		log.info("Chatbot chat proxy request for app: {}", request.getAppId());
+
+		// Extract the real chatbot user's email from JWT for ACL filtering
+		String userEmail = extractChatbotUserEmail(httpRequest);
 
 		// Set up RequestContext since this endpoint bypasses the auth interceptor
 		RequestContext context = new RequestContext();
 		context.setRequestId(IdGenerator.uuid());
 		context.setAccountId(CHATBOT_ACCOUNT_ID);
-		context.setUsername("chatbot-service");
+		// Use real user email for ACL-filtered RAG, fallback to service account
+		context.setUsername(userEmail != null ? userEmail : "chatbot-service");
 		context.setWorkspaceId(CHATBOT_WORKSPACE_ID);
 		context.setStartTime(System.currentTimeMillis());
 		RequestContextHolder.setRequestContext(context);
@@ -710,6 +726,374 @@ email, appId));
 			response.setStatus(500);
 			return "{\"error\":\"" + e.getMessage() + "\"}";
 		}
+	}
+
+	// ==================== ACL-Filtered Document Search ====================
+
+	/**
+	 * Resolve the knowledge base IDs from an app's configuration.
+	 * Returns the kb_ids from file_search config in application_version.
+	 */
+	private List<String> resolveKbIds(String appId) {
+		try {
+			List<Map<String, Object>> versions = jdbcTemplate.queryForList(
+				"SELECT config FROM application_version WHERE app_id = ? ORDER BY version DESC LIMIT 1", appId);
+			if (versions.isEmpty()) {
+				return List.of();
+			}
+			String config = (String) versions.get(0).get("config");
+			Map<String, Object> configMap = objectMapper.readValue(config, new TypeReference<>() {});
+			@SuppressWarnings("unchecked")
+			Map<String, Object> fileSearch = (Map<String, Object>) configMap.get("file_search");
+			if (fileSearch == null) {
+				return List.of();
+			}
+			@SuppressWarnings("unchecked")
+			List<String> kbIds = (List<String>) fileSearch.get("kb_ids");
+			return kbIds != null ? kbIds : List.of();
+		}
+		catch (Exception e) {
+			log.error("Failed to resolve kb_ids for app {}", appId, e);
+			return List.of();
+		}
+	}
+
+	/**
+	 * Execute a raw OpenSearch query and return the parsed response.
+	 */
+	private Map<String, Object> executeOpenSearchQuery(String index, String queryJson) throws Exception {
+		Request request = new Request("POST", "/" + index + "/_search");
+		request.setEntity(new StringEntity(queryJson, ContentType.APPLICATION_JSON));
+		Response response = openSearchRestClient.performRequest(request);
+		try (InputStream is = response.getEntity().getContent()) {
+			return objectMapper.readValue(is, new TypeReference<>() {});
+		}
+	}
+
+	/**
+	 * Build ACL filter clause for OpenSearch queries.
+	 * Checks allow_token_document contains the user AND deny_token_document does NOT contain the user.
+	 */
+	private Map<String, Object> buildAclFilter(String username) {
+		String lowerUser = username.toLowerCase();
+		// ACL filter: user must be in allow_token_document, must NOT be in deny_token_document
+		// Also allow if allow_token_document is "__nosecurity__" (no ACL set)
+		Map<String, Object> aclFilter = new LinkedHashMap<>();
+		aclFilter.put("bool", Map.of(
+			"should", List.of(
+				Map.of("term", Map.of("allow_token_document", lowerUser)),
+				Map.of("term", Map.of("allow_token_document", "__nosecurity__"))
+			),
+			"minimum_should_match", 1,
+			"must_not", List.of(
+				Map.of("term", Map.of("deny_token_document", lowerUser))
+			)
+		));
+		return aclFilter;
+	}
+
+	/**
+	 * Build ACL filter for RAG chunks (uses 'authorities' field).
+	 */
+	private Map<String, Object> buildRagAclFilter(String username) {
+		String lowerUser = username.toLowerCase();
+		Map<String, Object> aclFilter = new LinkedHashMap<>();
+		aclFilter.put("bool", Map.of(
+			"should", List.of(
+				Map.of("term", Map.of("authorities", lowerUser)),
+				Map.of("term", Map.of("authorities", "__nosecurity__"))
+			),
+			"minimum_should_match", 1
+		));
+		return aclFilter;
+	}
+
+	/**
+	 * Extract the chatbot user's email from the JWT Authorization header.
+	 * Returns null if the header is missing or the token is invalid.
+	 */
+	private String extractChatbotUserEmail(HttpServletRequest request) {
+		String authHeader = request.getHeader("Authorization");
+		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+			return null;
+		}
+		try {
+			String token = authHeader.substring(7);
+			return Jwts.parser()
+				.verifyWith(secretKey)
+				.build()
+				.parseSignedClaims(token)
+				.getPayload()
+				.getSubject();
+		}
+		catch (Exception e) {
+			log.warn("Failed to extract email from chatbot JWT: {}", e.getMessage());
+			return null;
+		}
+	}
+
+	/**
+	 * ACL-filtered document listing with fulltext/metadata search.
+	 * Returns documents the user is authorized to see.
+	 */
+	@Operation(summary = "List documents with ACL filter and optional search")
+	@GetMapping("/documents")
+	public Result<Map<String, Object>> searchDocuments(
+			@RequestParam String email,
+			@RequestParam String appId,
+			@RequestParam(required = false) String query,
+			@RequestParam(defaultValue = "0") int from,
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String sortField,
+			@RequestParam(defaultValue = "desc") String sortOrder,
+			@RequestParam(required = false) String mimeType,
+			@RequestParam(required = false) String createdBy) {
+		try {
+			List<String> kbIds = resolveKbIds(appId);
+			if (kbIds.isEmpty()) {
+				return Result.error(400, "No knowledge base configured for this app");
+			}
+
+			String lowerEmail = email.toLowerCase();
+			Map<String, Object> aclFilter = buildAclFilter(lowerEmail);
+
+			// Build query
+			List<Object> mustClauses = new ArrayList<>();
+			List<Object> filterClauses = new ArrayList<>();
+			filterClauses.add(aclFilter);
+
+			// Fulltext search
+			if (query != null && !query.isBlank()) {
+				mustClauses.add(Map.of("multi_match", Map.of(
+					"query", query,
+					"fields", List.of("content^2", "cmis:contentStreamFileName^3", "cmis:name^3", "file_title^2"),
+					"type", "best_fields",
+					"fuzziness", "AUTO"
+				)));
+			}
+
+			// Metadata filters
+			if (mimeType != null && !mimeType.isBlank()) {
+				filterClauses.add(Map.of("term", Map.of("mime-type.keyword", mimeType)));
+			}
+			if (createdBy != null && !createdBy.isBlank()) {
+				filterClauses.add(Map.of("term", Map.of("cmis:createdBy.keyword", createdBy)));
+			}
+
+			Map<String, Object> boolQuery = new LinkedHashMap<>();
+			if (!mustClauses.isEmpty()) {
+				boolQuery.put("must", mustClauses);
+			}
+			if (!filterClauses.isEmpty()) {
+				boolQuery.put("filter", filterClauses);
+			}
+			if (mustClauses.isEmpty() && filterClauses.size() == 1) {
+				// Only ACL filter, no search query - match all with filter
+				boolQuery.put("must", List.of(Map.of("match_all", Map.of())));
+			}
+
+			// Build sort
+			List<Object> sort = new ArrayList<>();
+			if (sortField != null && !sortField.isBlank()) {
+				sort.add(Map.of(sortField, Map.of("order", sortOrder)));
+			}
+			else {
+				sort.add(Map.of("cmis:creationDate", Map.of("order", "desc", "unmapped_type", "date")));
+			}
+
+			// Aggregations for facets
+			Map<String, Object> aggs = Map.of(
+				"mime_types", Map.of("terms", Map.of("field", "mime-type.keyword", "size", 20)),
+				"created_by", Map.of("terms", Map.of("field", "cmis:createdBy.keyword", "size", 20))
+			);
+
+			Map<String, Object> requestBody = new LinkedHashMap<>();
+			requestBody.put("query", Map.of("bool", boolQuery));
+			requestBody.put("from", from);
+			requestBody.put("size", size);
+			requestBody.put("sort", sort);
+			requestBody.put("aggs", aggs);
+			requestBody.put("_source", Map.of("excludes", List.of("content")));
+
+			// Search across all KB indices
+			List<Map<String, Object>> allDocs = new ArrayList<>();
+			long totalHits = 0;
+			Map<String, Object> facets = new HashMap<>();
+
+			for (String kbId : kbIds) {
+				String index = kbId + "_document";
+				String queryJson = objectMapper.writeValueAsString(requestBody);
+				log.debug("OpenSearch document query on {}: {}", index, queryJson);
+
+				Map<String, Object> result = executeOpenSearchQuery(index, queryJson);
+
+				@SuppressWarnings("unchecked")
+				Map<String, Object> hits = (Map<String, Object>) result.get("hits");
+				@SuppressWarnings("unchecked")
+				Map<String, Object> total = (Map<String, Object>) hits.get("total");
+				totalHits += ((Number) total.get("value")).longValue();
+
+				@SuppressWarnings("unchecked")
+				List<Map<String, Object>> hitList = (List<Map<String, Object>>) hits.get("hits");
+				for (Map<String, Object> hit : hitList) {
+					@SuppressWarnings("unchecked")
+					Map<String, Object> source = (Map<String, Object>) hit.get("_source");
+					Map<String, Object> doc = new LinkedHashMap<>();
+					doc.put("id", hit.get("_id"));
+					doc.put("fileName", source.getOrDefault("cmis:contentStreamFileName",
+							source.getOrDefault("cmis:name", "Unknown")));
+					doc.put("mimeType", source.getOrDefault("mime-type",
+							source.getOrDefault("cmis:contentStreamMimeType", "")));
+					doc.put("fileSize", source.getOrDefault("cmis:contentStreamLength", 0));
+					doc.put("createdBy", source.getOrDefault("cmis:createdBy", ""));
+					doc.put("createdDate", source.getOrDefault("cmis:creationDate", ""));
+					doc.put("lastModified", source.getOrDefault("cmis:lastModificationDate", ""));
+					doc.put("objectId", source.getOrDefault("cmis:objectId",
+							source.getOrDefault("url", "")));
+					doc.put("score", hit.get("_score"));
+					// Include all remaining metadata for detailed view
+					Map<String, Object> metadata = new LinkedHashMap<>(source);
+					// Remove ACL fields from response (security: don't expose ACL internals)
+					metadata.remove("allow_token_document");
+					metadata.remove("deny_token_document");
+					metadata.remove("allow_token_parent");
+					metadata.remove("deny_token_parent");
+					metadata.remove("allow_token_share");
+					metadata.remove("deny_token_share");
+					metadata.remove("authorities");
+					doc.put("metadata", metadata);
+					allDocs.add(doc);
+				}
+
+				// Extract facets from aggregations
+				@SuppressWarnings("unchecked")
+				Map<String, Object> aggregations = (Map<String, Object>) result.get("aggregations");
+				if (aggregations != null) {
+					facets = extractFacets(aggregations);
+				}
+			}
+
+			Map<String, Object> response = new LinkedHashMap<>();
+			response.put("documents", allDocs);
+			response.put("total", totalHits);
+			response.put("from", from);
+			response.put("size", size);
+			response.put("facets", facets);
+
+			return Result.success(response);
+		}
+		catch (Exception e) {
+			log.error("Document search failed for user {}", email, e);
+			return Result.error(500, "Document search failed: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * ACL-filtered RAG chunk search.
+	 * Filters chunks by authorities field BEFORE performing fulltext search.
+	 */
+	@Operation(summary = "Search RAG chunks with ACL filter")
+	@GetMapping("/rag-search")
+	public Result<Map<String, Object>> searchRagChunks(
+			@RequestParam String email,
+			@RequestParam String appId,
+			@RequestParam String query,
+			@RequestParam(defaultValue = "10") int size) {
+		try {
+			List<String> kbIds = resolveKbIds(appId);
+			if (kbIds.isEmpty()) {
+				return Result.error(400, "No knowledge base configured for this app");
+			}
+
+			String lowerEmail = email.toLowerCase();
+			Map<String, Object> aclFilter = buildRagAclFilter(lowerEmail);
+
+			// Fulltext search on RAG chunks with ACL filter
+			Map<String, Object> boolQuery = Map.of(
+				"must", List.of(
+					Map.of("multi_match", Map.of(
+						"query", query,
+						"fields", List.of("content^2", "file_title^1"),
+						"type", "best_fields"
+					))
+				),
+				"filter", List.of(aclFilter)
+			);
+
+			Map<String, Object> requestBody = new LinkedHashMap<>();
+			requestBody.put("query", Map.of("bool", boolQuery));
+			requestBody.put("size", size);
+			requestBody.put("_source", Map.of("excludes", List.of("embedding")));
+
+			List<Map<String, Object>> chunks = new ArrayList<>();
+			long totalHits = 0;
+
+			for (String kbId : kbIds) {
+				String index = kbId + "_rag";
+				String queryJson = objectMapper.writeValueAsString(requestBody);
+				log.debug("OpenSearch RAG query on {}: {}", index, queryJson);
+
+				Map<String, Object> result = executeOpenSearchQuery(index, queryJson);
+
+				@SuppressWarnings("unchecked")
+				Map<String, Object> hits = (Map<String, Object>) result.get("hits");
+				@SuppressWarnings("unchecked")
+				Map<String, Object> total = (Map<String, Object>) hits.get("total");
+				totalHits += ((Number) total.get("value")).longValue();
+
+				@SuppressWarnings("unchecked")
+				List<Map<String, Object>> hitList = (List<Map<String, Object>>) hits.get("hits");
+				for (Map<String, Object> hit : hitList) {
+					@SuppressWarnings("unchecked")
+					Map<String, Object> source = (Map<String, Object>) hit.get("_source");
+					Map<String, Object> chunk = new LinkedHashMap<>();
+					chunk.put("chunkId", source.getOrDefault("chunk_id", hit.get("_id")));
+					chunk.put("docId", source.getOrDefault("doc_id", ""));
+					chunk.put("fileTitle", source.getOrDefault("file_title", ""));
+					chunk.put("content", source.getOrDefault("content", ""));
+					chunk.put("chunkIndex", source.getOrDefault("chunk_index", 0));
+					chunk.put("score", hit.get("_score"));
+					@SuppressWarnings("unchecked")
+					Map<String, Object> meta = (Map<String, Object>) source.getOrDefault("metadata", Map.of());
+					chunk.put("metadata", meta);
+					chunks.add(chunk);
+				}
+			}
+
+			Map<String, Object> response = new LinkedHashMap<>();
+			response.put("chunks", chunks);
+			response.put("total", totalHits);
+			response.put("query", query);
+
+			return Result.success(response);
+		}
+		catch (Exception e) {
+			log.error("RAG search failed for user {}", email, e);
+			return Result.error(500, "RAG search failed: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Extract facet data from OpenSearch aggregations.
+	 */
+	@SuppressWarnings("unchecked")
+	private Map<String, Object> extractFacets(Map<String, Object> aggregations) {
+		Map<String, Object> facets = new LinkedHashMap<>();
+		for (Map.Entry<String, Object> entry : aggregations.entrySet()) {
+			Map<String, Object> agg = (Map<String, Object>) entry.getValue();
+			List<Map<String, Object>> buckets = (List<Map<String, Object>>) agg.get("buckets");
+			if (buckets != null) {
+				List<Map<String, Object>> facetItems = new ArrayList<>();
+				for (Map<String, Object> bucket : buckets) {
+					facetItems.add(Map.of(
+						"value", bucket.get("key"),
+						"count", bucket.get("doc_count")
+					));
+				}
+				facets.put(entry.getKey(), facetItems);
+			}
+		}
+		return facets;
 	}
 
 }

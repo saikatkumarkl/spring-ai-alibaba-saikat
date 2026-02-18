@@ -20,6 +20,8 @@ import com.alibaba.cloud.ai.studio.runtime.exception.BizException;
 import com.alibaba.cloud.ai.studio.runtime.enums.ErrorCode;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch.core.BulkRequest;
 import org.opensearch.client.opensearch.core.BulkResponse;
@@ -27,6 +29,7 @@ import org.opensearch.client.opensearch.core.SearchResponse;
 import org.opensearch.client.opensearch.core.bulk.BulkResponseItem;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
+
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.opensearch.client.transport.rest_client.RestClientTransport;
 import org.opensearch.client.RestClient;
@@ -77,6 +80,8 @@ import static com.alibaba.cloud.ai.studio.core.utils.concurrent.ThreadPoolUtils.
  * @since 1.0.0
  */
 public class OpenSearchVectorStore extends AbstractObservationVectorStore implements InitializingBean {
+
+	private static final Logger logger = LoggerFactory.getLogger(OpenSearchVectorStore.class);
 
 	private static final Map<SimilarityFunction, VectorStoreSimilarityMetric> SIMILARITY_TYPE_MAPPING = Map.of(
 			SimilarityFunction.cosine, VectorStoreSimilarityMetric.COSINE, SimilarityFunction.l2_norm,
@@ -172,6 +177,9 @@ public class OpenSearchVectorStore extends AbstractObservationVectorStore implem
 	@Override
 	public List<Document> doSimilaritySearch(SearchRequest searchRequest) {
 		Assert.notNull(searchRequest, "The search request must not be null.");
+		logger.debug("doSimilaritySearch: searchType={}, topK={}, threshold={}",
+				searchRequest.getSearchType(), searchRequest.getTopK(),
+				searchRequest.getSimilarityThreshold());
 
 		return switch (searchRequest.getSearchType()) {
 			case SEMANTIC -> searchBySemantic(searchRequest);
@@ -186,18 +194,39 @@ public class OpenSearchVectorStore extends AbstractObservationVectorStore implem
 				: this.filterExpressionConverter.convertExpression(filterExpression);
 	}
 
+	/**
+	 * Build combined query string from filter expression + optional native filter.
+	 * The native filter is ANDed with the metadata filter and is used for
+	 * top-level OpenSearch fields (e.g. 'authorities') that don't live under 'metadata.'.
+	 */
+	private String getCombinedQueryString(SearchRequest searchRequest) {
+		String metadataFilter = getQueryString(searchRequest.getFilterExpression());
+		String nativeFilter = searchRequest.getNativeFilterString();
+		if (nativeFilter == null || nativeFilter.isBlank()) {
+			return metadataFilter;
+		}
+		if ("*".equals(metadataFilter)) {
+			return nativeFilter;
+		}
+		return "(" + metadataFilter + ") AND (" + nativeFilter + ")";
+	}
+
 	private Document toDocument(Hit<Document> hit, SearchType searchType) {
 		Document document = hit.source();
 		Document.Builder documentBuilder = document.mutate();
 		if (hit.score() != null) {
-			documentBuilder.metadata(DocumentMetadata.DISTANCE.value(), 1 - normalizeSimilarityScore(hit.score()));
-
+			double normalizedScore;
 			if (searchType == SearchType.FULL_TEXT) {
-				documentBuilder.score(1 - hit.score());
+				// BM25 scores are unbounded positive values (0 to infinity).
+				// Normalize to [0, 1) using score/(1+score) so they can be
+				// compared with cosine-similarity scores on the same scale.
+				normalizedScore = hit.score() / (1.0 + hit.score());
 			}
 			else {
-				documentBuilder.score(normalizeSimilarityScore(hit.score()));
+				normalizedScore = normalizeSimilarityScore(hit.score());
 			}
+			documentBuilder.metadata(DocumentMetadata.DISTANCE.value(), 1 - normalizedScore);
+			documentBuilder.score(normalizedScore);
 		}
 		return documentBuilder.build();
 	}
@@ -340,7 +369,7 @@ public class OpenSearchVectorStore extends AbstractObservationVectorStore implem
 	protected List<Document> searchBySemantic(SearchRequest searchRequest) {
 		try {
 			float[] vectors = this.embeddingModel.embed(searchRequest.getQuery());
-			String filterQueryString = getQueryString(searchRequest.getFilterExpression());
+			String filterQueryString = getCombinedQueryString(searchRequest);
 
 			List<Float> vectorList = EmbeddingUtils.toList(vectors);
 
@@ -384,7 +413,7 @@ public class OpenSearchVectorStore extends AbstractObservationVectorStore implem
 						.query(q -> q.bool(m -> m
 							.must(qm -> qm.match(mm -> mm.field("content").query(fv -> fv.stringValue(searchRequest.getQuery()))))
 							.filter(fl -> fl.queryString(
-									qs -> qs.query(getQueryString(searchRequest.getFilterExpression()))))))
+								qs -> qs.query(getCombinedQueryString(searchRequest))))))
 						.minScore(searchRequest.getSimilarityThreshold())
 						.size((int) (1.5 * searchRequest.getTopK())),
 					Document.class);
@@ -410,23 +439,32 @@ public class OpenSearchVectorStore extends AbstractObservationVectorStore implem
 		try {
 			CompletableFuture<List<Document>> textFuture = CompletableFuture.supplyAsync(() -> {
 				int textTopK = Math.round(searchRequest.getTopK() * (1 - searchRequest.getHybridWeight()));
-				return searchByFullText(SearchRequest.builder()
+				logger.debug("Hybrid search: BM25 textTopK={}, threshold={}", textTopK,
+						searchRequest.getSimilarityThreshold());
+				List<Document> results = searchByFullText(SearchRequest.builder()
 					.query(searchRequest.getQuery())
 					.similarityThreshold(searchRequest.getSimilarityThreshold())
 					.topK(textTopK)
 					.filterExpression(searchRequest.getFilterExpression())
+					.nativeFilterString(searchRequest.getNativeFilterString())
 					.build());
+				logger.debug("Hybrid search: BM25 returned {} docs", results.size());
+				return results;
 			}, DEFAULT_TASK_EXECUTOR);
 			futureList.add(textFuture);
 
 			CompletableFuture<List<Document>> vectorFuture = CompletableFuture.supplyAsync(() -> {
-				int textTopK = Math.round(searchRequest.getTopK() * searchRequest.getHybridWeight());
-				return searchBySemantic(SearchRequest.builder()
+				int vectorTopK = Math.round(searchRequest.getTopK() * searchRequest.getHybridWeight());
+				logger.debug("Hybrid search: knn vectorTopK={}", vectorTopK);
+				List<Document> results = searchBySemantic(SearchRequest.builder()
 					.query(searchRequest.getQuery())
 					.similarityThreshold(searchRequest.getSimilarityThreshold())
-					.topK(textTopK)
+					.topK(vectorTopK)
 					.filterExpression(searchRequest.getFilterExpression())
+					.nativeFilterString(searchRequest.getNativeFilterString())
 					.build());
+				logger.debug("Hybrid search: knn returned {} docs", results.size());
+				return results;
 			}, DEFAULT_TASK_EXECUTOR);
 			futureList.add(vectorFuture);
 
@@ -437,11 +475,15 @@ public class OpenSearchVectorStore extends AbstractObservationVectorStore implem
 			List<Document> vectorList = vectorFuture.get() == null ? new ArrayList<>() : vectorFuture.get();
 			List<Document> fullTextList = textFuture.get() == null ? new ArrayList<>() : textFuture.get();
 
-			return Stream.concat(vectorList.stream(), fullTextList.stream())
+			List<Document> merged = Stream.concat(vectorList.stream(), fullTextList.stream())
 				.collect(Collectors.toMap(Document::getId, student -> student, (existing, newStudent) -> existing))
 				.values()
 				.stream()
 				.toList();
+			logger.debug("Hybrid search: merged {} docs (vector={}, fulltext={}, deduped={})",
+					merged.size(), vectorList.size(), fullTextList.size(),
+					vectorList.size() + fullTextList.size() - merged.size());
+			return merged;
 		}
 		catch (InterruptedException | ExecutionException e) {
 			throw new BizException(ErrorCode.DOCUMENT_RETRIEVAL_ERROR.toError(), e);

@@ -68,6 +68,14 @@ public final class SearchRequest {
 	private Filter.Expression filterExpression;
 
 	/**
+	 * Raw native filter string that is ANDed with the converted filterExpression.
+	 * Used for top-level OpenSearch fields (e.g. 'authorities') that don't live
+	 * under the 'metadata.' prefix.
+	 */
+	@Nullable
+	private String nativeFilterString;
+
+	/**
 	 * Copy an existing {@link SearchRequest.Builder} instance.
 	 * @param originalSearchRequest {@link SearchRequest} instance to copy.
 	 * @return Returns new {@link SearchRequest.Builder} instance.
@@ -76,7 +84,8 @@ public final class SearchRequest {
 		return builder().query(originalSearchRequest.getQuery())
 			.topK(originalSearchRequest.getTopK())
 			.similarityThreshold(originalSearchRequest.getSimilarityThreshold())
-			.filterExpression(originalSearchRequest.getFilterExpression());
+			.filterExpression(originalSearchRequest.getFilterExpression())
+			.nativeFilterString(originalSearchRequest.getNativeFilterString());
 	}
 
 	public String getQuery() {
@@ -110,6 +119,11 @@ public final class SearchRequest {
 
 	public boolean hasFilterExpression() {
 		return this.filterExpression != null;
+	}
+
+	@Nullable
+	public String getNativeFilterString() {
+		return this.nativeFilterString;
 	}
 
 	/**
@@ -274,6 +288,15 @@ public final class SearchRequest {
 		public Builder filterExpression(@Nullable String textExpression) {
 			this.searchRequest.filterExpression = (textExpression != null)
 					? new FilterExpressionTextParser().parse(textExpression) : null;
+			return this;
+		}
+
+		/**
+		 * Raw native filter string ANDed with filterExpression. Use for
+		 * top-level OpenSearch fields (e.g. 'authorities:username').
+		 */
+		public Builder nativeFilterString(@Nullable String nativeFilter) {
+			this.searchRequest.nativeFilterString = nativeFilter;
 			return this;
 		}
 
