@@ -77,9 +77,8 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  padding: 20px;
-  min-height: 200px;
-  height: 200px;
+  padding: 16px;
+  min-height: 170px;
 }
 
 .description {
@@ -103,11 +102,15 @@
 .connector-badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 1px 8px;
+  border-radius: 6px;
   background-color: var(--ag-ant-color-fill-secondary);
   font-size: 11px;
   color: var(--ag-ant-color-text-secondary);
+  white-space: nowrap;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .progress-bar {

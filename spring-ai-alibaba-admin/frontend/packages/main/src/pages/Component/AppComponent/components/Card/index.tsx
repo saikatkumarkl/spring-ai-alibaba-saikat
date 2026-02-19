@@ -31,7 +31,10 @@ const AppComponentCard: React.FC<AppComponentCardProps> = ({
             id: 'main.pages.Component.AppComponent.components.Card.index.componentDescription',
             dm: 'Component Description',
           }),
-          content: description,
+          content: description || $i18n.get({
+            id: 'main.pages.Component.AppComponent.components.Card.index.noDescription',
+            dm: 'No description',
+          }),
         },
         {
           label: $i18n.get({

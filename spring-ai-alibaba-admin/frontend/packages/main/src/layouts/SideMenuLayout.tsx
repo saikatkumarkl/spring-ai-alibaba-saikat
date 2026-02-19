@@ -331,46 +331,98 @@ export default function SideMenuLayout({ children }: { children: React.ReactNode
         >
           <AntLayout className="h-screen">
             <Sider
-              width={256}
-              collapsedWidth={80}
+              width={240}
+              collapsedWidth={72}
               collapsed={collapsed}
               theme="light"
-              className="shadow-lg"
-              style={{ height: '100vh', position: 'fixed', left: 0, top: 0, bottom: 0, borderRight: '1px solid var(--ag-ant-color-border-secondary)', backgroundColor: 'var(--ag-ant-color-bg-base)' }}
+              style={{
+                height: '100vh',
+                position: 'fixed',
+                left: 0,
+                top: 0,
+                bottom: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                borderRight: '0.5px solid var(--ag-ant-color-border-secondary)',
+                backgroundColor: 'var(--ag-ant-color-bg-layout)',
+                backdropFilter: 'saturate(180%) blur(20px)',
+                WebkitBackdropFilter: 'saturate(180%) blur(20px)',
+              }}
             >
-              <div className="p-6" style={{ borderBottom: '1px solid var(--ag-ant-color-border-secondary)' }}>
-                <h1 className="text-xl font-bold flex items-center whitespace-nowrap overflow-hidden" style={{ color: 'var(--ag-ant-color-text)' }}>
-                  <SettingOutlined className="mr-1 text-blue-500" />
-                  {!collapsed && 'Admin Dashboard'}
+              {/* Sidebar header */}
+              <div style={{
+                padding: collapsed ? '16px 12px 12px' : '16px 16px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                minHeight: 48,
+                flexShrink: 0,
+              }}>
+                <h1 style={{
+                  margin: 0,
+                  fontSize: collapsed ? 14 : 18,
+                  fontWeight: 700,
+                  color: 'var(--ag-ant-color-text)',
+                  letterSpacing: '-0.02em',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif',
+                }}>
+                  {collapsed ? 'CC' : 'Control Center'}
                 </h1>
               </div>
 
-              <Menu
-                mode="inline"
-                selectedKeys={[selectedKey]}
-                defaultOpenKeys={collapsed ? [] : ['studio']}
-                items={menuItems}
-                onClick={handleMenuClick}
-                className="border-r-0 mt-6"
-                inlineCollapsed={collapsed}
-              />
+              {/* Scrollable menu area */}
+              <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', minHeight: 0 }}>
+                <Menu
+                  mode="inline"
+                  selectedKeys={[selectedKey]}
+                  defaultOpenKeys={collapsed ? [] : ['studio']}
+                  items={menuItems}
+                  onClick={handleMenuClick}
+                  className="border-r-0"
+                  inlineCollapsed={collapsed}
+                  style={{
+                    border: 'none',
+                    backgroundColor: 'transparent',
+                    padding: '0 4px',
+                    fontSize: 13,
+                    fontWeight: 500,
+                  }}
+                />
+              </div>
 
-              <div className="absolute bottom-0 left-0 right-0" style={{ borderTop: '1px solid var(--ag-ant-color-border-secondary)', backgroundColor: 'var(--ag-ant-color-bg-base)' }}>
+              {/* Collapse toggle — fixed at bottom, never overlapped */}
+              <div style={{
+                flexShrink: 0,
+                borderTop: '0.5px solid var(--ag-ant-color-border-secondary)',
+                backgroundColor: 'var(--ag-ant-color-bg-layout)',
+              }}>
                 <div
-                  className="flex items-center justify-center p-4 cursor-pointer transition-colors"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: collapsed ? 'center' : 'flex-start',
+                    padding: collapsed ? '10px' : '10px 20px',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.15s ease',
+                  }}
                   onClick={() => setCollapsed(!collapsed)}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--ag-ant-color-fill-secondary)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                   {collapsed ? (
-                    <MenuUnfoldOutlined style={{ color: 'var(--ag-ant-color-text-secondary)', fontSize: '18px' }} />
+                    <MenuUnfoldOutlined style={{ color: 'var(--ag-ant-color-text-tertiary)', fontSize: 16 }} />
                   ) : (
-                    <MenuFoldOutlined style={{ color: 'var(--ag-ant-color-text-secondary)', fontSize: '18px' }} />
+                    <MenuFoldOutlined style={{ color: 'var(--ag-ant-color-text-tertiary)', fontSize: 16 }} />
                   )}
-                  {!collapsed && <span className="ml-2" style={{ color: 'var(--ag-ant-color-text-secondary)' }}>Collapse Menu</span>}
+                  {!collapsed && <span style={{ marginLeft: 10, color: 'var(--ag-ant-color-text-tertiary)', fontSize: 12, fontWeight: 500 }}>Collapse</span>}
                 </div>
               </div>
             </Sider>
 
-            <AntLayout style={{ marginLeft: collapsed ? 80 : 256, transition: 'margin-left 0.2s' }}>
+            <AntLayout style={{ marginLeft: collapsed ? 72 : 240, transition: 'margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1)' }}>
               <Header
                 right={
                   <>
@@ -382,7 +434,7 @@ export default function SideMenuLayout({ children }: { children: React.ReactNode
                 }
               />
               <Content className="overflow-hidden">
-                <div className="h-full overflow-y-auto" style={{ minHeight: 'calc(100vh - 56px)', backgroundColor: 'var(--ag-ant-color-bg-layout)' }}>
+                <div className="h-full overflow-y-auto" style={{ minHeight: 'calc(100vh - 52px)', backgroundColor: 'var(--ag-ant-color-bg-base)' }}>
                   {children}
                 </div>
               </Content>

@@ -18,7 +18,10 @@ export default function PluginCard(props: Plugin & { reload: () => void }) {
             id: 'main.pages.Component.Plugin.List.Card.pluginDescription',
             dm: 'Description',
           }),
-          content: props.description,
+          content: props.description || $i18n.get({
+            id: 'main.pages.Component.Plugin.List.Card.noDescription',
+            dm: 'No description',
+          }),
         },
         {
           label: $i18n.get({

@@ -16,8 +16,8 @@
   }
 
   .divider {
-    width: 1px;
-    height: 70%;
+    width: 0.5px;
+    height: 60%;
     align-self: center;
     background-color: var(--ag-ant-color-border-secondary);
   }
@@ -27,10 +27,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 20px;
-    height: 64px;
-    border-bottom: 1px solid var(--ag-ant-color-border-secondary);
+    padding: 12px 20px;
+    height: 52px;
+    border-bottom: 0.5px solid var(--ag-ant-color-border-secondary);
     background-color: var(--ag-ant-color-bg-base);
+    backdrop-filter: saturate(180%) blur(20px);
 
     .left,
     .right {
@@ -41,7 +42,7 @@
     }
 
     .right {
-      gap: 12px;
+      gap: 8px;
       height: 100%;
     }
 
@@ -49,21 +50,28 @@
       gap: 4px;
 
       .back-icon {
-        width: 32px;
-        font-size: 20px;
+        width: 28px;
+        font-size: 18px;
         margin-right: 6px;
+        color: var(--ag-ant-color-text-secondary);
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: var(--ag-ant-color-text);
+        }
       }
     }
 
     .left-content {
       display: flex;
       align-items: center;
-      font-size: 16px;
+      font-size: 15px;
       color: var(--ag-ant-color-text-tertiary);
       font-weight: 500;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      letter-spacing: -0.01em;
     }
 
     .middle {
@@ -81,50 +89,59 @@
 
   .tour-button-container {
     .tour-button {
-      font-size: 20px;
+      font-size: 18px;
       border: none;
       background: transparent;
+      color: var(--ag-ant-color-text-secondary);
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: var(--ag-ant-color-text);
+      }
     }
 
     .tour-panel-container {
       position: absolute;
-      top: 64px;
+      top: 52px;
       left: 0;
       width: 100%;
-      max-height: calc(100vh - 90px);
+      max-height: calc(100vh - 80px);
       overflow-y: auto;
-      box-shadow: 0 12px 24px -16px var(--ag-ant-color-5);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
       padding: 16px;
       z-index: 1000;
-      border-width: 0 0 1px;
+      border-width: 0 0 0.5px;
       border-style: solid;
       border-color: var(--ag-ant-color-border-secondary);
       box-sizing: border-box;
+      backdrop-filter: saturate(180%) blur(20px);
+      background-color: var(--ag-ant-color-bg-base);
     }
 
     .tour-panel {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 48px;
+      gap: 40px;
       background-color: var(--ag-ant-color-fill-secondary);
-      padding: 16px;
-      border-radius: 6px;
+      padding: 16px 20px;
+      border-radius: 10px;
 
       .tour-item {
         width: 200px;
 
         .index {
-          width: 24px;
-          height: 24px;
+          width: 22px;
+          height: 22px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 12px;
+          font-size: 11px;
           font-weight: 600;
           color: var(--ag-ant-color-primary);
           margin-bottom: 6px;
+          background-color: var(--ag-ant-color-primary-bg);
         }
 
         &:last-child {
@@ -132,15 +149,16 @@
         }
 
         .tour-title {
-          font-size: 14px;
-          font-weight: 500;
+          font-size: 13px;
+          font-weight: 600;
           color: var(--ag-ant-color-text-base);
           margin-bottom: 4px;
-          line-height: 24px;
+          line-height: 20px;
+          letter-spacing: -0.01em;
         }
 
         .tour-description {
-          font-size: 12px;
+          font-size: 11px;
           color: var(--ag-ant-color-text-secondary);
           line-height: 1.5;
         }
@@ -163,10 +181,11 @@
 
   .bottom {
     background-color: var(--ag-ant-color-bg-base);
-    border-top: 1px solid var(--ag-ant-color-border-secondary);
-    padding: 16px 24px;
+    border-top: 0.5px solid var(--ag-ant-color-border-secondary);
+    padding: 12px 20px;
     display: flex;
     gap: 8px;
+    backdrop-filter: saturate(180%) blur(20px);
   }
 
   .vertical-center {
@@ -180,6 +199,11 @@
 
     a {
       color: var(--ag-ant-color-text-secondary);
+      transition: color 0.15s ease;
+
+      &:hover {
+        color: var(--ag-ant-color-text);
+      }
     }
   }
 
@@ -206,10 +230,11 @@
     }
 
     .ag-ant-breadcrumb {
-      font-size: 16px;
+      font-size: 15px;
       color: var(--ag-ant-color-text-tertiary);
       font-weight: 500;
       width: auto;
+      letter-spacing: -0.01em;
     }
 
     .ag-ant-breadcrumb ol {
@@ -219,8 +244,9 @@
     .ag-ant-breadcrumb-separator {
       font-weight: 400;
       margin-inline: 4px;
-      line-height: 22px;
+      line-height: 20px;
       padding: 0 2px;
+      color: var(--ag-ant-color-text-quaternary);
     }
 
     .ag-ant-breadcrumb li:last-child .ag-ant-breadcrumb-link {

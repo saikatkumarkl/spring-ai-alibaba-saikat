@@ -4,7 +4,7 @@
 }
 
 .section {
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 
   &:last-child {
     margin-bottom: 0;
@@ -12,19 +12,20 @@
 }
 
 .sectionTitle {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--ag-ant-color-text);
-  margin: 0 0 20px 0;
+  margin: 0 0 16px 0;
   text-align: left;
+  letter-spacing: -0.01em;
 
   &::before {
     content: '';
     display: inline-block;
     width: 3px;
-    height: 20px;
+    height: 16px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    margin-right: 10px;
+    margin-right: 8px;
     vertical-align: middle;
     border-radius: 2px;
   }
@@ -33,7 +34,7 @@
 .cardGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: 14px;
   max-width: none;
   margin: 0;
 
@@ -52,56 +53,56 @@
 }
 
 .cardItem {
-  min-height: 180px;
+  min-height: 160px;
 }
 
 .clickableCard {
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   height: 100%;
 }
 
 .clickableCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .disabledCard {
   cursor: not-allowed;
-  opacity: 0.6;
-  filter: grayscale(70%);
-  transition: all 0.3s ease;
+  opacity: 0.5;
+  filter: grayscale(80%);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   height: 100%;
 
   &:hover {
     transform: none;
     box-shadow: none;
-    opacity: 0.5;
+    opacity: 0.45;
   }
 }
 
 .cardIcon {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px;
+  border-radius: 10px;
 }
 
 .cardIconDisabled {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #9e9e9e 0%, #757575 100%);
-  border-radius: 12px;
+  border-radius: 10px;
 }
 
 .iconImage {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   filter: brightness(0) invert(1);
 }

@@ -51,6 +51,7 @@ const ProCard: React.FC<ProCardProps> = ({
         <div className={styles.cardBody}>
           {info.map((item, index) => (
             <div key={index} className={styles.infoItem}>
+              {item.label && <span className={styles.label}>{item.label}</span>}
               <span className={styles.content}>{item.content}</span>
             </div>
           ))}

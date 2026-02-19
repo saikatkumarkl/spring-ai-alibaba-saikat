@@ -107,7 +107,12 @@ const McpCard: React.FC<McpCardProps> = ({ data, onClick, className }) => {
   return (
     <ProCard
       title={serverName}
-      logo="spark-MCP-mcp-line"
+      logo={
+        <IconFont
+          type="spark-MCP-mcp-line"
+          style={{ fontSize: 32, color: 'var(--ag-ant-color-primary)' }}
+        />
+      }
       statusNode={
         <div
           className={styles['status-tag']}
