@@ -28,6 +28,7 @@ import com.alibaba.cloud.ai.studio.core.rag.vectorstore.VectorStoreFactory;
 import com.alibaba.cloud.ai.studio.core.utils.LogUtils;
 import com.alibaba.cloud.ai.studio.core.utils.concurrent.ThreadPoolUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.rag.Query;
@@ -41,10 +42,12 @@ import org.springframework.util.Assert;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 import static com.alibaba.cloud.ai.studio.core.rag.RagConstants.*;
 import static com.alibaba.cloud.ai.studio.core.utils.LogUtils.FAIL;
@@ -57,6 +60,7 @@ import static com.alibaba.cloud.ai.studio.core.utils.LogUtils.SUCCESS;
  * @since 1.0.0.3
  */
 
+@Slf4j
 @RequiredArgsConstructor
 public class KnowledgeBaseDocumentRetriever implements DocumentRetriever {
 
@@ -73,6 +77,15 @@ public class KnowledgeBaseDocumentRetriever implements DocumentRetriever {
 	private final FileSearchOptions searchOptions;
 
 	/**
+	 * RequestContext captured at construction time (on the Servlet thread where
+	 * ThreadLocal is available). This is necessary because the retriever's retrieve()
+	 * method is called from a Reactor boundedElastic thread (via publishOn in
+	 * KnowledgeBaseRetrievalAdvisor.adviseStream()), where the ThreadLocal is empty.
+	 * The constructor runs on the Servlet thread, so we capture the context here.
+	 */
+	private final RequestContext capturedRequestContext = RequestContextHolder.getRequestContext();
+
+	/**
 	 * Retrieves relevant documents from all knowledge bases based on the query. Documents
 	 * are retrieved in parallel and then merged, sorted, and filtered.
 	 * @param query The search query containing text and context
@@ -85,10 +98,24 @@ public class KnowledgeBaseDocumentRetriever implements DocumentRetriever {
 		Assert.notNull(query.context(), "query context can not be null");
 
 		long start = System.currentTimeMillis();
+		// Use the RequestContext captured at construction time (on the Servlet thread).
+		// By the time retrieve() runs, we're on a Reactor boundedElastic thread where
+		// the ThreadLocal is empty, so we propagate the captured context to worker threads.
 		List<CompletableFuture<List<Document>>> futureList = new ArrayList<>();
 		for (KnowledgeBase knowledgeBase : knowledgeBases) {
 			CompletableFuture<List<Document>> textFuture = CompletableFuture
-				.supplyAsync(() -> retrieve(knowledgeBase, query), ThreadPoolUtils.DEFAULT_TASK_EXECUTOR);
+				.supplyAsync(() -> {
+					// Propagate captured RequestContext into this async thread for ACL filtering
+					if (capturedRequestContext != null) {
+						RequestContextHolder.setRequestContext(capturedRequestContext);
+					}
+					try {
+						return retrieve(knowledgeBase, query);
+					}
+					finally {
+						RequestContextHolder.clearRequestContext();
+					}
+				}, ThreadPoolUtils.DEFAULT_TASK_EXECUTOR);
 			futureList.add(textFuture);
 		}
 
@@ -144,13 +171,32 @@ public class KnowledgeBaseDocumentRetriever implements DocumentRetriever {
 			.filterExpression(exp)
 			.searchType(searchType);
 
-		// ACL filter: restrict RAG results to documents the current user can access
+		// ACL filter: restrict RAG results to documents the current user can access.
+		// The 'authorities' field is a top-level keyword array in OpenSearch containing
+		// user emails and group tokens that have access to each chunk.
+		// We build: authorities:{email} OR authorities:__nosecurity__ OR authorities:{group1} OR ...
 		RequestContext ctx = RequestContextHolder.getRequestContext();
 		if (ctx != null && ctx.getUsername() != null && !"chatbot-service".equals(ctx.getUsername())) {
 			String lowerUser = ctx.getUsername().toLowerCase();
-			// authorities field is a top-level keyword array in OpenSearch;
-			// use nativeFilterString to bypass the metadata. prefix
-			searchRequestBuilder.nativeFilterString("authorities:" + lowerUser);
+			// Collect all tokens the user should match against
+			List<String> aclTokens = new ArrayList<>();
+			aclTokens.add(lowerUser);
+			aclTokens.add("__nosecurity__");
+			// Add group memberships resolved from the _authority index
+			Set<String> userGroups = ctx.getUserGroups();
+			if (userGroups != null) {
+				aclTokens.addAll(userGroups);
+			}
+			// Build Lucene OR query: authorities:token1 OR authorities:token2 OR ...
+			String aclFilter = aclTokens.stream()
+				.map(token -> "authorities:" + token)
+				.collect(Collectors.joining(" OR "));
+			String nativeFilter = "(" + aclFilter + ")";
+			log.info("RAG ACL filter applied for user={}: {}", lowerUser, nativeFilter);
+			searchRequestBuilder.nativeFilterString(nativeFilter);
+		} else {
+			log.warn("RAG ACL filter NOT applied: capturedCtx={}, username={}",
+				ctx != null, ctx != null ? ctx.getUsername() : "null");
 		}
 		if (searchOptions.getSimilarityThreshold() != null) {
 			searchRequestBuilder.similarityThreshold(searchOptions.getSimilarityThreshold());

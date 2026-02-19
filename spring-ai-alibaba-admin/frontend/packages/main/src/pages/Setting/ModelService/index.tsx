@@ -1,5 +1,6 @@
 import CardList from '@/components/Card/List';
 import InnerLayout from '@/components/InnerLayout';
+import Search from '@/components/Search';
 import $i18n from '@/i18n';
 import {
   deleteProvider,
@@ -8,7 +9,7 @@ import {
 } from '@/services/modelService';
 import { IProvider } from '@/types/modelService';
 import { AlertDialog, Button, IconFont, message } from '@spark-ai/design';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'umi';
 import ModelServiceCard from './components/ModelServiceCard';
 import ModelServiceProviderModal from './components/ModelServiceProviderModal';
@@ -19,6 +20,15 @@ const ModelService = () => {
   const [providers, setProviders] = useState<IProvider[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchText, setSearchText] = useState('');
+
+  const filteredProviders = useMemo(() => {
+    if (!searchText.trim()) return providers;
+    const lower = searchText.toLowerCase();
+    return providers.filter((p) =>
+      p.name?.toLowerCase().includes(lower) || p.provider?.toLowerCase().includes(lower)
+    );
+  }, [providers, searchText]);
 
   useEffect(() => {
     fetchProviders();
@@ -114,29 +124,37 @@ const ModelService = () => {
           }),
         },
       ]}
-      right={
-        <>
-          <Button
-            type="primary"
-            icon={<IconFont type="spark-plus-line" />}
-            onClick={() => setIsModalOpen(true)}
-          >
-            {$i18n.get({
-              id: 'main.pages.Setting.ModelService.index.addModelServiceProvider',
-              dm: 'Add Model Service Provider',
-            })}
-          </Button>
-        </>
-      }
+      left={filteredProviders.length}
       styles={{
         breadcrumb: {
           maxWidth: 300,
         },
       }}
     >
+      <div className={styles['search-wrapper']}>
+        <Search
+          placeholder={$i18n.get({
+            id: 'main.pages.Setting.ModelService.index.searchPlaceholder',
+            dm: 'Search model service by name',
+          })}
+          value={searchText}
+          onChange={(val: string) => setSearchText(val)}
+          onSearch={() => {}}
+        />
+        <Button
+          type="primary"
+          icon={<IconFont type="spark-plus-line" className={styles['addicon']} />}
+          onClick={() => setIsModalOpen(true)}
+        >
+          {$i18n.get({
+            id: 'main.pages.Setting.ModelService.index.addModelServiceProvider',
+            dm: 'Add Model Service Provider',
+          })}
+        </Button>
+      </div>
       <div className={styles.container}>
         <CardList loading={loading}>
-          {providers.map((provider) => (
+          {filteredProviders.map((provider) => (
             <ModelServiceCard
               key={provider.provider}
               service={provider}

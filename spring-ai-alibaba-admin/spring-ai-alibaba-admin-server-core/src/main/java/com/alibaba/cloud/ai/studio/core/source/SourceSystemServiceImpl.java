@@ -71,15 +71,19 @@ public class SourceSystemServiceImpl extends ServiceImpl<SourceSystemMapper, Sou
 
 		String sourceId = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
 
-		// Create ManifoldCF repository connection
+		// Try to create ManifoldCF repository connection (best-effort).
+		// If ManifoldCF is unavailable, we still save the source as a draft.
+		// The MCF connection will be created/re-pushed when the user tests
+		// the connection or enables the source (testConnection re-pushes config).
 		String mcfConnectionName = "src_" + sourceId;
 		try {
 			mcfBridge.createRepositoryConnection(mcfConnectionName, source.getDescription(),
 					source.getConnectorClass(), source.getConnectionConfig());
 		}
 		catch (Exception e) {
-			throw new BizException(
-					ErrorCode.SYSTEM_ERROR.toError());
+			log.warn("Could not create MCF connection '{}' (ManifoldCF may be unavailable): {}. "
+					+ "Source will be saved as draft; MCF connection will be created on test/sync.",
+					mcfConnectionName, e.getMessage());
 		}
 
 		// Save to database
@@ -275,6 +279,14 @@ public class SourceSystemServiceImpl extends ServiceImpl<SourceSystemMapper, Sou
 			catch (Exception e) {
 				log.warn("Could not clean up old job: {}", e.getMessage());
 			}
+		}
+
+		// Ensure MCF repository connection exists (may not have been created
+		// if ManifoldCF was unavailable at source creation time)
+		Map<String, Object> currentConfig = deserializeConfig(entity.getConnectionConfig());
+		if (!currentConfig.isEmpty()) {
+			mcfBridge.createRepositoryConnection(entity.getMcfConnectionName(), entity.getDescription(),
+					entity.getConnectorClass(), currentConfig);
 		}
 
 		// Create and start new job

@@ -9,7 +9,7 @@ import { Button, message } from '@spark-ai/design';
 import { useMount, useSetState } from 'ahooks';
 import { Spin } from 'antd';
 import classNames from 'classnames';
-import { useParams } from 'umi';
+import { history, useParams } from 'umi';
 import styles from './index.module.less';
 
 interface State {
@@ -106,12 +106,20 @@ export default function SourceDetail() {
         { title: src.name },
       ]}
       right={
-        <Button onClick={handleTestConnection}>
-          {$i18n.get({
-            id: 'main.pages.Source.Detail.testConnection',
-            dm: 'Test Connection',
-          })}
-        </Button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Button onClick={handleTestConnection}>
+            {$i18n.get({
+              id: 'main.pages.Source.Detail.testConnection',
+              dm: 'Test Connection',
+            })}
+          </Button>
+          <Button type="primary" onClick={() => history.push(`/source/edit/${id}`)}>
+            {$i18n.get({
+              id: 'main.pages.Source.Detail.editConfig',
+              dm: 'Edit Config',
+            })}
+          </Button>
+        </div>
       }
     >
       <div className={styles['container']}>

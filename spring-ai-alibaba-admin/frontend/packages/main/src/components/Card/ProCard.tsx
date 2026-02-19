@@ -16,6 +16,8 @@ export interface ProCardProps {
   statusNode?: React.ReactNode;
   footerDescNode?: React.ReactNode;
   footerOperateNode?: React.ReactNode;
+  /** Width of the label column in info rows */
+  labelWidth?: number;
 }
 
 const ProCard: React.FC<ProCardProps> = ({
@@ -27,6 +29,7 @@ const ProCard: React.FC<ProCardProps> = ({
   statusNode,
   footerDescNode,
   footerOperateNode,
+  labelWidth,
 }) => {
   return (
     <Card

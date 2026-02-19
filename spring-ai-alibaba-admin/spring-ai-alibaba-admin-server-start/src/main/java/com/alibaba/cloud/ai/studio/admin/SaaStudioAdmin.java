@@ -24,8 +24,12 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 
 /**
@@ -41,6 +45,7 @@ import org.springframework.context.annotation.FilterType;
  * @since 1.0.0-M1
  */
 @SpringBootApplication
+@EnableScheduling
 @MapperScan("com.alibaba.cloud.ai.studio.admin.mapper")
 @ComponentScan(basePackages = { "com.alibaba.cloud.ai.studio" },
 		excludeFilters = {
@@ -59,6 +64,18 @@ public class SaaStudioAdmin {
 	 */
 	public static void main(String[] args) {
 		SpringApplication.run(SaaStudioAdmin.class, args).registerShutdownHook();
+	}
+
+	/**
+	 * TaskScheduler for cron-based knowledge sync scheduling.
+	 */
+	@Bean
+	public TaskScheduler syncTaskScheduler() {
+		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+		scheduler.setPoolSize(2);
+		scheduler.setThreadNamePrefix("sync-cron-");
+		scheduler.setDaemon(true);
+		return scheduler;
 	}
 
 }

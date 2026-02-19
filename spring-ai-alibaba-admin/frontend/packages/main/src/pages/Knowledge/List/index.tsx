@@ -6,8 +6,6 @@ import { deleteKnowledge, getKnowledgeList } from '@/services/knowledge';
 import { IGetKnowledgeListParams } from '@/types/knowledge';
 import { AlertDialog, Button, IconFont, message } from '@spark-ai/design';
 import { useMount, useSetState } from 'ahooks';
-import { Flex } from 'antd';
-import classNames from 'classnames';
 import { useRef } from 'react';
 import { history } from 'umi';
 import KnowledgeCard from './components/Card';
@@ -110,20 +108,6 @@ export default function () {
         break;
     }
   };
-  const right = state?.list?.length ? (
-    <Flex align="center" className={styles['right']}>
-      <Button
-        type="primary"
-        icon={<IconFont type="spark-plus-line" className={styles['addicon']} />}
-        onClick={() => history.push('/knowledge/create')}
-      >
-        {$i18n.get({
-          id: 'main.pages.Knowledge.List.index.createKnowledgeBase',
-          dm: 'Create Knowledge Base',
-        })}
-      </Button>
-    </Flex>
-  ) : null;
   return (
     <InnerLayout
       breadcrumbLinks={[
@@ -142,20 +126,30 @@ export default function () {
         },
       ]}
       left={state.total}
-      right={right}
     >
-      <div className={styles['container']}>
+      <div>
         {!state.list.length && !state.loading && !isSearchRef.current ? null : (
-          <Search
-            placeholder={$i18n.get({
-              id: 'main.pages.Knowledge.List.index.enterKnowledgeBaseName',
-              dm: 'Please enter knowledge base name',
-            })}
-            value={state.name}
-            onChange={(val) => setState({ name: val })}
-            className={classNames(styles['search'], 'mx-[20px] my-[16px]')}
-            onSearch={handleSearch}
-          />
+          <div className={styles['search-wrapper']}>
+            <Search
+              placeholder={$i18n.get({
+                id: 'main.pages.Knowledge.List.index.enterKnowledgeBaseName',
+                dm: 'Please enter knowledge base name',
+              })}
+              value={state.name}
+              onChange={(val) => setState({ name: val })}
+              onSearch={handleSearch}
+            />
+            <Button
+              type="primary"
+              icon={<IconFont type="spark-plus-line" className={styles['addicon']} />}
+              onClick={() => history.push('/knowledge/create')}
+            >
+              {$i18n.get({
+                id: 'main.pages.Knowledge.List.index.createKnowledgeBase',
+                dm: 'Create Knowledge Base',
+              })}
+            </Button>
+          </div>
         )}
         <CardList
           pagination={{

@@ -36,8 +36,10 @@ const getStatusInfo = (jobStatus: string) => {
     case 'error':
     case 'aborting':
       return { className: styles['status-error'], label: 'Error' };
+    case 'paused':
+      return { className: styles['status-idle'], label: 'Paused' };
     default:
-      return { className: styles['status-idle'], label: 'Idle' };
+      return { className: styles['status-idle'], label: 'Ready' };
   }
 };
 
@@ -54,6 +56,7 @@ const SourceCard: React.FC<SourceCardProps> = ({
 }) => {
   const statusInfo = getStatusInfo(mcf_job_status);
   const progress = docs_total > 0 ? Math.round((docs_processed / docs_total) * 100) : 0;
+  const isIdle = !mcf_job_status || ['idle', 'not_started', ''].includes((mcf_job_status || '').toLowerCase());
 
   return (
     <ProCard
@@ -121,49 +124,68 @@ const SourceCard: React.FC<SourceCardProps> = ({
               dm: 'Test',
             })}
           </Button>
-          <Dropdown
-            getPopupContainer={(ele) => ele}
-            menu={{
-              items: [
-                {
-                  label: $i18n.get({
-                    id: 'main.pages.Source.List.components.Card.edit',
-                    dm: 'Edit',
-                  }),
-                  key: 'edit',
-                  onClick: (e: any) => {
-                    e.domEvent?.stopPropagation();
-                    handleClickAction && handleClickAction('edit', source_id);
-                  },
-                },
-                {
-                  label: $i18n.get({
-                    id: 'main.pages.Source.List.components.Card.copy',
-                    dm: 'Copy',
-                  }),
-                  key: 'copy',
-                  onClick: (e: any) => {
-                    e.domEvent?.stopPropagation();
-                    handleClickAction && handleClickAction('copy', source_id);
-                  },
-                },
-                {
-                  danger: true,
-                  label: $i18n.get({
-                    id: 'main.pages.Source.List.components.Card.delete',
-                    dm: 'Delete',
-                  }),
-                  key: 'delete',
-                  onClick: (e: any) => {
-                    e.domEvent?.stopPropagation();
-                    handleClickAction && handleClickAction('delete', source_id);
-                  },
-                },
-              ],
+          {isIdle && (
+            <Button
+              className={styles['operate-button']}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                handleClickAction && handleClickAction('sync', source_id);
+              }}
+            >
+              {$i18n.get({
+                id: 'main.pages.Source.List.components.Card.startSync',
+                dm: 'Sync',
+              })}
+            </Button>
+          )}
+          <Button
+            className={styles['operate-button']}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              handleClickAction && handleClickAction('edit', source_id);
             }}
           >
-            <IconButton shape="default" icon="spark-more-line" />
-          </Dropdown>
+            {$i18n.get({
+              id: 'main.pages.Source.List.components.Card.editConfig',
+              dm: 'Edit Config',
+            })}
+          </Button>
+          <div onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
+            <Dropdown
+              getPopupContainer={(ele) => ele}
+              menu={{
+                items: [
+                  {
+                    label: $i18n.get({
+                      id: 'main.pages.Source.List.components.Card.copy',
+                      dm: 'Copy',
+                    }),
+                    key: 'copy',
+                    onClick: (e: any) => {
+                      e.domEvent?.stopPropagation();
+                      handleClickAction && handleClickAction('copy', source_id);
+                    },
+                  },
+                  {
+                    danger: true,
+                    label: $i18n.get({
+                      id: 'main.pages.Source.List.components.Card.delete',
+                      dm: 'Delete',
+                    }),
+                    key: 'delete',
+                    onClick: (e: any) => {
+                      e.domEvent?.stopPropagation();
+                      handleClickAction && handleClickAction('delete', source_id);
+                    },
+                  },
+                ],
+              }}
+            >
+              <IconButton shape="default" icon="spark-more-line" />
+            </Dropdown>
+          </div>
         </>
       }
       onClick={() => history.push(`/source/${source_id}`)}

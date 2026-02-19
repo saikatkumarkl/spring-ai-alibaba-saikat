@@ -1,6 +1,6 @@
 import { IconFont, Input } from '@spark-ai/design';
 import classNames from 'classnames';
-import React from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import styles from './index.module.less';
 
 interface SearchProps {
@@ -15,11 +15,15 @@ interface SearchProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  /**
+   * Debounce delay in ms for search-as-you-type (default: 300)
+   */
+  debounceMs?: number;
 }
 
 /**
  * Knowledge base search component
- * Contains search input and view toggle buttons
+ * Contains search input with search-as-you-type (debounced)
  */
 const Search: React.FC<SearchProps> = ({
   onSearch,
@@ -27,13 +31,37 @@ const Search: React.FC<SearchProps> = ({
   onChange,
   value,
   placeholder = 'Type here...',
+  debounceMs = 300,
 }) => {
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestValueRef = useRef(value);
+  latestValueRef.current = value;
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, []);
+
+  const debouncedSearch = useCallback(
+    (val: string) => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = setTimeout(() => {
+        onSearch?.(val);
+      }, debounceMs);
+    },
+    [onSearch, debounceMs],
+  );
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     onChange(newValue);
+    debouncedSearch(newValue);
   };
 
   const handleSearch = () => {
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     onSearch?.(value);
   };
 

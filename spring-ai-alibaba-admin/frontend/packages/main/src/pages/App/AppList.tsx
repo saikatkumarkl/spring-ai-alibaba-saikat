@@ -17,6 +17,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import AppCard from './components/Card';
 import CreateModal from './components/CreateModal';
 import { EditNameModal } from './components/EditNameModal';
+import styles from './AppList.module.less';
 
 const tabs = [
   {
@@ -231,31 +232,30 @@ export default function () {
       ]}
       activeTab={state.activeTab}
       tabs={tabs}
-      right={
-        <Button
-          onClick={() => setState({ showCreateModal: true })}
-          icon={<IconFont type="spark-plus-line" />}
-          type="primary"
-        >
-          {$i18n.get({
-            id: 'main.pages.App.index.createApplication',
-            dm: 'Create Application',
-          })}
-        </Button>
-      }
       onTabChange={onTabChange}
     >
       {!state.list.length && !isSearchRef.current ? null : (
-        <Search
-          placeholder={$i18n.get({
-            id: 'main.pages.App.index.enterApplicationName',
-            dm: 'Please enter application name',
-          })}
-          value={state.name}
-          onChange={(val) => setState({ name: val })}
-          className={'mx-[20px] my-[16px]'}
-          onSearch={handleSearch}
-        />
+        <div className={styles['search-wrapper']}>
+          <Search
+            placeholder={$i18n.get({
+              id: 'main.pages.App.index.enterApplicationName',
+              dm: 'Please enter application name',
+            })}
+            value={state.name}
+            onChange={(val) => setState({ name: val })}
+            onSearch={handleSearch}
+          />
+          <Button
+            onClick={() => setState({ showCreateModal: true })}
+            icon={<IconFont type="spark-plus-line" className={styles['addicon']} />}
+            type="primary"
+          >
+            {$i18n.get({
+              id: 'main.pages.App.index.createApplication',
+              dm: 'Create Application',
+            })}
+          </Button>
+        </div>
       )}
       <CardList
         pagination={{

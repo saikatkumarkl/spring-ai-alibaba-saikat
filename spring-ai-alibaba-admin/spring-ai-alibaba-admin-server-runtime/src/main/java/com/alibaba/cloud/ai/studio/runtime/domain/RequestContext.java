@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * Request context for tracking request metadata and user information.
@@ -59,5 +60,9 @@ public class RequestContext implements Serializable {
 
 	/** Source of the request, defaults to "console" */
 	private String source = "console";
+
+	/** Groups the user belongs to, for ACL-filtered RAG retrieval */
+	@JsonProperty("user_groups")
+	private Set<String> userGroups;
 
 }

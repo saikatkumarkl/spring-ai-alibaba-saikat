@@ -1,164 +1,509 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chatbot</title>
+    <title>Knowledge Hub</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #f5f5f5; height: 100vh; display: flex; flex-direction: column; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .header h1 { font-size: 20px; font-weight: 600; }
-        .user-info { display: flex; align-items: center; gap: 12px; }
-        .user-email { font-size: 14px; opacity: 0.9; }
-        .header-btn { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.3s ease; }
-        .header-btn:hover { background: rgba(255,255,255,0.3); }
-        .header-btn.active { background: rgba(255,255,255,0.4); font-weight: 600; }
-        .app-selector { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 6px 10px; border-radius: 6px; font-size: 13px; cursor: pointer; max-width: 180px; }
-        .app-selector option { color: #333; background: white; }
-        .mode-tabs { display: flex; gap: 4px; background: rgba(0,0,0,0.15); border-radius: 8px; padding: 3px; }
-        .mode-tab { padding: 5px 14px; border-radius: 6px; border: none; background: transparent; color: rgba(255,255,255,0.7); cursor: pointer; font-size: 13px; transition: all 0.2s; }
-        .mode-tab.active { background: rgba(255,255,255,0.3); color: white; font-weight: 600; }
-        .main-content { flex: 1; display: flex; overflow: hidden; }
-        .error-banner { background: #fee; color: #c33; padding: 10px 24px; text-align: center; border-bottom: 2px solid #c33; display: none; }
-        .error-banner.show { display: block; }
+/* ===== CSS Custom Properties ===== */
+:root {
+  --primary: #4F46E5;
+  --primary-hover: #6366F1;
+  --primary-active: #3730A3;
+  --primary-bg: #EEF2FF;
+  --primary-border: #C7D2FE;
+  --primary-border-hover: #A5B4FC;
+  --bg-layout: #F8FAFC;
+  --bg-container: #FFFFFF;
+  --bg-elevated: #FFFFFF;
+  --bg-base: #FFFFFF;
+  --fill: #F1F5F9;
+  --fill-secondary: #E2E8F0;
+  --text-base: #0F172A;
+  --text-primary: #1E293B;
+  --text-secondary: #64748B;
+  --text-tertiary: #94A3B8;
+  --border: #E2E8F0;
+  --border-secondary: #F1F5F9;
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-info: #3B82F6;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.05);
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --header-height: 64px;
+  --sidebar-width: 320px;
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+}
 
-        /* === AI CHAT MODE === */
-        .chat-mode { flex: 1; display: none; overflow: hidden; }
-        .chat-mode.active { display: flex; }
-        .sidebar { width: 240px; background: white; border-right: 1px solid #e0e0e0; display: flex; flex-direction: column; flex-shrink: 0; }
-        .sidebar-header { padding: 14px 16px; font-weight: 600; font-size: 13px; color: #555; border-bottom: 1px solid #e0e0e0; text-transform: uppercase; letter-spacing: 0.5px; }
-        .conversations-list { flex: 1; overflow-y: auto; padding: 8px; }
-        .conversation-item { padding: 10px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 4px; transition: all 0.2s ease; font-size: 13px; position: relative; }
-        .conversation-item:hover { background: #f0f0f0; }
-        .conversation-item:hover .conv-delete { opacity: 1; }
-        .conv-delete { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 13px; color: #c33; opacity: 0; transition: opacity 0.2s; padding: 4px; border-radius: 4px; }
-        .conv-delete:hover { background: #fee; }
-        .conversation-item.active { background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%); border-left: 3px solid #667eea; }
-        .conv-preview { color: #333; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .conv-meta { color: #999; font-size: 11px; margin-top: 3px; }
-        .no-conversations { padding: 24px 16px; text-align: center; color: #999; font-size: 13px; }
-        .chat-container { flex: 1; display: flex; flex-direction: column; background: white; min-width: 0; }
-        .messages { flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
-        .message { display: flex; gap: 10px; max-width: 80%; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .message.user { align-self: flex-end; flex-direction: row-reverse; }
-        .message-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-        .message.user .message-avatar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .message.assistant .message-avatar { background: #e0e0e0; }
-        .message-content { padding: 10px 14px; border-radius: 12px; line-height: 1.5; word-wrap: break-word; font-size: 14px; white-space: pre-wrap; }
-        .message.user .message-content { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-bottom-right-radius: 4px; }
-        .message.assistant .message-content { background: #f0f0f0; color: #333; border-bottom-left-radius: 4px; }
-        .typing-indicator { display: flex; gap: 4px; padding: 10px 14px; }
-        .typing-indicator span { width: 7px; height: 7px; background: #999; border-radius: 50%; animation: typing 1.4s infinite; }
-        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes typing { 0%,60%,100% { transform: translateY(0); opacity: 0.7; } 30% { transform: translateY(-8px); opacity: 1; } }
-        .input-area { padding: 12px 24px; border-top: 1px solid #e0e0e0; background: white; }
-        .input-form { display: flex; gap: 10px; }
-        .input-field { flex: 1; padding: 10px 16px; border: 2px solid #e0e0e0; border-radius: 24px; font-size: 14px; font-family: inherit; transition: all 0.3s ease; }
-        .input-field:focus { outline: none; border-color: #667eea; }
-        .send-btn { padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
-        .send-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
-        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+[data-theme="dark"] {
+  --primary: #818CF8;
+  --primary-hover: #A5B4FC;
+  --primary-active: #6366F1;
+  --primary-bg: #1E1B4B;
+  --primary-border: #312E81;
+  --primary-border-hover: #4338CA;
+  --bg-layout: #0C0A1D;
+  --bg-container: #13112A;
+  --bg-elevated: #1C1938;
+  --bg-base: #0C0A1D;
+  --fill: #1C1938;
+  --fill-secondary: #252346;
+  --text-base: #F1F5F9;
+  --text-primary: #E2E8F0;
+  --text-secondary: #94A3B8;
+  --text-tertiary: #475569;
+  --border: #252346;
+  --border-secondary: #1C1938;
+  --color-success: #4ADE80;
+  --color-warning: #FBBF24;
+  --color-error: #F87171;
+  --color-info: #60A5FA;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.5);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.6);
+  --shadow-xl: 0 16px 40px rgba(0,0,0,0.7);
+}
 
-        /* === DOCUMENT EXPLORER MODE === */
-        .docs-mode { flex: 1; display: none; flex-direction: column; background: white; overflow: hidden; }
-        .docs-mode.active { display: flex; }
-        .docs-toolbar { padding: 12px 24px; border-bottom: 1px solid #e0e0e0; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; background: #fafafa; }
-        .docs-search-input { flex: 1; min-width: 200px; padding: 8px 14px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; font-family: inherit; }
-        .docs-search-input:focus { outline: none; border-color: #667eea; }
-        .docs-search-btn { padding: 8px 18px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
-        .docs-filter-select { padding: 7px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; background: white; }
-        .docs-content { flex: 1; display: flex; overflow: hidden; }
-        .docs-facets { width: 200px; border-right: 1px solid #e0e0e0; padding: 16px; overflow-y: auto; background: #fafafa; flex-shrink: 0; }
-        .facet-group { margin-bottom: 16px; }
-        .facet-title { font-weight: 600; font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-        .facet-item { display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 13px; color: #333; transition: background 0.2s; }
-        .facet-item:hover { background: #e8e8f0; }
-        .facet-item.active { background: #667eea20; color: #667eea; font-weight: 600; }
-        .facet-count { background: #e0e0e0; color: #666; font-size: 11px; padding: 1px 6px; border-radius: 10px; min-width: 20px; text-align: center; }
-        .facet-item.active .facet-count { background: #667eea; color: white; }
-        .docs-list { flex: 1; overflow-y: auto; padding: 16px; }
-        .docs-summary { padding: 8px 0 12px; color: #666; font-size: 13px; border-bottom: 1px solid #eee; margin-bottom: 12px; }
-        .doc-card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; transition: all 0.2s; cursor: pointer; }
-        .doc-card:hover { border-color: #667eea; box-shadow: 0 2px 8px rgba(102,126,234,0.1); }
-        .doc-card.expanded { border-color: #667eea; background: #f8f8ff; }
-        .doc-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .doc-card-title { font-weight: 600; font-size: 14px; color: #333; word-break: break-word; }
-        .doc-card-meta { display: flex; gap: 12px; margin-top: 6px; font-size: 12px; color: #888; flex-wrap: wrap; }
-        .doc-card-meta span { display: flex; align-items: center; gap: 3px; }
-        .doc-card-badge { font-size: 11px; padding: 2px 8px; border-radius: 12px; background: #667eea15; color: #667eea; white-space: nowrap; }
-        .doc-detail { margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee; display: none; }
-        .doc-detail.show { display: block; }
-        .doc-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .doc-detail-item { font-size: 12px; }
-        .doc-detail-item .label { color: #888; }
-        .doc-detail-item .value { color: #333; font-weight: 500; word-break: break-all; }
-        .docs-pagination { padding: 12px 24px; border-top: 1px solid #e0e0e0; display: flex; justify-content: center; align-items: center; gap: 12px; background: #fafafa; }
-        .page-btn { padding: 6px 14px; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer; font-size: 13px; }
-        .page-btn:hover { background: #f0f0f0; }
-        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .page-info { font-size: 13px; color: #666; }
-        .no-docs { text-align: center; padding: 60px 20px; color: #999; font-size: 15px; }
-        .loading-spinner { text-align: center; padding: 40px; color: #999; font-size: 14px; }
+/* ===== Google Fonts ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-        /* === DOCUMENT VIEWER MODAL === */
-        .viewer-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
-        .viewer-overlay.show { display: flex; }
-        .viewer-container { background: white; border-radius: 12px; width: 90vw; height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
-        .viewer-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-bottom: 1px solid #e0e0e0; background: #fafafa; }
-        .viewer-title { font-weight: 600; font-size: 14px; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 70%; }
-        .viewer-actions { display: flex; gap: 8px; }
-        .viewer-btn { padding: 6px 14px; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer; font-size: 13px; transition: all 0.2s; }
-        .viewer-btn:hover { background: #f0f0f0; }
-        .viewer-btn.primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; }
-        .viewer-body { flex: 1; overflow: auto; padding: 0; position: relative; background: #f5f5f5; }
-        .viewer-body iframe, .viewer-body canvas { width: 100%; height: 100%; border: none; }
-        .viewer-body .text-content { padding: 24px; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; color: #333; background: white; min-height: 100%; }
-        .viewer-body .html-content { padding: 24px; background: white; min-height: 100%; }
-        .viewer-body img.preview-image { max-width: 100%; max-height: 100%; object-fit: contain; display: block; margin: auto; }
-        .viewer-loading { display: flex; align-items: center; justify-content: center; height: 100%; color: #999; font-size: 15px; }
-        .viewer-error { display: flex; align-items: center; justify-content: center; height: 100%; color: #c33; font-size: 15px; text-align: center; padding: 40px; }
+/* ===== Reset & Base ===== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { width: 100%; height: 100%; }
+body { font-family: var(--font-sans); background: var(--bg-layout); color: var(--text-primary); width: 100%; height: 100vh; display: flex; flex-direction: column; overflow: hidden; font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
-        /* === AUTHORITY BROWSER MODAL === */
-        .auth-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
-        .auth-overlay.show { display: flex; }
-        .auth-container { background: white; border-radius: 12px; width: 80vw; max-width: 900px; height: 80vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
-        .auth-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid #e0e0e0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .auth-header h3 { margin: 0; font-size: 16px; }
-        .auth-toolbar { padding: 12px 20px; border-bottom: 1px solid #e0e0e0; display: flex; gap: 12px; align-items: center; background: #fafafa; }
-        .auth-search-input { flex: 1; padding: 8px 14px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; font-family: inherit; }
-        .auth-search-input:focus { outline: none; border-color: #667eea; }
-        .auth-body { flex: 1; overflow-y: auto; padding: 0; }
-        .auth-table { width: 100%; border-collapse: collapse; }
-        .auth-table th { position: sticky; top: 0; background: #f8f8ff; padding: 10px 16px; text-align: left; font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e0e0e0; }
-        .auth-table td { padding: 10px 16px; border-bottom: 1px solid #f0f0f0; font-size: 13px; vertical-align: top; }
-        .auth-table tr:hover td { background: #f8f8ff; }
-        .auth-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-        .auth-badge.group { background: #e8f4fd; color: #1976d2; }
-        .auth-badge.user { background: #e8f5e9; color: #388e3c; }
-        .auth-members-list { max-height: 60px; overflow-y: auto; font-size: 12px; color: #666; }
-        .auth-pagination { padding: 12px 20px; border-top: 1px solid #e0e0e0; display: flex; justify-content: center; align-items: center; gap: 12px; background: #fafafa; }
+/* ===== Error Banner ===== */
+.error-banner { display: none; padding: 12px 20px; background: linear-gradient(135deg, var(--color-error), #DC2626); color: #fff; font-size: 14px; text-align: center; font-weight: 500; letter-spacing: 0.01em; }
+.error-banner.show { display: block; }
 
-        /* Double-click hint on doc cards */
-        .doc-card-hint { font-size: 11px; color: #aaa; margin-top: 4px; font-style: italic; }
+/* ===== Header ===== */
+.header {
+  height: var(--header-height); padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  background: var(--bg-container); border-bottom: 1px solid var(--border);
+  flex-shrink: 0; z-index: 100; box-shadow: var(--shadow-sm);
+}
+.brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; color: var(--primary); white-space: nowrap; letter-spacing: -0.02em; }
+.brand-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--primary), var(--primary-hover)); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; font-weight: 700; box-shadow: 0 2px 8px rgba(79,70,229,0.25); }
+.header-center { display: flex; align-items: center; gap: 16px; }
+.mode-tabs { display: flex; gap: 2px; background: var(--fill); padding: 4px; border-radius: var(--radius-md); }
+.mode-tab {
+  padding: 8px 18px; border: none; background: transparent; color: var(--text-secondary);
+  font-size: 14px; font-weight: 500; font-family: var(--font-sans); border-radius: var(--radius-sm); cursor: pointer; transition: all var(--transition-fast); white-space: nowrap;
+}
+.mode-tab:hover { color: var(--text-primary); background: rgba(255,255,255,0.5); }
+.mode-tab.active { background: var(--bg-container); color: var(--primary); box-shadow: var(--shadow-sm); font-weight: 600; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.theme-toggle {
+  width: 38px; height: 38px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg-container); cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition-fast);
+}
+.theme-toggle:hover { border-color: var(--primary); background: var(--primary-bg); }
+.user-email { font-size: 14px; color: var(--text-secondary); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.header-btn {
+  padding: 8px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg-container); color: var(--text-primary); font-size: 14px; font-weight: 500; font-family: var(--font-sans);
+  cursor: pointer; transition: all var(--transition-fast);
+}
+.header-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-bg); }
+.btn-logout { padding: 8px 16px; border: 1px solid var(--color-error); border-radius: var(--radius-sm); background: transparent; color: var(--color-error); font-size: 14px; font-weight: 500; font-family: var(--font-sans); cursor: pointer; transition: all var(--transition-fast); }
+.btn-logout:hover { background: var(--color-error); color: #fff; }
+
+/* ===== Layout ===== */
+.main-content { flex: 1; position: relative; overflow: hidden; min-height: 0; }
+.mode-panel { display: none; position: absolute; inset: 0; width: 100%; height: 100%; }
+.mode-panel.active { display: flex; }
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); background: var(--bg-container); color: var(--text-primary);
+  font-size: 14px; font-weight: 500; font-family: var(--font-sans); transition: all var(--transition-fast); white-space: nowrap; cursor: pointer;
+}
+.btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-bg); }
+.btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); color: #fff; box-shadow: 0 2px 8px rgba(79,70,229,0.25); }
+.btn-danger { color: var(--color-error); border-color: var(--color-error); }
+.btn-danger:hover { background: var(--color-error); color: #fff; }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+.icon-btn {
+  width: 34px; height: 34px; border: none; background: transparent; color: var(--text-secondary);
+  border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.icon-btn:hover { background: var(--fill); color: var(--text-base); }
+
+/* ===== Badges ===== */
+.badge { padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; letter-spacing: 0.01em; }
+.badge-group { background: #DBEAFE; color: #1E40AF; }
+.badge-user { background: #FCE7F3; color: #9D174D; }
+[data-theme="dark"] .badge-group { background: #1E3A5F; color: #93C5FD; }
+[data-theme="dark"] .badge-user { background: #4A1942; color: #F9A8D4; }
+
+/* ===== Empty & Loading States ===== */
+.empty-state { text-align: center; padding: 80px 24px; color: var(--text-tertiary); font-size: 15px; line-height: 1.7; }
+.loading-state { text-align: center; padding: 60px; color: var(--text-secondary); font-size: 15px; }
+
+/* ===== Chat Mode ===== */
+.chat-layout { display: flex; height: 100%; width: 100%; }
+.chat-sidebar {
+  width: var(--sidebar-width); border-right: 1px solid var(--border); background: var(--bg-container);
+  display: flex; flex-direction: column; flex-shrink: 0;
+}
+.sidebar-header { padding: 16px; border-bottom: 1px solid var(--border-secondary); display: flex; flex-direction: column; gap: 10px; }
+.sidebar-header .btn { flex: 1; justify-content: center; padding: 10px 16px; font-size: 14px; }
+.sidebar-workspace-select {
+  width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg-container); color: var(--text-primary); font-size: 14px; font-family: var(--font-sans);
+  outline: none; transition: border-color var(--transition-fast);
+}
+.sidebar-workspace-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-bg); }
+.sidebar-workspace-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary); margin-bottom: 4px; }
+.conv-list { flex: 1; overflow-y: auto; padding: 8px 12px; }
+.conv-item {
+  padding: 14px 16px; border-radius: var(--radius-sm); cursor: pointer; font-size: 14px;
+  color: var(--text-secondary); margin: 3px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  position: relative; transition: all var(--transition-fast); line-height: 1.5;
+}
+.conv-item:hover { background: var(--fill); color: var(--text-primary); }
+.conv-item:hover .conv-delete { opacity: 1; }
+.conv-item.active { background: var(--primary-bg); color: var(--primary); font-weight: 600; }
+.conv-delete { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 14px; color: var(--color-error); opacity: 0; transition: opacity var(--transition-fast); padding: 6px; border-radius: 6px; }
+.conv-delete:hover { background: rgba(239,68,68,0.1); }
+.no-conversations { padding: 32px 20px; text-align: center; color: var(--text-tertiary); font-size: 14px; line-height: 1.6; }
+.chat-container { flex: 1; display: flex; flex-direction: column; background: var(--bg-layout); min-width: 0; height: 100%; }
+.messages { flex: 1; overflow-y: auto; padding: 24px 32px; display: flex; flex-direction: column; gap: 20px; }
+.message { display: flex; gap: 14px; max-width: 75%; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.message.user { align-self: flex-end; flex-direction: row-reverse; }
+.message-avatar {
+  width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0; background: var(--fill); box-shadow: var(--shadow-sm);
+}
+.message.user .message-avatar { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); }
+.message-content {
+  padding: 16px 20px; border-radius: var(--radius-lg); line-height: 1.65; word-wrap: break-word;
+  font-size: 15px; white-space: pre-wrap; background: var(--bg-elevated); border: 1px solid var(--border-secondary);
+  color: var(--text-primary); box-shadow: var(--shadow-sm);
+}
+.message.user .message-content {
+  background: linear-gradient(135deg, var(--primary), #6366F1); color: #fff; border-color: transparent;
+  box-shadow: 0 4px 12px rgba(79,70,229,0.2);
+}
+.typing-indicator { display: flex; gap: 5px; padding: 16px 20px; }
+.typing-indicator span { width: 8px; height: 8px; background: var(--text-tertiary); border-radius: 50%; animation: typing 1.4s infinite; }
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing { 0%,60%,100% { transform: translateY(0); opacity: 0.5; } 30% { transform: translateY(-10px); opacity: 1; } }
+.input-area { padding: 16px 32px 20px; border-top: 1px solid var(--border); background: var(--bg-container); }
+.input-form { display: flex; gap: 12px; align-items: flex-end; }
+.input-field {
+  flex: 1; padding: 14px 20px; border: 2px solid var(--border); border-radius: var(--radius-md);
+  font-size: 15px; font-family: var(--font-sans); outline: none; background: var(--bg-container); color: var(--text-primary);
+  resize: none; min-height: 52px; max-height: 200px; line-height: 1.5;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-bg); }
+.input-field::placeholder { color: var(--text-tertiary); }
+.send-btn {
+  padding: 14px 28px; background: linear-gradient(135deg, var(--primary), #6366F1); color: white; border: none;
+  border-radius: var(--radius-md); font-size: 15px; font-weight: 600; font-family: var(--font-sans);
+  cursor: pointer; transition: all var(--transition-base); box-shadow: 0 2px 8px rgba(79,70,229,0.25);
+  white-space: nowrap; min-height: 52px;
+}
+.send-btn:hover:not(:disabled) { background: linear-gradient(135deg, var(--primary-hover), #818CF8); box-shadow: 0 4px 16px rgba(79,70,229,0.35); transform: translateY(-1px); }
+.send-btn:active:not(:disabled) { transform: translateY(0); }
+.send-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+
+/* ===== Welcome State ===== */
+.welcome-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%; text-align: center; padding: 40px;
+}
+.welcome-icon { font-size: 64px; margin-bottom: 20px; opacity: 0.8; }
+.welcome-title { font-size: 28px; font-weight: 700; color: var(--text-base); margin-bottom: 8px; letter-spacing: -0.02em; }
+.welcome-subtitle { font-size: 16px; color: var(--text-secondary); max-width: 480px; line-height: 1.6; }
+.welcome-suggestions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; justify-content: center; max-width: 600px; }
+.welcome-suggestion {
+  padding: 10px 18px; border: 1px solid var(--border); border-radius: var(--radius-lg);
+  background: var(--bg-container); color: var(--text-secondary); font-size: 14px;
+  cursor: pointer; transition: all var(--transition-fast); font-family: var(--font-sans);
+}
+.welcome-suggestion:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-bg); box-shadow: var(--shadow-sm); }
+
+/* ===== Document Explorer Mode ===== */
+.docs-layout { display: flex; flex-direction: column; height: 100%; width: 100%; }
+.docs-toolbar {
+  padding: 20px 24px; border-bottom: 1px solid var(--border); background: var(--bg-container);
+  display: flex; flex-direction: column; gap: 14px;
+}
+.docs-search-row { display: flex; gap: 12px; align-items: center; }
+.docs-filter-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.docs-search-input { flex: 1; min-width: 300px; padding: 14px 20px; border: 2px solid var(--border); border-radius: var(--radius-md); font-size: 16px; font-family: var(--font-sans); background: var(--bg-container); color: var(--text-primary); outline: none; transition: border-color var(--transition-fast), box-shadow var(--transition-fast); }
+.docs-search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-bg); }
+.docs-filter-select { padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-family: var(--font-sans); background: var(--bg-container); color: var(--text-primary); outline: none; transition: border-color var(--transition-fast); max-width: 160px; }
+.docs-filter-select:focus { border-color: var(--primary); }
+.docs-content { flex: 1; display: flex; overflow: hidden; }
+.docs-facets { width: 240px; border-right: 1px solid var(--border-secondary); padding: 16px; overflow-y: auto; background: var(--bg-container); flex-shrink: 0; }
+.facet-group { margin-bottom: 20px; }
+.facet-title { font-weight: 700; font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+.facet-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-radius: var(--radius-sm); cursor: pointer; font-size: 14px; color: var(--text-primary); transition: background var(--transition-fast); }
+.facet-item:hover { background: var(--fill); }
+.facet-item.active { background: var(--primary-bg); color: var(--primary); font-weight: 600; }
+.facet-count { background: var(--fill); color: var(--text-secondary); font-size: 12px; padding: 2px 8px; border-radius: 12px; min-width: 24px; text-align: center; font-weight: 600; }
+.facet-item.active .facet-count { background: var(--primary); color: white; }
+.docs-list { flex: 1; overflow-y: auto; padding: 20px; }
+.docs-summary { padding: 6px 0 8px; color: var(--text-tertiary); font-size: 12px; border-bottom: 1px solid var(--border-secondary); margin-bottom: 10px; font-weight: 400; }
+.doc-card { border: 1px solid var(--border-secondary); border-radius: var(--radius-md); padding: 18px 20px; margin-bottom: 12px; transition: all var(--transition-fast); cursor: pointer; background: var(--bg-container); }
+.doc-card:hover { border-color: var(--primary-border); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.doc-card.expanded { border-color: var(--primary); background: var(--primary-bg); }
+.doc-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.doc-card-title { font-weight: 600; font-size: 15px; color: var(--text-base); word-break: break-word; }
+.doc-card-meta { display: flex; gap: 14px; margin-top: 8px; font-size: 13px; color: var(--text-secondary); flex-wrap: wrap; }
+.doc-card-meta span { display: flex; align-items: center; gap: 4px; }
+.doc-card-badge { font-size: 12px; padding: 3px 10px; border-radius: 14px; background: var(--primary-bg); color: var(--primary); white-space: nowrap; font-weight: 600; }
+.doc-detail { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-secondary); display: none; }
+.doc-detail.show { display: block; }
+.doc-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.doc-detail-item { font-size: 13px; }
+.doc-detail-item .label { color: var(--text-tertiary); }
+.doc-detail-item .value { color: var(--text-primary); font-weight: 500; word-break: break-all; }
+.docs-pagination { padding: 14px 24px; border-top: 1px solid var(--border); display: flex; justify-content: center; align-items: center; gap: 14px; background: var(--bg-container); }
+.page-btn { padding: 8px 18px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-container); cursor: pointer; font-size: 14px; font-family: var(--font-sans); color: var(--text-primary); transition: all var(--transition-fast); }
+.page-btn:hover { background: var(--fill); border-color: var(--primary); }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.page-info { font-size: 14px; color: var(--text-secondary); font-weight: 500; }
+.no-docs { text-align: center; padding: 80px 24px; color: var(--text-tertiary); font-size: 16px; }
+.loading-spinner { text-align: center; padding: 60px; color: var(--text-secondary); font-size: 15px; }
+.doc-card-hint { font-size: 12px; color: var(--text-tertiary); margin-top: 6px; font-style: italic; }
+
+/* ===== Document Viewer Modal ===== */
+.viewer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 9000; align-items: center; justify-content: center; }
+.viewer-overlay.show { display: flex; }
+.viewer-container { background: var(--bg-container); border-radius: var(--radius-xl); width: 82vw; height: 86vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow-xl); }
+.viewer-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid var(--border); background: var(--bg-container); }
+.viewer-title { font-weight: 600; font-size: 16px; color: var(--text-base); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 70%; }
+.viewer-actions { display: flex; gap: 10px; }
+.viewer-btn { padding: 8px 18px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-container); cursor: pointer; font-size: 14px; font-family: var(--font-sans); transition: all var(--transition-fast); color: var(--text-primary); font-weight: 500; }
+.viewer-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-bg); }
+.viewer-btn.primary { background: var(--primary); color: white; border: none; }
+.viewer-btn.primary:hover { background: var(--primary-hover); }
+.viewer-body { flex: 1; overflow: auto; padding: 0; position: relative; background: var(--bg-layout); }
+.viewer-body iframe, .viewer-body canvas { width: 100%; height: 100%; border: none; }
+.viewer-body .text-content { padding: 28px; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; font-size: 14px; line-height: 1.7; white-space: pre-wrap; word-wrap: break-word; color: var(--text-primary); background: var(--bg-container); min-height: 100%; }
+.viewer-body .html-content { padding: 28px; background: var(--bg-container); min-height: 100%; }
+.viewer-body img.preview-image { max-width: 100%; max-height: 100%; object-fit: contain; display: block; margin: auto; }
+.viewer-loading { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary); font-size: 16px; }
+.viewer-error { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--color-error); font-size: 16px; text-align: center; padding: 48px; line-height: 1.6; }
+
+
+/* ===== Browse Mode (Full-Screen, Tree + File Table) ===== */
+.browse-layout { display: flex; height: 100%; }
+.tree-panel {
+  width: 300px; min-width: 200px; max-width: 520px; border-right: 1px solid var(--border);
+  background: var(--bg-container); display: flex; flex-direction: column; flex-shrink: 0;
+}
+.tree-header {
+  padding: 14px 16px; border-bottom: 1px solid var(--border-secondary);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.tree-title { font-size: 14px; font-weight: 700; color: var(--text-base); letter-spacing: -0.01em; }
+.tree-actions { display: flex; gap: 4px; }
+.tree-body { flex: 1; overflow-y: auto; padding: 6px 0; }
+.tree-node {
+  display: flex; align-items: center; padding: 7px 10px; cursor: pointer; user-select: none;
+  white-space: nowrap; font-size: 14px; color: var(--text-primary); transition: background var(--transition-fast);
+}
+.tree-node:hover { background: var(--fill); }
+.tree-node.selected { background: var(--primary-bg); color: var(--primary); font-weight: 500; }
+.tree-arrow {
+  display: inline-flex; width: 20px; height: 20px; align-items: center; justify-content: center;
+  font-size: 10px; transition: transform var(--transition-fast); flex-shrink: 0; color: var(--text-tertiary);
+}
+.tree-arrow.expanded { transform: rotate(90deg); }
+.tree-arrow-spacer { width: 20px; flex-shrink: 0; }
+.tree-icon { margin-right: 8px; font-size: 16px; flex-shrink: 0; }
+.tree-label { overflow: hidden; text-overflow: ellipsis; }
+.tree-loading { margin-left: 8px; font-size: 12px; color: var(--text-tertiary); animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.tree-divider { height: 1px; background: var(--border-secondary); margin: 8px 16px; }
+
+/* macOS-style SVG folder/file icons */
+.mac-icon { display: inline-flex; align-items: center; justify-content: center; width: 1em; height: 1em; vertical-align: middle; }
+.mac-icon svg { width: 100%; height: 100%; }
+
+/* Content loading overlay for Explorer */
+.content-loading-overlay {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%; gap: 14px; color: var(--text-secondary);
+}
+.content-loading-spinner {
+  width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--primary);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+.content-loading-text { font-size: 14px; font-weight: 500; }
+.content-loading-subtext { font-size: 12px; color: var(--text-tertiary); }
+
+/* New Folder Dialog */
+.newfolder-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 9500; align-items: center; justify-content: center; }
+.newfolder-overlay.show { display: flex; }
+.newfolder-dialog { background: var(--bg-container); border-radius: var(--radius-xl); padding: 28px; width: 400px; max-width: 90vw; box-shadow: var(--shadow-xl); }
+.newfolder-dialog h3 { margin: 0 0 6px; font-size: 17px; font-weight: 700; color: var(--text-base); display: flex; align-items: center; gap: 8px; }
+.newfolder-dialog p { margin: 0 0 18px; font-size: 13px; color: var(--text-secondary); }
+.newfolder-dialog input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: var(--font-sans); color: var(--text-primary); background: var(--bg-layout); outline: none; box-sizing: border-box; margin-bottom: 18px; transition: border-color var(--transition-fast); }
+.newfolder-dialog input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-bg); }
+.newfolder-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+/* Navigate-to-Source link in chat */
+.nav-source-link {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; margin-top: 6px;
+  font-size: 12px; font-weight: 500; color: var(--primary); background: var(--primary-bg);
+  border: 1px solid var(--primary-border); border-radius: var(--radius-sm); cursor: pointer;
+  transition: all var(--transition-fast); text-decoration: none;
+}
+.nav-source-link:hover { background: var(--primary-border); border-color: var(--primary-border-hover); }
+
+/* Resize Handle */
+.resize-handle {
+  width: 5px; cursor: col-resize; background: transparent; flex-shrink: 0;
+  transition: background var(--transition-fast); position: relative;
+}
+.resize-handle:hover, .resize-handle.active { background: var(--primary); }
+
+/* Content Panel */
+.content-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg-layout); }
+.content-toolbar {
+  padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--bg-container);
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 52px;
+}
+.breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 14px; overflow: hidden; flex: 1; }
+.bc-link { color: var(--primary); cursor: pointer; white-space: nowrap; font-weight: 500; }
+.bc-link:hover { text-decoration: underline; }
+.bc-sep { color: var(--text-tertiary); margin: 0 2px; }
+.bc-current { color: var(--text-base); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.toolbar-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.content-body { flex: 1; overflow-y: auto; }
+.content-footer {
+  padding: 8px 20px; border-top: 1px solid var(--border); background: var(--bg-container);
+  font-size: 13px; color: var(--text-tertiary); display: flex; justify-content: space-between;
+}
+
+/* File Table */
+.file-table { width: 100%; border-collapse: collapse; }
+.file-table th {
+  text-align: left; padding: 12px 16px; font-weight: 700; font-size: 12px;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary);
+  border-bottom: 1px solid var(--border); background: var(--bg-container); position: sticky; top: 0; z-index: 1;
+}
+.file-table td { padding: 12px 16px; font-size: 14px; border-bottom: 1px solid var(--border-secondary); color: var(--text-primary); }
+.file-table tbody tr { cursor: pointer; transition: background var(--transition-fast); }
+.file-table tbody tr:hover { background: var(--fill); }
+.file-table tbody tr.selected { background: var(--primary-bg); }
+.col-icon { width: 40px; text-align: center; font-size: 18px; }
+.col-name { min-width: 220px; }
+.col-name .name-text { font-weight: 500; color: var(--text-base); }
+.col-size { width: 90px; color: var(--text-secondary); white-space: nowrap; }
+.col-modified { width: 120px; color: var(--text-secondary); white-space: nowrap; }
+.col-type { width: 130px; color: var(--text-secondary); }
+
+/* ===== Context Menu ===== */
+.context-menu {
+  position: fixed; z-index: 10000; min-width: 200px; padding: 6px;
+  background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl); backdrop-filter: blur(8px);
+}
+.context-menu .menu-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 14px; font-size: 14px;
+  color: var(--text-primary); border-radius: var(--radius-sm); cursor: pointer; transition: background var(--transition-fast); font-weight: 500;
+}
+.context-menu .menu-item:hover { background: var(--fill); }
+.context-menu .menu-item.danger { color: var(--color-error); }
+.context-menu .menu-item.danger:hover { background: rgba(239, 68, 68, 0.08); }
+.menu-icon { font-size: 16px; width: 20px; text-align: center; }
+.menu-divider { height: 1px; background: var(--border-secondary); margin: 4px 10px; }
+
+/* ===== Upload Overlay ===== */
+.upload-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 9500; align-items: center; justify-content: center; }
+.upload-overlay.show { display: flex; }
+.upload-dialog { background: var(--bg-container); border-radius: var(--radius-xl); padding: 28px; min-width: 440px; max-width: 520px; box-shadow: var(--shadow-xl); }
+.upload-dialog h3 { margin: 0 0 20px; font-size: 18px; font-weight: 700; color: var(--text-base); letter-spacing: -0.01em; }
+.upload-dropzone { border: 2px dashed var(--border); border-radius: var(--radius-md); padding: 40px; text-align: center; color: var(--text-tertiary); cursor: pointer; transition: all var(--transition-fast); margin-bottom: 20px; font-size: 15px; }
+.upload-dropzone:hover, .upload-dropzone.dragover { border-color: var(--primary); background: var(--primary-bg); color: var(--primary); }
+.upload-dropzone-icon { font-size: 44px; margin-bottom: 12px; }
+.upload-file-info { display: none; padding: 14px; background: var(--primary-bg); border-radius: var(--radius-sm); margin-bottom: 20px; font-size: 14px; color: var(--text-primary); font-weight: 500; }
+.upload-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+/* ===== Toast ===== */
+#toastContainer {
+  position: fixed; top: calc(var(--header-height) + 16px); right: 20px; z-index: 10001;
+  display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+}
+.toast {
+  padding: 14px 20px; border-radius: var(--radius-md); color: #fff; font-size: 14px; font-weight: 500;
+  opacity: 0; transform: translateX(20px); transition: opacity 0.3s ease, transform 0.3s ease;
+  max-width: 400px; box-shadow: var(--shadow-xl); pointer-events: auto;
+}
+.toast.show { opacity: 1; transform: translateX(0); }
+.toast-info { background: var(--color-info); }
+.toast-success { background: var(--color-success); }
+.toast-error { background: var(--color-error); }
+.toast-warning { background: var(--color-warning); }
+
+/* ===== Explore Setup Bar ===== */
+.explore-setup-bar {
+  padding: 16px 20px 14px; border-bottom: 1px solid var(--border); background: var(--bg-container);
+  display: flex; flex-direction: column; gap: 10px; flex-shrink: 0;
+}
+.explore-setup-title { font-size: 17px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+.explore-setup-title-icon { font-size: 20px; }
+.explore-setup-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.explore-setup-group { display: flex; align-items: center; gap: 6px; }
+.explore-setup-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-tertiary); white-space: nowrap; }
+.explore-setup-select {
+  padding: 6px 10px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg-container); color: var(--text-primary); font-size: 13px; font-family: var(--font-sans);
+  outline: none; transition: border-color var(--transition-fast); min-width: 180px;
+}
+.explore-setup-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-bg); }
+.explore-setup-select:disabled { opacity: 0.5; cursor: not-allowed; }
+.explore-placeholder {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; color: var(--text-tertiary); font-size: 15px; padding: 60px;
+}
+.explore-placeholder-icon { font-size: 52px; margin-bottom: 14px; opacity: 0.7; }
+.explore-placeholder-title { font-size: 18px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+.explore-placeholder-desc { font-size: 14px; color: var(--text-tertiary); max-width: 400px; line-height: 1.6; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>&#x1F916; AI Chatbot</h1>
-        <div class="user-info">
-            <select id="appSelector" class="app-selector" title="Select App">
-                <option value="">Loading apps...</option>
-            </select>
+        <div class="brand"><div class="brand-icon">K</div>Knowledge Hub</div>
+        <div class="header-center">
             <div class="mode-tabs">
-                <button class="mode-tab active" onclick="switchMode('chat')" data-mode="chat">&#x1F4AC; AI Chat</button>
-                <button class="mode-tab" onclick="switchMode('docs')" data-mode="docs">&#x1F4C4; Documents</button>
+                <button class="mode-tab active" onclick="switchMode('chat')" data-mode="chat">Ask AI</button>
+                <button class="mode-tab" onclick="switchMode('docs')" data-mode="docs">Search</button>
+                <button class="mode-tab" onclick="switchMode('browse')" data-mode="browse">Explore</button>
             </div>
-            <button class="header-btn" id="newChatBtn" onclick="startNewChat()">+ New Chat</button>
+        </div>
+        <div class="header-right">
+            <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">&#x1F319;</button>
             <span class="user-email" id="userEmail">Loading...</span>
-            <button class="header-btn" onclick="logout()">Logout</button>
+            <button class="btn-logout" onclick="logout()">Logout</button>
         </div>
     </div>
 
@@ -166,62 +511,195 @@
 
     <div class="main-content">
         <!-- AI Chat Mode -->
-        <div class="chat-mode active" id="chatMode">
-            <div class="sidebar">
-                <div class="sidebar-header">Chat History</div>
-                <div class="conversations-list" id="conversationsList">
-                    <div class="no-conversations">Select an app to see history</div>
-                </div>
-            </div>
-            <div class="chat-container">
-                <div class="messages" id="messages">
-                    <div class="message assistant">
-                        <div class="message-avatar">&#x1F916;</div>
-                        <div class="message-content">Hello! I'm your AI assistant. How can I help you today?</div>
+        <div class="mode-panel active" id="chatMode">
+            <div class="chat-layout">
+                <div class="chat-sidebar">
+                    <div class="sidebar-header">
+                        <div>
+                            <div class="sidebar-workspace-label">Workspace</div>
+                            <select id="chatAppSelector" class="sidebar-workspace-select" onchange="onChatAppChange(this.value)">
+                                <option value="">Select workspace...</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="startNewChat()" style="width:100%;justify-content:center;padding:10px 16px;font-size:14px;">New Conversation</button>
+                        <a id="navSourceLink" class="nav-source-link" style="display:none;" href="#" target="_blank" onclick="return openSourceRepo()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                            <span id="navSourceLinkText">Open Source Repository</span>
+                        </a>
+                    </div>
+                    <div class="conv-list" id="conversationsList">
+                        <div class="no-conversations">Select a workspace to see history</div>
                     </div>
                 </div>
-                <div class="input-area">
-                    <form class="input-form" id="chatForm">
-                        <input type="text" class="input-field" id="messageInput" placeholder="Type your message..." autocomplete="off" required>
-                        <button type="submit" class="send-btn" id="sendBtn">Send</button>
-                    </form>
+                <div class="chat-container">
+                    <div class="messages" id="messages">
+                        <div class="welcome-state" id="welcomeState">
+                            <div class="welcome-icon">&#x1F4AC;</div>
+                            <div class="welcome-title">How can I help you today?</div>
+                            <div class="welcome-subtitle">Ask me anything about your documents, data, or any topic. I'm here to assist you with intelligent, context-aware responses.</div>
+                            <div class="welcome-suggestions">
+                                <button class="welcome-suggestion" onclick="sendSuggestion('Summarize the latest documents')">Summarize documents</button>
+                                <button class="welcome-suggestion" onclick="sendSuggestion('What topics are covered in the knowledge base?')">Explore knowledge base</button>
+                                <button class="welcome-suggestion" onclick="sendSuggestion('Help me draft a report')">Draft a report</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-area">
+                        <form class="input-form" id="chatForm">
+                            <textarea class="input-field" id="messageInput" placeholder="Type your message..." rows="1" autocomplete="off" required></textarea>
+                            <button type="submit" class="send-btn" id="sendBtn">Send</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Document Explorer Mode -->
-        <div class="docs-mode" id="docsMode">
-            <div class="docs-toolbar">
-                <input type="text" class="docs-search-input" id="docsSearchInput" placeholder="Search documents by keyword or filename...">
-                <button class="docs-search-btn" onclick="doDocSearch()">&#x1F50D; Search</button>
-                <select class="docs-filter-select" id="mimeFilter" onchange="doDocSearch()">
-                    <option value="">All File Types</option>
-                </select>
-                <select class="docs-filter-select" id="createdByFilter" onchange="doDocSearch()">
-                    <option value="">All Authors</option>
-                </select>
-                <button class="header-btn" onclick="clearDocFilters()" style="color:#333;border-color:#ccc;">Clear Filters</button>
-                <button class="header-btn" onclick="openAuthBrowser()" style="color:#333;border-color:#ccc;">&#x1F465; Users &amp; Groups</button>
-            </div>
-            <div class="docs-content">
-                <div class="docs-facets" id="docsFacets">
-                    <div class="facet-group">
-                        <div class="facet-title">File Types</div>
-                        <div id="mimeTypeFacets"><div class="no-conversations">Loading...</div></div>
+        <div class="mode-panel" id="docsMode">
+            <div class="docs-layout">
+                <div class="docs-toolbar">
+                    <div class="docs-search-row">
+                        <select id="docsAppSelector" class="sidebar-workspace-select" style="flex:0 0 220px;min-width:180px;" onchange="onDocsAppChange(this.value)">
+                            <option value="">Select workspace...</option>
+                        </select>
+                        <input type="text" class="docs-search-input" id="docsSearchInput" placeholder="Search by keyword or filename...">
+                        <button class="btn btn-primary" onclick="doDocSearch()" style="padding:14px 24px;font-size:15px;border-radius:var(--radius-md);">&#x1F50D; Search</button>
                     </div>
-                    <div class="facet-group">
-                        <div class="facet-title">Authors</div>
-                        <div id="createdByFacets"><div class="no-conversations">Loading...</div></div>
+                    <div class="docs-filter-row" id="activeFiltersBar" style="display:none;">
+                        <div id="activeFilterTags" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;"></div>
+                        <button class="btn btn-sm" onclick="clearDocFilters()" style="margin-left:auto;">&#x2716; Clear All Filters</button>
                     </div>
                 </div>
-                <div class="docs-list" id="docsList">
-                    <div class="no-docs">Select an app and switch to Documents mode to browse</div>
+                <div class="docs-content">
+                    <div class="docs-facets" id="docsFacets">
+                        <div class="facet-group">
+                            <div class="facet-title">File Types</div>
+                            <div id="mimeTypeFacets"><div class="no-conversations">Search to load</div></div>
+                        </div>
+                        <div class="facet-group">
+                            <div class="facet-title">Authors</div>
+                            <div id="createdByFacets"><div class="no-conversations">Search to load</div></div>
+                        </div>
+                        <div class="facet-group">
+                            <div class="facet-title">Document Status</div>
+                            <div id="documentStatusFacets"><div class="no-conversations">Search to load</div></div>
+                        </div>
+                        <div class="facet-group">
+                            <div class="facet-title">Classification</div>
+                            <div id="classificationFacets"><div class="no-conversations">Search to load</div></div>
+                        </div>
+                        <div class="facet-group">
+                            <div class="facet-title">Date Modified</div>
+                            <div id="dateModifiedFacets"><div class="no-conversations">Search to load</div></div>
+                        </div>
+                        <div class="facet-group">
+                            <div class="facet-title">File Size</div>
+                            <div id="fileSizeFacets"><div class="no-conversations">Search to load</div></div>
+                        </div>
+                    </div>
+                    <div class="docs-list" id="docsList">
+                        <div class="no-docs">Enter a keyword above to search across all your workspaces</div>
+                    </div>
+                </div>
+                <div class="docs-pagination" id="docsPagination" style="display:none;">
+                    <button class="page-btn" id="prevPageBtn" onclick="changePage(-1)">&#x25C0; Prev</button>
+                    <span class="page-info" id="pageInfo">Page 1</span>
+                    <button class="page-btn" id="nextPageBtn" onclick="changePage(1)">Next &#x25B6;</button>
                 </div>
             </div>
-            <div class="docs-pagination" id="docsPagination" style="display:none;">
-                <button class="page-btn" id="prevPageBtn" onclick="changePage(-1)">&#x25C0; Prev</button>
-                <span class="page-info" id="pageInfo">Page 1</span>
-                <button class="page-btn" id="nextPageBtn" onclick="changePage(1)">Next &#x25B6;</button>
+        </div>
+
+        <!-- Explore Mode (Direct File Browser) -->
+        <div class="mode-panel" id="browseMode">
+            <div style="display:flex;flex-direction:column;height:100%;width:100%;">
+                <div class="explore-setup-bar">
+                    <div class="explore-setup-title"><span class="explore-setup-title-icon">&#x1F5C4;</span> Repository</div>
+                    <div class="explore-setup-row">
+                        <div class="explore-setup-group">
+                            <span class="explore-setup-label">Application</span>
+                            <select id="exploreAppSelector" class="explore-setup-select" onchange="onExploreAppChange(this.value)">
+                                <option value="">Select application...</option>
+                            </select>
+                        </div>
+                        <div class="explore-setup-group">
+                            <span class="explore-setup-label">Knowledge</span>
+                            <select id="exploreKbSelector" class="explore-setup-select" onchange="onExploreKbChange(this.value)" disabled>
+                                <option value="">Select knowledge base...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div id="explorePlaceholder" class="explore-placeholder">
+                    <div class="explore-placeholder-icon">&#x1F4C2;</div>
+                    <div class="explore-placeholder-title">Select Application &amp; Knowledge Base</div>
+                    <div class="explore-placeholder-desc">Choose an application and knowledge base from the dropdowns above to browse the repository.</div>
+                </div>
+                <div class="browse-layout" id="browseLayout" style="display:none;height:100%;">
+                    <div class="tree-panel" id="treePanel">
+                        <div class="tree-header">
+                            <div class="tree-title"><span class="mac-icon" style="font-size:16px"><svg viewBox="0 0 20 20"><rect x="2" y="3" width="16" height="14" rx="1.5" fill="#78909C"/><rect x="4" y="5" width="5" height="2" rx=".5" fill="#B0BEC5"/><rect x="4" y="9" width="12" height="1" rx=".5" fill="#B0BEC5" opacity=".5"/></svg></span> Document Repository</div>
+                            <div class="tree-actions">
+                                <button class="icon-btn" onclick="collapseAllTree()" title="Collapse All">&#x229F;</button>
+                                <button class="icon-btn" onclick="refreshCurrentTreeNode()" title="Refresh">&#x1F504;</button>
+                            </div>
+                        </div>
+                        <div class="tree-body" id="treeBody"></div>
+                    </div>
+                    <div class="resize-handle" id="resizeHandle"></div>
+                    <div class="content-panel">
+                        <div class="content-toolbar" id="contentToolbar">
+                            <div class="breadcrumb" id="browseBreadcrumb">
+                                <span class="bc-current">&#x1F3E0; Root</span>
+                            </div>
+                            <div class="toolbar-actions">
+                                <button class="btn btn-sm" onclick="refreshBrowse()">&#x1F504; Refresh</button>
+                                <button class="btn btn-primary btn-sm" onclick="showUploadDialog()">&#x2B06; Upload</button>
+                                <button class="btn btn-sm" onclick="showNewFolderDialog()"><span class="mac-icon" style="font-size:14px"><svg viewBox="0 0 20 20"><path d="M2 4.5A1.5 1.5 0 013.5 3h4.29a1.5 1.5 0 011.06.44l1.3 1.3a.5.5 0 00.35.14h6A1.5 1.5 0 0118 6.38v9.12A1.5 1.5 0 0116.5 17h-13A1.5 1.5 0 012 15.5v-11z" fill="#3B9FD9"/><path d="M2 7.5h16v8a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 012 15.5v-8z" fill="#4FC3F7"/></svg></span> New Folder</button>
+                                <button class="btn btn-sm btn-danger" id="browseDeleteBtn" onclick="deleteSelectedItems()" style="display:none;">&#x1F5D1; Delete</button>
+                            </div>
+                        </div>
+                        <div class="content-body" id="browseContent">
+                            <div class="empty-state">Loading document repository...</div>
+                        </div>
+                        <div class="content-footer" id="browseStatusBar">
+                            <span id="browseItemCount">0 items</span>
+                            <span id="browseSelectionCount"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="contextMenu" style="display:none;"></div>
+
+    <!-- Upload Dialog -->
+    <div class="upload-overlay" id="uploadOverlay" onclick="if(event.target===this)closeUploadDialog()">
+        <div class="upload-dialog">
+            <h3>&#x2B06; Upload File</h3>
+            <div class="upload-dropzone" id="uploadDropzone" onclick="document.getElementById('uploadFileInput').click()">
+                <div class="upload-dropzone-icon">&#x1F4C4;</div>
+                <div>Click or drag a file here to upload</div>
+            </div>
+            <input type="file" id="uploadFileInput" style="display:none" onchange="handleFileSelect(this)">
+            <div class="upload-file-info" id="uploadFileInfo"></div>
+            <div class="upload-actions">
+                <button class="btn" onclick="closeUploadDialog()">Cancel</button>
+                <button class="btn btn-primary" id="uploadSubmitBtn" onclick="submitUpload()" disabled>&#x2B06; Upload</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Folder Dialog -->
+    <div class="newfolder-overlay" id="newFolderOverlay" onclick="if(event.target===this)closeNewFolderDialog()">
+        <div class="newfolder-dialog">
+            <h3><span class="mac-icon" style="font-size:20px"><svg viewBox="0 0 20 20"><path d="M2 4.5A1.5 1.5 0 013.5 3h4.29a1.5 1.5 0 011.06.44l1.3 1.3a.5.5 0 00.35.14h6A1.5 1.5 0 0118 6.38v9.12A1.5 1.5 0 0116.5 17h-13A1.5 1.5 0 012 15.5v-11z" fill="#3B9FD9"/><path d="M2 7.5h16v8a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 012 15.5v-8z" fill="#4FC3F7"/></svg></span> New Folder</h3>
+            <p>Enter a name for the new folder in the current directory.</p>
+            <input type="text" id="newFolderNameInput" placeholder="Folder name" autocomplete="off">
+            <div class="newfolder-actions">
+                <button class="btn" onclick="closeNewFolderDialog()">Cancel</button>
+                <button class="btn btn-primary" id="newFolderCreateBtn" onclick="submitNewFolder()">Create</button>
             </div>
         </div>
     </div>
@@ -242,35 +720,13 @@
         </div>
     </div>
 
-    <!-- Authority Browser Modal -->
-    <div class="auth-overlay" id="authOverlay" onclick="if(event.target===this)closeAuthBrowser()">
-        <div class="auth-container">
-            <div class="auth-header">
-                <h3>&#x1F465; Users &amp; Groups</h3>
-                <button class="viewer-btn" onclick="closeAuthBrowser()" style="color:white;border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.2);">&#x2716; Close</button>
-            </div>
-            <div class="auth-toolbar">
-                <input type="text" class="auth-search-input" id="authSearchInput" placeholder="Search by name or group..." onkeydown="if(event.key==='Enter'){event.preventDefault();authSearchFrom=0;doAuthSearch();}">
-                <select class="docs-filter-select" id="authTypeFilter" onchange="authSearchFrom=0;doAuthSearch();">
-                    <option value="">All Types</option>
-                    <option value="user">Users</option>
-                    <option value="group">Groups</option>
-                </select>
-                <button class="docs-search-btn" onclick="authSearchFrom=0;doAuthSearch();">&#x1F50D; Search</button>
-            </div>
-            <div class="auth-body" id="authBody">
-                <div class="viewer-loading">Loading users and groups...</div>
-            </div>
-            <div class="auth-pagination" id="authPagination" style="display:none;">
-                <button class="page-btn" id="authPrevBtn" onclick="changeAuthPage(-1)">&#x25C0; Prev</button>
-                <span class="page-info" id="authPageInfo">Page 1</span>
-                <button class="page-btn" id="authNextBtn" onclick="changeAuthPage(1)">Next &#x25B6;</button>
-            </div>
-        </div>
-    </div>
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
 
 <script>
-// === State ===
+// ============================================================
+// STATE
+// ============================================================
 var currentAppId = null;
 var userApps = [];
 var activeConversationId = null;
@@ -281,11 +737,29 @@ var docPageSize = 20;
 var docTotal = 0;
 var currentMimeFilter = '';
 var currentCreatedByFilter = '';
-var currentDocuments = []; // Store for viewer access
-var currentViewDoc = null; // Currently viewed document
-var authSearchFrom = 0;
-var authPageSize = 50;
-var authTotal = 0;
+var currentDateRange = '';
+var currentSizeRange = '';
+var currentStatus = '';
+var currentClassification = '';
+var currentDocuments = [];
+var currentViewDoc = null;
+
+// Browse state
+var browseFolderStack = [];
+var browseCurrentItems = [];
+var browseSelectedItems = new Set();
+var browseUploadFile = null;
+var selectedKnowledgeSource = null;
+var currentKbId = null;
+var exploreKnowledgeBases = [];
+
+// Source feature flags (loaded from admin backend)
+var sourceFeatureFlags = { navigateToSourceEnabled: false, browseInSourceEnabled: false };
+var sourceNavigateInfo = null; // Stores source URL template info for Navigate to Source
+
+// Tree state
+var treeData = [];
+var selectedTreeNode = null;
 
 // DOM refs
 var messagesContainer = document.getElementById('messages');
@@ -294,56 +768,313 @@ var messageInput = document.getElementById('messageInput');
 var sendBtn = document.getElementById('sendBtn');
 var userEmailSpan = document.getElementById('userEmail');
 var errorBanner = document.getElementById('errorBanner');
-var appSelector = document.getElementById('appSelector');
 var conversationsListEl = document.getElementById('conversationsList');
 
-// === Mode Switching ===
-function switchMode(mode) {
-    currentMode = mode;
-    document.querySelectorAll('.mode-tab').forEach(function(t) { t.classList.remove('active'); });
-    document.querySelector('.mode-tab[data-mode="' + mode + '"]').classList.add('active');
-    document.getElementById('chatMode').className = mode === 'chat' ? 'chat-mode active' : 'chat-mode';
-    document.getElementById('docsMode').className = mode === 'docs' ? 'docs-mode active' : 'docs-mode';
-    document.getElementById('newChatBtn').style.display = mode === 'chat' ? '' : 'none';
-    if (mode === 'docs' && currentAppId) {
-        doDocSearch();
-    }
-}
+// Workspace selectors (one per page)
+var chatAppSelector = document.getElementById('chatAppSelector');
+var docsAppSelector = document.getElementById('docsAppSelector');
+var exploreAppSelector = document.getElementById('exploreAppSelector');
+var exploreKbSelector = document.getElementById('exploreKbSelector');
 
-// === Session ===
-function checkSession() {
-    fetch('/api/auth/session').then(function(r) { return r.json(); }).then(function(data) {
-        if (!data.success || !data.data) { window.location.href = '/index.html'; return; }
-        userEmailSpan.textContent = data.data.email || 'User';
-        userApps = data.data.apps || [];
-        appSelector.innerHTML = '';
+function populateAllAppSelectors() {
+    var selectors = [chatAppSelector, docsAppSelector, exploreAppSelector];
+    selectors.forEach(function(sel) {
+        sel.innerHTML = '';
         if (userApps.length === 0) {
-            appSelector.innerHTML = '<option value="">No apps available</option>';
-            showError('No apps available. Contact administrator.');
+            sel.innerHTML = '<option value="">No workspaces</option>';
             return;
         }
         userApps.forEach(function(app) {
             var opt = document.createElement('option');
             opt.value = app.app_id;
             opt.textContent = app.name || app.app_id;
-            appSelector.appendChild(opt);
+            if (app.app_id === currentAppId) opt.selected = true;
+            sel.appendChild(opt);
         });
+    });
+}
+
+function syncAppSelectors(sourceValue) {
+    currentAppId = sourceValue;
+    [chatAppSelector, docsAppSelector, exploreAppSelector].forEach(function(sel) {
+        sel.value = sourceValue;
+    });
+    // Load source feature flags for this app
+    loadSourceFeatureFlags(sourceValue);
+}
+
+function loadSourceFeatureFlags(appId) {
+    if (!appId) {
+        sourceFeatureFlags = { navigateToSourceEnabled: false, browseInSourceEnabled: false };
+        sourceNavigateInfo = null;
+        updateNavSourceLink();
+        return;
+    }
+    fetch('/api/chat/source-preview-url?appId=' + encodeURIComponent(appId))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        var sources = data.sources || [];
+        // Use flags from the first source (primary source)
+        if (sources.length > 0) {
+            sourceFeatureFlags = {
+                navigateToSourceEnabled: !!sources[0].navigateToSourceEnabled,
+                browseInSourceEnabled: !!sources[0].browseInSourceEnabled
+            };
+            sourceNavigateInfo = sources[0];
+        } else {
+            sourceFeatureFlags = { navigateToSourceEnabled: false, browseInSourceEnabled: false };
+            sourceNavigateInfo = null;
+        }
+        updateNavSourceLink();
+    })
+    .catch(function() {
+        sourceFeatureFlags = { navigateToSourceEnabled: false, browseInSourceEnabled: false };
+        sourceNavigateInfo = null;
+        updateNavSourceLink();
+    });
+}
+
+function updateNavSourceLink() {
+    var link = document.getElementById('navSourceLink');
+    if (!link) return;
+    if (sourceFeatureFlags.navigateToSourceEnabled && sourceNavigateInfo && sourceNavigateInfo.previewUrl) {
+        link.style.display = 'flex';
+        var text = document.getElementById('navSourceLinkText');
+        if (text) text.textContent = sourceNavigateInfo.name || 'Open Source Repository';
+    } else {
+        link.style.display = 'none';
+    }
+}
+
+function openSourceRepo() {
+    if (sourceNavigateInfo && sourceNavigateInfo.previewUrl) {
+        window.open(sourceNavigateInfo.previewUrl, '_blank');
+        return false;
+    }
+    showToast('Source repository URL not configured', 'error');
+    return false;
+}
+
+function onChatAppChange(val) {
+    syncAppSelectors(val);
+    activeConversationId = null;
+    loadConversations(currentAppId);
+    fetch('/api/chat/new-conversation?appId=' + encodeURIComponent(currentAppId), { method: 'POST' });
+    messagesContainer.innerHTML = '<div class="welcome-state" id="welcomeState"><div class="welcome-icon">&#x1F4AC;</div><div class="welcome-title">How can I help you today?</div><div class="welcome-subtitle">Ask me anything about your documents, data, or any topic.</div><div class="welcome-suggestions"><button class="welcome-suggestion" onclick="sendSuggestion(\'Summarize the latest documents\')">Summarize documents</button><button class="welcome-suggestion" onclick="sendSuggestion(\'What topics are covered in the knowledge base?\')">Explore knowledge base</button><button class="welcome-suggestion" onclick="sendSuggestion(\'Help me draft a report\')">Draft a report</button></div></div>';
+    resetBrowseState();
+}
+
+function onDocsAppChange(val) {
+    syncAppSelectors(val);
+    activeConversationId = null;
+    loadConversations(currentAppId);
+    doDocSearch();
+    resetBrowseState();
+}
+
+function onExploreAppChange(val) {
+    syncAppSelectors(val);
+    activeConversationId = null;
+    loadConversations(currentAppId);
+    resetBrowseState();
+    currentKbId = null;
+    exploreKnowledgeBases = [];
+    var kbSel = document.getElementById('exploreKbSelector');
+    kbSel.innerHTML = '<option value="">Loading...</option>';
+    kbSel.disabled = true;
+    if (val) {
+        loadKnowledgeBases(val);
+    } else {
+        kbSel.innerHTML = '<option value="">Select knowledge base...</option>';
+    }
+}
+
+function loadKnowledgeBases(appId, callback) {
+    fetch('/api/chat/knowledge-bases?appId=' + encodeURIComponent(appId))
+        .then(function(r) { return r.json(); })
+        .then(function(kbs) {
+            exploreKnowledgeBases = kbs || [];
+            var kbSel = document.getElementById('exploreKbSelector');
+            if (exploreKnowledgeBases.length === 0) {
+                kbSel.innerHTML = '<option value="">No knowledge bases found</option>';
+                kbSel.disabled = true;
+                if (callback) callback();
+                return;
+            }
+            var html = '<option value="">Select knowledge base...</option>';
+            exploreKnowledgeBases.forEach(function(kb) {
+                var label = kb.name || kb.kbId;
+                if (kb.totalDocs) label += ' (' + kb.totalDocs + ' docs)';
+                html += '<option value="' + escapeAttr(kb.kbId) + '"' + (kb.hasCmisSync ? '' : ' disabled') + '>' + escapeHtml(label) + '</option>';
+            });
+            kbSel.innerHTML = html;
+            kbSel.disabled = false;
+            // Auto-select if only one KB
+            if (exploreKnowledgeBases.length === 1 && exploreKnowledgeBases[0].hasCmisSync) {
+                kbSel.value = exploreKnowledgeBases[0].kbId;
+                onExploreKbChange(exploreKnowledgeBases[0].kbId);
+            }
+            if (callback) callback();
+        })
+        .catch(function(e) {
+            console.error('Failed to load knowledge bases:', e);
+            var kbSel = document.getElementById('exploreKbSelector');
+            kbSel.innerHTML = '<option value="">Failed to load</option>';
+            kbSel.disabled = true;
+            if (callback) callback();
+        });
+}
+
+function onExploreKbChange(val) {
+    currentKbId = val || null;
+    resetBrowseState();
+    if (val) {
+        loadExploreRepository();
+    }
+}
+
+function loadExploreRepository() {
+    if (!currentAppId || !currentKbId) return;
+    var placeholder = document.getElementById('explorePlaceholder');
+    var layout = document.getElementById('browseLayout');
+    if (placeholder) placeholder.style.display = 'none';
+    layout.style.display = 'flex';
+    selectedKnowledgeSource = 'cmis';
+    if (treeData.length === 0) initTree();
+    selectTreeNode('cmis-root');
+}
+
+function resetBrowseState() {
+    browseFolderStack = [];
+    browseSelectedItems.clear();
+    browseCurrentItems = [];
+    treeData = [];
+    selectedTreeNode = null;
+    selectedKnowledgeSource = null;
+    if (currentMode === 'browse') {
+        var placeholder = document.getElementById('explorePlaceholder');
+        if (placeholder) placeholder.style.display = 'flex';
+        document.getElementById('browseLayout').style.display = 'none';
+    }
+}
+
+// Textarea auto-resize
+messageInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+});
+messageInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        chatForm.dispatchEvent(new Event('submit'));
+    }
+});
+
+// Welcome suggestion click
+function sendSuggestion(text) {
+    messageInput.value = text;
+    messageInput.dispatchEvent(new Event('input'));
+    chatForm.dispatchEvent(new Event('submit'));
+}
+
+function hideWelcomeState() {
+    var welcome = document.getElementById('welcomeState');
+    if (welcome) welcome.remove();
+}
+
+// ============================================================
+// THEME
+// ============================================================
+function initTheme() {
+    var saved = localStorage.getItem('chatbot-theme');
+    if (saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+    }
+    updateThemeIcon();
+}
+
+function toggleTheme() {
+    var current = document.documentElement.getAttribute('data-theme');
+    var next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('chatbot-theme', next);
+    updateThemeIcon();
+}
+
+function updateThemeIcon() {
+    var btn = document.getElementById('themeToggle');
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    btn.innerHTML = isDark ? '&#x2600;&#xFE0F;' : '&#x1F319;';
+    btn.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg, type) {
+    type = type || 'info';
+    var container = document.getElementById('toastContainer');
+    var toast = document.createElement('div');
+    toast.className = 'toast toast-' + type;
+    toast.textContent = msg;
+    container.appendChild(toast);
+    requestAnimationFrame(function() { toast.classList.add('show'); });
+    setTimeout(function() {
+        toast.classList.remove('show');
+        setTimeout(function() { toast.remove(); }, 300);
+    }, 3000);
+}
+
+// ============================================================
+// MODE SWITCHING
+// ============================================================
+function switchMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelector('.mode-tab[data-mode="' + mode + '"]').classList.add('active');
+
+    document.getElementById('chatMode').classList.remove('active');
+    document.getElementById('docsMode').classList.remove('active');
+    document.getElementById('browseMode').classList.remove('active');
+    document.getElementById(mode + 'Mode').classList.add('active');
+
+    if (mode === 'docs' && currentAppId) {
+        doDocSearch();
+    }
+    if (mode === 'browse' && currentAppId) {
+        // If KB not loaded yet, trigger the full flow (load KBs first)
+        if (!currentKbId && exploreKnowledgeBases.length === 0) {
+            loadKnowledgeBases(currentAppId);
+        } else if (currentKbId) {
+            loadExploreRepository();
+        }
+    }
+}
+
+// ============================================================
+// SESSION & APP
+// ============================================================
+function checkSession() {
+    fetch('/api/auth/session').then(function(r) { return r.json(); }).then(function(data) {
+        if (!data.success || !data.data) { window.location.href = '/index.html'; return; }
+        userEmailSpan.textContent = data.data.email || 'User';
+        userApps = data.data.apps || [];
+        if (userApps.length === 0) {
+            showError('No workspaces available. Contact your administrator.');
+            populateAllAppSelectors();
+            return;
+        }
         currentAppId = userApps[0].app_id;
+        populateAllAppSelectors();
         loadConversations(currentAppId);
+        loadSourceFeatureFlags(currentAppId);
     }).catch(function(e) {
         console.error('Session check failed:', e);
         window.location.href = '/index.html';
     });
 }
-
-appSelector.addEventListener('change', function(e) {
-    currentAppId = e.target.value;
-    activeConversationId = null;
-    loadConversations(currentAppId);
-    fetch('/api/chat/new-conversation?appId=' + encodeURIComponent(currentAppId), { method: 'POST' });
-    messagesContainer.innerHTML = '<div class="message assistant"><div class="message-avatar">&#x1F916;</div><div class="message-content">Switched to app: ' + escapeHtml(appSelector.options[appSelector.selectedIndex].text) + '. How can I help you?</div></div>';
-    if (currentMode === 'docs') doDocSearch();
-});
 
 function logout() {
     fetch('/api/auth/logout', { method: 'POST' }).catch(function(){}).finally(function() {
@@ -357,8 +1088,11 @@ function showError(msg) {
     setTimeout(function() { errorBanner.classList.remove('show'); }, 5000);
 }
 
-// === AI Chat ===
+// ============================================================
+// AI CHAT
+// ============================================================
 function addMessage(role, content) {
+    hideWelcomeState();
     var div = document.createElement('div');
     div.className = 'message ' + role;
     var avatarText = role === 'user' ? '&#x1F464;' : '&#x1F916;';
@@ -393,11 +1127,11 @@ function loadConversations(appId) {
         conversationsListEl.innerHTML = '';
         convs.forEach(function(conv) {
             var item = document.createElement('div');
-            item.className = 'conversation-item' + (conv.conversation_id === activeConversationId ? ' active' : '');
+            item.className = 'conv-item' + (conv.conversation_id === activeConversationId ? ' active' : '');
             item.dataset.conversationId = conv.conversation_id;
             var d = new Date(conv.last_message_at || conv.started_at);
             var ds = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-            item.innerHTML = '<div class="conv-preview">&#x1F4AC; Chat (' + conv.message_count + ' msgs)</div><div class="conv-meta">' + ds + '</div><button class="conv-delete" onclick="deleteConversation(event, \'' + conv.conversation_id + '\')" title="Delete">&#x1F5D1;</button>';
+            item.innerHTML = '<span>&#x1F4AC; Chat (' + conv.message_count + ' msgs) &middot; ' + ds + '</span><button class="conv-delete" onclick="deleteConversation(event, \'' + conv.conversation_id + '\')" title="Delete">&#x1F5D1;</button>';
             item.onclick = function(e) { if (e.target.classList.contains('conv-delete')) return; loadConversationHistory(appId, conv.conversation_id, this); };
             conversationsListEl.appendChild(item);
         });
@@ -406,7 +1140,7 @@ function loadConversations(appId) {
 
 function loadConversationHistory(appId, conversationId, itemEl) {
     activeConversationId = conversationId;
-    document.querySelectorAll('.conversation-item').forEach(function(el) { el.classList.remove('active'); });
+    document.querySelectorAll('.conv-item').forEach(function(el) { el.classList.remove('active'); });
     if (itemEl) itemEl.classList.add('active');
     fetch('/api/chat/history?appId=' + encodeURIComponent(appId) + '&conversationId=' + encodeURIComponent(conversationId)).then(function(r) { return r.json(); }).then(function(result) {
         var msgs = result.data || [];
@@ -417,12 +1151,13 @@ function loadConversationHistory(appId, conversationId, itemEl) {
 }
 
 function startNewChat() {
-    if (!currentAppId) { showError('Please select an app first'); return; }
+    if (!currentAppId) { showError('Please select a workspace first'); return; }
     activeConversationId = null;
     fetch('/api/chat/new-conversation?appId=' + encodeURIComponent(currentAppId), { method: 'POST' })
         .then(function() { loadConversations(currentAppId); }).catch(function(e) { console.error(e); });
-    messagesContainer.innerHTML = '<div class="message assistant"><div class="message-avatar">&#x1F916;</div><div class="message-content">New conversation started. How can I help you?</div></div>';
-    document.querySelectorAll('.conversation-item').forEach(function(el) { el.classList.remove('active'); });
+    messagesContainer.innerHTML = '<div class="welcome-state" id="welcomeState"><div class="welcome-icon">&#x1F4AC;</div><div class="welcome-title">How can I help you today?</div><div class="welcome-subtitle">Ask me anything about your documents, data, or any topic.</div><div class="welcome-suggestions"><button class="welcome-suggestion" onclick="sendSuggestion(\'Summarize the latest documents\')">Summarize documents</button><button class="welcome-suggestion" onclick="sendSuggestion(\'What topics are covered in the knowledge base?\')">Explore knowledge base</button><button class="welcome-suggestion" onclick="sendSuggestion(\'Help me draft a report\')">Draft a report</button></div></div>';
+    document.querySelectorAll('.conv-item').forEach(function(el) { el.classList.remove('active'); });
+    messageInput.style.height = 'auto';
 }
 
 chatForm.addEventListener('submit', function(e) {
@@ -430,8 +1165,10 @@ chatForm.addEventListener('submit', function(e) {
     if (isTyping || !currentAppId) return;
     var msg = messageInput.value.trim();
     if (!msg) return;
+    hideWelcomeState();
     addMessage('user', msg);
     messageInput.value = '';
+    messageInput.style.height = 'auto';
     showTypingIndicator();
     isTyping = true; sendBtn.disabled = true;
 
@@ -463,7 +1200,7 @@ chatForm.addEventListener('submit', function(e) {
                             if (!contentDiv) contentDiv = addMessage('assistant', '');
                             fullResponse = '\u26A0\uFE0F ' + errMsg;
                             contentDiv.textContent = fullResponse;
-                            contentDiv.style.color = '#c33';
+                            contentDiv.style.color = 'var(--color-error)';
                             continue;
                         }
                         if (data.message && data.message.content && data.status !== 'completed') {
@@ -502,25 +1239,28 @@ function deleteConversation(event, conversationId) {
                 messagesContainer.innerHTML = '<div class="message assistant"><div class="message-avatar">&#x1F916;</div><div class="message-content">Conversation deleted. Start a new one!</div></div>';
             }
             loadConversations(currentAppId);
+            showToast('Conversation deleted', 'success');
         } else showError('Failed to delete conversation');
     }).catch(function(e) { console.error(e); showError('Failed to delete conversation'); });
 }
 
-// === Document Explorer ===
+// ============================================================
+// DOCUMENT EXPLORER
+// ============================================================
 function doDocSearch() {
     if (!currentAppId) return;
     var query = document.getElementById('docsSearchInput').value.trim();
-    var mime = document.getElementById('mimeFilter').value;
-    var author = document.getElementById('createdByFilter').value;
-    currentMimeFilter = mime;
-    currentCreatedByFilter = author;
     var docsList = document.getElementById('docsList');
     docsList.innerHTML = '<div class="loading-spinner">Loading documents...</div>';
 
     var url = '/api/chat/documents?appId=' + encodeURIComponent(currentAppId) + '&from=' + docSearchFrom + '&size=' + docPageSize;
     if (query) url += '&query=' + encodeURIComponent(query);
-    if (mime) url += '&mimeType=' + encodeURIComponent(mime);
-    if (author) url += '&createdBy=' + encodeURIComponent(author);
+    if (currentMimeFilter) url += '&mimeType=' + encodeURIComponent(currentMimeFilter);
+    if (currentCreatedByFilter) url += '&createdBy=' + encodeURIComponent(currentCreatedByFilter);
+    if (currentDateRange) url += '&dateRange=' + encodeURIComponent(currentDateRange);
+    if (currentSizeRange) url += '&sizeRange=' + encodeURIComponent(currentSizeRange);
+    if (currentStatus) url += '&status=' + encodeURIComponent(currentStatus);
+    if (currentClassification) url += '&classification=' + encodeURIComponent(currentClassification);
 
     fetch(url).then(function(r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -540,36 +1280,74 @@ function doDocSearch() {
 }
 
 function renderFacets(facets) {
+    // File Types
     var mimeDiv = document.getElementById('mimeTypeFacets');
-    var authorDiv = document.getElementById('createdByFacets');
-    var mimeSelect = document.getElementById('mimeFilter');
-    var authorSelect = document.getElementById('createdByFilter');
-
     var mimeItems = facets.mime_types || [];
     if (mimeItems.length > 0) {
         mimeDiv.innerHTML = mimeItems.map(function(f) {
             return '<div class="facet-item' + (currentMimeFilter === f.value ? ' active' : '') + '" onclick="filterByMime(\'' + escapeAttr(f.value) + '\')">' + shortMime(f.value) + ' <span class="facet-count">' + f.count + '</span></div>';
         }).join('');
-        var prevMime = mimeSelect.value;
-        mimeSelect.innerHTML = '<option value="">All File Types</option>' + mimeItems.map(function(f) {
-            return '<option value="' + escapeAttr(f.value) + '"' + (f.value === prevMime ? ' selected' : '') + '>' + shortMime(f.value) + ' (' + f.count + ')</option>';
-        }).join('');
     } else {
         mimeDiv.innerHTML = '<div class="no-conversations">None</div>';
     }
 
+    // Authors
+    var authorDiv = document.getElementById('createdByFacets');
     var authorItems = facets.created_by || [];
     if (authorItems.length > 0) {
         authorDiv.innerHTML = authorItems.map(function(f) {
             return '<div class="facet-item' + (currentCreatedByFilter === f.value ? ' active' : '') + '" onclick="filterByAuthor(\'' + escapeAttr(f.value) + '\')">' + escapeHtml(f.value) + ' <span class="facet-count">' + f.count + '</span></div>';
         }).join('');
-        var prevAuth = authorSelect.value;
-        authorSelect.innerHTML = '<option value="">All Authors</option>' + authorItems.map(function(f) {
-            return '<option value="' + escapeAttr(f.value) + '"' + (f.value === prevAuth ? ' selected' : '') + '>' + escapeHtml(f.value) + ' (' + f.count + ')</option>';
-        }).join('');
     } else {
         authorDiv.innerHTML = '<div class="no-conversations">None</div>';
     }
+
+    // Document Status
+    var statusDiv = document.getElementById('documentStatusFacets');
+    var statusItems = facets.document_status || [];
+    if (statusItems.length > 0) {
+        statusDiv.innerHTML = statusItems.map(function(f) {
+            return '<div class="facet-item' + (currentStatus === f.value ? ' active' : '') + '" onclick="filterByStatus(\'' + escapeAttr(f.value) + '\')">' + escapeHtml(f.value) + ' <span class="facet-count">' + f.count + '</span></div>';
+        }).join('');
+    } else {
+        statusDiv.innerHTML = '<div class="no-conversations">None</div>';
+    }
+
+    // Classification
+    var classDiv = document.getElementById('classificationFacets');
+    var classItems = facets.classification || [];
+    if (classItems.length > 0) {
+        classDiv.innerHTML = classItems.map(function(f) {
+            return '<div class="facet-item' + (currentClassification === f.value ? ' active' : '') + '" onclick="filterByClassification(\'' + escapeAttr(f.value) + '\')">' + escapeHtml(f.value) + ' <span class="facet-count">' + f.count + '</span></div>';
+        }).join('');
+    } else {
+        classDiv.innerHTML = '<div class="no-conversations">None</div>';
+    }
+
+    // Date Modified (backend provides date_range aggregation)
+    var dateDiv = document.getElementById('dateModifiedFacets');
+    var dateItems = facets.date_modified || [];
+    if (dateItems.length > 0) {
+        dateDiv.innerHTML = dateItems.map(function(f) {
+            return '<div class="facet-item' + (currentDateRange === f.value ? ' active' : '') + '" onclick="filterByDate(\'' + escapeAttr(f.value) + '\')">' + escapeHtml(f.label || f.value) + ' <span class="facet-count">' + f.count + '</span></div>';
+        }).join('');
+    } else {
+        dateDiv.innerHTML = '<div class="no-conversations">None</div>';
+    }
+
+    // File Size (backend provides size_range aggregation)
+    var sizeDiv = document.getElementById('fileSizeFacets');
+    var sizeItems = facets.file_size || [];
+    if (sizeItems.length > 0) {
+        sizeDiv.innerHTML = sizeItems.map(function(f) {
+            return '<div class="facet-item' + (currentSizeRange === f.value ? ' active' : '') + '" onclick="filterBySize(\'' + escapeAttr(f.value) + '\')">' + escapeHtml(f.label || f.value) + ' <span class="facet-count">' + f.count + '</span></div>';
+        }).join('');
+    } else {
+        sizeDiv.innerHTML = '<div class="no-conversations">None</div>';
+    }
+
+    // Update active filter tags bar
+    updateActiveFiltersBar();
 }
 
 function renderDocuments(docs, total) {
@@ -578,12 +1356,12 @@ function renderDocuments(docs, total) {
         docsList.innerHTML = '<div class="no-docs">No documents found matching your criteria.</div>';
         return;
     }
-    currentDocuments = docs; // Store for viewer
+    currentDocuments = docs;
     var html = '<div class="docs-summary">Showing ' + (docSearchFrom + 1) + '-' + Math.min(docSearchFrom + docs.length, total) + ' of ' + total + ' documents</div>';
     docs.forEach(function(doc, i) {
         var size = formatSize(doc.fileSize || 0);
         var created = doc.createdDate ? new Date(doc.createdDate).toLocaleDateString() : '';
-        html += '<div class="doc-card" onclick="toggleDocDetail(this)" ondblclick="event.stopPropagation();openDocViewer(' + i + ')">' +
+        html += '<div class="doc-card" onclick="toggleDocDetail(this)" ondblclick="event.stopPropagation();openDocViewer(' + i + ')" oncontextmenu="showDocContextMenu(event,' + i + ')">' +
             '<div class="doc-card-header"><div>' +
             '<div class="doc-card-title">' + mimeIcon(doc.mimeType) + ' ' + escapeHtml(doc.fileName || 'Unknown') + '</div>' +
             '<div class="doc-card-meta">' +
@@ -592,7 +1370,7 @@ function renderDocuments(docs, total) {
             '<span>&#x1F464; ' + escapeHtml(doc.createdBy || '') + '</span>' +
             '<span>&#x1F4C5; ' + created + '</span>' +
             '</div>' +
-            '<div class="doc-card-hint">Double-click to view document</div>' +
+            '<div class="doc-card-hint">Double-click to view &middot; Right-click for options</div>' +
             '</div>' +
             '<div class="doc-card-badge">' + (doc.score ? 'Score: ' + Number(doc.score).toFixed(2) : '') + '</div></div>' +
             '<div class="doc-detail" id="docDetail_' + i + '">' +
@@ -613,11 +1391,8 @@ function renderDocuments(docs, total) {
 
 function renderMetadata(meta) {
     if (!meta || Object.keys(meta).length === 0) return '';
-    // Skip fields already shown in card header
     var skipExact = ['cmis:contentStreamFileName','cmis:contentStreamLength','cmis:contentStreamMimeType','cmis:createdBy','cmis:creationDate','cmis:lastModificationDate','cmis:name','cmis:objectId'];
-    // Tika processing prefixes to hide
     var skipPrefixes = ['pdf:','access_permission:','dc:','dcterms:','xmp:','xmptpg:','meta:'];
-    // Individual processing/internal/ACL fields to hide
     var skipInternal = ['url','mime-type','created','indexed','last-modified','content','workspace_id','enabled','total_chunks','doc_name','doc_id','chunk_index','file_title','file_name','file_path','file_size','file_type','embedding','allow_token_document','deny_token_document','allow_token_parent','deny_token_parent','allow_token_share','deny_token_share','authorities','date','modified','Last-Modified','Last-Save-Date','Creation-Date','language','producer','hasSignature'];
     var items = '';
     for (var k in meta) {
@@ -631,7 +1406,7 @@ function renderMetadata(meta) {
         items += '<div class="doc-detail-item"><span class="label">' + escapeHtml(k) + ': </span><span class="value">' + escapeHtml(String(meta[k]).substring(0, 200)) + '</span></div>';
     }
     if (!items) return '';
-    return '<div style="margin-top:10px;padding-top:10px;border-top:1px solid #eee;"><div style="font-weight:600;font-size:12px;color:#888;margin-bottom:6px;">Additional Metadata</div><div class="doc-detail-grid">' + items + '</div></div>';
+    return '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-secondary);"><div style="font-weight:600;font-size:12px;color:var(--text-secondary);margin-bottom:6px;">Additional Metadata</div><div class="doc-detail-grid">' + items + '</div></div>';
 }
 
 function renderPagination() {
@@ -660,40 +1435,188 @@ function toggleDocDetail(card) {
 
 function filterByMime(mime) {
     currentMimeFilter = (currentMimeFilter === mime) ? '' : mime;
-    document.getElementById('mimeFilter').value = currentMimeFilter;
     docSearchFrom = 0;
     doDocSearch();
 }
 
 function filterByAuthor(author) {
     currentCreatedByFilter = (currentCreatedByFilter === author) ? '' : author;
-    document.getElementById('createdByFilter').value = currentCreatedByFilter;
+    docSearchFrom = 0;
+    doDocSearch();
+}
+
+function filterByStatus(status) {
+    currentStatus = (currentStatus === status) ? '' : status;
+    docSearchFrom = 0;
+    doDocSearch();
+}
+
+function filterByClassification(val) {
+    currentClassification = (currentClassification === val) ? '' : val;
     docSearchFrom = 0;
     doDocSearch();
 }
 
 function clearDocFilters() {
     document.getElementById('docsSearchInput').value = '';
-    document.getElementById('mimeFilter').value = '';
-    document.getElementById('createdByFilter').value = '';
     currentMimeFilter = '';
     currentCreatedByFilter = '';
+    currentDateRange = '';
+    currentSizeRange = '';
+    currentStatus = '';
+    currentClassification = '';
     docSearchFrom = 0;
     doDocSearch();
+}
+
+function updateActiveFiltersBar() {
+    var bar = document.getElementById('activeFiltersBar');
+    var tags = document.getElementById('activeFilterTags');
+    var filters = [];
+    if (currentMimeFilter) filters.push({ label: 'Type: ' + shortMime(currentMimeFilter), clear: 'currentMimeFilter' });
+    if (currentCreatedByFilter) filters.push({ label: 'Author: ' + currentCreatedByFilter, clear: 'currentCreatedByFilter' });
+    if (currentStatus) filters.push({ label: 'Status: ' + currentStatus, clear: 'currentStatus' });
+    if (currentClassification) filters.push({ label: 'Class: ' + currentClassification, clear: 'currentClassification' });
+    if (currentDateRange) filters.push({ label: 'Date: ' + currentDateRange, clear: 'currentDateRange' });
+    if (currentSizeRange) filters.push({ label: 'Size: ' + currentSizeRange, clear: 'currentSizeRange' });
+
+    if (filters.length === 0) {
+        bar.style.display = 'none';
+        return;
+    }
+    bar.style.display = 'flex';
+    tags.innerHTML = filters.map(function(f) {
+        return '<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--accent);color:#fff;border-radius:12px;font-size:12px;font-weight:500;">' +
+            escapeHtml(f.label) +
+            ' <span style="cursor:pointer;font-weight:700;" onclick="' + f.clear + '=\'\';docSearchFrom=0;doDocSearch();">&#x2716;</span></span>';
+    }).join('');
 }
 
 document.getElementById('docsSearchInput').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') { e.preventDefault(); docSearchFrom = 0; doDocSearch(); }
 });
 
-// === Utilities ===
+// ============================================================
+// CONTEXT MENU (shared)
+// ============================================================
+function showContextMenu(event, items) {
+    event.preventDefault();
+    event.stopPropagation();
+    var menu = document.getElementById('contextMenu');
+    var html = '';
+    items.forEach(function(item) {
+        if (item.divider) {
+            html += '<div class="menu-divider"></div>';
+        } else {
+            html += '<div class="menu-item' + (item.danger ? ' danger' : '') + '" onclick="hideContextMenu();(' + item.action + ')()">' +
+                '<span class="menu-icon">' + (item.icon || '') + '</span>' + escapeHtml(item.label) + '</div>';
+        }
+    });
+    menu.innerHTML = html;
+    menu.style.display = 'block';
+    var x = event.clientX;
+    var y = event.clientY;
+    if (x + menu.offsetWidth > window.innerWidth) x = window.innerWidth - menu.offsetWidth - 8;
+    if (y + menu.offsetHeight > window.innerHeight) y = window.innerHeight - menu.offsetHeight - 8;
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+}
+
+function hideContextMenu() {
+    document.getElementById('contextMenu').style.display = 'none';
+}
+document.addEventListener('click', function() { hideContextMenu(); });
+
+// Doc context menu (right-click on doc card)
+function showDocContextMenu(event, docIndex) {
+    event.preventDefault();
+    event.stopPropagation();
+    var doc = currentDocuments[docIndex];
+    if (!doc) return;
+    var items = [
+        { icon: '&#x1F441;', label: 'View Document', action: 'function(){openDocViewer(' + docIndex + ')}' },
+        { icon: '&#x2B07;', label: 'Download', action: 'function(){currentViewDoc=currentDocuments[' + docIndex + '];downloadCurrentDoc()}' },
+    ];
+    // Browse in Explorer is always available (no feature flag needed)
+    items.push({ divider: true });
+    items.push({ icon: '&#x1F4C2;', label: 'Browse in Explorer', action: 'function(){browseInExplorer(' + docIndex + ')}' });
+    // Browse in Source requires feature flag
+    if (sourceFeatureFlags.browseInSourceEnabled) {
+        items.push({ icon: '&#x1F310;', label: 'Browse in Source', action: 'function(){browseInSource(' + docIndex + ')}' });
+    }
+    items.push({ divider: true });
+    items.push({ icon: '&#x1F4CB;', label: 'Copy Name', action: 'function(){navigator.clipboard.writeText("' + escapeAttr(doc.fileName || '') + '");showToast("Copied!","success")}' });
+    showContextMenu(event, items);
+}
+
+// Browse context menu (right-click on file table row)
+function showBrowseContextMenu(event, idx) {
+    event.preventDefault();
+    event.stopPropagation();
+    var item = browseCurrentItems[idx];
+    if (!item) return;
+    var items = [];
+    if (item.isFolder) {
+        items.push({ icon: '&#x1F4C2;', label: 'Open Folder', action: 'function(){browseCmisFolder("' + escapeAttr(item.objectId) + '","' + escapeAttr(item.name) + '")}' });
+    } else {
+        items.push({ icon: '&#x1F441;', label: 'View', action: 'function(){openBrowseDocViewer(browseCurrentItems[' + idx + '])}' });
+        items.push({ icon: '&#x2B07;', label: 'Download', action: 'function(){downloadBrowseFile(browseCurrentItems[' + idx + '])}' });
+    }
+    items.push({ divider: true });
+    items.push({ icon: '&#x270F;', label: 'Rename', action: 'function(){promptRename("' + escapeAttr(item.objectId) + '","' + escapeAttr(item.name) + '")}' });
+    items.push({ icon: '&#x1F5D1;', label: 'Delete', danger: true, action: 'function(){confirmDelete("' + escapeAttr(item.objectId) + '","' + escapeAttr(item.name) + '")}' });
+    showContextMenu(event, items);
+}
+
+// ============================================================
+// UTILITIES
+// ============================================================
 function escapeHtml(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 function escapeAttr(t) { return String(t).replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;'); }
+function escHtml(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+function escAttr(s) { return s ? s.replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
 function formatSize(b) { if (b < 1024) return b + ' B'; if (b < 1048576) return (b/1024).toFixed(1) + ' KB'; return (b/1048576).toFixed(1) + ' MB'; }
+function formatFileSize(bytes) {
+    if (typeof bytes === 'string') bytes = parseInt(bytes, 10);
+    if (!bytes || bytes <= 0) return '';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+    if (bytes < 1024*1024*1024) return (bytes/1024/1024).toFixed(1) + ' MB';
+    return (bytes/1024/1024/1024).toFixed(1) + ' GB';
+}
 function shortMime(m) { if (!m) return ''; var map = {'application/pdf':'PDF','application/octet-stream':'Binary','text/plain':'Text','text/html':'HTML','image/jpeg':'JPEG','image/png':'PNG'}; return map[m] || m.split('/').pop().toUpperCase(); }
 function mimeIcon(m) { if (!m) return '&#x1F4C4;'; if (m.indexOf('pdf') >= 0) return '&#x1F4D5;'; if (m.indexOf('image') >= 0) return '&#x1F5BC;'; if (m.indexOf('word') >= 0 || m.indexOf('document') >= 0) return '&#x1F4DD;'; if (m.indexOf('text') >= 0) return '&#x1F4C3;'; return '&#x1F4C4;'; }
+// macOS-style SVG icons
+var MAC_FOLDER_ICON = '<span class="mac-icon"><svg viewBox="0 0 20 20"><path d="M2 4.5A1.5 1.5 0 013.5 3h4.29a1.5 1.5 0 011.06.44l1.3 1.3a.5.5 0 00.35.14h6A1.5 1.5 0 0118 6.38v9.12A1.5 1.5 0 0116.5 17h-13A1.5 1.5 0 012 15.5v-11z" fill="#3B9FD9"/><path d="M2 7.5h16v8a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 012 15.5v-8z" fill="#4FC3F7"/></svg></span>';
+var MAC_FOLDER_OPEN_ICON = '<span class="mac-icon"><svg viewBox="0 0 20 20"><path d="M2 4.5A1.5 1.5 0 013.5 3h4.29a1.5 1.5 0 011.06.44l1.3 1.3a.5.5 0 00.35.14h6A1.5 1.5 0 0118 6.38v9.12A1.5 1.5 0 0116.5 17h-13A1.5 1.5 0 012 15.5v-11z" fill="#3B9FD9"/><path d="M1 9h16l-2 8H3L1 9z" fill="#4FC3F7" opacity=".9"/></svg></span>';
+var MAC_REPO_ICON = '<span class="mac-icon"><svg viewBox="0 0 20 20"><rect x="2" y="3" width="16" height="14" rx="1.5" fill="#78909C"/><rect x="4" y="5" width="5" height="2" rx=".5" fill="#B0BEC5"/><rect x="4" y="9" width="12" height="1" rx=".5" fill="#B0BEC5" opacity=".5"/><rect x="4" y="12" width="12" height="1" rx=".5" fill="#B0BEC5" opacity=".5"/></svg></span>';
+function macFileIcon(nameOrMime) {
+    var s = (nameOrMime || '').toLowerCase();
+    var color = '#90A4AE'; var label = ''; var accent = '#fff';
+    if (s.includes('pdf')) { color = '#E53935'; label = 'PDF'; }
+    else if (s.includes('word') || s.includes('.doc')) { color = '#1565C0'; label = 'DOC'; }
+    else if (s.includes('excel') || s.includes('sheet') || s.includes('.xls')) { color = '#2E7D32'; label = 'XLS'; }
+    else if (s.includes('powerpoint') || s.includes('.ppt')) { color = '#D84315'; label = 'PPT'; }
+    else if (s.includes('image') || s.includes('.jpg') || s.includes('.png') || s.includes('.gif') || s.includes('.svg') || s.includes('.webp')) { color = '#7B1FA2'; label = 'IMG'; }
+    else if (s.includes('video') || s.includes('.mp4') || s.includes('.avi') || s.includes('.mov')) { color = '#AD1457'; label = 'VID'; }
+    else if (s.includes('audio') || s.includes('.mp3') || s.includes('.wav')) { color = '#6A1B9A'; label = 'AUD'; }
+    else if (s.includes('zip') || s.includes('archive') || s.includes('.rar') || s.includes('.7z') || s.includes('.tar') || s.includes('.gz')) { color = '#4E342E'; label = 'ZIP'; }
+    else if (s.includes('text') || s.includes('.txt') || s.includes('.log') || s.includes('.csv')) { color = '#546E7A'; label = 'TXT'; }
+    else if (s.includes('html') || s.includes('.htm')) { color = '#E65100'; label = 'HTM'; }
+    else if (s.includes('xml')) { color = '#FF6F00'; label = 'XML'; }
+    else if (s.includes('json')) { color = '#F9A825'; label = 'JSN'; accent = '#333'; }
+    return '<span class="mac-icon"><svg viewBox="0 0 20 20">' +
+        '<path d="M5 2h7l4 4v11a1 1 0 01-1 1H5a1 1 0 01-1-2V3a1 1 0 011-1z" fill="#CFD8DC"/>' +
+        '<path d="M12 2l4 4h-3a1 1 0 01-1-1V2z" fill="#B0BEC5"/>' +
+        (label ? '<rect x="4" y="12" width="12" height="5" rx="1" fill="' + color + '"/>' +
+            '<text x="10" y="16" text-anchor="middle" font-size="4" font-weight="700" fill="' + accent + '" font-family="system-ui">' + label + '</text>' : '') +
+        '</svg></span>';
+}
+function getFileIcon(nameOrMime) { return macFileIcon(nameOrMime); }
 
-// === Document Viewer ===
+// ============================================================
+// DOCUMENT VIEWER
+// ============================================================
 function openDocViewer(docIndex) {
     var doc = currentDocuments[docIndex];
     if (!doc) return;
@@ -730,24 +1653,18 @@ function renderDocumentContent(blob, contentType, fileName) {
     var body = document.getElementById('viewerBody');
     var type = contentType.toLowerCase();
 
-    // PDF: use browser native PDF viewer via iframe
     if (type.indexOf('pdf') >= 0) {
         var blobUrl = URL.createObjectURL(blob);
         body.innerHTML = '<iframe src="' + blobUrl + '#toolbar=1&navpanes=1" style="width:100%;height:100%;border:none;"></iframe>';
         return;
     }
-
-    // Images: native display
     if (type.indexOf('image/') >= 0) {
         var imgUrl = URL.createObjectURL(blob);
         body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;padding:20px;"><img class="preview-image" src="' + imgUrl + '" alt="Document preview"></div>';
         return;
     }
-
-    // Word documents (.docx): use mammoth.js for DOCX to HTML conversion
     if (type.indexOf('word') >= 0 || type.indexOf('document') >= 0 || type.indexOf('openxmlformats') >= 0 ||
         (fileName && (fileName.endsWith('.docx') || fileName.endsWith('.doc')))) {
-        // Load mammoth.js dynamically if not already loaded
         if (typeof mammoth === 'undefined') {
             body.innerHTML = '<div class="viewer-loading">Loading DOCX renderer...</div>';
             var script = document.createElement('script');
@@ -760,25 +1677,15 @@ function renderDocumentContent(blob, contentType, fileName) {
         }
         return;
     }
-
-    // HTML: render directly
     if (type.indexOf('html') >= 0) {
-        blob.text().then(function(text) {
-            body.innerHTML = '<div class="html-content">' + text + '</div>';
-        });
+        blob.text().then(function(text) { body.innerHTML = '<div class="html-content">' + text + '</div>'; });
         return;
     }
-
-    // Text-based formats: plain text, XML, JSON, CSV, etc.
     if (type.indexOf('text/') >= 0 || type.indexOf('json') >= 0 || type.indexOf('xml') >= 0 ||
         type.indexOf('csv') >= 0 || type.indexOf('javascript') >= 0 || type.indexOf('yaml') >= 0) {
-        blob.text().then(function(text) {
-            body.innerHTML = '<div class="text-content">' + escapeHtml(text) + '</div>';
-        });
+        blob.text().then(function(text) { body.innerHTML = '<div class="text-content">' + escapeHtml(text) + '</div>'; });
         return;
     }
-
-    // Fallback: try to read as text, if it fails show download option
     showAsTextFallback(blob, body, fileName);
 }
 
@@ -797,7 +1704,6 @@ function convertDocxToHtml(blob, body) {
 
 function showAsTextFallback(blob, body, fileName) {
     blob.text().then(function(text) {
-        // Check if it's likely binary
         var nonPrintable = 0;
         for (var i = 0; i < Math.min(text.length, 1000); i++) {
             var c = text.charCodeAt(i);
@@ -836,95 +1742,993 @@ function downloadCurrentDoc() {
     document.body.removeChild(a);
 }
 
-// Close viewer on Escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        if (document.getElementById('viewerOverlay').classList.contains('show')) closeViewer();
-        if (document.getElementById('authOverlay').classList.contains('show')) closeAuthBrowser();
-    }
-});
-
-// === Authority Browser ===
-function openAuthBrowser() {
-    if (!currentAppId) { showError('Please select an app first'); return; }
-    document.getElementById('authOverlay').classList.add('show');
-    authSearchFrom = 0;
-    doAuthSearch();
+// ============================================================
+// TREE BROWSE (Full-Screen)
+// ============================================================
+function initTree() {
+    treeData = [
+        { id: 'cmis-root', label: 'Document Repository', icon: MAC_REPO_ICON, type: 'cmis-root', children: [], expanded: false, loaded: false, folderId: null }
+    ];
+    selectedTreeNode = null;
+    browseFolderStack = [{ id: null, name: 'Root' }];
+    renderTree();
+    // Auto-select CMIS root
+    selectTreeNode('cmis-root');
 }
 
-function closeAuthBrowser() {
-    document.getElementById('authOverlay').classList.remove('show');
+function renderTree() {
+    var treeBody = document.getElementById('treeBody');
+    treeBody.innerHTML = renderTreeNodes(treeData, 0);
 }
 
-function doAuthSearch() {
-    if (!currentAppId) return;
-    var query = document.getElementById('authSearchInput').value.trim();
-    var principalType = document.getElementById('authTypeFilter').value;
-    var body = document.getElementById('authBody');
-    body.innerHTML = '<div class="viewer-loading">Loading users and groups...</div>';
-
-    var url = '/api/chat/authorities?appId=' + encodeURIComponent(currentAppId) + '&from=' + authSearchFrom + '&size=' + authPageSize;
-    if (query) url += '&query=' + encodeURIComponent(query);
-    if (principalType) url += '&principalType=' + encodeURIComponent(principalType);
-
-    fetch(url).then(function(r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-    }).then(function(data) {
-        var auths = data.authorities || [];
-        authTotal = data.total || 0;
-        renderAuthorities(auths);
-        renderAuthPagination();
-    }).catch(function(e) {
-        console.error('Authority search failed:', e);
-        body.innerHTML = '<div class="viewer-error">Failed to load authorities: ' + escapeHtml(e.message) + '</div>';
+function renderTreeNodes(nodes, depth) {
+    if (!nodes || nodes.length === 0) return '';
+    var html = '';
+    nodes.forEach(function(node) {
+        var isSelected = selectedTreeNode === node.id;
+        var isExpandable = node.type === 'cmis-root' || node.type === 'folder';
+        var hasArrow = isExpandable;
+        var paddingLeft = 8 + depth * 16;
+        html += '<div class="tree-node' + (isSelected ? ' selected' : '') + '" style="padding-left:' + paddingLeft + 'px" ' +
+            'onclick="handleTreeNodeClick(\'' + escAttr(node.id) + '\')" ' +
+            'oncontextmenu="handleTreeNodeContextMenu(event,\'' + escAttr(node.id) + '\')">';
+        if (hasArrow) {
+            html += '<span class="tree-arrow' + (node.expanded ? ' expanded' : '') + '" onclick="event.stopPropagation();toggleTreeNode(\'' + escAttr(node.id) + '\')">&#x25B6;</span>';
+        } else {
+            html += '<span class="tree-arrow-spacer"></span>';
+        }
+        html += '<span class="tree-icon">' + (node.icon || macFileIcon('')) + '</span>';
+        html += '<span class="tree-label">' + escHtml(node.label) + '</span>';
+        if (node.loading) html += '<span class="tree-loading">&#x25CE;</span>';
+        html += '</div>';
+        if (node.expanded && node.children && node.children.length > 0) {
+            html += renderTreeNodes(node.children, depth + 1);
+        }
     });
+    return html;
 }
 
-function renderAuthorities(auths) {
-    var body = document.getElementById('authBody');
-    if (auths.length === 0) {
-        body.innerHTML = '<div style="text-align:center;padding:60px;color:#999;">No users or groups found.</div>';
+function findTreeNode(nodes, id) {
+    for (var i = 0; i < nodes.length; i++) {
+        if (nodes[i].id === id) return nodes[i];
+        if (nodes[i].children) {
+            var found = findTreeNode(nodes[i].children, id);
+            if (found) return found;
+        }
+    }
+    return null;
+}
+
+function handleTreeNodeClick(nodeId) {
+    selectTreeNode(nodeId);
+}
+
+function selectTreeNode(nodeId) {
+    selectedTreeNode = nodeId;
+    var node = findTreeNode(treeData, nodeId);
+    if (!node) return;
+
+    // If expandable and not yet loaded, expand and load
+    var isExpandable = node.type === 'cmis-root' || node.type === 'folder';
+    if (isExpandable && !node.loaded) {
+        node.expanded = true;
+        loadTreeNodeChildren(node);
+    } else if (isExpandable) {
+        node.expanded = true;
+    }
+
+    renderTree();
+    renderContentForNode(node);
+}
+
+function toggleTreeNode(nodeId) {
+    var node = findTreeNode(treeData, nodeId);
+    if (!node) return;
+    node.expanded = !node.expanded;
+    if (node.expanded && !node.loaded) {
+        loadTreeNodeChildren(node);
+    }
+    renderTree();
+}
+
+function loadTreeNodeChildren(node) {
+    if (!currentAppId) return;
+    node.loading = true;
+    renderTree();
+
+    if (node.type === 'cmis-root' || node.type === 'folder') {
+        var folderId = node.folderId || null;
+        var url = '/api/chat/cmis/browse?appId=' + encodeURIComponent(currentAppId);
+        if (currentKbId) url += '&kbId=' + encodeURIComponent(currentKbId);
+        if (folderId) url += '&folderId=' + encodeURIComponent(folderId);
+
+        fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+            var items = data.items || [];
+            node.children = [];
+            items.forEach(function(item) {
+                if (item.isFolder) {
+                    node.children.push({
+                        id: 'folder-' + item.objectId,
+                        label: item.name || 'Unnamed',
+                        icon: MAC_FOLDER_ICON,
+                        type: 'folder',
+                        folderId: item.objectId,
+                        children: [],
+                        expanded: false,
+                        loaded: false,
+                        _data: item
+                    });
+                }
+            });
+            // Also store all items (files + folders) for content panel rendering
+            node._allItems = items;
+            if (data.folderName && node.type === 'folder') {
+                node.label = data.folderName;
+            }
+            node.loaded = true;
+            node.loading = false;
+            renderTree();
+            // Update content panel if this node is selected
+            if (selectedTreeNode === node.id) {
+                renderContentForNode(node);
+            }
+        }).catch(function(e) {
+            node.loading = false;
+            renderTree();
+            showToast('Failed to load folder: ' + e.message, 'error');
+        });
+    }
+}
+
+function renderContentForNode(node) {
+    var contentBody = document.getElementById('browseContent');
+    var breadcrumb = document.getElementById('browseBreadcrumb');
+
+    if (node.type === 'cmis-root' || node.type === 'folder') {
+        // Update breadcrumb
+        updateBrowseBreadcrumb(node);
+
+        // Update folder stack for upload/new folder
+        if (node.type === 'cmis-root') {
+            browseFolderStack = [{ id: null, name: 'Root' }];
+        } else {
+            // Build path from tree
+            var path = buildTreePath(treeData, node.id);
+            browseFolderStack = [{ id: null, name: 'Root' }];
+            path.forEach(function(n) {
+                if (n.type === 'folder') {
+                    browseFolderStack.push({ id: n.folderId, name: n.label });
+                }
+            });
+        }
+
+        // Show items from loaded data
+        var items = node._allItems || [];
+        browseCurrentItems = items;
+        browseSelectedItems.clear();
+        updateBrowseDeleteBtn();
+
+        if (items.length === 0 && node.loaded) {
+            contentBody.innerHTML = '<div class="empty-state">' + MAC_FOLDER_OPEN_ICON + ' This folder is empty</div>';
+        } else if (!node.loaded) {
+            contentBody.innerHTML = '<div class="content-loading-overlay"><div class="content-loading-spinner"></div><div class="content-loading-text">Loading folder contents...</div></div>';
+        } else {
+            renderFileTable(items);
+        }
+        document.getElementById('browseItemCount').textContent = items.length + ' items';
+    }
+}
+
+function updateBrowseBreadcrumb(node) {
+    var bc = document.getElementById('browseBreadcrumb');
+    var path = buildTreePath(treeData, node.id);
+    var html = '<span class="bc-link" onclick="selectTreeNode(\'cmis-root\')">&#x1F3E0; Root</span>';
+    path.forEach(function(n) {
+        if (n.type === 'folder') {
+            if (n.id === node.id) {
+                html += '<span class="bc-sep">/</span><span class="bc-current">' + MAC_FOLDER_ICON + ' ' + escHtml(n.label) + '</span>';
+            } else {
+                html += '<span class="bc-sep">/</span><span class="bc-link" onclick="selectTreeNode(\'' + escAttr(n.id) + '\')">'
+                    + MAC_FOLDER_ICON + ' ' + escHtml(n.label) + '</span>';
+            }
+        }
+    });
+    bc.innerHTML = html;
+}
+
+function buildTreePath(nodes, targetId, path) {
+    path = path || [];
+    for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        if (n.id === targetId) {
+            if (n.type !== 'cmis-root') path.push(n);
+            return path;
+        }
+        if (n.children) {
+            var newPath = path.slice();
+            if (n.type !== 'cmis-root') newPath.push(n);
+            var found = buildTreePath(n.children, targetId, newPath);
+            if (found) return found;
+        }
+    }
+    return null;
+}
+
+function renderFileTable(items) {
+    var contentBody = document.getElementById('browseContent');
+    if (items.length === 0) {
+        contentBody.innerHTML = '<div class="empty-state">' + MAC_FOLDER_OPEN_ICON + ' This folder is empty</div>';
         return;
     }
-    var html = '<table class="auth-table"><thead><tr>' +
-        '<th>Type</th><th>Principal ID</th><th>Display Name</th><th>Member Of</th><th>Members</th><th>Member Count</th>' +
+    var html = '<table class="file-table"><thead><tr>' +
+        '<th class="col-icon"></th>' +
+        '<th class="col-name">Name</th>' +
+        '<th class="col-size">Size</th>' +
+        '<th class="col-modified">Modified</th>' +
+        '<th class="col-type">Type</th>' +
         '</tr></thead><tbody>';
-    auths.forEach(function(auth) {
-        var typeClass = (auth.principalType || '').toLowerCase() === 'group' ? 'group' : 'user';
-        var typeLabel = (auth.principalType || '').toLowerCase() === 'group' ? 'Group' : 'User';
-        var memberOf = auth.memberOf || [];
-        var members = auth.members || [];
-        html += '<tr>' +
-            '<td><span class="auth-badge ' + typeClass + '">' + typeLabel + '</span></td>' +
-            '<td><strong>' + escapeHtml(auth.principalId || '') + '</strong></td>' +
-            '<td>' + escapeHtml(auth.displayName || '-') + '</td>' +
-            '<td><div class="auth-members-list">' + (memberOf.length > 0 ? memberOf.map(function(m) { return escapeHtml(m); }).join('<br>') : '-') + '</div></td>' +
-            '<td><div class="auth-members-list">' + (members.length > 0 ? members.slice(0, 10).map(function(m) { return escapeHtml(m); }).join('<br>') + (members.length > 10 ? '<br>... +' + (members.length - 10) + ' more' : '') : '-') + '</div></td>' +
-            '<td>' + (auth.memberCount || 0) + '</td>' +
+    items.forEach(function(item, idx) {
+        var isFolder = item.isFolder;
+        var icon = isFolder ? MAC_FOLDER_ICON : getFileIcon(item.mimeType || item.name || '');
+        var name = item.name || item.fileName || 'Unnamed';
+        var size = isFolder ? '--' : formatFileSize(item.size || item.contentStreamLength || 0);
+        var modified = '';
+        if (item.lastModificationDate) {
+            var d = item.lastModificationDate;
+            if (d.length > 10) d = d.substring(0, 10);
+            modified = d;
+        }
+        var type = isFolder ? 'Folder' : shortMime(item.mimeType || '');
+        var isSelected = browseSelectedItems.has(item.objectId);
+        html += '<tr class="' + (isSelected ? 'selected' : '') + '" ' +
+            'data-idx="' + idx + '" ' +
+            'onclick="handleFileTableClick(event,' + idx + ')" ' +
+            'ondblclick="handleFileTableDblClick(' + idx + ')" ' +
+            'oncontextmenu="showBrowseContextMenu(event,' + idx + ')">' +
+            '<td class="col-icon">' + icon + '</td>' +
+            '<td class="col-name"><span class="name-text">' + escHtml(name) + '</span></td>' +
+            '<td class="col-size">' + size + '</td>' +
+            '<td class="col-modified">' + modified + '</td>' +
+            '<td class="col-type">' + type + '</td>' +
             '</tr>';
     });
     html += '</tbody></table>';
-    body.innerHTML = html;
+    contentBody.innerHTML = html;
 }
 
-function renderAuthPagination() {
-    var pag = document.getElementById('authPagination');
-    if (authTotal <= authPageSize) { pag.style.display = 'none'; return; }
-    pag.style.display = 'flex';
-    var page = Math.floor(authSearchFrom / authPageSize) + 1;
-    var totalPages = Math.ceil(authTotal / authPageSize);
-    document.getElementById('authPageInfo').textContent = 'Page ' + page + ' of ' + totalPages;
-    document.getElementById('authPrevBtn').disabled = (authSearchFrom === 0);
-    document.getElementById('authNextBtn').disabled = (authSearchFrom + authPageSize >= authTotal);
+
+
+function collapseAllTree() {
+    function collapseNodes(nodes) {
+        nodes.forEach(function(n) {
+            n.expanded = false;
+            if (n.children) collapseNodes(n.children);
+        });
+    }
+    collapseNodes(treeData);
+    renderTree();
 }
 
-function changeAuthPage(dir) {
-    authSearchFrom = Math.max(0, authSearchFrom + dir * authPageSize);
-    doAuthSearch();
+function refreshCurrentTreeNode() {
+    if (!selectedTreeNode) { initTree(); return; }
+    var node = findTreeNode(treeData, selectedTreeNode);
+    if (!node) { initTree(); return; }
+    node.loaded = false;
+    node.children = [];
+    node.expanded = true;
+    loadTreeNodeChildren(node);
 }
 
-// === Init ===
+function handleTreeNodeContextMenu(event, nodeId) {
+    var node = findTreeNode(treeData, nodeId);
+    if (!node) return;
+    var items = [];
+    if (node.type === 'cmis-root' || node.type === 'folder') {
+        items.push({ icon: '&#x1F504;', label: 'Refresh', action: 'function(){var n=findTreeNode(treeData,"' + escAttr(nodeId) + '");if(n){n.loaded=false;n.children=[];n.expanded=true;loadTreeNodeChildren(n)}}' });
+        items.push({ icon: '&#x2B06;', label: 'Upload File', action: 'function(){selectTreeNode("' + escAttr(nodeId) + '");showUploadDialog()}' });
+        items.push({ icon: '&#x1F4C1;', label: 'New Folder', action: 'function(){selectTreeNode("' + escAttr(nodeId) + '");showNewFolderDialog()}' });
+    }
+    if (items.length > 0) showContextMenu(event, items);
+}
+
+// ============================================================
+// CMIS BROWSE (file table interactions)
+// ============================================================
+function handleFileTableClick(event, idx) {
+    var item = browseCurrentItems[idx];
+    if (!item) return;
+    if (event.ctrlKey || event.metaKey) {
+        toggleBrowseSelect(idx);
+    } else {
+        browseSelectedItems.clear();
+        browseSelectedItems.add(item.objectId);
+        updateBrowseDeleteBtn();
+        // Re-render to show selection
+        renderFileTable(browseCurrentItems);
+    }
+}
+
+function handleFileTableDblClick(idx) {
+    var item = browseCurrentItems[idx];
+    if (!item) return;
+    if (item.isFolder) {
+        // Find the tree node for this folder and select it
+        var treeNodeId = 'folder-' + item.objectId;
+        var node = findTreeNode(treeData, treeNodeId);
+        if (node) {
+            selectTreeNode(treeNodeId);
+        } else {
+            // Fallback: browse directly
+            browseCmisFolder(item.objectId, item.name);
+        }
+    } else {
+        openBrowseDocViewer(item);
+    }
+}
+
+function toggleBrowseSelect(idx) {
+    var item = browseCurrentItems[idx];
+    if (!item) return;
+    if (browseSelectedItems.has(item.objectId)) {
+        browseSelectedItems.delete(item.objectId);
+    } else {
+        browseSelectedItems.add(item.objectId);
+    }
+    updateBrowseDeleteBtn();
+    renderFileTable(browseCurrentItems);
+}
+
+function updateBrowseDeleteBtn() {
+    var btn = document.getElementById('browseDeleteBtn');
+    var countSpan = document.getElementById('browseSelectionCount');
+    if (browseSelectedItems.size > 0) {
+        btn.style.display = '';
+        countSpan.textContent = browseSelectedItems.size + ' selected';
+    } else {
+        btn.style.display = 'none';
+        countSpan.textContent = '';
+    }
+}
+
+function refreshBrowse() {
+    refreshCurrentTreeNode();
+}
+
+// Legacy browse for fallback
+function browseCmisFolder(folderId, folderName) {
+    if (!currentAppId) { showError('Please select a workspace first'); return; }
+    if (folderId === null) {
+        browseFolderStack = [{ id: null, name: 'Root' }];
+    } else {
+        var stackIdx = browseFolderStack.findIndex(function(f) { return f.id === folderId; });
+        if (stackIdx >= 0) {
+            browseFolderStack = browseFolderStack.slice(0, stackIdx + 1);
+        } else {
+            browseFolderStack.push({ id: folderId, name: folderName || 'Folder' });
+        }
+    }
+    browseSelectedItems.clear();
+    updateBrowseDeleteBtn();
+    var contentEl = document.getElementById('browseContent');
+    contentEl.innerHTML = '<div class="content-loading-overlay"><div class="content-loading-spinner"></div><div class="content-loading-text">Loading folder contents...</div></div>';
+
+    var currentFolderId = browseFolderStack[browseFolderStack.length - 1].id;
+    var url = '/api/chat/cmis/browse?appId=' + encodeURIComponent(currentAppId);
+    if (currentKbId) url += '&kbId=' + encodeURIComponent(currentKbId);
+    if (currentFolderId) url += '&folderId=' + encodeURIComponent(currentFolderId);
+
+    fetch(url)
+        .then(function(r) { if (!r.ok) throw new Error('Failed to browse folder'); return r.json(); })
+        .then(function(data) {
+            browseCurrentItems = data.items || [];
+            renderFileTable(browseCurrentItems);
+            document.getElementById('browseItemCount').textContent = browseCurrentItems.length + ' items';
+        })
+        .catch(function(e) {
+            contentEl.innerHTML = '<div class="empty-state">&#x26A0; ' + e.message + '</div>';
+        });
+}
+
+// Rename
+function promptRename(objectId, currentName) {
+    var newName = prompt('Rename "' + currentName + '" to:', currentName);
+    if (!newName || newName === currentName) return;
+
+    fetch('/api/chat/cmis/rename?appId=' + encodeURIComponent(currentAppId) +
+          '&objectId=' + encodeURIComponent(objectId) +
+          '&newName=' + encodeURIComponent(newName), { method: 'PUT' })
+        .then(function(r) { if (!r.ok) throw new Error('Rename failed'); return r.json(); })
+        .then(function() { refreshBrowse(); showToast('Renamed successfully', 'success'); })
+        .catch(function(e) { showError(e.message); });
+}
+
+// Delete
+function confirmDelete(objectId, name) {
+    if (!confirm('Delete "' + name + '"? This cannot be undone.')) return;
+
+    fetch('/api/chat/cmis/delete?appId=' + encodeURIComponent(currentAppId) +
+          '&objectId=' + encodeURIComponent(objectId), { method: 'DELETE' })
+        .then(function(r) { if (!r.ok) throw new Error('Delete failed'); return r.json(); })
+        .then(function() { refreshBrowse(); showToast('Deleted successfully', 'success'); })
+        .catch(function(e) { showError(e.message); });
+}
+
+function deleteSelectedItems() {
+    if (browseSelectedItems.size === 0) return;
+    if (!confirm('Delete ' + browseSelectedItems.size + ' selected item(s)? This cannot be undone.')) return;
+
+    var promises = [];
+    browseSelectedItems.forEach(function(objectId) {
+        promises.push(
+            fetch('/api/chat/cmis/delete?appId=' + encodeURIComponent(currentAppId) +
+                  '&objectId=' + encodeURIComponent(objectId), { method: 'DELETE' })
+        );
+    });
+    Promise.all(promises)
+        .then(function() {
+            browseSelectedItems.clear();
+            refreshBrowse();
+            showToast('Items deleted', 'success');
+        })
+        .catch(function(e) { showError(e.message); refreshBrowse(); });
+}
+
+// Upload
+function showUploadDialog() {
+    if (!currentAppId) { showError('Please select a workspace first'); return; }
+    browseUploadFile = null;
+    document.getElementById('uploadFileInput').value = '';
+    document.getElementById('uploadFileInfo').style.display = 'none';
+    document.getElementById('uploadSubmitBtn').disabled = true;
+    document.getElementById('uploadOverlay').classList.add('show');
+}
+
+function closeUploadDialog() {
+    document.getElementById('uploadOverlay').classList.remove('show');
+    browseUploadFile = null;
+}
+
+function handleFileSelect(input) {
+    if (input.files && input.files[0]) {
+        browseUploadFile = input.files[0];
+        var info = document.getElementById('uploadFileInfo');
+        info.style.display = 'block';
+        info.innerHTML = '&#x1F4C4; <strong>' + escHtml(browseUploadFile.name) + '</strong> (' + formatFileSize(browseUploadFile.size) + ')';
+        document.getElementById('uploadSubmitBtn').disabled = false;
+    }
+}
+
+// Drag & drop support
+(function() {
+    var dz = document.getElementById('uploadDropzone');
+    if (!dz) return;
+    dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('dragover'); });
+    dz.addEventListener('dragleave', function() { dz.classList.remove('dragover'); });
+    dz.addEventListener('drop', function(e) {
+        e.preventDefault(); dz.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            var dt = new DataTransfer(); dt.items.add(e.dataTransfer.files[0]);
+            document.getElementById('uploadFileInput').files = dt.files;
+            handleFileSelect(document.getElementById('uploadFileInput'));
+        }
+    });
+})();
+
+function submitUpload() {
+    if (!browseUploadFile || !currentAppId) return;
+
+    var btn = document.getElementById('uploadSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = '\u23F3 Uploading...';
+
+    var formData = new FormData();
+    formData.append('file', browseUploadFile);
+
+    var currentFolder = browseFolderStack[browseFolderStack.length - 1];
+    var url = '/api/chat/cmis/upload?appId=' + encodeURIComponent(currentAppId);
+    if (currentFolder && currentFolder.id) {
+        url += '&folderId=' + encodeURIComponent(currentFolder.id);
+    }
+
+    fetch(url, { method: 'POST', body: formData })
+        .then(function(r) { if (!r.ok) throw new Error('Upload failed'); return r.json(); })
+        .then(function(data) {
+            closeUploadDialog();
+            refreshBrowse();
+            showToast('File uploaded successfully', 'success');
+        })
+        .catch(function(e) { showError(e.message); })
+        .finally(function() { btn.disabled = false; btn.innerHTML = '&#x2B06; Upload'; });
+}
+
+// New folder (in-app dialog)
+function showNewFolderDialog() {
+    if (!currentAppId) { showError('Please select a workspace first'); return; }
+    document.getElementById('newFolderNameInput').value = '';
+    document.getElementById('newFolderOverlay').classList.add('show');
+    setTimeout(function() { document.getElementById('newFolderNameInput').focus(); }, 100);
+}
+
+function closeNewFolderDialog() {
+    document.getElementById('newFolderOverlay').classList.remove('show');
+}
+
+// Handle Enter key in new folder input
+document.getElementById('newFolderNameInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); submitNewFolder(); }
+    if (e.key === 'Escape') { e.preventDefault(); closeNewFolderDialog(); }
+});
+
+function submitNewFolder() {
+    var name = document.getElementById('newFolderNameInput').value;
+    if (!name || !name.trim()) { document.getElementById('newFolderNameInput').focus(); return; }
+
+    var btn = document.getElementById('newFolderCreateBtn');
+    btn.disabled = true;
+    btn.textContent = 'Creating...';
+
+    var currentFolder = browseFolderStack[browseFolderStack.length - 1];
+    var url = '/api/chat/cmis/create-folder?appId=' + encodeURIComponent(currentAppId) +
+              '&folderName=' + encodeURIComponent(name.trim());
+    if (currentFolder && currentFolder.id) {
+        url += '&parentFolderId=' + encodeURIComponent(currentFolder.id);
+    }
+
+    fetch(url, { method: 'POST' })
+        .then(function(r) { if (!r.ok) throw new Error('Create folder failed'); return r.json(); })
+        .then(function() {
+            closeNewFolderDialog();
+            refreshBrowse();
+            showToast('Folder "' + name.trim() + '" created', 'success');
+        })
+        .catch(function(e) { showError(e.message); })
+        .finally(function() { btn.disabled = false; btn.textContent = 'Create'; });
+}
+
+// View file from browse
+function openBrowseDocViewer(item) {
+    if (!item || !item.objectId) return;
+    document.getElementById('viewerOverlay').classList.add('show');
+    document.getElementById('viewerTitle').textContent = item.name || 'Document';
+    document.getElementById('viewerBody').innerHTML = '<div class="viewer-loading">&#x23F3; Loading document...</div>';
+    // Set currentViewDoc for download button
+    currentViewDoc = { fileName: item.name, objectId: item.objectId };
+
+    var kbId = null;
+    fetch('/api/chat/source-preview-url?appId=' + encodeURIComponent(currentAppId))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var sources = data.sources || [];
+            if (sources.length > 0) kbId = sources[0].kbId;
+            if (!kbId) { throw new Error('No knowledge base found'); }
+            currentViewDoc.kbId = kbId;
+
+            var downloadUrl = '/api/chat/document/download?kbId=' + encodeURIComponent(kbId) +
+                              '&docId=' + encodeURIComponent(item.objectId);
+            return fetch(downloadUrl);
+        })
+        .then(function(r) {
+            if (!r.ok) throw new Error('Download failed');
+            var ct = r.headers.get('Content-Type') || 'application/octet-stream';
+            return r.blob().then(function(blob) { return { blob: blob, contentType: ct }; });
+        })
+        .then(function(result) {
+            renderDocumentContent(result.blob, result.contentType, item.name);
+        })
+        .catch(function(e) {
+            document.getElementById('viewerBody').innerHTML = '<div class="viewer-error">&#x26A0; ' + escHtml(e.message) + '</div>';
+        });
+}
+
+function downloadBrowseFile(item) {
+    fetch('/api/chat/source-preview-url?appId=' + encodeURIComponent(currentAppId))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var sources = data.sources || [];
+            var kbId = sources.length > 0 ? sources[0].kbId : null;
+            if (!kbId) throw new Error('No knowledge base found');
+            var downloadUrl = '/api/chat/document/download?kbId=' + encodeURIComponent(kbId) +
+                              '&docId=' + encodeURIComponent(item.objectId);
+            var a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = item.name || 'download';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        })
+        .catch(function(e) { showError(e.message); });
+}
+
+
+
+// ============================================================
+// RESIZE HANDLE
+// ============================================================
+(function() {
+    var handle = document.getElementById('resizeHandle');
+    var panel = document.getElementById('treePanel');
+    if (!handle || !panel) return;
+    var startX, startWidth;
+
+    function onMouseDown(e) {
+        startX = e.clientX;
+        startWidth = panel.offsetWidth;
+        handle.classList.add('active');
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+    }
+    function onMouseMove(e) {
+        var newWidth = startWidth + (e.clientX - startX);
+        if (newWidth >= 180 && newWidth <= 500) {
+            panel.style.width = newWidth + 'px';
+        }
+    }
+    function onMouseUp() {
+        handle.classList.remove('active');
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+    }
+    handle.addEventListener('mousedown', onMouseDown);
+})();
+
+// ============================================================
+// KEYBOARD SHORTCUTS
+// ============================================================
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        if (document.getElementById('newFolderOverlay').classList.contains('show')) closeNewFolderDialog();
+        else if (document.getElementById('viewerOverlay').classList.contains('show')) closeViewer();
+        else if (document.getElementById('uploadOverlay').classList.contains('show')) closeUploadDialog();
+        hideContextMenu();
+    }
+});
+
+// ============================================================
+// BROWSE IN EXPLORER / BROWSE IN SOURCE
+// ============================================================
+function browseInExplorer(docIndex) {
+    var doc = currentDocuments[docIndex];
+    if (!doc || !doc.objectId) { showToast('No document objectId', 'error'); return; }
+
+    // Use contentPath from search results (extracted from OpenSearch url field)
+    var contentPath = doc.contentPath || '';
+    if (!contentPath) {
+        showToast('No folder path available for this document', 'error');
+        return;
+    }
+
+    showToast('Locating document in Explorer...', 'info');
+
+    // Use kbId from document result if available, else fall back
+    var kbId = doc.kbId || currentKbId || '';
+    if (!kbId && exploreKnowledgeBases && exploreKnowledgeBases.length > 0) {
+        kbId = exploreKnowledgeBases[0].kbId || exploreKnowledgeBases[0].id || '';
+    }
+
+    // Parse path segments — contentPath e.g. "/Sites/AFC/documentLibrary/folder1/file.ext"
+    var segments = contentPath.split('/').filter(function(s) { return s.length > 0; });
+    // Remove the last segment (the file itself) to get parent folder path segments
+    if (segments.length > 0) segments.pop();
+
+    // Switch to Explore tab
+    switchMode('browse');
+
+    if (exploreAppSelector.value !== currentAppId) {
+        exploreAppSelector.value = currentAppId;
+    }
+
+    // Navigate the CMIS tree by walking path segments
+    setTimeout(function() {
+        if (!currentKbId || !document.getElementById('browseLayout') || document.getElementById('browseLayout').style.display === 'none') {
+            loadKnowledgeBases(currentAppId, function() {
+                if (kbId) {
+                    exploreKbSelector.value = kbId;
+                    currentKbId = kbId;
+                    // Initialize browse layout + tree without triggering selectTreeNode('cmis-root')
+                    var placeholder = document.getElementById('explorePlaceholder');
+                    var layout = document.getElementById('browseLayout');
+                    if (placeholder) placeholder.style.display = 'none';
+                    layout.style.display = 'flex';
+                    selectedKnowledgeSource = 'cmis';
+                    if (treeData.length === 0) initTree();
+                }
+                // navigateTreeByPath handles its own loading from root
+                setTimeout(function() { navigateTreeByPath(segments, doc.fileName, kbId); }, 500);
+            });
+        } else {
+            navigateTreeByPath(segments, doc.fileName, kbId);
+        }
+    }, 300);
+}
+
+/** Walk CMIS tree by path segments, building the sidebar tree + breadcrumbs as we go */
+function navigateTreeByPath(pathSegments, highlightFileName, kbId) {
+    if (!pathSegments || pathSegments.length === 0) {
+        showToast('Could not determine folder path', 'error');
+        return;
+    }
+
+    var targetKbId = kbId || currentKbId;
+
+    // Show loading overlay on content panel immediately
+    var contentBody = document.getElementById('browseContent');
+    if (contentBody) {
+        contentBody.innerHTML = '<div class="content-loading-overlay">' +
+            '<div class="content-loading-spinner"></div>' +
+            '<div class="content-loading-text">Navigating to folder...</div>' +
+            '<div id="navPathProgress" style="margin-top:8px;font-size:12px;color:var(--text-secondary);"></div>' +
+            '</div>';
+    }
+
+    // Ensure tree is initialized with root node
+    var rootNode = findTreeNode(treeData, 'cmis-root');
+    if (!rootNode) {
+        initTree();
+        rootNode = findTreeNode(treeData, 'cmis-root');
+    }
+
+    // We'll walk segment by segment, loading each tree level
+    var currentParentNode = rootNode;
+
+    function updateProgress(segIndex) {
+        var el = document.getElementById('navPathProgress');
+        if (el) {
+            var builtPath = '/ ' + pathSegments.slice(0, segIndex + 1).join(' / ');
+            el.textContent = builtPath;
+        }
+    }
+
+    function walkNext(segmentIndex) {
+        updateProgress(segmentIndex);
+
+        // Load current parent node's children if not yet loaded
+        var folderId = currentParentNode.folderId || null;
+        var url = '/api/chat/cmis/browse?appId=' + encodeURIComponent(currentAppId);
+        if (targetKbId) url += '&kbId=' + encodeURIComponent(targetKbId);
+        if (folderId) url += '&folderId=' + encodeURIComponent(folderId);
+
+        fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(result) {
+            var data = result.data || result;
+            var items = data.items || data.children || [];
+            var targetName = pathSegments[segmentIndex];
+
+            // Build tree children for current parent (folders only for sidebar)
+            currentParentNode.children = [];
+            items.forEach(function(item) {
+                if (item.isFolder) {
+                    currentParentNode.children.push({
+                        id: 'folder-' + item.objectId,
+                        label: item.name || 'Unnamed',
+                        icon: MAC_FOLDER_ICON,
+                        type: 'folder',
+                        folderId: item.objectId,
+                        children: [],
+                        expanded: false,
+                        loaded: false,
+                        _data: item
+                    });
+                }
+            });
+            currentParentNode._allItems = items;
+            currentParentNode.loaded = true;
+            currentParentNode.loading = false;
+            currentParentNode.expanded = true;
+
+            // Find matching folder by name among children
+            var matched = null;
+            for (var i = 0; i < currentParentNode.children.length; i++) {
+                if (currentParentNode.children[i].label === targetName) {
+                    matched = currentParentNode.children[i];
+                    break;
+                }
+            }
+
+            // Re-render tree so far to show expanding hierarchy
+            renderTree();
+
+            if (!matched) {
+                // Could not find expected folder at this level — show current level
+                selectedTreeNode = currentParentNode.id;
+                renderContentForNode(currentParentNode);
+                if (highlightFileName) {
+                    setTimeout(function() { highlightFileInTable(highlightFileName); }, 300);
+                }
+                showToast('Navigated to nearest available folder', 'success');
+                return;
+            }
+
+            // Mark matched node as expanding
+            matched.expanded = true;
+            matched.loading = true;
+            renderTree();
+
+            if (segmentIndex >= pathSegments.length - 1) {
+                // Reached the target parent folder — load its contents and select it
+                var finalFolderId = matched.folderId;
+                var finalUrl = '/api/chat/cmis/browse?appId=' + encodeURIComponent(currentAppId);
+                if (targetKbId) finalUrl += '&kbId=' + encodeURIComponent(targetKbId);
+                finalUrl += '&folderId=' + encodeURIComponent(finalFolderId);
+
+                fetch(finalUrl)
+                .then(function(r) { return r.json(); })
+                .then(function(finalResult) {
+                    var finalData = finalResult.data || finalResult;
+                    var finalItems = finalData.items || finalData.children || [];
+
+                    // Build children for the final node too
+                    matched.children = [];
+                    finalItems.forEach(function(item) {
+                        if (item.isFolder) {
+                            matched.children.push({
+                                id: 'folder-' + item.objectId,
+                                label: item.name || 'Unnamed',
+                                icon: MAC_FOLDER_ICON,
+                                type: 'folder',
+                                folderId: item.objectId,
+                                children: [],
+                                expanded: false,
+                                loaded: false,
+                                _data: item
+                            });
+                        }
+                    });
+                    matched._allItems = finalItems;
+                    matched.loaded = true;
+                    matched.loading = false;
+                    matched.expanded = true;
+
+                    // Select this node — triggers renderTree + renderContentForNode (breadcrumbs, folder stack)
+                    selectedTreeNode = matched.id;
+                    renderTree();
+                    renderContentForNode(matched);
+
+                    if (highlightFileName) {
+                        setTimeout(function() { highlightFileInTable(highlightFileName); }, 400);
+                    }
+                    showToast('Navigated to document folder', 'success');
+                })
+                .catch(function() {
+                    matched.loading = false;
+                    renderTree();
+                    showToast('Could not open final folder', 'error');
+                });
+            } else {
+                // Continue walking deeper
+                currentParentNode = matched;
+                walkNext(segmentIndex + 1);
+            }
+        })
+        .catch(function(e) {
+            console.error('Walk path failed at segment ' + segmentIndex, e);
+            currentParentNode.loading = false;
+            renderTree();
+            showToast('Failed to navigate path', 'error');
+        });
+    }
+
+    walkNext(0);
+}
+
+function navigateTreeToFolder(folderId, highlightFileName) {
+    // Find if folder is already in tree, if so select it
+    var found = findTreeNodeById(treeData, folderId);
+    if (found) {
+        selectTreeNode(found);
+        if (highlightFileName) {
+            setTimeout(function() { highlightFileInTable(highlightFileName); }, 500);
+        }
+        showToast('Navigated to folder', 'success');
+    } else {
+        // Load the folder directly via CMIS browse
+        if (currentKbId) {
+            var url = '/api/chat/cmis/browse?appId=' + encodeURIComponent(currentAppId) +
+                      '&kbId=' + encodeURIComponent(currentKbId) +
+                      '&folderId=' + encodeURIComponent(folderId);
+            fetch(url).then(function(r) { return r.json(); })
+            .then(function(result) {
+                var data = result.data || result;
+                var items = data.items || data.children || [];
+                browseCurrentItems = items;
+                renderFileTable(items, folderId);
+                if (highlightFileName) {
+                    setTimeout(function() { highlightFileInTable(highlightFileName); }, 300);
+                }
+                showToast('Navigated to document folder', 'success');
+            })
+            .catch(function(e) {
+                console.error('Navigate to folder failed:', e);
+                showToast('Could not open folder', 'error');
+            });
+        }
+    }
+}
+
+function findTreeNodeById(nodes, id) {
+    for (var i = 0; i < nodes.length; i++) {
+        if (nodes[i].objectId === id || nodes[i].id === id) return nodes[i];
+        if (nodes[i].children && nodes[i].children.length > 0) {
+            var found = findTreeNodeById(nodes[i].children, id);
+            if (found) return found;
+        }
+    }
+    return null;
+}
+
+function highlightFileInTable(fileName) {
+    var rows = document.querySelectorAll('#browseContent tr[data-idx]');
+    rows.forEach(function(row) {
+        var nameCell = row.querySelector('.col-name .name-text');
+        if (nameCell && nameCell.textContent === fileName) {
+            row.style.background = 'var(--accent-light, rgba(59,130,246,0.15))';
+            row.style.outline = '2px solid var(--accent)';
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(function() {
+                row.style.outline = '';
+                row.style.background = '';
+            }, 4000);
+        }
+    });
+}
+
+function browseInSource(docIndex) {
+    var doc = currentDocuments[docIndex];
+    if (!doc || !doc.objectId) { showToast('No document objectId', 'error'); return; }
+    showToast('Opening in source system...', 'info');
+
+    var kbId = doc.kbId || currentKbId || '';
+    if (!kbId && exploreKnowledgeBases && exploreKnowledgeBases.length > 0) {
+        kbId = exploreKnowledgeBases[0].kbId || exploreKnowledgeBases[0].id || '';
+    }
+
+    fetch('/api/chat/document-source-url?appId=' + encodeURIComponent(currentAppId) +
+          '&objectId=' + encodeURIComponent(doc.objectId) +
+          '&kbId=' + encodeURIComponent(kbId))
+    .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
+    .then(function(result) {
+        var data = result.data || result;
+        var url = data.sourceUrl;
+        if (url) {
+            window.open(url, '_blank');
+            showToast('Opened in source system', 'success');
+        } else {
+            showToast('Source URL not available: ' + (data.error || 'unknown vendor'), 'error');
+        }
+    })
+    .catch(function(e) {
+        console.error('Browse in source failed:', e);
+        showToast('Failed to get source URL: ' + e.message, 'error');
+    });
+}
+
+// ============================================================
+// FACET FILTER HELPERS
+// ============================================================
+function filterByDate(range) {
+    currentDateRange = (currentDateRange === range) ? '' : range;
+    docSearchFrom = 0;
+    doDocSearch();
+}
+
+function filterBySize(range) {
+    currentSizeRange = (currentSizeRange === range) ? '' : range;
+    docSearchFrom = 0;
+    doDocSearch();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+initTheme();
 checkSession();
 </script>
 </body>

@@ -134,8 +134,18 @@
   border-radius: 8px;
   transition: all 0.3s ease;
   height: 100%;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    .footerOperate {
+      opacity: 1;
+      pointer-events: initial;
+    }
+  }
 }
 
 .cardHeader {
@@ -214,8 +224,18 @@
 }
 
 .footerOperate {
+  opacity: 0;
+  pointer-events: none;
   display: flex;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 16px;
   gap: 8px;
   align-items: center;
-  width: 100%;
+  background-color: var(--ag-ant-color-bg-base);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.06);
+  transition: opacity 0.3s;
+  z-index: 10;
 }

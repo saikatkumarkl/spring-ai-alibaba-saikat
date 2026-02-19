@@ -134,4 +134,54 @@ public interface KnowledgeSyncService {
 	 */
 	Map<String, Object> reragDocuments(String syncId, List<String> docIds);
 
+	// ── CMIS Browse Operations ──────────────────────────────────────────
+
+	/**
+	 * Browse the children of a CMIS folder via AtomPub.
+	 * If folderId is null/empty, browses the repository root folder.
+	 * @param syncId the sync job ID (used to resolve source connection config)
+	 * @param folderId the CMIS objectId of the folder to browse (null for root)
+	 * @return map with "items" (List of child objects) and "folderName", "folderId"
+	 */
+	Map<String, Object> browseCmisFolder(String syncId, String folderId);
+
+	/**
+	 * Upload a document to a CMIS folder via AtomPub.
+	 * @param syncId the sync job ID
+	 * @param folderId the target CMIS folder objectId
+	 * @param fileName the name of the file to create
+	 * @param contentType MIME type of the content
+	 * @param content the file bytes
+	 * @return map with created object details (objectId, name)
+	 */
+	Map<String, Object> uploadCmisDocument(String syncId, String folderId, String fileName, String contentType,
+			byte[] content);
+
+	/**
+	 * Delete a CMIS object (document or folder).
+	 * @param syncId the sync job ID
+	 * @param objectId the CMIS objectId to delete
+	 * @param allVersions if true, delete all versions of the document
+	 * @return status map
+	 */
+	Map<String, Object> deleteCmisObject(String syncId, String objectId, boolean allVersions);
+
+	/**
+	 * Rename a CMIS object (update cmis:name property).
+	 * @param syncId the sync job ID
+	 * @param objectId the CMIS objectId to rename
+	 * @param newName the new name
+	 * @return status map with updated object details
+	 */
+	Map<String, Object> renameCmisObject(String syncId, String objectId, String newName);
+
+	/**
+	 * Create a new folder inside a CMIS parent folder.
+	 * @param syncId the sync job ID
+	 * @param parentFolderId the parent CMIS folder objectId
+	 * @param folderName the name for the new folder
+	 * @return status map with created folder details (objectId, name)
+	 */
+	Map<String, Object> createCmisFolder(String syncId, String parentFolderId, String folderName);
+
 }

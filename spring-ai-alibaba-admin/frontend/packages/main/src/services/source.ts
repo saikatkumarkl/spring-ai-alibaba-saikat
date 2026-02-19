@@ -143,3 +143,21 @@ export const copySource = (sourceId: string) => {
     method: 'POST',
   }).then((res) => res.data.data as string);
 };
+
+/** Get sample Browse-in-Source URLs generated from real indexed documents */
+export const getSampleSourceUrls = (sourceId: string, size = 10) => {
+  return request({
+    url: '/console/v1/chatbot/sample-source-urls',
+    method: 'GET',
+    params: { sourceId, size },
+  }).then((res) => res.data.data as {
+    sampleUrls: Array<{
+      objectId: string;
+      nodeId: string;
+      fileName: string;
+      sourceUrl: string;
+    }>;
+    totalDocuments: number;
+    template: string;
+  });
+};

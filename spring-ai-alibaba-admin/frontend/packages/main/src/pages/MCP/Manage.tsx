@@ -1,5 +1,5 @@
 import CardList from '@/components/Card/List';
-import { useInnerLayout } from '@/components/InnerLayout/utils';
+import Search from '@/components/Search';
 import $i18n from '@/i18n';
 import {
   deleteMcpServer,
@@ -15,7 +15,7 @@ import {
   message,
 } from '@spark-ai/design';
 import { useMount, useSetState } from 'ahooks';
-import { memo } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { history } from 'umi';
 import McpCard from './components/McpCard';
@@ -55,8 +55,8 @@ export const CreateMcpBtn = memo(
 );
 
 export default function McpManage() {
-  const { rightPortal } = useInnerLayout();
   const navigate = useNavigate();
+  const [searchText, setSearchText] = useState('');
 
   const [state, setState] = useSetState<{
     list: IMcpServer[];
@@ -214,9 +214,28 @@ export default function McpManage() {
     fetchList({ pageNo: page, pageSize });
   };
 
+  const filteredList = useMemo(() => {
+    if (!searchText.trim()) return state.list;
+    const lower = searchText.toLowerCase();
+    return state.list.filter((item) =>
+      item.name?.toLowerCase().includes(lower) || item.server_code?.toLowerCase().includes(lower)
+    );
+  }, [state.list, searchText]);
+
   return (
     <div className={styles.container}>
-      {state?.list?.length > 0 && rightPortal(<CreateMcpBtn />)}
+      <div className={styles['search-wrapper']}>
+        <Search
+          placeholder={$i18n.get({
+            id: 'main.pages.MCP.Manage.searchPlaceholder',
+            dm: 'Search MCP service by name',
+          })}
+          value={searchText}
+          onChange={(val: string) => setSearchText(val)}
+          onSearch={() => {}}
+        />
+        <CreateMcpBtn />
+      </div>
       <CardList
         loading={state.loading}
         pagination={{
@@ -227,7 +246,7 @@ export default function McpManage() {
         }}
         emptyAction={<CreateMcpBtn />}
       >
-        {state.list.map((item: IMcpServer) => (
+        {filteredList.map((item: IMcpServer) => (
           <McpCard key={item.server_code} data={item} onClick={handleAction} />
         ))}
       </CardList>

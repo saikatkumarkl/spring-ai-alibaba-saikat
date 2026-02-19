@@ -10,8 +10,6 @@ import {
 import { IGetDestinationListParams } from '@/types/destination';
 import { AlertDialog, Button, IconFont, message } from '@spark-ai/design';
 import { useMount, useSetState } from 'ahooks';
-import { Flex } from 'antd';
-import classNames from 'classnames';
 import { useRef } from 'react';
 import { history } from 'umi';
 import DestinationCard from './components/Card';
@@ -150,21 +148,6 @@ export default function DestinationList() {
     }
   };
 
-  const right = state?.list?.length ? (
-    <Flex align="center" className={styles['right']}>
-      <Button
-        type="primary"
-        icon={<IconFont type="spark-plus-line" className={styles['addicon']} />}
-        onClick={() => history.push('/destination/create')}
-      >
-        {$i18n.get({
-          id: 'main.pages.Destination.List.createDestination',
-          dm: 'Create Destination',
-        })}
-      </Button>
-    </Flex>
-  ) : null;
-
   return (
     <InnerLayout
       breadcrumbLinks={[
@@ -183,20 +166,30 @@ export default function DestinationList() {
         },
       ]}
       left={state.total}
-      right={right}
     >
       <div>
         {!state.list.length && !state.loading && !isSearchRef.current ? null : (
-          <Search
-            placeholder={$i18n.get({
-              id: 'main.pages.Destination.List.searchPlaceholder',
-              dm: 'Search destination by name',
-            })}
-            value={state.name}
-            onChange={(val) => setState({ name: val })}
-            className={classNames('mx-[20px] my-[16px]')}
-            onSearch={handleSearch}
-          />
+          <div className={styles['search-wrapper']}>
+            <Search
+              placeholder={$i18n.get({
+                id: 'main.pages.Destination.List.searchPlaceholder',
+                dm: 'Search destination by name',
+              })}
+              value={state.name}
+              onChange={(val) => setState({ name: val })}
+              onSearch={handleSearch}
+            />
+            <Button
+              type="primary"
+              icon={<IconFont type="spark-plus-line" className={styles['addicon']} />}
+              onClick={() => history.push('/destination/create')}
+            >
+              {$i18n.get({
+                id: 'main.pages.Destination.List.createDestination',
+                dm: 'Create Destination',
+              })}
+            </Button>
+          </div>
         )}
         <CardList
           pagination={{

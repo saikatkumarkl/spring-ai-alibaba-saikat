@@ -144,7 +144,7 @@ const McpCard: React.FC<McpCardProps> = ({ data, onClick, className }) => {
         </div>
       }
       footerOperateNode={renderActions()}
-      className={classNames(styles['container'], className)}
+      className={classNames(styles['mcp-card'], className)}
       onClick={() => onClick?.('detail', data)}
     ></ProCard>
   );

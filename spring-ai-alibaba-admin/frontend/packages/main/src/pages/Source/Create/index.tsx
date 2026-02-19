@@ -1,9 +1,9 @@
 import InnerLayout from '@/components/InnerLayout';
 import $i18n from '@/i18n';
-import { createSource, getConnectorTypes, getSourceDetail, updateSource, testConnection, testQuery } from '@/services/source';
+import { createSource, getConnectorTypes, getSourceDetail, updateSource, testConnection, testQuery, getSampleSourceUrls } from '@/services/source';
 import { AlertDialog, Button, message } from '@spark-ai/design';
 import { useMount, useSetState } from 'ahooks';
-import { Collapse, Input, Select, Spin, Steps, Switch, Table, Tag } from 'antd';
+import { Checkbox, Collapse, Input, Select, Spin, Steps, Switch, Table, Tag } from 'antd';
 import classNames from 'classnames';
 import React, { useState } from 'react';
 import { history, useParams } from 'umi';
@@ -69,6 +69,18 @@ interface FormState {
   /** Admin groups — selected by user after group API test; members get access to all docs */
   adminGroups: string[];
   availableGroups: { name: string; objectId: string }[];
+  /** Source system preview URL for "Navigate to Source" */
+  previewUrl: string;
+  /** Document URL template for "Browse in Source" — vendor-agnostic with {nodeId}, {objectId}, etc. placeholders */
+  documentUrlTemplate: string;
+  /** Whether "Navigate to Source" is enabled in the chat app (user verified source system is accessible) */
+  navigateToSourceEnabled: boolean;
+  /** Whether "Browse in Source" is enabled in the chat app (user verified document URL template works) */
+  browseInSourceEnabled: boolean;
+  /** Live sample URLs fetched from real indexed documents */
+  liveSampleUrls: Array<{ objectId: string; nodeId: string; fileName: string; sourceUrl: string }> | null;
+  liveSampleLoading: boolean;
+  liveSampleTotalDocs: number;
   /** Edit mode */
   editDataLoaded: boolean;
 }
@@ -80,6 +92,7 @@ const CLS = {
   RESTAPI: 'org.apache.manifoldcf.crawler.connectors.restapi.RestApiRepositoryConnector',
   CONFLUENCE: 'org.apache.manifoldcf.crawler.connectors.confluence.v2.ConfluenceConnector',
   CONFLUENCE_V6: 'org.apache.manifoldcf.crawler.connectors.confluence.v2.ConfluenceConnector',
+  CONFLUENCE_LEGACY: 'org.apache.manifoldcf.crawler.connectors.confluence.ConfluenceRepositoryConnector',
   AMAZONS3: 'org.apache.manifoldcf.crawler.connectors.amazons3.AmazonS3Connector',
   JIRA: 'org.apache.manifoldcf.crawler.connectors.jira.JiraRepositoryConnector',
   JDBC: 'org.apache.manifoldcf.crawler.connectors.jdbc.JDBCConnector',
@@ -93,7 +106,50 @@ const CLS = {
   RSS: 'org.apache.manifoldcf.crawler.connectors.rss.RSSConnector',
   HDFS: 'org.apache.manifoldcf.crawler.connectors.hdfs.HDFSRepositoryConnector',
   GRIDFTP: 'org.apache.manifoldcf.crawler.connectors.gridftp.GridFTPRepositoryConnector',
+  ALFRESCO: 'org.apache.manifoldcf.crawler.connectors.alfresco.AlfrescoRepositoryConnector',
+  ALFRESCO_WEBSCRIPT: 'org.apache.manifoldcf.crawler.connectors.alfrescowebscript.AlfrescoConnector',
+  CSV: 'org.apache.manifoldcf.crawler.connectors.csv.CSVConnector',
+  GENERIC: 'org.apache.manifoldcf.crawler.connectors.generic.GenericConnector',
+  GRIDFS: 'org.apache.manifoldcf.crawler.connectors.gridfs.GridFSRepositoryConnector',
+  CSWS: 'org.apache.manifoldcf.crawler.connectors.csws.CswsConnector',
+  FILENET: 'org.apache.manifoldcf.crawler.connectors.filenet.FilenetConnector',
+  LIVELINK: 'org.apache.manifoldcf.crawler.connectors.livelink.LivelinkConnector',
+  MERIDIO: 'org.apache.manifoldcf.crawler.connectors.meridio.MeridioConnector',
+  SHAREDDRIVE: 'org.apache.manifoldcf.crawler.connectors.sharedrive.SharedDriveConnector',
+  DOCUMENTUM: 'org.apache.manifoldcf.crawler.connectors.DCTM.DCTM',
 };
+
+/* ──────────────────────── Fallback connector types (used when ManifoldCF is unavailable) ──────────────────────── */
+
+const FALLBACK_CONNECTOR_TYPES: ConnectorType[] = [
+  { description: 'CMIS', class_name: CLS.CMIS },
+  { description: 'REST API', class_name: CLS.RESTAPI },
+  { description: 'Confluence v6+', class_name: CLS.CONFLUENCE },
+  { description: 'Confluence (Legacy)', class_name: CLS.CONFLUENCE_LEGACY },
+  { description: 'Amazon S3', class_name: CLS.AMAZONS3 },
+  { description: 'Jira', class_name: CLS.JIRA },
+  { description: 'JDBC', class_name: CLS.JDBC },
+  { description: 'Dropbox', class_name: CLS.DROPBOX },
+  { description: 'Google Drive', class_name: CLS.GOOGLEDRIVE },
+  { description: 'SharePoint', class_name: CLS.SHAREPOINT },
+  { description: 'Email', class_name: CLS.EMAIL },
+  { description: 'Web Crawler', class_name: CLS.WEB },
+  { description: 'File System', class_name: CLS.FILESYSTEM },
+  { description: 'Wiki', class_name: CLS.WIKI },
+  { description: 'RSS', class_name: CLS.RSS },
+  { description: 'HDFS', class_name: CLS.HDFS },
+  { description: 'Alfresco', class_name: CLS.ALFRESCO },
+  { description: 'Alfresco WebScript', class_name: CLS.ALFRESCO_WEBSCRIPT },
+  { description: 'CSV', class_name: CLS.CSV },
+  { description: 'Generic API', class_name: CLS.GENERIC },
+  { description: 'MongoDB GridFS', class_name: CLS.GRIDFS },
+  { description: 'OpenText Content Server (CSWS)', class_name: CLS.CSWS },
+  { description: 'IBM FileNet', class_name: CLS.FILENET },
+  { description: 'OpenText LiveLink', class_name: CLS.LIVELINK },
+  { description: 'Meridio', class_name: CLS.MERIDIO },
+  { description: 'Windows Shared Drive (SMB/CIFS)', class_name: CLS.SHAREDDRIVE },
+  { description: 'Documentum', class_name: CLS.DOCUMENTUM },
+];
 
 /* ──────────────────────── Field definitions per connector ──────────────────────── */
 
@@ -330,12 +386,226 @@ const RESTAPI_FIELDS: FieldDef[] = [
   { key: 'VENDOR', label: 'Vendor Preset', type: 'text', defaultValue: 'other', group: 'Advanced' },
 ];
 
+const FILESYSTEM_FIELDS: FieldDef[] = [
+  { key: 'startPath', label: 'Start Path', type: 'text', defaultValue: '/', required: true, placeholder: '/path/to/documents' },
+  { key: 'convertToURI', label: 'Convert to URI', type: 'select', defaultValue: 'true',
+    options: [{ label: 'Yes', value: 'true' }, { label: 'No', value: 'false' }] },
+];
+
+const WIKI_FIELDS: FieldDef[] = [
+  { key: 'Server protocol', label: 'Protocol', type: 'select', defaultValue: 'https',
+    options: [{ label: 'HTTPS', value: 'https' }, { label: 'HTTP', value: 'http' }] },
+  { key: 'Server name', label: 'Server', type: 'text', defaultValue: '', required: true, placeholder: 'en.wikipedia.org' },
+  { key: 'Server port', label: 'Port', type: 'number', defaultValue: '443' },
+  { key: 'Server path', label: 'Path', type: 'text', defaultValue: '/w', placeholder: '/w' },
+  { key: 'Email', label: 'Contact Email', type: 'text', defaultValue: '', required: true, placeholder: 'admin@example.com' },
+  { key: 'serverlogin', label: 'Wiki Login', type: 'text', defaultValue: '', group: 'Authentication' },
+  { key: 'serverpass', label: 'Wiki Password', type: 'password', defaultValue: '', group: 'Authentication' },
+  { key: 'serverdomain', label: 'Wiki Domain', type: 'text', defaultValue: '', group: 'Authentication' },
+  { key: 'accessrealm', label: 'HTTP Access Realm', type: 'text', defaultValue: '', group: 'HTTP Access' },
+  { key: 'accessuser', label: 'HTTP Access Username', type: 'text', defaultValue: '', group: 'HTTP Access' },
+  { key: 'accesspassword', label: 'HTTP Access Password', type: 'password', defaultValue: '', group: 'HTTP Access' },
+  { key: 'Proxy host', label: 'Proxy Host', type: 'text', defaultValue: '', group: 'Proxy Settings' },
+  { key: 'Proxy port', label: 'Proxy Port', type: 'number', defaultValue: '', group: 'Proxy Settings' },
+  { key: 'Proxy domain', label: 'Proxy Domain', type: 'text', defaultValue: '', group: 'Proxy Settings' },
+  { key: 'Proxy username', label: 'Proxy Username', type: 'text', defaultValue: '', group: 'Proxy Settings' },
+  { key: 'Proxy password', label: 'Proxy Password', type: 'password', defaultValue: '', group: 'Proxy Settings' },
+];
+
+const RSS_FIELDS: FieldDef[] = [
+  { key: 'Email address', label: 'Contact Email', type: 'text', defaultValue: '', required: true,
+    placeholder: 'admin@example.com (for robots.txt compliance)' },
+  { key: 'Robots usage', label: 'Robots.txt Usage', type: 'select', defaultValue: 'all',
+    options: [
+      { label: 'All (follow all)', value: 'all' },
+      { label: 'None (ignore all)', value: 'none' },
+      { label: 'Data only', value: 'data' },
+    ] },
+  { key: 'KB per second', label: 'Max KB/sec per Server', type: 'number', defaultValue: '', group: 'Throttling' },
+  { key: 'Max server connections', label: 'Max Connections per Server', type: 'number', defaultValue: '', group: 'Throttling' },
+  { key: 'Max fetches per minute', label: 'Max Fetches/min per Server', type: 'number', defaultValue: '', group: 'Throttling' },
+  { key: 'Throttle group', label: 'Throttle Group', type: 'text', defaultValue: '', group: 'Throttling' },
+  { key: 'Proxy host', label: 'Proxy Host', type: 'text', defaultValue: '', group: 'Proxy Settings' },
+  { key: 'Proxy port', label: 'Proxy Port', type: 'number', defaultValue: '', group: 'Proxy Settings' },
+  { key: 'Proxy authentication domain', label: 'Proxy Auth Domain', type: 'text', defaultValue: '', group: 'Proxy Settings' },
+  { key: 'Proxy authentication user name', label: 'Proxy Username', type: 'text', defaultValue: '', group: 'Proxy Settings' },
+  { key: 'Proxy authentication password', label: 'Proxy Password', type: 'password', defaultValue: '', group: 'Proxy Settings' },
+];
+
+const HDFS_FIELDS: FieldDef[] = [
+  { key: 'namenodeprotocol', label: 'NameNode Protocol', type: 'select', defaultValue: 'hdfs',
+    options: [{ label: 'HDFS', value: 'hdfs' }, { label: 'WebHDFS', value: 'webhdfs' }] },
+  { key: 'namenodehost', label: 'NameNode Host', type: 'text', defaultValue: '', required: true, placeholder: 'namenode.example.com' },
+  { key: 'namenodeport', label: 'NameNode Port', type: 'number', defaultValue: '8020' },
+  { key: 'user', label: 'HDFS User', type: 'text', defaultValue: '', placeholder: 'hdfs' },
+];
+
+const ALFRESCO_FIELDS: FieldDef[] = [
+  { key: 'username', label: 'Username', type: 'text', defaultValue: 'admin', required: true },
+  { key: 'password', label: 'Password', type: 'password', defaultValue: '', required: true },
+  { key: 'protocol', label: 'Protocol', type: 'select', defaultValue: 'http',
+    options: [{ label: 'HTTPS', value: 'https' }, { label: 'HTTP', value: 'http' }] },
+  { key: 'server', label: 'Server', type: 'text', defaultValue: 'localhost', required: true, placeholder: 'alfresco.example.com' },
+  { key: 'port', label: 'Port', type: 'number', defaultValue: '8080', required: true },
+  { key: 'path', label: 'API Path', type: 'text', defaultValue: '/alfresco/api', placeholder: '/alfresco/api' },
+  { key: 'tenantDomain', label: 'Tenant Domain', type: 'text', defaultValue: '', group: 'Advanced' },
+  { key: 'socketTimeout', label: 'Socket Timeout (ms)', type: 'number', defaultValue: '120000', group: 'Advanced' },
+  { key: 'luceneQuery', label: 'Lucene Query', type: 'text', defaultValue: '', placeholder: 'TYPE:"cm:content"', group: 'Advanced' },
+];
+
+const ALFRESCO_WEBSCRIPT_FIELDS: FieldDef[] = [
+  { key: 'protocol', label: 'Protocol', type: 'select', defaultValue: 'http',
+    options: [{ label: 'HTTPS', value: 'https' }, { label: 'HTTP', value: 'http' }] },
+  { key: 'hostname', label: 'Hostname', type: 'text', defaultValue: 'localhost', required: true, placeholder: 'alfresco.example.com' },
+  { key: 'port', label: 'Port', type: 'number', defaultValue: '8080', required: true },
+  { key: 'endpoint', label: 'WebScript Endpoint', type: 'text', defaultValue: '/alfresco/service', placeholder: '/alfresco/service' },
+  { key: 'storeprotocol', label: 'Store Protocol', type: 'text', defaultValue: 'workspace' },
+  { key: 'storeid', label: 'Store ID', type: 'text', defaultValue: 'SpacesStore' },
+  { key: 'username', label: 'Username', type: 'text', defaultValue: '', required: true },
+  { key: 'password', label: 'Password', type: 'password', defaultValue: '', required: true },
+];
+
+const CSV_FIELDS: FieldDef[] = [
+  { key: 'filepath', label: 'File Path Pattern', type: 'text', defaultValue: '', required: true, placeholder: '/data/files/*.csv' },
+  { key: 'idcolumn', label: 'ID Column', type: 'text', defaultValue: '', required: true, placeholder: 'Column name or index for document ID' },
+  { key: 'contentcolumn', label: 'Content Column', type: 'text', defaultValue: '', placeholder: 'Column name or index for document content' },
+  { key: 'separator', label: 'Field Separator', type: 'text', defaultValue: ',', placeholder: ',' },
+];
+
+const GENERIC_FIELDS: FieldDef[] = [
+  { key: 'genericEntryPoint', label: 'API Entry Point URL', type: 'text', defaultValue: '', required: true, placeholder: 'https://api.example.com/crawl' },
+  { key: 'genericLogin', label: 'Login Username', type: 'text', defaultValue: '' },
+  { key: 'genericPassword', label: 'Login Password', type: 'password', defaultValue: '' },
+  { key: 'genericConnectionTimeout', label: 'Connection Timeout (ms)', type: 'number', defaultValue: '60000', group: 'Advanced' },
+  { key: 'genericSocketTimeout', label: 'Socket Timeout (ms)', type: 'number', defaultValue: '1800000', group: 'Advanced' },
+];
+
+const GRIDFS_FIELDS: FieldDef[] = [
+  { key: 'host', label: 'MongoDB Host', type: 'text', defaultValue: 'localhost', required: true, placeholder: 'mongo.example.com' },
+  { key: 'port', label: 'MongoDB Port', type: 'number', defaultValue: '27017', required: true },
+  { key: 'db', label: 'Database Name', type: 'text', defaultValue: 'test', required: true },
+  { key: 'username', label: 'Username', type: 'text', defaultValue: '' },
+  { key: 'password', label: 'Password', type: 'password', defaultValue: '' },
+  { key: 'bucket', label: 'GridFS Bucket', type: 'text', defaultValue: 'fs', placeholder: 'fs' },
+  { key: 'url', label: 'URL Field Name', type: 'text', defaultValue: '', group: 'Field Mappings', placeholder: 'MongoDB field for document URL' },
+  { key: 'acl', label: 'Allow ACL Field Name', type: 'text', defaultValue: '', group: 'Field Mappings', placeholder: 'MongoDB field for allow tokens' },
+  { key: 'denyAcl', label: 'Deny ACL Field Name', type: 'text', defaultValue: '', group: 'Field Mappings', placeholder: 'MongoDB field for deny tokens' },
+];
+
+const CSWS_FIELDS: FieldDef[] = [
+  { key: 'Server protocol', label: 'Protocol', type: 'select', defaultValue: 'https',
+    options: [{ label: 'HTTPS', value: 'https' }, { label: 'HTTP', value: 'http' }] },
+  { key: 'Server name', label: 'Server', type: 'text', defaultValue: '', required: true, placeholder: 'contentserver.example.com' },
+  { key: 'Server port', label: 'Port', type: 'number', defaultValue: '443', required: true },
+  { key: 'Server user name', label: 'Username', type: 'text', defaultValue: '', required: true },
+  { key: 'Server password', label: 'Password', type: 'password', defaultValue: '', required: true },
+  { key: 'Server Authentication Service path', label: 'Auth Service Path', type: 'text', defaultValue: '/cws/Authentication.svc', group: 'Service Paths' },
+  { key: 'Server ContentService Service path', label: 'Content Service Path', type: 'text', defaultValue: '/cws/ContentService.svc', group: 'Service Paths' },
+  { key: 'Server DocumentManagement Service path', label: 'Doc Mgmt Service Path', type: 'text', defaultValue: '/cws/DocumentManagement.svc', group: 'Service Paths' },
+  { key: 'Server MemberService Service path', label: 'Member Service Path', type: 'text', defaultValue: '/cws/MemberService.svc', group: 'Service Paths' },
+  { key: 'Server SearchService Service path', label: 'Search Service Path', type: 'text', defaultValue: '/cws/SearchService.svc', group: 'Service Paths' },
+  { key: 'Data Collection', label: 'Data Collection', type: 'text', defaultValue: 'LES Enterprise', group: 'Advanced' },
+  { key: 'Server HTTP NTLM domain', label: 'NTLM Domain', type: 'text', defaultValue: '', group: 'NTLM' },
+  { key: 'Server HTTP NTLM user name', label: 'NTLM Username', type: 'text', defaultValue: '', group: 'NTLM' },
+  { key: 'Server HTTP NTLM password', label: 'NTLM Password', type: 'password', defaultValue: '', group: 'NTLM' },
+  { key: 'View protocol', label: 'View URL Protocol', type: 'text', defaultValue: '', group: 'View URL' },
+  { key: 'View server name', label: 'View URL Server', type: 'text', defaultValue: '', group: 'View URL' },
+  { key: 'View port', label: 'View URL Port', type: 'number', defaultValue: '', group: 'View URL' },
+  { key: 'View CGI path', label: 'View CGI Path', type: 'text', defaultValue: '', group: 'View URL' },
+  { key: 'View Action', label: 'View Action', type: 'text', defaultValue: '', group: 'View URL' },
+];
+
+const FILENET_FIELDS: FieldDef[] = [
+  { key: 'User ID', label: 'User ID', type: 'text', defaultValue: '', required: true },
+  { key: 'Password', label: 'Password', type: 'password', defaultValue: '', required: true },
+  { key: 'FileNet domain', label: 'FileNet Domain', type: 'text', defaultValue: '', required: true },
+  { key: 'Object store', label: 'Object Store', type: 'text', defaultValue: '', required: true, placeholder: 'MyObjectStore' },
+  { key: 'Server protocol', label: 'WSDL Protocol', type: 'select', defaultValue: 'https',
+    options: [{ label: 'HTTPS', value: 'https' }, { label: 'HTTP', value: 'http' }] },
+  { key: 'Server hostname', label: 'WSDL Server', type: 'text', defaultValue: '', required: true, placeholder: 'filenet.example.com' },
+  { key: 'Server port', label: 'WSDL Port', type: 'number', defaultValue: '443', required: true },
+  { key: 'Server WebServices location', label: 'WebServices Location', type: 'text', defaultValue: '', placeholder: '/wsi/FNCEWS40MTOM/' },
+  { key: 'Document URL protocol', label: 'Doc URL Protocol', type: 'text', defaultValue: '', group: 'Document URLs' },
+  { key: 'Document URL hostname', label: 'Doc URL Hostname', type: 'text', defaultValue: '', group: 'Document URLs' },
+  { key: 'Document URL port', label: 'Doc URL Port', type: 'number', defaultValue: '', group: 'Document URLs' },
+  { key: 'Document URL location', label: 'Doc URL Location', type: 'text', defaultValue: '', group: 'Document URLs' },
+];
+
+const LIVELINK_FIELDS: FieldDef[] = [
+  { key: 'Server protocol', label: 'LAPI Protocol', type: 'select', defaultValue: 'internal',
+    options: [
+      { label: 'Internal (LAPI)', value: 'internal' },
+      { label: 'HTTPS', value: 'https' },
+      { label: 'HTTP', value: 'http' },
+    ] },
+  { key: 'Server name', label: 'Server Name', type: 'text', defaultValue: '', required: true, placeholder: 'livelink.example.com' },
+  { key: 'Server port', label: 'Server Port', type: 'number', defaultValue: '2099', required: true },
+  { key: 'Server user name', label: 'Username', type: 'text', defaultValue: '', required: true },
+  { key: 'Server password', label: 'Password', type: 'password', defaultValue: '', required: true },
+  { key: 'Server HTTP CGI path', label: 'HTTP CGI Path', type: 'text', defaultValue: '', group: 'Ingestion' },
+  { key: 'Protocol', label: 'Ingestion CGI Protocol', type: 'select', defaultValue: 'https',
+    options: [{ label: 'HTTPS', value: 'https' }, { label: 'HTTP', value: 'http' }], group: 'Ingestion' },
+  { key: 'Port', label: 'Ingestion CGI Port', type: 'number', defaultValue: '443', group: 'Ingestion' },
+  { key: 'CGI path', label: 'CGI Path', type: 'text', defaultValue: '', group: 'Ingestion' },
+  { key: 'NTLM user name', label: 'NTLM Username', type: 'text', defaultValue: '', group: 'NTLM' },
+  { key: 'NTLM password', label: 'NTLM Password', type: 'password', defaultValue: '', group: 'NTLM' },
+  { key: 'NTLM domain', label: 'NTLM Domain', type: 'text', defaultValue: '', group: 'NTLM' },
+  { key: 'View protocol', label: 'View URL Protocol', type: 'text', defaultValue: '', group: 'View URL' },
+  { key: 'View server name', label: 'View URL Server', type: 'text', defaultValue: '', group: 'View URL' },
+  { key: 'View port', label: 'View URL Port', type: 'number', defaultValue: '', group: 'View URL' },
+  { key: 'View CGI path', label: 'View CGI Path', type: 'text', defaultValue: '', group: 'View URL' },
+  { key: 'View Action', label: 'View Action', type: 'text', defaultValue: '', group: 'View URL' },
+];
+
+const MERIDIO_FIELDS: FieldDef[] = [
+  { key: 'DMWSServerProtocol', label: 'DMWS Protocol', type: 'select', defaultValue: 'https',
+    options: [{ label: 'HTTPS', value: 'https' }, { label: 'HTTP', value: 'http' }] },
+  { key: 'DMWSServerName', label: 'DMWS Server', type: 'text', defaultValue: '', required: true, placeholder: 'meridio-dm.example.com' },
+  { key: 'DMWSServerPort', label: 'DMWS Port', type: 'number', defaultValue: '443' },
+  { key: 'DMWSLocation', label: 'DMWS Location', type: 'text', defaultValue: '', required: true, placeholder: '/DMWS/MeridioDMWS.asmx' },
+  { key: 'DMWSProxyHost', label: 'DMWS Proxy Host', type: 'text', defaultValue: '', group: 'DMWS Proxy' },
+  { key: 'DMWSProxyPort', label: 'DMWS Proxy Port', type: 'number', defaultValue: '', group: 'DMWS Proxy' },
+  { key: 'RMWSServerProtocol', label: 'RMWS Protocol', type: 'select', defaultValue: 'https',
+    options: [{ label: 'HTTPS', value: 'https' }, { label: 'HTTP', value: 'http' }], group: 'Records Mgmt' },
+  { key: 'RMWSServerName', label: 'RMWS Server', type: 'text', defaultValue: '', group: 'Records Mgmt', placeholder: 'meridio-rm.example.com' },
+  { key: 'RMWSServerPort', label: 'RMWS Port', type: 'number', defaultValue: '443', group: 'Records Mgmt' },
+  { key: 'RMWSLocation', label: 'RMWS Location', type: 'text', defaultValue: '', group: 'Records Mgmt', placeholder: '/RMWS/MeridioRMWS.asmx' },
+  { key: 'RMWSProxyHost', label: 'RMWS Proxy Host', type: 'text', defaultValue: '', group: 'RMWS Proxy' },
+  { key: 'RMWSProxyPort', label: 'RMWS Proxy Port', type: 'number', defaultValue: '', group: 'RMWS Proxy' },
+  { key: 'UserName', label: 'Username', type: 'text', defaultValue: '', required: true },
+  { key: 'Password', label: 'Password', type: 'password', defaultValue: '', required: true },
+  { key: 'MeridioWebClientProtocol', label: 'Web Client Protocol', type: 'text', defaultValue: '', group: 'Web Client' },
+  { key: 'MeridioWebClientServerName', label: 'Web Client Server', type: 'text', defaultValue: '', group: 'Web Client' },
+  { key: 'MeridioWebClientServerPort', label: 'Web Client Port', type: 'number', defaultValue: '', group: 'Web Client' },
+  { key: 'MeridioWebClientDocDownloadLocation', label: 'Web Client Download Path', type: 'text', defaultValue: '', group: 'Web Client' },
+];
+
+const SHAREDDRIVE_FIELDS: FieldDef[] = [
+  { key: 'Server', label: 'Server', type: 'text', defaultValue: '', required: true, placeholder: 'fileserver.example.com' },
+  { key: 'Domain/Realm', label: 'Domain / Kerberos Realm', type: 'text', defaultValue: '' },
+  { key: 'User Name', label: 'Username', type: 'text', defaultValue: '', required: true },
+  { key: 'Password', label: 'Password', type: 'password', defaultValue: '', required: true },
+  { key: 'Use SIDs', label: 'Use Windows SIDs', type: 'select', defaultValue: 'true',
+    options: [{ label: 'Yes', value: 'true' }, { label: 'No', value: 'false' }] },
+  { key: 'Bin Name', label: 'Throttle Bin Name', type: 'text', defaultValue: '', group: 'Advanced' },
+];
+
+const DOCUMENTUM_FIELDS: FieldDef[] = [
+  { key: 'docbasename', label: 'Docbase Name', type: 'text', defaultValue: '', required: true, placeholder: 'MyDocbase' },
+  { key: 'docbaseusername', label: 'Username', type: 'text', defaultValue: '', required: true },
+  { key: 'docbasepassword', label: 'Password', type: 'password', defaultValue: '', required: true },
+  { key: 'domain', label: 'Domain', type: 'text', defaultValue: '' },
+  { key: 'webtopbaseurl', label: 'Webtop Base URL', type: 'text', defaultValue: '', required: true, placeholder: 'https://documentum.example.com/webtop' },
+];
+
 /* ──────────────────────── Connector → field definitions map ──────────────────────── */
 
 const CONNECTOR_FIELDS: Record<string, FieldDef[]> = {
   [CLS.CMIS]: CMIS_FIELDS,
   [CLS.RESTAPI]: RESTAPI_FIELDS,
   [CLS.CONFLUENCE]: CONFLUENCE_FIELDS,
+  [CLS.CONFLUENCE_V6]: CONFLUENCE_V6_FIELDS,
+  [CLS.CONFLUENCE_LEGACY]: CONFLUENCE_FIELDS,
   [CLS.AMAZONS3]: AMAZONS3_FIELDS,
   [CLS.JIRA]: JIRA_FIELDS,
   [CLS.JDBC]: JDBC_FIELDS,
@@ -344,11 +614,26 @@ const CONNECTOR_FIELDS: Record<string, FieldDef[]> = {
   [CLS.SHAREPOINT]: SHAREPOINT_FIELDS,
   [CLS.EMAIL]: EMAIL_FIELDS,
   [CLS.WEB]: WEB_CRAWLER_FIELDS,
+  [CLS.FILESYSTEM]: FILESYSTEM_FIELDS,
+  [CLS.WIKI]: WIKI_FIELDS,
+  [CLS.RSS]: RSS_FIELDS,
+  [CLS.HDFS]: HDFS_FIELDS,
+  [CLS.ALFRESCO]: ALFRESCO_FIELDS,
+  [CLS.ALFRESCO_WEBSCRIPT]: ALFRESCO_WEBSCRIPT_FIELDS,
+  [CLS.CSV]: CSV_FIELDS,
+  [CLS.GENERIC]: GENERIC_FIELDS,
+  [CLS.GRIDFS]: GRIDFS_FIELDS,
+  [CLS.CSWS]: CSWS_FIELDS,
+  [CLS.FILENET]: FILENET_FIELDS,
+  [CLS.LIVELINK]: LIVELINK_FIELDS,
+  [CLS.MERIDIO]: MERIDIO_FIELDS,
+  [CLS.SHAREDDRIVE]: SHAREDDRIVE_FIELDS,
+  [CLS.DOCUMENTUM]: DOCUMENTUM_FIELDS,
 };
 
 /* ──────────────────────── CMIS vendor presets ──────────────────────── */
 
-const CMIS_VENDOR_PRESETS: Record<string, { label: string; values: Record<string, string> }> = {
+const CMIS_VENDOR_PRESETS: Record<string, { label: string; values: Record<string, string>; previewUrlTemplate: string; documentUrlTemplate: string }> = {
   alfresco: {
     label: 'Alfresco',
     values: {
@@ -356,6 +641,8 @@ const CMIS_VENDOR_PRESETS: Record<string, { label: string; values: Record<string
       path: '/alfresco/api/-default-/cmis/versions/1.1/atom',
       binding: 'atom', repositoryId: '-default-', cmisVendor: 'alfresco', maxFileSize: '0',
     },
+    previewUrlTemplate: '{protocol}://{server}:{port}/share',
+    documentUrlTemplate: '{protocol}://{server}:{port}/share/page/document-details?nodeRef=workspace://SpacesStore/{nodeId}',
   },
   sharepoint: {
     label: 'SharePoint (CMIS)',
@@ -364,6 +651,8 @@ const CMIS_VENDOR_PRESETS: Record<string, { label: string; values: Record<string
       path: '/_vti_bin/cmis/rest?getRepositories',
       binding: 'atom', repositoryId: '', cmisVendor: 'other', maxFileSize: '0',
     },
+    previewUrlTemplate: '{protocol}://{server}:{port}',
+    documentUrlTemplate: '{protocol}://{server}:{port}/_layouts/15/Doc.aspx?sourcedoc={nodeId}',
   },
   filenet: {
     label: 'IBM FileNet',
@@ -372,6 +661,8 @@ const CMIS_VENDOR_PRESETS: Record<string, { label: string; values: Record<string
       path: '/openfncmis_wlp/services/cmis',
       binding: 'atom', repositoryId: '', cmisVendor: 'other', maxFileSize: '0',
     },
+    previewUrlTemplate: '{protocol}://{server}:{port}/acce',
+    documentUrlTemplate: '{protocol}://{server}:{port}/acce/#browse/{nodeId}',
   },
   nuxeo: {
     label: 'Nuxeo',
@@ -380,6 +671,8 @@ const CMIS_VENDOR_PRESETS: Record<string, { label: string; values: Record<string
       path: '/nuxeo/atom/cmis',
       binding: 'atom', repositoryId: 'default', cmisVendor: 'other', maxFileSize: '0',
     },
+    previewUrlTemplate: '{protocol}://{server}:{port}/nuxeo',
+    documentUrlTemplate: '{protocol}://{server}:{port}/nuxeo/ui#!/doc/{nodeId}',
   },
   other: {
     label: 'Other CMIS Server',
@@ -387,14 +680,18 @@ const CMIS_VENDOR_PRESETS: Record<string, { label: string; values: Record<string
       protocol: 'https', port: '443', path: '', binding: 'atom',
       repositoryId: '', cmisVendor: 'other', maxFileSize: '0',
     },
+    previewUrlTemplate: '{protocol}://{server}:{port}',
+    documentUrlTemplate: '',
   },
 };
 
 /* ──────────────────────── REST API vendor presets ──────────────────────── */
 
-const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<string, string> }> = {
+const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<string, string>; previewUrlTemplate: string; documentUrlTemplate: string }> = {
   confluence: {
     label: 'Confluence (Atlassian)',
+    previewUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}/wiki',
+    documentUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}/wiki/spaces/{spaceKey}/pages/{nodeId}',
     values: {
       VENDOR: 'confluence', AUTHTYPE: 'basic', PROTOCOL: 'https', PORT: '443',
       BASEPATH: '/wiki/api/v2', SEEDENDPOINT: '/pages',
@@ -409,6 +706,8 @@ const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<st
   },
   jira: {
     label: 'Jira (Atlassian)',
+    previewUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}',
+    documentUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}/browse/{nodeId}',
     values: {
       VENDOR: 'jira', AUTHTYPE: 'basic', PROTOCOL: 'https', PORT: '443',
       BASEPATH: '/rest/api/3', SEEDENDPOINT: '/search', DOCENDPOINT: '/issue/{id}',
@@ -420,6 +719,8 @@ const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<st
   },
   wordpress: {
     label: 'WordPress',
+    previewUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}',
+    documentUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}/?p={nodeId}',
     values: {
       VENDOR: 'wordpress', AUTHTYPE: 'basic', PROTOCOL: 'https', PORT: '443',
       BASEPATH: '/wp-json/wp/v2', SEEDENDPOINT: '/posts', DOCENDPOINT: '/posts/{id}',
@@ -431,6 +732,8 @@ const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<st
   },
   github: {
     label: 'GitHub',
+    previewUrlTemplate: 'https://github.com',
+    documentUrlTemplate: 'https://github.com/{owner}/{repo}/blob/main/{path}',
     values: {
       VENDOR: 'github', AUTHTYPE: 'bearer', PROTOCOL: 'https',
       SERVER: 'api.github.com', PORT: '443',
@@ -444,6 +747,8 @@ const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<st
   },
   sharepoint: {
     label: 'SharePoint Online',
+    previewUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}',
+    documentUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}/_layouts/15/Doc.aspx?sourcedoc={nodeId}',
     values: {
       VENDOR: 'sharepoint', AUTHTYPE: 'bearer', PROTOCOL: 'https', PORT: '443',
       BASEPATH: '/_api',
@@ -459,6 +764,8 @@ const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<st
   },
   notion: {
     label: 'Notion',
+    previewUrlTemplate: 'https://www.notion.so',
+    documentUrlTemplate: 'https://www.notion.so/{nodeId}',
     values: {
       VENDOR: 'notion', AUTHTYPE: 'bearer', PROTOCOL: 'https',
       SERVER: 'api.notion.com', PORT: '443', BASEPATH: '/v1',
@@ -473,6 +780,8 @@ const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<st
   },
   drupal: {
     label: 'Drupal',
+    previewUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}',
+    documentUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}/node/{nodeId}',
     values: {
       VENDOR: 'drupal', AUTHTYPE: 'basic', PROTOCOL: 'https', PORT: '443',
       BASEPATH: '/jsonapi', SEEDENDPOINT: '/node/article', DOCENDPOINT: '/node/article/{id}',
@@ -485,6 +794,8 @@ const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<st
   },
   alfresco: {
     label: 'Alfresco (REST API)',
+    previewUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}/share',
+    documentUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}/share/page/document-details?nodeRef=workspace://SpacesStore/{nodeId}',
     values: {
       VENDOR: 'alfresco', AUTHTYPE: 'basic', PROTOCOL: 'https', PORT: '443',
       BASEPATH: '/alfresco/api/-default-/public/alfresco/versions/1',
@@ -499,6 +810,8 @@ const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<st
   },
   other: {
     label: 'Other (Custom)',
+    previewUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}',
+    documentUrlTemplate: '',
     values: {
       VENDOR: 'other', AUTHTYPE: 'none', PROTOCOL: 'https', PORT: '443',
       PAGINATIONTYPE: 'offset', PAGESIZE: '100',
@@ -548,7 +861,7 @@ const ACL_GROUP_API_PRESETS: Record<string, { groupApiUrl: string; groupMembersA
 /** Returns the vendor preset map if the connector class has sub-vendor presets */
 function getVendorPresets(
   connectorClass: string,
-): Record<string, { label: string; values: Record<string, string> }> | null {
+): Record<string, { label: string; values: Record<string, string>; previewUrlTemplate: string; documentUrlTemplate: string }> | null {
   if (connectorClass === CLS.CMIS) return CMIS_VENDOR_PRESETS;
   if (connectorClass === CLS.RESTAPI) return REST_API_VENDOR_PRESETS;
   return null;
@@ -562,6 +875,19 @@ function supportsAclEnforcement(connectorClass: string | undefined): boolean {
 /** Returns pre-populated ACL group API URLs for a given vendor */
 function getAclGroupApiDefaults(vendorId: string): { groupApiUrl: string; groupMembersApiUrl: string } {
   return ACL_GROUP_API_PRESETS[vendorId] || { groupApiUrl: '', groupMembersApiUrl: '' };
+}
+
+/** Resolve a preview URL template by replacing {key} placeholders with values from config.
+ *  Tries both lowercase and UPPERCASE keys (CMIS uses lowercase, REST API uses uppercase).
+ *  Strips default port suffixes (:443 for https, :80 for http). */
+function resolvePreviewUrlTemplate(template: string, configValues: Record<string, string>): string {
+  if (!template) return '';
+  let resolved = template.replace(/\{(\w+)\}/g, (_m, key) => {
+    return configValues[key] || configValues[key.toLowerCase()] || configValues[key.toUpperCase()] || '';
+  });
+  // Strip default ports for cleaner URLs
+  resolved = resolved.replace(/:443(\/|$)/, '$1').replace(/:80(\/|$)/, '$1');
+  return resolved;
 }
 
 /* ──────────────────────── Helper: build initial config values from field defs ──────────────────────── */
@@ -709,6 +1035,13 @@ export default function SourceCreate() {
     queryTestCount: 0,
     adminGroups: [],
     availableGroups: [],
+    previewUrl: '',
+    documentUrlTemplate: '',
+    navigateToSourceEnabled: false,
+    browseInSourceEnabled: false,
+    liveSampleUrls: null,
+    liveSampleLoading: false,
+    liveSampleTotalDocs: 0,
 
     editDataLoaded: false,
   });
@@ -716,7 +1049,11 @@ export default function SourceCreate() {
   useMount(() => {
     getConnectorTypes()
       .then((types) => {
-        const typedTypes = (types || []) as unknown as ConnectorType[];
+        let typedTypes = (types || []) as unknown as ConnectorType[];
+        // If ManifoldCF is unavailable, fall back to built-in connector definitions
+        if (typedTypes.length === 0) {
+          typedTypes = FALLBACK_CONNECTOR_TYPES;
+        }
         setState({ connectorTypes: typedTypes });
 
         // If editing, load existing source data
@@ -754,6 +1091,10 @@ export default function SourceCreate() {
               aclGroupApiUrl: config.groupApiUrl || '',
               aclGroupMembersApiUrl: config.groupMembersApiUrl || '',
               adminGroups: Array.isArray(config.adminGroups) ? config.adminGroups : [],
+              previewUrl: config.previewUrl || '',
+              documentUrlTemplate: config.documentUrlTemplate || '',
+              navigateToSourceEnabled: config.navigateToSourceEnabled === 'true',
+              browseInSourceEnabled: config.browseInSourceEnabled === 'true',
 
               editDataLoaded: true,
               step: 1, // Go directly to config step for edit
@@ -764,7 +1105,9 @@ export default function SourceCreate() {
         }
       })
       .catch(() => {
-        message.error('Failed to load connector types');
+        // Network error — still show built-in connectors so the page is usable
+        setState({ connectorTypes: FALLBACK_CONNECTOR_TYPES });
+        message.warning('Could not reach connector service. Using built-in connector definitions.');
       });
   });
 
@@ -827,9 +1170,17 @@ export default function SourceCreate() {
     }
     // Pre-populate ACL group API URLs from vendor defaults
     const aclDefaults = getAclGroupApiDefaults(vendorId);
+    // Auto-populate preview URL from vendor template
+    const previewUrlTemplate = presets[vendorId].previewUrlTemplate || '';
+    const resolvedPreviewUrl = resolvePreviewUrlTemplate(previewUrlTemplate, merged);
+    // Auto-populate document URL template from vendor preset
+    const docUrlTemplate = presets[vendorId].documentUrlTemplate || '';
+    const resolvedDocUrl = resolvePreviewUrlTemplate(docUrlTemplate, merged);
     setState({
       selectedVendor: vendorId,
       configValues: merged,
+      previewUrl: resolvedPreviewUrl,
+      documentUrlTemplate: resolvedDocUrl,
       testResult: null,
       testPassed: false,
       aclGroupApiUrl: aclDefaults.groupApiUrl,
@@ -839,8 +1190,28 @@ export default function SourceCreate() {
     });
   };
 
+  /** Keys that affect preview URL — re-resolve template when any of these change */
+  const URL_AFFECTING_KEYS = new Set([
+    'protocol', 'server', 'port', 'PROTOCOL', 'SERVER', 'PORT',
+  ]);
+
   const updateConfigValue = (key: string, val: string) => {
-    setState({ configValues: { ...state.configValues, [key]: val } });
+    const nextConfig = { ...state.configValues, [key]: val };
+    const patch: Partial<FormState> = { configValues: nextConfig };
+
+    // Auto-update preview URL when protocol/server/port change
+    if (URL_AFFECTING_KEYS.has(key) && state.selectedVendor && state.selectedConnector) {
+      const presets = getVendorPresets(state.selectedConnector.class_name);
+      if (presets && presets[state.selectedVendor]) {
+        const template = presets[state.selectedVendor].previewUrlTemplate || '';
+        patch.previewUrl = resolvePreviewUrlTemplate(template, nextConfig);
+        // Also update document URL template
+        const docTemplate = presets[state.selectedVendor].documentUrlTemplate || '';
+        patch.documentUrlTemplate = resolvePreviewUrlTemplate(docTemplate, nextConfig);
+      }
+    }
+
+    setState(patch as FormState);
   };
 
   const addExtraEntry = () => {
@@ -887,6 +1258,17 @@ export default function SourceCreate() {
         map[e.key.trim()] = e.value;
       }
     });
+    // Source system preview URL (for "Navigate to Source" feature)
+    if (state.previewUrl) {
+      map.previewUrl = state.previewUrl;
+    }
+    // Document URL template (for "Browse in Source" — vendor-agnostic with {nodeId} etc.)
+    if (state.documentUrlTemplate) {
+      map.documentUrlTemplate = state.documentUrlTemplate;
+    }
+    // Whether "Browse in Source" is enabled in chat app (user verified via Navigate to Source test)
+    map.navigateToSourceEnabled = state.navigateToSourceEnabled ? 'true' : 'false';
+    map.browseInSourceEnabled = state.browseInSourceEnabled ? 'true' : 'false';
     return map;
   };
 
@@ -1213,6 +1595,65 @@ export default function SourceCreate() {
         <Button type="dashed" onClick={addExtraEntry} style={{ marginTop: 8 }}>
           + Add Custom Parameter
         </Button>
+
+        {/* ── Source System Preview URL (for "Navigate to Source" in chatbot) ── */}
+        {(connClass === CLS.CMIS || connClass === CLS.RESTAPI) && (
+          <div style={{
+            marginTop: 24, padding: 16, borderRadius: 8,
+            border: '1px solid var(--ag-ant-color-border)',
+            background: state.previewUrl ? 'var(--ag-ant-color-primary-bg)' : 'transparent',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <span style={{ fontSize: 18 }}>🔗</span>
+              <span style={{ fontWeight: 600, fontSize: 14 }}>
+                {$i18n.get({ id: 'main.pages.Source.Create.index.previewUrl', dm: 'Source System URL' })}
+              </span>
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--ag-ant-color-text-secondary)', marginBottom: 12 }}>
+              {$i18n.get({
+                id: 'main.pages.Source.Create.index.previewUrlDesc',
+                dm: 'Web URL for the source system. Auto-populated from vendor, protocol, server and port settings — updates automatically when those fields change. Chatbot users can click "Navigate to Source" to open this URL. You may edit it manually if needed.',
+              })}
+            </div>
+            <div style={{ marginBottom: 8 }}>
+              <label style={{ display: 'block', marginBottom: 4, fontWeight: 500, fontSize: 13 }}>
+                {$i18n.get({ id: 'main.pages.Source.Create.index.previewUrlLabel', dm: 'Preview URL' })}
+              </label>
+              <Input
+                value={state.previewUrl}
+                onChange={(e) => setState({ previewUrl: e.target.value })}
+                placeholder="https://alfresco.example.com/share"
+                addonBefore="🌐"
+              />
+            </div>
+            {state.previewUrl && (
+              <div style={{ fontSize: 12 }}>
+                <a href={state.previewUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ag-ant-color-primary)' }}>
+                  {$i18n.get({ id: 'main.pages.Source.Create.index.testPreviewUrl', dm: '↗ Open preview URL to verify' })}
+                </a>
+              </div>
+            )}
+
+            {/* ── Document URL Template (for "Browse in Source" per-document) ── */}
+            <div style={{ marginTop: 16 }}>
+              <label style={{ display: 'block', marginBottom: 4, fontWeight: 500, fontSize: 13 }}>
+                {$i18n.get({ id: 'main.pages.Source.Create.index.documentUrlTemplateLabel', dm: 'Document URL Template' })}
+              </label>
+              <Input
+                value={state.documentUrlTemplate}
+                onChange={(e) => setState({ documentUrlTemplate: e.target.value })}
+                placeholder="e.g. {protocol}://{server}:{port}/share/page/document-details?nodeRef=workspace://SpacesStore/{nodeId}"
+                addonBefore="📄"
+              />
+              <div style={{ fontSize: 11, color: 'var(--ag-ant-color-text-tertiary)', marginTop: 4 }}>
+                {$i18n.get({
+                  id: 'main.pages.Source.Create.index.documentUrlTemplateHelp',
+                  dm: 'URL pattern to open a specific document in the source system. Placeholders: {nodeId} (document ID without version), {objectId} (full CMIS objectId), {protocol}, {server}, {port}, {path}. Auto-populated from vendor preset.',
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── ACL Enforcement Section (CMIS & REST API only) ── */}
         {supportsAclEnforcement(connClass) && (
@@ -1621,6 +2062,218 @@ export default function SourceCreate() {
                 <div style={{ fontSize: 12, color: 'var(--ag-ant-color-text-secondary)', marginTop: 8 }}>
                   {state.adminGroups.length} group{state.adminGroups.length !== 1 ? 's' : ''} selected —
                   members of these groups will have access to all documents during sync.
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Navigate to Source Test ── */}
+          {state.previewUrl && state.testPassed && (
+            <div style={{
+              marginBottom: 20, padding: 16, borderRadius: 8,
+              border: `1px solid ${(state.navigateToSourceEnabled || state.browseInSourceEnabled) ? '#b7eb8f' : 'var(--ag-ant-color-border)'}`,
+              background: (state.navigateToSourceEnabled || state.browseInSourceEnabled) ? '#f6ffed' : 'var(--ag-ant-color-fill-secondary)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <strong style={{ fontSize: 14 }}>Source Access Test</strong>
+                <Button
+                  onClick={() => {
+                    window.open(state.previewUrl, '_blank', 'noopener,noreferrer');
+                  }}
+                >
+                  Open Source URL
+                </Button>
+              </div>
+              <div style={{ fontSize: 13, color: 'var(--ag-ant-color-text-secondary)', marginBottom: 12 }}>
+                Verify that the source system is accessible by opening the URL below.
+                Then check the options you want to enable for users in the chat application.
+              </div>
+              <div style={{
+                padding: '8px 12px', borderRadius: 6, marginBottom: 16,
+                background: 'var(--ag-ant-color-fill-quaternary)', fontSize: 13,
+                wordBreak: 'break-all',
+              }}>
+                <a href={state.previewUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ag-ant-color-primary)' }}>
+                  {state.previewUrl}
+                </a>
+              </div>
+
+              {/* Checkbox 1: Navigate to Source */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <Checkbox
+                  checked={state.navigateToSourceEnabled}
+                  onChange={(e) => setState({ navigateToSourceEnabled: e.target.checked })}
+                >
+                  <div>
+                    <span style={{ fontSize: 13, fontWeight: 500 }}>Enable &ldquo;Navigate to Source&rdquo;</span>
+                    <div style={{ fontSize: 12, color: 'var(--ag-ant-color-text-tertiary)', marginTop: 2 }}>
+                      Users can open the source system home page from the chat app to browse directly.
+                    </div>
+                  </div>
+                </Checkbox>
+
+                {/* Checkbox 2: Browse in Source */}
+                <Checkbox
+                  checked={state.browseInSourceEnabled}
+                  onChange={(e) => setState({ browseInSourceEnabled: e.target.checked })}
+                >
+                  <div>
+                    <span style={{ fontSize: 13, fontWeight: 500 }}>Enable &ldquo;Browse in Source&rdquo;</span>
+                    <div style={{ fontSize: 12, color: 'var(--ag-ant-color-text-tertiary)', marginTop: 2 }}>
+                      Users can right-click a document and open it directly in the source system (e.g., Alfresco Share, SharePoint).
+                      {!state.documentUrlTemplate && (
+                        <span style={{ color: '#faad14', marginLeft: 4 }}>
+                          ⚠ No document URL template configured — set one in the config step for this to work.
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </Checkbox>
+
+                {/* Sample Browse in Source URLs — fetched from real indexed documents */}
+                {state.documentUrlTemplate && (() => {
+                  const tpl = state.documentUrlTemplate;
+                  const cfg = state.configValues || {};
+                  const vendor = state.selectedVendor || '';
+
+                  const proto = cfg.protocol || cfg.PROTOCOL || 'https';
+                  const server = cfg.server || cfg.SERVER || 'docs.example.com';
+                  const port = cfg.port || cfg.PORT || '443';
+
+                  // Function to load real sample URLs from indexed documents
+                  const loadLiveSamples = () => {
+                    if (!state.createdSourceId) {
+                      message.warning('Save the source first, then sync documents before loading live URLs.');
+                      return;
+                    }
+                    setState({ liveSampleLoading: true });
+                    getSampleSourceUrls(state.createdSourceId, 10)
+                      .then((data) => {
+                        setState({
+                          liveSampleUrls: data.sampleUrls,
+                          liveSampleTotalDocs: data.totalDocuments,
+                          liveSampleLoading: false,
+                        });
+                        if (data.sampleUrls.length === 0) {
+                          message.info('No documents indexed yet. Run a sync job first.');
+                        }
+                      })
+                      .catch((err) => {
+                        console.error('Failed to load sample URLs:', err);
+                        message.error('Failed to load sample URLs — documents may not be indexed yet.');
+                        setState({ liveSampleLoading: false });
+                      });
+                  };
+
+                  // Build fallback URLs from template when no live data available
+                  const buildFallbackUrl = (nodeId: string, fileName: string) => {
+                    return tpl
+                      .replace(/\{protocol\}/gi, proto)
+                      .replace(/\{server\}/gi, server)
+                      .replace(/\{port\}/gi, port)
+                      .replace(/:443(\/|$)/g, '$1').replace(/:80(\/|$)/g, '$1')
+                      .replace(/\{nodeId\}/g, nodeId)
+                      .replace(/\{objectId\}/g, nodeId)
+                      .replace(/\{path\}/g, 'docs/' + fileName)
+                      .replace(/\{fileName\}/g, fileName)
+                      .replace(/\{spaceKey\}/g, 'DEMO')
+                      .replace(/\{owner\}/g, 'acme')
+                      .replace(/\{repo\}/g, 'docs');
+                  };
+
+                  const hasLiveData = state.liveSampleUrls && state.liveSampleUrls.length > 0;
+
+                  return (
+                    <div style={{
+                      marginLeft: 24, marginTop: 4, padding: '10px 12px', borderRadius: 6,
+                      background: 'var(--ag-ant-color-fill-quaternary)', fontSize: 12,
+                      border: '1px dashed var(--ag-ant-color-border)',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                        <span style={{ fontSize: 11, color: 'var(--ag-ant-color-text-tertiary)' }}>
+                          {hasLiveData
+                            ? `${state.liveSampleUrls!.length} URLs from ${state.liveSampleTotalDocs} indexed documents — click to test:`
+                            : 'Sample URLs — click to test in a new tab:'}
+                        </span>
+                        {state.createdSourceId && (
+                          <Button
+                            size="small"
+                            type="link"
+                            loading={state.liveSampleLoading}
+                            onClick={loadLiveSamples}
+                            style={{ fontSize: 11, padding: '0 4px', height: 20 }}
+                          >
+                            {hasLiveData ? 'Refresh' : 'Load from indexed docs'}
+                          </Button>
+                        )}
+                      </div>
+
+                      {hasLiveData ? (
+                        /* Live URLs from real indexed documents */
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          {state.liveSampleUrls!.map((item, idx) => (
+                            <div key={idx} style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                              <span style={{ color: 'var(--ag-ant-color-text-quaternary)', fontSize: 11, flexShrink: 0, minWidth: 16, textAlign: 'right' }}>{idx + 1}.</span>
+                              <a
+                                href={item.sourceUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={item.fileName}
+                                style={{ wordBreak: 'break-all', color: 'var(--ag-ant-color-primary)', fontFamily: 'monospace', fontSize: 11.5, lineHeight: '18px' }}
+                              >
+                                {item.sourceUrl}
+                              </a>
+                              <span style={{ color: 'var(--ag-ant-color-text-quaternary)', fontSize: 10, flexShrink: 0, whiteSpace: 'nowrap', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {item.fileName}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        /* Fallback: template-generated sample URLs */
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          {['3f5a8b12-4c7d-49e1-a6b3-8e2f10d5c7a9', 'b7e4d821-9f3a-4b6c-82d5-1a7c3e9f0b54', 'd12c9e47-5a8b-4f31-b6d2-7e3a1c8f9054'].map((id, idx) => {
+                            const url = buildFallbackUrl(id, 'sample-document.pdf');
+                            return (
+                              <div key={idx} style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                                <span style={{ color: 'var(--ag-ant-color-text-quaternary)', fontSize: 11, flexShrink: 0, minWidth: 16, textAlign: 'right' }}>{idx + 1}.</span>
+                                <a
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{ wordBreak: 'break-all', color: 'var(--ag-ant-color-text-quaternary)', fontFamily: 'monospace', fontSize: 11.5, lineHeight: '18px', fontStyle: 'italic' }}
+                                >
+                                  {url}
+                                </a>
+                              </div>
+                            );
+                          })}
+                          <div style={{ fontSize: 10, color: 'var(--ag-ant-color-text-quaternary)', fontStyle: 'italic', marginTop: 2 }}>
+                            These are template previews with placeholder IDs. Save and sync documents, then click &ldquo;Load from indexed docs&rdquo; to see real URLs.
+                          </div>
+                        </div>
+                      )}
+
+                      <div style={{ fontSize: 11, color: 'var(--ag-ant-color-text-quaternary)', marginTop: 8, fontStyle: 'italic' }}>
+                        Template: <code style={{ fontSize: 11 }}>{state.documentUrlTemplate}</code>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {(state.navigateToSourceEnabled || state.browseInSourceEnabled) && (
+                <div style={{
+                  marginTop: 12, padding: '6px 10px', borderRadius: 4,
+                  background: '#f6ffed', border: '1px solid #b7eb8f', fontSize: 12,
+                  color: '#389e0d',
+                }}>
+                  <Tag color="success">ENABLED</Tag>
+                  {state.navigateToSourceEnabled && state.browseInSourceEnabled
+                    ? 'Both "Navigate to Source" and "Browse in Source" will be available in chat.'
+                    : state.navigateToSourceEnabled
+                      ? '"Navigate to Source" will be available in chat.'
+                      : '"Browse in Source" will be available in chat.'}
                 </div>
               )}
             </div>

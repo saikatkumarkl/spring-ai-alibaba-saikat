@@ -335,6 +335,10 @@ public class ChatController {
 			@RequestParam(defaultValue = "20") int size,
 			@RequestParam(required = false) String mimeType,
 			@RequestParam(required = false) String createdBy,
+			@RequestParam(required = false) String dateRange,
+			@RequestParam(required = false) String sizeRange,
+			@RequestParam(required = false) String status,
+			@RequestParam(required = false) String classification,
 			HttpSession session) {
 		String email = (String) session.getAttribute("email");
 		if (email == null) {
@@ -344,7 +348,8 @@ public class ChatController {
 		if (query != null && !query.isBlank()) {
 			adminApi.logAuditAction(email, "DOCUMENT_SEARCH", "app", appId, "query=" + query).subscribe();
 		}
-		return adminApi.searchDocuments(email, appId, query, from, size, mimeType, createdBy)
+		return adminApi.searchDocuments(email, appId, query, from, size, mimeType, createdBy,
+				dateRange, sizeRange, status, classification)
 			.map(data -> ResponseEntity.ok(data))
 			.onErrorResume(error -> {
 				log.error("Failed to search documents", error);
@@ -424,6 +429,171 @@ public class ChatController {
 			.onErrorResume(error -> {
 				log.error("Failed to browse authorities", error);
 				return Mono.just(ResponseEntity.internalServerError().build());
+			});
+	}
+
+	/**
+	 * Get source system preview URLs for "Navigate to Source" feature.
+	 */
+	@GetMapping("/source-preview-url")
+	public Mono<ResponseEntity<Map<String, Object>>> getSourcePreviewUrl(
+			@RequestParam String appId,
+			HttpSession session) {
+		String jwtToken = (String) session.getAttribute("token");
+		if (jwtToken == null) {
+			return Mono.just(ResponseEntity.status(401).build());
+		}
+		return adminApi.getSourcePreviewUrl(jwtToken, appId)
+			.map(data -> ResponseEntity.ok(data))
+			.onErrorResume(error -> {
+				log.error("Failed to get source preview URLs", error);
+				return Mono.just(ResponseEntity.internalServerError().build());
+			});
+	}
+
+	/**
+	 * Get source system URL for a specific document (Browse in Source).
+	 */
+	@GetMapping("/document-source-url")
+	public Mono<ResponseEntity<Map<String, Object>>> getDocumentSourceUrl(
+			@RequestParam String appId,
+			@RequestParam String objectId,
+			@RequestParam String kbId,
+			HttpSession session) {
+		String email = (String) session.getAttribute("email");
+		if (email == null) {
+			return Mono.just(ResponseEntity.status(401).build());
+		}
+		return adminApi.getDocumentSourceUrl(email, appId, objectId, kbId)
+			.map(data -> ResponseEntity.ok(data))
+			.onErrorResume(error -> {
+				log.error("Failed to get document source URL", error);
+				return Mono.just(ResponseEntity.internalServerError().build());
+			});
+	}
+
+	// ── Knowledge Bases Proxy ───────────────────────────────────────────
+
+	/**
+	 * List knowledge bases linked to an application.
+	 */
+	@GetMapping("/knowledge-bases")
+	public Mono<ResponseEntity<List<Map<String, Object>>>> listKnowledgeBases(
+			@RequestParam String appId,
+			HttpSession session) {
+		String jwtToken = (String) session.getAttribute("token");
+		if (jwtToken == null) return Mono.just(ResponseEntity.status(401).build());
+		return adminApi.listKnowledgeBases(jwtToken, appId)
+			.map(data -> ResponseEntity.ok(data))
+			.onErrorResume(error -> {
+				log.error("Failed to list knowledge bases", error);
+				return Mono.just(ResponseEntity.ok(List.of()));
+			});
+	}
+
+	// ── CMIS Browse Proxy Endpoints ─────────────────────────────────────
+
+	/**
+	 * Browse a CMIS folder for the file browser UI.
+	 */
+	@GetMapping("/cmis/browse")
+	public Mono<ResponseEntity<Map<String, Object>>> browseCmisFolder(
+			@RequestParam String appId,
+			@RequestParam(required = false) String kbId,
+			@RequestParam(required = false) String folderId,
+			HttpSession session) {
+		String jwtToken = (String) session.getAttribute("token");
+		if (jwtToken == null) return Mono.just(ResponseEntity.status(401).build());
+		return adminApi.browseCmisFolder(jwtToken, appId, kbId, folderId)
+			.map(data -> ResponseEntity.ok(data))
+			.onErrorResume(error -> {
+				log.error("CMIS browse failed", error);
+				return Mono.just(ResponseEntity.status(500).body(Map.of("error", error.getMessage())));
+			});
+	}
+
+	/**
+	 * Upload a document to a CMIS folder.
+	 */
+	@PostMapping("/cmis/upload")
+	public Mono<ResponseEntity<Map<String, Object>>> uploadCmisDocument(
+			@RequestParam String appId,
+			@RequestParam(required = false) String folderId,
+			@RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+			HttpSession session) {
+		String jwtToken = (String) session.getAttribute("token");
+		if (jwtToken == null) return Mono.just(ResponseEntity.status(401).build());
+		try {
+			String fileName = file.getOriginalFilename();
+			if (fileName == null || fileName.isBlank()) fileName = "uploaded_file";
+			String contentType = file.getContentType();
+			if (contentType == null || contentType.isBlank()) contentType = "application/octet-stream";
+			return adminApi.uploadCmisDocument(jwtToken, appId, folderId, fileName, contentType, file.getBytes())
+				.map(data -> ResponseEntity.ok(data))
+				.onErrorResume(error -> {
+					log.error("CMIS upload failed", error);
+					return Mono.just(ResponseEntity.status(500).body(Map.of("error", error.getMessage())));
+				});
+		}
+		catch (Exception e) {
+			return Mono.just(ResponseEntity.status(500).body(Map.of("error", e.getMessage())));
+		}
+	}
+
+	/**
+	 * Delete a CMIS object.
+	 */
+	@DeleteMapping("/cmis/delete")
+	public Mono<ResponseEntity<Map<String, Object>>> deleteCmisObject(
+			@RequestParam String appId,
+			@RequestParam String objectId,
+			@RequestParam(defaultValue = "true") boolean allVersions,
+			HttpSession session) {
+		String jwtToken = (String) session.getAttribute("token");
+		if (jwtToken == null) return Mono.just(ResponseEntity.status(401).build());
+		return adminApi.deleteCmisObject(jwtToken, appId, objectId, allVersions)
+			.map(data -> ResponseEntity.ok(data))
+			.onErrorResume(error -> {
+				log.error("CMIS delete failed", error);
+				return Mono.just(ResponseEntity.status(500).body(Map.of("error", error.getMessage())));
+			});
+	}
+
+	/**
+	 * Rename a CMIS object.
+	 */
+	@PutMapping("/cmis/rename")
+	public Mono<ResponseEntity<Map<String, Object>>> renameCmisObject(
+			@RequestParam String appId,
+			@RequestParam String objectId,
+			@RequestParam String newName,
+			HttpSession session) {
+		String jwtToken = (String) session.getAttribute("token");
+		if (jwtToken == null) return Mono.just(ResponseEntity.status(401).build());
+		return adminApi.renameCmisObject(jwtToken, appId, objectId, newName)
+			.map(data -> ResponseEntity.ok(data))
+			.onErrorResume(error -> {
+				log.error("CMIS rename failed", error);
+				return Mono.just(ResponseEntity.status(500).body(Map.of("error", error.getMessage())));
+			});
+	}
+
+	/**
+	 * Create a new folder in CMIS.
+	 */
+	@PostMapping("/cmis/create-folder")
+	public Mono<ResponseEntity<Map<String, Object>>> createCmisFolder(
+			@RequestParam String appId,
+			@RequestParam(required = false) String parentFolderId,
+			@RequestParam String folderName,
+			HttpSession session) {
+		String jwtToken = (String) session.getAttribute("token");
+		if (jwtToken == null) return Mono.just(ResponseEntity.status(401).build());
+		return adminApi.createCmisFolder(jwtToken, appId, parentFolderId, folderName)
+			.map(data -> ResponseEntity.ok(data))
+			.onErrorResume(error -> {
+				log.error("CMIS create folder failed", error);
+				return Mono.just(ResponseEntity.status(500).body(Map.of("error", error.getMessage())));
 			});
 	}
 

@@ -6,13 +6,12 @@ import {
   copySource,
   deleteSource,
   getSourceList,
+  startSync,
   testConnection,
 } from '@/services/source';
 import { IGetSourceListParams } from '@/types/source';
 import { AlertDialog, Button, IconFont, message } from '@spark-ai/design';
 import { useMount, useSetState } from 'ahooks';
-import { Flex } from 'antd';
-import classNames from 'classnames';
 import { useRef } from 'react';
 import { history } from 'umi';
 import SourceCard from './components/Card';
@@ -57,8 +56,8 @@ export default function SourceList() {
 
   const handleSearch = (val: string) => {
     isSearchRef.current = !!val;
-    setState({ current: 1 });
-    fetchList({ current: 1 });
+    setState({ current: 1, name: val });
+    fetchList({ current: 1, name: val });
   };
 
   const handleDelete = (id: string) => {
@@ -170,25 +169,44 @@ export default function SourceList() {
       case 'test':
         handleTestConnection(id);
         break;
+      case 'sync':
+        handleStartSync(id);
+        break;
       default:
         break;
     }
   };
 
-  const right = state?.list?.length ? (
-    <Flex align="center" className={styles['right']}>
-      <Button
-        type="primary"
-        icon={<IconFont type="spark-plus-line" className={styles['addicon']} />}
-        onClick={() => history.push('/source/create')}
-      >
-        {$i18n.get({
-          id: 'main.pages.Source.List.index.createSource',
-          dm: 'Create Source',
-        })}
-      </Button>
-    </Flex>
-  ) : null;
+  const handleStartSync = (id: string) => {
+    message.loading({
+      content: $i18n.get({
+        id: 'main.pages.Source.List.index.startingSync',
+        dm: 'Starting sync...',
+      }),
+      key: 'sync',
+    });
+    startSync(id)
+      .then(() => {
+        message.success({
+          content: $i18n.get({
+            id: 'main.pages.Source.List.index.syncStarted',
+            dm: 'Sync started successfully',
+          }),
+          key: 'sync',
+        });
+        // Refresh list to show updated status
+        fetchList();
+      })
+      .catch(() => {
+        message.error({
+          content: $i18n.get({
+            id: 'main.pages.Source.List.index.syncFailed',
+            dm: 'Failed to start sync',
+          }),
+          key: 'sync',
+        });
+      });
+  };
 
   return (
     <InnerLayout
@@ -208,20 +226,30 @@ export default function SourceList() {
         },
       ]}
       left={state.total}
-      right={right}
     >
       <div>
         {!state.list.length && !state.loading && !isSearchRef.current ? null : (
-          <Search
-            placeholder={$i18n.get({
-              id: 'main.pages.Source.List.index.searchPlaceholder',
-              dm: 'Search source by name',
-            })}
-            value={state.name}
-            onChange={(val) => setState({ name: val })}
-            className={classNames('mx-[20px] my-[16px]')}
-            onSearch={handleSearch}
-          />
+          <div className={styles['search-wrapper']}>
+            <Search
+              placeholder={$i18n.get({
+                id: 'main.pages.Source.List.index.searchPlaceholder',
+                dm: 'Search source by name',
+              })}
+              value={state.name}
+              onChange={(val) => setState({ name: val })}
+              onSearch={handleSearch}
+            />
+            <Button
+              type="primary"
+              icon={<IconFont type="spark-plus-line" className={styles['addicon']} />}
+              onClick={() => history.push('/source/create')}
+            >
+              {$i18n.get({
+                id: 'main.pages.Source.List.index.createSource',
+                dm: 'Create Source',
+              })}
+            </Button>
+          </div>
         )}
         <CardList
           pagination={{

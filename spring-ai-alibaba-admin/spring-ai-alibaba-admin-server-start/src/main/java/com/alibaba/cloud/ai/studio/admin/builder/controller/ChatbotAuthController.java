@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -643,6 +644,17 @@ email, appId));
 		context.setUsername(userEmail != null ? userEmail : "chatbot-service");
 		context.setWorkspaceId(CHATBOT_WORKSPACE_ID);
 		context.setStartTime(System.currentTimeMillis());
+
+		// Resolve user groups for ACL-filtered RAG chunk retrieval
+		if (userEmail != null) {
+			List<String> kbIds = resolveKbIds(request.getAppId());
+			if (!kbIds.isEmpty()) {
+				Set<String> userGroups = resolveUserGroups(userEmail, kbIds);
+				context.setUserGroups(userGroups);
+				log.info("Chatbot ACL: user={}, groups={}", userEmail, userGroups);
+			}
+		}
+
 		RequestContextHolder.setRequestContext(context);
 
 		// Use draft=true to match console behavior (can use unpublished apps)
@@ -777,38 +789,113 @@ email, appId));
 	}
 
 	/**
-	 * Build ACL filter clause for OpenSearch queries.
-	 * Checks allow_token_document contains the user AND deny_token_document does NOT contain the user.
+	 * Resolve the groups the user belongs to by querying the {kbId}_authority index.
+	 * Looks up the user by principal_id (email), then returns all group identifiers
+	 * from the "member_of" field. These are used to enrich ACL queries so that
+	 * documents accessible via group membership are visible.
+	 *
+	 * @param email  the user's email (lowercased)
+	 * @param kbIds  the knowledge base IDs to search
+	 * @return set of group tokens (lowercased) the user is a member of
 	 */
-	private Map<String, Object> buildAclFilter(String username) {
+	private Set<String> resolveUserGroups(String email, List<String> kbIds) {
+		Set<String> groups = new LinkedHashSet<>();
+		String lowerEmail = email.toLowerCase();
+
+		for (String kbId : kbIds) {
+			String index = kbId + "_authority";
+			try {
+				// Search for the user by principal_id (exact match)
+				Map<String, Object> query = Map.of(
+					"query", Map.of("bool", Map.of(
+						"must", List.of(
+							Map.of("term", Map.of("principal_id", lowerEmail))
+						)
+					)),
+					"size", 1,
+					"_source", List.of("member_of")
+				);
+				String queryJson = objectMapper.writeValueAsString(query);
+				Map<String, Object> result = executeOpenSearchQuery(index, queryJson);
+
+				@SuppressWarnings("unchecked")
+				Map<String, Object> hits = (Map<String, Object>) result.get("hits");
+				@SuppressWarnings("unchecked")
+				List<Map<String, Object>> hitList = (List<Map<String, Object>>) hits.get("hits");
+
+				for (Map<String, Object> hit : hitList) {
+					@SuppressWarnings("unchecked")
+					Map<String, Object> source = (Map<String, Object>) hit.get("_source");
+					@SuppressWarnings("unchecked")
+					List<String> memberOf = (List<String>) source.getOrDefault("member_of", List.of());
+					for (String group : memberOf) {
+						groups.add(group.toLowerCase());
+					}
+				}
+			}
+			catch (Exception e) {
+				log.debug("Could not resolve groups from authority index {}: {}", index, e.getMessage());
+			}
+		}
+		log.debug("Resolved {} groups for user {}: {}", groups.size(), lowerEmail, groups);
+		return groups;
+	}
+
+	/**
+	 * Build ACL filter clause for OpenSearch queries.
+	 * Checks allow_token_document contains the user OR any of the user's groups,
+	 * AND deny_token_document does NOT contain the user.
+	 *
+	 * @param username   the user's email (lowercased)
+	 * @param userGroups the groups the user belongs to (from resolveUserGroups)
+	 */
+	private Map<String, Object> buildAclFilter(String username, Set<String> userGroups) {
 		String lowerUser = username.toLowerCase();
-		// ACL filter: user must be in allow_token_document, must NOT be in deny_token_document
-		// Also allow if allow_token_document is "__nosecurity__" (no ACL set)
+
+		// Build "should" clauses: user email + __nosecurity__ + all user groups
+		List<Object> shouldClauses = new ArrayList<>();
+		shouldClauses.add(Map.of("term", Map.of("allow_token_document", lowerUser)));
+		shouldClauses.add(Map.of("term", Map.of("allow_token_document", "__nosecurity__")));
+		for (String group : userGroups) {
+			shouldClauses.add(Map.of("term", Map.of("allow_token_document", group)));
+		}
+
+		// Build "must_not" clauses: deny for user email + all user groups
+		List<Object> mustNotClauses = new ArrayList<>();
+		mustNotClauses.add(Map.of("term", Map.of("deny_token_document", lowerUser)));
+		for (String group : userGroups) {
+			mustNotClauses.add(Map.of("term", Map.of("deny_token_document", group)));
+		}
+
 		Map<String, Object> aclFilter = new LinkedHashMap<>();
 		aclFilter.put("bool", Map.of(
-			"should", List.of(
-				Map.of("term", Map.of("allow_token_document", lowerUser)),
-				Map.of("term", Map.of("allow_token_document", "__nosecurity__"))
-			),
+			"should", shouldClauses,
 			"minimum_should_match", 1,
-			"must_not", List.of(
-				Map.of("term", Map.of("deny_token_document", lowerUser))
-			)
+			"must_not", mustNotClauses
 		));
 		return aclFilter;
 	}
 
 	/**
 	 * Build ACL filter for RAG chunks (uses 'authorities' field).
+	 * Includes the user's email AND all groups they belong to.
+	 *
+	 * @param username   the user's email (lowercased)
+	 * @param userGroups the groups the user belongs to (from resolveUserGroups)
 	 */
-	private Map<String, Object> buildRagAclFilter(String username) {
+	private Map<String, Object> buildRagAclFilter(String username, Set<String> userGroups) {
 		String lowerUser = username.toLowerCase();
+
+		List<Object> shouldClauses = new ArrayList<>();
+		shouldClauses.add(Map.of("term", Map.of("authorities", lowerUser)));
+		shouldClauses.add(Map.of("term", Map.of("authorities", "__nosecurity__")));
+		for (String group : userGroups) {
+			shouldClauses.add(Map.of("term", Map.of("authorities", group)));
+		}
+
 		Map<String, Object> aclFilter = new LinkedHashMap<>();
 		aclFilter.put("bool", Map.of(
-			"should", List.of(
-				Map.of("term", Map.of("authorities", lowerUser)),
-				Map.of("term", Map.of("authorities", "__nosecurity__"))
-			),
+			"should", shouldClauses,
 			"minimum_should_match", 1
 		));
 		return aclFilter;
@@ -853,7 +940,11 @@ email, appId));
 			@RequestParam(required = false) String sortField,
 			@RequestParam(defaultValue = "desc") String sortOrder,
 			@RequestParam(required = false) String mimeType,
-			@RequestParam(required = false) String createdBy) {
+			@RequestParam(required = false) String createdBy,
+			@RequestParam(required = false) String dateRange,
+			@RequestParam(required = false) String sizeRange,
+			@RequestParam(required = false) String status,
+			@RequestParam(required = false) String classification) {
 		try {
 			List<String> kbIds = resolveKbIds(appId);
 			if (kbIds.isEmpty()) {
@@ -861,7 +952,8 @@ email, appId));
 			}
 
 			String lowerEmail = email.toLowerCase();
-			Map<String, Object> aclFilter = buildAclFilter(lowerEmail);
+			Set<String> userGroups = resolveUserGroups(lowerEmail, kbIds);
+			Map<String, Object> aclFilter = buildAclFilter(lowerEmail, userGroups);
 
 			// Build query
 			List<Object> mustClauses = new ArrayList<>();
@@ -886,6 +978,44 @@ email, appId));
 			if (createdBy != null && !createdBy.isBlank()) {
 				filterClauses.add(Map.of("term", Map.of("cmis:createdBy.keyword", createdBy)));
 			}
+			if (status != null && !status.isBlank()) {
+				filterClauses.add(Map.of("term", Map.of("digi:status.keyword", status)));
+			}
+			if (classification != null && !classification.isBlank()) {
+				filterClauses.add(Map.of("term", Map.of("sc:classification.keyword", classification)));
+			}
+
+			// Date range filter
+			if (dateRange != null && !dateRange.isBlank()) {
+				java.time.Instant now = java.time.Instant.now();
+				String gte = null;
+				switch (dateRange) {
+					case "today" -> gte = now.truncatedTo(java.time.temporal.ChronoUnit.DAYS).toString();
+					case "week" -> gte = now.minus(7, java.time.temporal.ChronoUnit.DAYS).toString();
+					case "month" -> gte = now.minus(30, java.time.temporal.ChronoUnit.DAYS).toString();
+					case "quarter" -> gte = now.minus(90, java.time.temporal.ChronoUnit.DAYS).toString();
+					case "year" -> gte = now.minus(365, java.time.temporal.ChronoUnit.DAYS).toString();
+					case "older" -> { /* gte stays null = no lower bound; we add lte instead */ }
+				}
+				if ("older".equals(dateRange)) {
+					String lte = now.minus(365, java.time.temporal.ChronoUnit.DAYS).toString();
+					filterClauses.add(Map.of("range", Map.of("cmis:lastModificationDate", Map.of("lte", lte))));
+				} else if (gte != null) {
+					filterClauses.add(Map.of("range", Map.of("cmis:lastModificationDate", Map.of("gte", gte))));
+				}
+			}
+
+			// File size range filter (cmis:contentStreamLength is text, so we use script filter)
+			if (sizeRange != null && !sizeRange.isBlank()) {
+				long minBytes = 0, maxBytes = Long.MAX_VALUE;
+				switch (sizeRange) {
+					case "small" -> maxBytes = 1048576; // <1MB
+					case "medium" -> { minBytes = 1048576; maxBytes = 10485760; } // 1-10MB
+					case "large" -> minBytes = 10485760; // >10MB
+				}
+				String script = "long s = 0; try { s = Long.parseLong(doc['cmis:contentStreamLength.keyword'].value); } catch(Exception e) {} return s >= " + minBytes + "L && s <= " + maxBytes + "L";
+				filterClauses.add(Map.of("script", Map.of("script", Map.of("source", script, "lang", "painless"))));
+			}
 
 			Map<String, Object> boolQuery = new LinkedHashMap<>();
 			if (!mustClauses.isEmpty()) {
@@ -909,10 +1039,23 @@ email, appId));
 			}
 
 			// Aggregations for facets
-			Map<String, Object> aggs = Map.of(
-				"mime_types", Map.of("terms", Map.of("field", "mime-type.keyword", "size", 20)),
-				"created_by", Map.of("terms", Map.of("field", "cmis:createdBy.keyword", "size", 20))
-			);
+			Map<String, Object> aggs = new LinkedHashMap<>();
+			aggs.put("mime_types", Map.of("terms", Map.of("field", "mime-type.keyword", "size", 20)));
+			aggs.put("created_by", Map.of("terms", Map.of("field", "cmis:createdBy.keyword", "size", 20)));
+			aggs.put("document_status", Map.of("terms", Map.of("field", "digi:status.keyword", "size", 20)));
+			aggs.put("classification", Map.of("terms", Map.of("field", "sc:classification.keyword", "size", 20)));
+			// Date histogram for date modified facets
+			aggs.put("date_modified", Map.of("date_range", Map.of(
+				"field", "cmis:lastModificationDate",
+				"ranges", List.of(
+					Map.of("key", "today", "from", "now/d"),
+					Map.of("key", "week", "from", "now-7d/d"),
+					Map.of("key", "month", "from", "now-30d/d"),
+					Map.of("key", "quarter", "from", "now-90d/d"),
+					Map.of("key", "year", "from", "now-365d/d"),
+					Map.of("key", "older", "to", "now-365d/d")
+				)
+			)));
 
 			Map<String, Object> requestBody = new LinkedHashMap<>();
 			requestBody.put("query", Map.of("bool", boolQuery));
@@ -959,6 +1102,17 @@ email, appId));
 					doc.put("objectId", source.getOrDefault("cmis:objectId",
 							source.getOrDefault("url", "")));
 					doc.put("score", hit.get("_score"));
+					// Extract contentPath from url field (e.g. …?contentPath=/Sites/…/file.ext)
+					String urlField = String.valueOf(source.getOrDefault("url", ""));
+					String contentPath = "";
+					if (urlField.contains("contentPath=")) {
+						try {
+							String raw = urlField.substring(urlField.indexOf("contentPath=") + "contentPath=".length());
+							if (raw.contains("&")) raw = raw.substring(0, raw.indexOf("&"));
+							contentPath = java.net.URLDecoder.decode(raw, java.nio.charset.StandardCharsets.UTF_8);
+						} catch (Exception ignored) {}
+					}
+					doc.put("contentPath", contentPath);
 					// Include all remaining metadata for detailed view
 					Map<String, Object> metadata = new LinkedHashMap<>(source);
 					// Remove ACL fields from response (security: don't expose ACL internals)
@@ -1007,6 +1161,9 @@ email, appId));
 			response.put("from", from);
 			response.put("size", size);
 			response.put("facets", facets);
+			// Include the resolved user identity and groups used for ACL filtering
+			response.put("username", lowerEmail);
+			response.put("userGroups", userGroups);
 
 			return Result.success(response);
 		}
@@ -1034,7 +1191,8 @@ email, appId));
 			}
 
 			String lowerEmail = email.toLowerCase();
-			Map<String, Object> aclFilter = buildRagAclFilter(lowerEmail);
+			Set<String> userGroups = resolveUserGroups(lowerEmail, kbIds);
+			Map<String, Object> aclFilter = buildRagAclFilter(lowerEmail, userGroups);
 
 			// Fulltext search on RAG chunks with ACL filter
 			// Search content, file title, AND metadata fields (file_name, created_by, mime_type, object_id)
@@ -1105,6 +1263,9 @@ email, appId));
 			response.put("chunks", chunks);
 			response.put("total", totalHits);
 			response.put("query", query);
+			// Include the resolved user identity and groups used for ACL filtering
+			response.put("username", lowerEmail);
+			response.put("userGroups", userGroups);
 
 			return Result.success(response);
 		}
@@ -1120,18 +1281,32 @@ email, appId));
 	@SuppressWarnings("unchecked")
 	private Map<String, Object> extractFacets(Map<String, Object> aggregations) {
 		Map<String, Object> facets = new LinkedHashMap<>();
+		// Label map for date range buckets
+		Map<String, String> dateLabels = Map.of(
+			"today", "Today", "week", "This Week", "month", "This Month",
+			"quarter", "This Quarter", "year", "This Year", "older", "Older"
+		);
 		for (Map.Entry<String, Object> entry : aggregations.entrySet()) {
 			Map<String, Object> agg = (Map<String, Object>) entry.getValue();
 			List<Map<String, Object>> buckets = (List<Map<String, Object>>) agg.get("buckets");
 			if (buckets != null) {
 				List<Map<String, Object>> facetItems = new ArrayList<>();
 				for (Map<String, Object> bucket : buckets) {
-					facetItems.add(Map.of(
-						"value", bucket.get("key"),
-						"count", bucket.get("doc_count")
-					));
+					long count = ((Number) bucket.get("doc_count")).longValue();
+					if (count == 0) continue; // Skip empty buckets
+					Map<String, Object> item = new LinkedHashMap<>();
+					item.put("value", bucket.get("key"));
+					item.put("count", count);
+					// Add label for date range buckets
+					if ("date_modified".equals(entry.getKey())) {
+						String key = String.valueOf(bucket.get("key"));
+						item.put("label", dateLabels.getOrDefault(key, key));
+					}
+					facetItems.add(item);
 				}
-				facets.put(entry.getKey(), facetItems);
+				if (!facetItems.isEmpty()) {
+					facets.put(entry.getKey(), facetItems);
+				}
 			}
 		}
 		return facets;
@@ -1211,6 +1386,514 @@ email, appId));
 				response.getWriter().write("Download failed: " + e.getMessage());
 			}
 			catch (Exception ignored) {}
+		}
+	}
+
+	// ==================== Source System Navigation ====================
+
+	/**
+	 * Get the source system preview URL(s) for an app.
+	 * Resolves appId -> kbIds -> syncJobs -> sourceIds -> connection_config.previewUrl.
+	 */
+	@Operation(summary = "Get source system preview URLs for an app")
+	@GetMapping("/source-preview-url")
+	public Result<Map<String, Object>> getSourcePreviewUrl(
+			@RequestParam String appId,
+			HttpServletRequest request) {
+		try {
+			String email = extractChatbotUserEmail(request);
+			if (email == null) {
+				return Result.error(401, "Unauthorized");
+			}
+
+			List<String> kbIds = resolveKbIds(appId);
+			if (kbIds.isEmpty()) {
+				return Result.error(400, "No knowledge base configured for this app");
+			}
+
+			List<Map<String, Object>> sources = new ArrayList<>();
+			for (String kbId : kbIds) {
+				try {
+					// Get source_id from knowledge_sync table
+					List<Map<String, Object>> syncRows = jdbcTemplate.queryForList(
+						"SELECT source_id FROM knowledge_sync WHERE kb_id = ? AND source_id IS NOT NULL ORDER BY gmt_modified DESC LIMIT 1", kbId);
+					if (syncRows.isEmpty()) continue;
+					String sourceId = String.valueOf(syncRows.get(0).get("source_id"));
+					if (sourceId.isBlank() || "null".equals(sourceId)) continue;
+
+					// Get source system connection config
+					List<Map<String, Object>> sourceRows = jdbcTemplate.queryForList(
+						"SELECT name, connector_type, connection_config FROM source_system WHERE source_id = ?", sourceId);
+					if (sourceRows.isEmpty()) continue;
+
+					String name = (String) sourceRows.get(0).get("name");
+					String connectorType = (String) sourceRows.get(0).get("connector_type");
+					String configJson = (String) sourceRows.get(0).get("connection_config");
+					Map<String, Object> config = objectMapper.readValue(configJson, new TypeReference<>() {});
+					String previewUrl = (String) config.getOrDefault("previewUrl", "");
+
+					// If no previewUrl is configured, try to build one from server/protocol/port
+					if (previewUrl == null || previewUrl.isBlank()) {
+						String protocol = (String) config.getOrDefault("protocol",
+							config.getOrDefault("PROTOCOL", "https"));
+						String server = (String) config.getOrDefault("server",
+							config.getOrDefault("SERVER", ""));
+						String port = (String) config.getOrDefault("port",
+							config.getOrDefault("PORT", "443"));
+						if (server != null && !server.isBlank()) {
+							previewUrl = protocol + "://" + server;
+							if (!"443".equals(port) && !"80".equals(port)) {
+								previewUrl += ":" + port;
+							}
+						}
+					}
+
+					Map<String, Object> sourceInfo = new LinkedHashMap<>();
+					sourceInfo.put("sourceId", sourceId);
+					sourceInfo.put("name", name);
+					sourceInfo.put("connectorType", connectorType);
+					sourceInfo.put("previewUrl", previewUrl != null ? previewUrl : "");
+					sourceInfo.put("kbId", kbId);
+					// Feature flags — whether "Navigate to Source" / "Browse in Source" are enabled
+					sourceInfo.put("navigateToSourceEnabled",
+						"true".equals(config.getOrDefault("navigateToSourceEnabled", "false")));
+					sourceInfo.put("browseInSourceEnabled",
+						"true".equals(config.getOrDefault("browseInSourceEnabled", "false")));
+					sources.add(sourceInfo);
+				}
+				catch (Exception e) {
+					log.warn("Failed to resolve source preview URL for kbId {}: {}", kbId, e.getMessage());
+				}
+			}
+
+			Map<String, Object> response = new LinkedHashMap<>();
+			response.put("sources", sources);
+			return Result.success(response);
+		}
+		catch (Exception e) {
+			log.error("Failed to get source preview URLs for app {}", appId, e);
+			return Result.error(500, "Failed to get source URLs: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Get the URL in the source system where a document can be viewed.
+	 * Uses the vendor-agnostic documentUrlTemplate from connection_config.
+	 * Template placeholders: {nodeId}, {objectId}, {protocol}, {server}, {port}, {path}, {fileName}
+	 * Example (Alfresco): {protocol}://{server}:{port}/share/page/document-details?nodeRef=workspace://SpacesStore/{nodeId}
+	 */
+	@Operation(summary = "Get source system URL for a document")
+	@GetMapping("/document-source-url")
+	public Result<Map<String, Object>> getDocumentSourceUrl(
+			@RequestParam String email,
+			@RequestParam String appId,
+			@RequestParam String objectId,
+			@RequestParam(required = false) String kbId) {
+		try {
+
+			// Resolve which KB to use
+			String targetKbId = kbId;
+			if (targetKbId == null || targetKbId.isBlank()) {
+				List<String> kbIds = resolveKbIds(appId);
+				if (!kbIds.isEmpty()) targetKbId = kbIds.get(0);
+			}
+			if (targetKbId == null) return Result.error(400, "No knowledge base found");
+
+			// Get source system config via sync
+			String syncId = resolveSyncId(targetKbId);
+			if (syncId == null) return Result.error(400, "No sync job found");
+
+			List<Map<String, Object>> syncRows = jdbcTemplate.queryForList(
+				"SELECT source_id FROM knowledge_sync WHERE sync_id = ?", syncId);
+			if (syncRows.isEmpty()) return Result.error(400, "No source found");
+			String sourceId = String.valueOf(syncRows.get(0).get("source_id"));
+
+			List<Map<String, Object>> sourceRows = jdbcTemplate.queryForList(
+				"SELECT connector_type, connection_config FROM source_system WHERE source_id = ?", sourceId);
+			if (sourceRows.isEmpty()) return Result.error(400, "Source system not found");
+
+			String configJson = (String) sourceRows.get(0).get("connection_config");
+			Map<String, Object> config = objectMapper.readValue(configJson, new com.fasterxml.jackson.core.type.TypeReference<>() {});
+
+			String protocol = String.valueOf(config.getOrDefault("protocol",
+					config.getOrDefault("PROTOCOL", "https")));
+			String server = String.valueOf(config.getOrDefault("server",
+					config.getOrDefault("SERVER", "")));
+			String port = String.valueOf(config.getOrDefault("port",
+					config.getOrDefault("PORT", "443")));
+
+			// Extract the node ID from the objectId (strip version suffix like ";1.0")
+			String nodeId = objectId;
+			if (nodeId.contains(";")) {
+				nodeId = nodeId.substring(0, nodeId.indexOf(";"));
+			}
+
+			// Resolve documentUrlTemplate from connection_config (vendor-agnostic)
+			String template = (String) config.getOrDefault("documentUrlTemplate", "");
+			String sourceUrl;
+			if (template != null && !template.isBlank()) {
+				sourceUrl = template
+						.replace("{protocol}", protocol)
+						.replace("{server}", server)
+						.replace("{port}", port)
+						.replace("{nodeId}", nodeId)
+						.replace("{objectId}", objectId)
+						.replace("{path}", String.valueOf(config.getOrDefault("path",
+								config.getOrDefault("BASEPATH", ""))))
+						.replace("{fileName}", "");
+				// Strip default port suffixes for cleaner URLs
+				sourceUrl = sourceUrl.replace(":443/", "/").replace(":80/", "/");
+			} else {
+				// Fallback: use previewUrl or base URL
+				String previewUrl = (String) config.getOrDefault("previewUrl", "");
+				if (previewUrl != null && !previewUrl.isBlank()) {
+					sourceUrl = previewUrl;
+				} else {
+					String baseUrl = protocol + "://" + server;
+					if (!"443".equals(port) && !"80".equals(port)) {
+						baseUrl += ":" + port;
+					}
+					sourceUrl = baseUrl;
+				}
+			}
+
+			Map<String, Object> result = new LinkedHashMap<>();
+			result.put("sourceUrl", sourceUrl);
+			result.put("baseUrl", protocol + "://" + server + (!"443".equals(port) && !"80".equals(port) ? ":" + port : ""));
+			return Result.success(result);
+		}
+		catch (Exception e) {
+			log.error("Failed to build document source URL: appId={}, objectId={}", appId, objectId, e);
+			return Result.error(500, "Failed to build source URL: " + e.getMessage());
+		}
+	}
+
+	// ==================== Sample Source URLs from Real Documents ====================
+
+	/**
+	 * Query OpenSearch for real documents and generate sample "Browse in Source" URLs.
+	 * Instead of using hardcoded fake UUIDs, this endpoint fetches the top N documents
+	 * from the source's OpenSearch index, extracts their objectId/nodeId, and applies
+	 * the documentUrlTemplate to generate real, clickable URLs.
+	 *
+	 * @param sourceId the source system ID to look up connection_config
+	 * @param size     number of sample URLs to return (default 10)
+	 */
+	@Operation(summary = "Generate sample Browse-in-Source URLs from real indexed documents")
+	@GetMapping("/sample-source-urls")
+	public Result<Map<String, Object>> getSampleSourceUrls(
+			@RequestParam String sourceId,
+			@RequestParam(defaultValue = "10") int size) {
+		try {
+			// 1. Get source system config
+			List<Map<String, Object>> sourceRows = jdbcTemplate.queryForList(
+				"SELECT connector_type, connection_config FROM source_system WHERE source_id = ?", sourceId);
+			if (sourceRows.isEmpty()) {
+				return Result.error(400, "Source system not found");
+			}
+
+			String configJson = (String) sourceRows.get(0).get("connection_config");
+			Map<String, Object> config = objectMapper.readValue(configJson, new TypeReference<>() {});
+
+			String template = (String) config.getOrDefault("documentUrlTemplate", "");
+			String protocol = String.valueOf(config.getOrDefault("protocol",
+					config.getOrDefault("PROTOCOL", "https")));
+			String server = String.valueOf(config.getOrDefault("server",
+					config.getOrDefault("SERVER", "")));
+			String port = String.valueOf(config.getOrDefault("port",
+					config.getOrDefault("PORT", "443")));
+
+			if (template == null || template.isBlank()) {
+				return Result.error(400, "No documentUrlTemplate configured for this source");
+			}
+
+			// 2. Find the KB linked to this source via knowledge_sync
+			List<Map<String, Object>> syncRows = jdbcTemplate.queryForList(
+				"SELECT kb_id FROM knowledge_sync WHERE source_id = ? ORDER BY gmt_modified DESC LIMIT 1", sourceId);
+			if (syncRows.isEmpty()) {
+				return Result.error(400, "No knowledge base synced from this source");
+			}
+			String kbId = String.valueOf(syncRows.get(0).get("kb_id"));
+
+			// 3. Query OpenSearch for top N documents (no ACL filter — admin context)
+			String index = kbId + "_document";
+			Map<String, Object> requestBody = new LinkedHashMap<>();
+			requestBody.put("query", Map.of("match_all", Map.of()));
+			requestBody.put("size", size);
+			requestBody.put("_source", List.of("cmis:objectId", "cmis:contentStreamFileName", "cmis:name", "url"));
+			requestBody.put("sort", List.of(Map.of("cmis:creationDate", Map.of("order", "desc", "unmapped_type", "date"))));
+
+			String queryJson = objectMapper.writeValueAsString(requestBody);
+			log.debug("Sample source URLs query on {}: {}", index, queryJson);
+
+			Map<String, Object> result;
+			try {
+				result = executeOpenSearchQuery(index, queryJson);
+			}
+			catch (Exception e) {
+				log.warn("OpenSearch index {} not available: {}", index, e.getMessage());
+				return Result.error(400, "Index " + index + " not available — documents may not be indexed yet");
+			}
+
+			// 4. Extract objectIds and generate URLs
+			@SuppressWarnings("unchecked")
+			Map<String, Object> hits = (Map<String, Object>) result.get("hits");
+			@SuppressWarnings("unchecked")
+			Map<String, Object> total = (Map<String, Object>) hits.get("total");
+			long totalDocs = ((Number) total.get("value")).longValue();
+
+			@SuppressWarnings("unchecked")
+			List<Map<String, Object>> hitList = (List<Map<String, Object>>) hits.get("hits");
+
+			List<Map<String, Object>> sampleUrls = new ArrayList<>();
+			for (Map<String, Object> hit : hitList) {
+				@SuppressWarnings("unchecked")
+				Map<String, Object> source = (Map<String, Object>) hit.get("_source");
+
+				String objectId = String.valueOf(source.getOrDefault("cmis:objectId",
+						source.getOrDefault("url", "")));
+				String fileName = String.valueOf(source.getOrDefault("cmis:contentStreamFileName",
+						source.getOrDefault("cmis:name", "document")));
+
+				// Strip version suffix (e.g., "abc123;1.0" → "abc123")
+				String nodeId = objectId;
+				if (nodeId.contains(";")) {
+					nodeId = nodeId.substring(0, nodeId.indexOf(";"));
+				}
+
+				// Apply template
+				String url = template
+						.replace("{protocol}", protocol)
+						.replace("{server}", server)
+						.replace("{port}", port)
+						.replace("{nodeId}", nodeId)
+						.replace("{objectId}", objectId)
+						.replace("{path}", String.valueOf(config.getOrDefault("path",
+								config.getOrDefault("BASEPATH", ""))))
+						.replace("{fileName}", fileName);
+				// Strip default port suffixes
+				url = url.replace(":443/", "/").replace(":80/", "/");
+
+				Map<String, Object> entry = new LinkedHashMap<>();
+				entry.put("objectId", objectId);
+				entry.put("nodeId", nodeId);
+				entry.put("fileName", fileName);
+				entry.put("sourceUrl", url);
+				sampleUrls.add(entry);
+			}
+
+			Map<String, Object> response = new LinkedHashMap<>();
+			response.put("sampleUrls", sampleUrls);
+			response.put("totalDocuments", totalDocs);
+			response.put("template", template);
+			return Result.success(response);
+		}
+		catch (Exception e) {
+			log.error("Failed to generate sample source URLs for source {}", sourceId, e);
+			return Result.error(500, "Failed to generate sample URLs: " + e.getMessage());
+		}
+	}
+
+	// ==================== Knowledge Bases for App ====================
+
+	/**
+	 * List knowledge bases linked to an application.
+	 * Returns kb_id, name, description, and total_docs for each KB
+	 * configured in the app's file_search config.
+	 */
+	@Operation(summary = "List knowledge bases for an app")
+	@GetMapping("/knowledge-bases")
+	public Result<List<Map<String, Object>>> listKnowledgeBases(
+			@RequestParam String appId,
+			HttpServletRequest request) {
+		try {
+			String email = extractChatbotUserEmail(request);
+			if (email == null) return Result.error(401, "Unauthorized");
+
+			List<String> kbIds = resolveKbIds(appId);
+			if (kbIds.isEmpty()) {
+				return Result.success(List.of());
+			}
+
+			// Query knowledge_base table for these IDs
+			String placeholders = kbIds.stream().map(id -> "?").collect(java.util.stream.Collectors.joining(","));
+			String sql = "SELECT kb_id, name, description, total_docs FROM knowledge_base WHERE kb_id IN (" + placeholders + ")";
+			List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, kbIds.toArray());
+
+			List<Map<String, Object>> result = new java.util.ArrayList<>();
+			for (Map<String, Object> row : rows) {
+				Map<String, Object> kb = new LinkedHashMap<>();
+				kb.put("kbId", row.get("kb_id"));
+				kb.put("name", row.get("name"));
+				kb.put("description", row.get("description"));
+				kb.put("totalDocs", row.getOrDefault("total_docs", 0));
+				// Check if this KB has a CMIS sync (enables browse)
+				String syncId = resolveSyncId(String.valueOf(row.get("kb_id")));
+				kb.put("hasCmisSync", syncId != null);
+				result.add(kb);
+			}
+			return Result.success(result);
+		}
+		catch (Exception e) {
+			log.error("Failed to list knowledge bases for app {}", appId, e);
+			return Result.error(500, "Failed to list knowledge bases: " + e.getMessage());
+		}
+	}
+
+	// ==================== CMIS Browse (Folder/File Browser) ====================
+
+	/**
+	 * Resolve a syncId from an appId (picks the first CMIS source-backed KB).
+	 */
+	private String resolveSyncIdFromApp(String appId) {
+		List<String> kbIds = resolveKbIds(appId);
+		for (String kbId : kbIds) {
+			String syncId = resolveSyncId(kbId);
+			if (syncId != null) return syncId;
+		}
+		return null;
+	}
+
+	/**
+	 * Browse a CMIS folder. Returns folder contents (files and subfolders).
+	 * If kbId is provided, browses that specific KB; otherwise picks the first CMIS-backed KB.
+	 */
+	@Operation(summary = "Browse CMIS folder")
+	@GetMapping("/cmis/browse")
+	public Result<Map<String, Object>> browseCmisFolder(
+			@RequestParam String appId,
+			@RequestParam(required = false) String kbId,
+			@RequestParam(required = false) String folderId,
+			HttpServletRequest request) {
+		try {
+			String email = extractChatbotUserEmail(request);
+			if (email == null) return Result.error(401, "Unauthorized");
+
+			String syncId = null;
+			if (kbId != null && !kbId.isEmpty()) {
+				syncId = resolveSyncId(kbId);
+			}
+			if (syncId == null) {
+				syncId = resolveSyncIdFromApp(appId);
+			}
+			if (syncId == null) return Result.error(400, "No sync job found for this app");
+
+			Map<String, Object> result = knowledgeSyncService.browseCmisFolder(syncId, folderId);
+			return Result.success(result);
+		}
+		catch (Exception e) {
+			log.error("CMIS browse failed for app {} folder {}", appId, folderId, e);
+			return Result.error(500, "Failed to browse folder: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Upload a document to a CMIS folder.
+	 */
+	@Operation(summary = "Upload document to CMIS folder")
+	@PostMapping("/cmis/upload")
+	public Result<Map<String, Object>> uploadCmisDocument(
+			@RequestParam String appId,
+			@RequestParam(required = false) String folderId,
+			@RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+			HttpServletRequest request) {
+		try {
+			String email = extractChatbotUserEmail(request);
+			if (email == null) return Result.error(401, "Unauthorized");
+
+			String syncId = resolveSyncIdFromApp(appId);
+			if (syncId == null) return Result.error(400, "No sync job found for this app");
+
+			String fileName = file.getOriginalFilename();
+			if (fileName == null || fileName.isBlank()) fileName = "uploaded_file";
+			String contentType = file.getContentType();
+			if (contentType == null || contentType.isBlank()) contentType = "application/octet-stream";
+
+			Map<String, Object> result = knowledgeSyncService.uploadCmisDocument(
+					syncId, folderId, fileName, contentType, file.getBytes());
+			return Result.success(result);
+		}
+		catch (Exception e) {
+			log.error("CMIS upload failed for app {} folder {}", appId, folderId, e);
+			return Result.error(500, "Failed to upload: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Delete a CMIS object (file or folder).
+	 */
+	@Operation(summary = "Delete CMIS object")
+	@DeleteMapping("/cmis/delete")
+	public Result<Map<String, Object>> deleteCmisObject(
+			@RequestParam String appId,
+			@RequestParam String objectId,
+			@RequestParam(defaultValue = "true") boolean allVersions,
+			HttpServletRequest request) {
+		try {
+			String email = extractChatbotUserEmail(request);
+			if (email == null) return Result.error(401, "Unauthorized");
+
+			String syncId = resolveSyncIdFromApp(appId);
+			if (syncId == null) return Result.error(400, "No sync job found for this app");
+
+			Map<String, Object> result = knowledgeSyncService.deleteCmisObject(syncId, objectId, allVersions);
+			return Result.success(result);
+		}
+		catch (Exception e) {
+			log.error("CMIS delete failed for app {} objectId {}", appId, objectId, e);
+			return Result.error(500, "Failed to delete: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Rename a CMIS object.
+	 */
+	@Operation(summary = "Rename CMIS object")
+	@PutMapping("/cmis/rename")
+	public Result<Map<String, Object>> renameCmisObject(
+			@RequestParam String appId,
+			@RequestParam String objectId,
+			@RequestParam String newName,
+			HttpServletRequest request) {
+		try {
+			String email = extractChatbotUserEmail(request);
+			if (email == null) return Result.error(401, "Unauthorized");
+
+			String syncId = resolveSyncIdFromApp(appId);
+			if (syncId == null) return Result.error(400, "No sync job found for this app");
+
+			Map<String, Object> result = knowledgeSyncService.renameCmisObject(syncId, objectId, newName);
+			return Result.success(result);
+		}
+		catch (Exception e) {
+			log.error("CMIS rename failed for app {} objectId {}", appId, objectId, e);
+			return Result.error(500, "Failed to rename: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Create a new folder in CMIS.
+	 */
+	@Operation(summary = "Create CMIS folder")
+	@PostMapping("/cmis/create-folder")
+	public Result<Map<String, Object>> createCmisFolder(
+			@RequestParam String appId,
+			@RequestParam(required = false) String parentFolderId,
+			@RequestParam String folderName,
+			HttpServletRequest request) {
+		try {
+			String email = extractChatbotUserEmail(request);
+			if (email == null) return Result.error(401, "Unauthorized");
+
+			String syncId = resolveSyncIdFromApp(appId);
+			if (syncId == null) return Result.error(400, "No sync job found for this app");
+
+			Map<String, Object> result = knowledgeSyncService.createCmisFolder(syncId, parentFolderId, folderName);
+			return Result.success(result);
+		}
+		catch (Exception e) {
+			log.error("CMIS create folder failed for app {} parent {}", appId, parentFolderId, e);
+			return Result.error(500, "Failed to create folder: " + e.getMessage());
 		}
 	}
 

@@ -62,6 +62,7 @@ const AppCard: React.FC<AppCardProps> = ({
       ]}
       onClick={() => onClickAction('click')}
       footerDescNode={<Tag color="mauve">{typeLabelMap[type]}</Tag>}
+      className={styles['app-card']}
       footerOperateNode={
         <>
           <Button

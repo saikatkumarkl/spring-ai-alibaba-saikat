@@ -84,9 +84,14 @@ public class AdminApiService {
 			"conversation_id", conversationId != null ? conversationId : ""
 		);
 
-		return webClient.post()
+		var reqSpec = webClient.post()
 			.uri("/console/v1/chatbot/chat/completions")
-			.contentType(MediaType.APPLICATION_JSON)
+			.contentType(MediaType.APPLICATION_JSON);
+		// Forward JWT so backend can identify the user for ACL-filtered RAG
+		if (token != null && !token.isBlank()) {
+			reqSpec = reqSpec.header("Authorization", "Bearer " + token);
+		}
+		return reqSpec
 			.bodyValue(requestBody)
 			.retrieve()
 			.bodyToFlux(String.class)
@@ -311,7 +316,8 @@ public class AdminApiService {
 	 */
 	@SuppressWarnings("unchecked")
 	public Mono<Map<String, Object>> searchDocuments(String email, String appId, String query,
-			int from, int size, String mimeType, String createdBy) {
+			int from, int size, String mimeType, String createdBy,
+			String dateRange, String sizeRange, String status, String classification) {
 		return webClient.get()
 			.uri(uriBuilder -> {
 				var builder = uriBuilder.path("/console/v1/chatbot/documents")
@@ -322,6 +328,10 @@ public class AdminApiService {
 				if (query != null && !query.isBlank()) builder.queryParam("query", query);
 				if (mimeType != null && !mimeType.isBlank()) builder.queryParam("mimeType", mimeType);
 				if (createdBy != null && !createdBy.isBlank()) builder.queryParam("createdBy", createdBy);
+				if (dateRange != null && !dateRange.isBlank()) builder.queryParam("dateRange", dateRange);
+				if (sizeRange != null && !sizeRange.isBlank()) builder.queryParam("sizeRange", sizeRange);
+				if (status != null && !status.isBlank()) builder.queryParam("status", status);
+				if (classification != null && !classification.isBlank()) builder.queryParam("classification", classification);
 				return builder.build();
 			})
 			.retrieve()
@@ -334,6 +344,32 @@ public class AdminApiService {
 				return Map.<String, Object>of("documents", List.of(), "total", 0, "facets", Map.of());
 			})
 			.doOnError(error -> log.error("Failed to search documents", error));
+	}
+
+	/**
+	 * Get the source system URL for a specific document.
+	 */
+	@SuppressWarnings("unchecked")
+	public Mono<Map<String, Object>> getDocumentSourceUrl(String email, String appId, String objectId, String kbId) {
+		return webClient.get()
+			.uri(uriBuilder -> {
+				var builder = uriBuilder.path("/console/v1/chatbot/document-source-url")
+					.queryParam("email", email)
+					.queryParam("appId", appId)
+					.queryParam("objectId", objectId);
+				if (kbId != null && !kbId.isBlank()) builder.queryParam("kbId", kbId);
+				return builder.build();
+			})
+			.retrieve()
+			.bodyToMono(Map.class)
+			.map(response -> {
+				Integer code = (Integer) response.get("code");
+				if (code != null && code == 200 && response.get("data") != null) {
+					return (Map<String, Object>) response.get("data");
+				}
+				return Map.<String, Object>of();
+			})
+			.doOnError(error -> log.error("Failed to get document source URL", error));
 	}
 
 	/**
@@ -405,6 +441,207 @@ public class AdminApiService {
 				return Map.<String, Object>of("authorities", List.of(), "total", 0);
 			})
 			.doOnError(error -> log.error("Failed to browse authorities", error));
+	}
+
+	/**
+	 * Get source system preview URLs for an app.
+	 */
+	@SuppressWarnings("unchecked")
+	public Mono<Map<String, Object>> getSourcePreviewUrl(String jwtToken, String appId) {
+		return webClient.get()
+			.uri(uriBuilder -> uriBuilder.path("/console/v1/chatbot/source-preview-url")
+				.queryParam("appId", appId)
+				.build())
+			.header("Authorization", "Bearer " + jwtToken)
+			.retrieve()
+			.bodyToMono(Map.class)
+			.map(response -> {
+				Integer code = (Integer) response.get("code");
+				if (code != null && code == 200 && response.get("data") != null) {
+					return (Map<String, Object>) response.get("data");
+				}
+				return Map.<String, Object>of("sources", List.of());
+			})
+			.doOnError(error -> log.error("Failed to get source preview URLs", error));
+	}
+
+	// ── Knowledge Bases for App ─────────────────────────────────────────
+
+	/**
+	 * List knowledge bases linked to an application.
+	 */
+	@SuppressWarnings("unchecked")
+	public Mono<List<Map<String, Object>>> listKnowledgeBases(String jwtToken, String appId) {
+		return webClient.get()
+			.uri(uriBuilder -> uriBuilder.path("/console/v1/chatbot/knowledge-bases")
+				.queryParam("appId", appId)
+				.build())
+			.header("Authorization", "Bearer " + jwtToken)
+			.retrieve()
+			.bodyToMono(Map.class)
+			.map(response -> {
+				Integer code = (Integer) response.get("code");
+				if (code != null && code == 200 && response.get("data") != null) {
+					return (List<Map<String, Object>>) response.get("data");
+				}
+				return List.<Map<String, Object>>of();
+			})
+			.doOnError(error -> log.error("Failed to list knowledge bases for app {}", appId, error));
+	}
+
+	// ── CMIS Browse Proxy Methods ───────────────────────────────────────
+
+	/**
+	 * Browse a CMIS folder.
+	 */
+	@SuppressWarnings("unchecked")
+	public Mono<Map<String, Object>> browseCmisFolder(String jwtToken, String appId, String kbId, String folderId) {
+		return webClient.get()
+			.uri(uriBuilder -> {
+				var b = uriBuilder.path("/console/v1/chatbot/cmis/browse")
+					.queryParam("appId", appId);
+				if (kbId != null && !kbId.isBlank()) {
+					b.queryParam("kbId", kbId);
+				}
+				if (folderId != null && !folderId.isBlank()) {
+					b.queryParam("folderId", folderId);
+				}
+				return b.build();
+			})
+			.header("Authorization", "Bearer " + jwtToken)
+			.retrieve()
+			.bodyToMono(Map.class)
+			.map(response -> {
+				Integer code = (Integer) response.get("code");
+				if (code != null && code == 200 && response.get("data") != null) {
+					return (Map<String, Object>) response.get("data");
+				}
+				String msg = response.get("message") != null ? response.get("message").toString() : "Browse failed";
+				throw new RuntimeException(msg);
+			})
+			.doOnError(error -> log.error("CMIS browse failed", error));
+	}
+
+	/**
+	 * Upload a document to CMIS via multipart.
+	 */
+	@SuppressWarnings("unchecked")
+	public Mono<Map<String, Object>> uploadCmisDocument(String jwtToken, String appId, String folderId,
+			String fileName, String contentType, byte[] content) {
+		return webClient.post()
+			.uri(uriBuilder -> {
+				var b = uriBuilder.path("/console/v1/chatbot/cmis/upload")
+					.queryParam("appId", appId);
+				if (folderId != null && !folderId.isBlank()) {
+					b.queryParam("folderId", folderId);
+				}
+				return b.build();
+			})
+			.header("Authorization", "Bearer " + jwtToken)
+			.contentType(org.springframework.http.MediaType.MULTIPART_FORM_DATA)
+			.body(org.springframework.web.reactive.function.BodyInserters.fromMultipartData(
+				org.springframework.util.LinkedMultiValueMap.class.cast(buildMultipartMap(fileName, contentType, content))))
+			.retrieve()
+			.bodyToMono(Map.class)
+			.map(response -> {
+				Integer code = (Integer) response.get("code");
+				if (code != null && code == 200 && response.get("data") != null) {
+					return (Map<String, Object>) response.get("data");
+				}
+				String msg = response.get("message") != null ? response.get("message").toString() : "Upload failed";
+				throw new RuntimeException(msg);
+			})
+			.doOnError(error -> log.error("CMIS upload failed", error));
+	}
+
+	private org.springframework.util.MultiValueMap<String, Object> buildMultipartMap(
+			String fileName, String contentType, byte[] content) {
+		org.springframework.util.LinkedMultiValueMap<String, Object> map = new org.springframework.util.LinkedMultiValueMap<>();
+		org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+		headers.setContentType(org.springframework.http.MediaType.parseMediaType(contentType));
+		headers.setContentDispositionFormData("file", fileName);
+		org.springframework.http.HttpEntity<byte[]> filePart = new org.springframework.http.HttpEntity<>(content, headers);
+		map.add("file", filePart);
+		return map;
+	}
+
+	/**
+	 * Delete a CMIS object.
+	 */
+	@SuppressWarnings("unchecked")
+	public Mono<Map<String, Object>> deleteCmisObject(String jwtToken, String appId, String objectId, boolean allVersions) {
+		return webClient.delete()
+			.uri(uriBuilder -> uriBuilder.path("/console/v1/chatbot/cmis/delete")
+				.queryParam("appId", appId)
+				.queryParam("objectId", objectId)
+				.queryParam("allVersions", allVersions)
+				.build())
+			.header("Authorization", "Bearer " + jwtToken)
+			.retrieve()
+			.bodyToMono(Map.class)
+			.map(response -> {
+				Integer code = (Integer) response.get("code");
+				if (code != null && code == 200 && response.get("data") != null) {
+					return (Map<String, Object>) response.get("data");
+				}
+				String msg = response.get("message") != null ? response.get("message").toString() : "Delete failed";
+				throw new RuntimeException(msg);
+			})
+			.doOnError(error -> log.error("CMIS delete failed", error));
+	}
+
+	/**
+	 * Rename a CMIS object.
+	 */
+	@SuppressWarnings("unchecked")
+	public Mono<Map<String, Object>> renameCmisObject(String jwtToken, String appId, String objectId, String newName) {
+		return webClient.put()
+			.uri(uriBuilder -> uriBuilder.path("/console/v1/chatbot/cmis/rename")
+				.queryParam("appId", appId)
+				.queryParam("objectId", objectId)
+				.queryParam("newName", newName)
+				.build())
+			.header("Authorization", "Bearer " + jwtToken)
+			.retrieve()
+			.bodyToMono(Map.class)
+			.map(response -> {
+				Integer code = (Integer) response.get("code");
+				if (code != null && code == 200 && response.get("data") != null) {
+					return (Map<String, Object>) response.get("data");
+				}
+				String msg = response.get("message") != null ? response.get("message").toString() : "Rename failed";
+				throw new RuntimeException(msg);
+			})
+			.doOnError(error -> log.error("CMIS rename failed", error));
+	}
+
+	/**
+	 * Create a CMIS folder.
+	 */
+	@SuppressWarnings("unchecked")
+	public Mono<Map<String, Object>> createCmisFolder(String jwtToken, String appId, String parentFolderId, String folderName) {
+		return webClient.post()
+			.uri(uriBuilder -> {
+				var b = uriBuilder.path("/console/v1/chatbot/cmis/create-folder")
+					.queryParam("appId", appId)
+					.queryParam("folderName", folderName);
+				if (parentFolderId != null && !parentFolderId.isBlank()) {
+					b.queryParam("parentFolderId", parentFolderId);
+				}
+				return b.build();
+			})
+			.header("Authorization", "Bearer " + jwtToken)
+			.retrieve()
+			.bodyToMono(Map.class)
+			.map(response -> {
+				Integer code = (Integer) response.get("code");
+				if (code != null && code == 200 && response.get("data") != null) {
+					return (Map<String, Object>) response.get("data");
+				}
+				String msg = response.get("message") != null ? response.get("message").toString() : "Create folder failed";
+				throw new RuntimeException(msg);
+			})
+			.doOnError(error -> log.error("CMIS create folder failed", error));
 	}
 
 	/**

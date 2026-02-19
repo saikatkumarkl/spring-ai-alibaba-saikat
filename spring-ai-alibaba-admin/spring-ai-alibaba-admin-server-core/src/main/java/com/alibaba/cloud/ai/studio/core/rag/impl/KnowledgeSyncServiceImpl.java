@@ -3941,13 +3941,15 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 	 */
 	private String resolveRealCmisBaseUrl(String serviceDocUrl, String username,
 			String password, String sourceProtocol) {
+		HttpURLConnection conn = null;
 		try {
 			URI uri = URI.create(serviceDocUrl);
-			HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
+			conn = (HttpURLConnection) uri.toURL().openConnection();
 			configureTrustAllSsl(conn);
 			conn.setRequestMethod("GET");
 			conn.setConnectTimeout(10_000);
 			conn.setReadTimeout(10_000);
+			conn.setRequestProperty("Connection", "close");
 
 			if (StringUtils.isNotBlank(username)) {
 				String credentials = username + ":" + password;
@@ -3994,6 +3996,11 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		catch (Exception e) {
 			log.error("Failed to resolve real CMIS base URL from {}: {}", serviceDocUrl, e.getMessage(), e);
 			return null;
+		}
+		finally {
+			if (conn != null) {
+				conn.disconnect();
+			}
 		}
 	}
 
@@ -4076,6 +4083,637 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			log.debug("Could not extract filename from URL: {}", e.getMessage());
 		}
 		return "document";
+	}
+
+	// ── CMIS Connection Helper ──────────────────────────────────────────
+
+	/**
+	 * Data holder for resolved CMIS connection details.
+	 */
+	private record CmisConnectionInfo(String username, String password, String protocol,
+			String server, String port, String path, String serviceDocUrl, String realBaseUrl) {
+	}
+
+	/**
+	 * Resolve CMIS connection details from a sync job, including the real CMIS base URL.
+	 */
+	private CmisConnectionInfo resolveCmisConnection(String syncId) {
+		KnowledgeSyncEntity entity = findBySyncId(syncId);
+		if (entity == null) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("sync_id", "Sync job not found"));
+		}
+		if (StringUtils.isBlank(entity.getSourceId())) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("source_id",
+					"CMIS browse is only supported for source-based knowledge bases"));
+		}
+		SourceSystemEntity source = findSource(entity.getSourceId());
+		if (source == null) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("source_id", "Source system not found"));
+		}
+
+		Map<String, Object> sourceConfig = deserializeConfig(source.getConnectionConfig());
+		String username = getConfigString(sourceConfig, "username", "");
+		String password = getConfigString(sourceConfig, "password", "");
+		String protocol = getConfigString(sourceConfig, "protocol", "https");
+		String server = getConfigString(sourceConfig, "server", "");
+		String port = getConfigString(sourceConfig, "port", "443");
+		String path = getConfigString(sourceConfig, "path", "");
+
+		String serviceDocUrl = protocol + "://" + server + ":" + port + path;
+		String realBase = resolveRealCmisBaseUrl(serviceDocUrl, username, password, protocol);
+		if (realBase == null) {
+			realBase = serviceDocUrl;
+		}
+		return new CmisConnectionInfo(username, password, protocol, server, port, path, serviceDocUrl, realBase);
+	}
+
+	/**
+	 * Open an authenticated HTTP connection to a CMIS URL.
+	 * Uses Connection: close to avoid keep-alive pool exhaustion in Docker.
+	 */
+	private HttpURLConnection openCmisConnection(String url, String method, CmisConnectionInfo cmis) throws Exception {
+		URI uri = URI.create(url);
+		HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
+		configureTrustAllSsl(conn);
+		conn.setRequestMethod(method);
+		conn.setConnectTimeout(30_000);
+		conn.setReadTimeout(60_000);
+		conn.setRequestProperty("Connection", "close");
+		conn.setRequestProperty("Accept", "application/atom+xml, application/xml, text/xml, */*");
+
+		if (StringUtils.isNotBlank(cmis.username())) {
+			String credentials = cmis.username() + ":" + cmis.password();
+			String encoded = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+			conn.setRequestProperty("Authorization", "Basic " + encoded);
+		}
+		return conn;
+	}
+
+	/**
+	 * Fix protocol for URLs returned by CMIS (reverse proxy fix: http→https).
+	 */
+	private String fixCmisProtocol(String url, String protocol) {
+		if ("https".equalsIgnoreCase(protocol) && url != null && url.startsWith("http://")) {
+			return "https://" + url.substring(7);
+		}
+		return url;
+	}
+
+	// ── CMIS Browse Implementation ──────────────────────────────────────
+
+	@Override
+	public Map<String, Object> browseCmisFolder(String syncId, String folderId) {
+		CmisConnectionInfo cmis = resolveCmisConnection(syncId);
+
+		try {
+			// If no folderId, get root folder ID from the service document
+			if (StringUtils.isBlank(folderId)) {
+				folderId = resolveRootFolderId(cmis);
+				if (folderId == null) {
+					throw new BizException(ErrorCode.INVALID_PARAMS.toError("folder",
+							"Could not resolve CMIS root folder"));
+				}
+			}
+
+			String encodedId = URLEncoder.encode(folderId, StandardCharsets.UTF_8);
+			String childrenUrl = cmis.realBaseUrl() + "/children?id=" + encodedId;
+			log.info("CMIS browse folder: {} (folderId: {})", childrenUrl, folderId);
+
+			List<Map<String, Object>> items = new ArrayList<>();
+			String folderName = "Root";
+
+			// Fetch children feed — may be paginated
+			String currentUrl = childrenUrl;
+			while (currentUrl != null) {
+				HttpURLConnection conn = openCmisConnection(currentUrl, "GET", cmis);
+				try {
+					log.info("CMIS browse: connecting to {}", currentUrl);
+					int status = conn.getResponseCode();
+					log.info("CMIS browse: got HTTP {}", status);
+					if (status < 200 || status >= 300) {
+						String errBody = "";
+						try (InputStream errStream = conn.getErrorStream()) {
+							if (errStream != null)
+								errBody = new String(errStream.readAllBytes(), StandardCharsets.UTF_8);
+						}
+						catch (Exception ignored) {
+						}
+						throw new BizException(ErrorCode.INVALID_PARAMS.toError("cmis_browse",
+								"CMIS returned HTTP " + status + ": " + errBody));
+					}
+
+					String atomXml;
+					try (InputStream in = conn.getInputStream()) {
+						atomXml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+					}
+					log.info("CMIS browse: read {} bytes of Atom XML", atomXml.length());
+
+					// Parse the folder name from <atom:title> at feed level
+					java.util.regex.Matcher feedTitle = java.util.regex.Pattern
+							.compile("<(?:atom:)?feed[^>]*>[\\s\\S]*?<(?:atom:)?title[^>]*>([^<]+)</(?:atom:)?title>")
+							.matcher(atomXml);
+					if (feedTitle.find() && "Root".equals(folderName)) {
+						folderName = feedTitle.group(1).trim();
+					}
+
+					// Parse each <atom:entry>
+					java.util.regex.Pattern entryPattern = java.util.regex.Pattern
+							.compile("<(?:atom:)?entry>(.*?)</(?:atom:)?entry>", java.util.regex.Pattern.DOTALL);
+					java.util.regex.Matcher entryMatcher = entryPattern.matcher(atomXml);
+
+					while (entryMatcher.find()) {
+						String entry = entryMatcher.group(1);
+						Map<String, Object> item = parseCmisEntry(entry, cmis.protocol());
+						if (item != null) {
+							items.add(item);
+						}
+					}
+
+					// Check for next page link: <atom:link rel="next" href="..."/>
+					java.util.regex.Matcher nextLink = java.util.regex.Pattern
+							.compile("<(?:atom:)?link[^>]+rel=\"next\"[^>]+href=\"([^\"]+)\"")
+							.matcher(atomXml);
+					if (nextLink.find()) {
+						currentUrl = fixCmisProtocol(nextLink.group(1).replace("&amp;", "&"), cmis.protocol());
+					}
+					else {
+						currentUrl = null;
+					}
+				}
+				finally {
+					conn.disconnect();
+				}
+			}
+
+			// Sort: folders first, then by name
+			items.sort((a, b) -> {
+				boolean aFolder = "cmis:folder".equals(a.get("baseType"));
+				boolean bFolder = "cmis:folder".equals(b.get("baseType"));
+				if (aFolder != bFolder) return aFolder ? -1 : 1;
+				String aName = String.valueOf(a.getOrDefault("name", ""));
+				String bName = String.valueOf(b.getOrDefault("name", ""));
+				return aName.compareToIgnoreCase(bName);
+			});
+
+			Map<String, Object> result = new LinkedHashMap<>();
+			result.put("folderId", folderId);
+			result.put("folderName", folderName);
+			result.put("items", items);
+			result.put("totalItems", items.size());
+			return result;
+		}
+		catch (BizException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("cmis_browse",
+					"Failed to browse CMIS folder: " + e.getMessage()));
+		}
+	}
+
+	/**
+	 * Parse a single CMIS AtomPub entry into a map of properties.
+	 */
+	private Map<String, Object> parseCmisEntry(String entryXml, String protocol) {
+		Map<String, Object> item = new LinkedHashMap<>();
+
+		// Extract CMIS properties using regex
+		extractCmisProperty(entryXml, "cmis:objectId", item, "objectId");
+		extractCmisProperty(entryXml, "cmis:name", item, "name");
+		extractCmisProperty(entryXml, "cmis:baseTypeId", item, "baseType");
+		extractCmisProperty(entryXml, "cmis:objectTypeId", item, "objectType");
+		extractCmisProperty(entryXml, "cmis:contentStreamMimeType", item, "mimeType");
+		extractCmisProperty(entryXml, "cmis:contentStreamLength", item, "size");
+		extractCmisProperty(entryXml, "cmis:contentStreamFileName", item, "fileName");
+		extractCmisProperty(entryXml, "cmis:createdBy", item, "createdBy");
+		extractCmisProperty(entryXml, "cmis:lastModifiedBy", item, "lastModifiedBy");
+		extractCmisProperty(entryXml, "cmis:creationDate", item, "creationDate");
+		extractCmisProperty(entryXml, "cmis:lastModificationDate", item, "lastModificationDate");
+		extractCmisProperty(entryXml, "cmis:parentId", item, "parentId");
+
+		// Extract <atom:title> as fallback name
+		if (!item.containsKey("name") || item.get("name") == null) {
+			java.util.regex.Matcher titleMatcher = java.util.regex.Pattern
+					.compile("<(?:atom:)?title[^>]*>([^<]+)</(?:atom:)?title>")
+					.matcher(entryXml);
+			if (titleMatcher.find()) {
+				item.put("name", titleMatcher.group(1).trim());
+			}
+		}
+
+		// Extract content stream URL
+		java.util.regex.Matcher contentMatcher = java.util.regex.Pattern
+				.compile("<(?:atom:)?content[^>]+src=\"([^\"]+)\"")
+				.matcher(entryXml);
+		if (contentMatcher.find()) {
+			item.put("contentUrl", fixCmisProtocol(contentMatcher.group(1).replace("&amp;", "&"), protocol));
+		}
+
+		// Convert size to long if present
+		if (item.containsKey("size") && item.get("size") instanceof String sizeStr) {
+			try {
+				item.put("size", Long.parseLong(sizeStr));
+			}
+			catch (NumberFormatException ignored) {
+			}
+		}
+
+		// Mark as folder or document
+		String baseType = (String) item.getOrDefault("baseType", "");
+		item.put("isFolder", "cmis:folder".equals(baseType));
+
+		return item.containsKey("objectId") ? item : null;
+	}
+
+	/**
+	 * Extract a CMIS property value from an Atom entry XML.
+	 * Handles both propertyString, propertyId, propertyInteger, propertyDateTime, etc.
+	 */
+	private void extractCmisProperty(String xml, String propertyDefId, Map<String, Object> target, String key) {
+		// Pattern matches: <cmis:propertyXxx propertyDefinitionId="cmis:name" ...><cmis:value>...</cmis:value>
+		java.util.regex.Matcher matcher = java.util.regex.Pattern
+				.compile("<cmis:property[^>]+propertyDefinitionId=\"" +
+						java.util.regex.Pattern.quote(propertyDefId) +
+						"\"[^>]*>\\s*<cmis:value>([^<]*)</cmis:value>",
+						java.util.regex.Pattern.DOTALL)
+				.matcher(xml);
+		if (matcher.find()) {
+			String value = matcher.group(1).trim();
+			if (StringUtils.isNotBlank(value)) {
+				target.put(key, value);
+			}
+		}
+	}
+
+	/**
+	 * Resolve the root folder ID from the CMIS service document.
+	 */
+	private String resolveRootFolderId(CmisConnectionInfo cmis) {
+		HttpURLConnection conn = null;
+		try {
+			conn = openCmisConnection(cmis.serviceDocUrl(), "GET", cmis);
+			int status = conn.getResponseCode();
+			if (status < 200 || status >= 300) {
+				log.warn("Failed to fetch CMIS service document for root folder: HTTP {}", status);
+				return null;
+			}
+
+			String xml;
+			try (InputStream in = conn.getInputStream()) {
+				xml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+			}
+
+			// Look for <cmisra:rootFolderId> or <cmis:rootFolderId>
+			java.util.regex.Matcher matcher = java.util.regex.Pattern
+					.compile("<(?:cmisra:|cmis:)?rootFolderId>([^<]+)</")
+					.matcher(xml);
+			if (matcher.find()) {
+				String rootId = matcher.group(1).trim();
+				log.info("Resolved CMIS root folder ID: {}", rootId);
+				return rootId;
+			}
+
+			log.warn("Could not find rootFolderId in CMIS service document");
+			return null;
+		}
+		catch (Exception e) {
+			log.error("Failed to resolve root folder ID: {}", e.getMessage(), e);
+			return null;
+		}
+		finally {
+			if (conn != null) {
+				conn.disconnect();
+			}
+		}
+	}
+
+	@Override
+	public Map<String, Object> uploadCmisDocument(String syncId, String folderId, String fileName,
+			String contentType, byte[] content) {
+		CmisConnectionInfo cmis = resolveCmisConnection(syncId);
+
+		if (StringUtils.isBlank(folderId)) {
+			folderId = resolveRootFolderId(cmis);
+			if (folderId == null) {
+				throw new BizException(ErrorCode.INVALID_PARAMS.toError("folder", "Could not resolve root folder"));
+			}
+		}
+		if (StringUtils.isBlank(fileName)) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("fileName", "File name is required"));
+		}
+		if (content == null || content.length == 0) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("content", "File content is empty"));
+		}
+
+		try {
+			String encodedFolderId = URLEncoder.encode(folderId, StandardCharsets.UTF_8);
+			String childrenUrl = cmis.realBaseUrl() + "/children?id=" + encodedFolderId;
+			log.info("CMIS upload to folder: {} (fileName: {}, size: {} bytes)", childrenUrl, fileName, content.length);
+
+			// Build multipart Atom entry for CMIS document creation
+			String boundary = "----CmisUploadBoundary" + System.currentTimeMillis();
+			String atomEntry = buildCmisCreateDocumentAtom(fileName, contentType, content);
+
+			// For AtomPub, we POST an Atom entry with embedded base64 content
+			HttpURLConnection conn = openCmisConnection(childrenUrl, "POST", cmis);
+			try {
+				conn.setDoOutput(true);
+				conn.setRequestProperty("Content-Type", "application/atom+xml;type=entry");
+
+				try (java.io.OutputStream out = conn.getOutputStream()) {
+					out.write(atomEntry.getBytes(StandardCharsets.UTF_8));
+					out.flush();
+				}
+
+				int status = conn.getResponseCode();
+				if (status < 200 || status >= 300) {
+					String errBody = "";
+					try (InputStream errStream = conn.getErrorStream()) {
+						if (errStream != null) errBody = new String(errStream.readAllBytes(), StandardCharsets.UTF_8);
+					}
+					catch (Exception ignored) {
+					}
+					throw new BizException(ErrorCode.INVALID_PARAMS.toError("upload",
+							"CMIS upload failed with HTTP " + status + ": " + errBody));
+				}
+
+				String responseXml;
+				try (InputStream in = conn.getInputStream()) {
+					responseXml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+				}
+
+				// Parse the response to get the created object ID
+				Map<String, Object> created = parseCmisEntry(responseXml, cmis.protocol());
+				Map<String, Object> result = new LinkedHashMap<>();
+				result.put("status", "success");
+				result.put("objectId", created != null ? created.get("objectId") : null);
+				result.put("name", fileName);
+				result.put("message", "Document uploaded successfully");
+				return result;
+			}
+			finally {
+				conn.disconnect();
+			}
+		}
+		catch (BizException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("upload",
+					"Failed to upload document: " + e.getMessage()));
+		}
+	}
+
+	/**
+	 * Build a CMIS AtomPub entry XML for creating a new document with inline base64 content.
+	 */
+	private String buildCmisCreateDocumentAtom(String name, String mimeType, byte[] content) {
+		String base64Content = Base64.getEncoder().encodeToString(content);
+		return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+				"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\" " +
+				"xmlns:cmis=\"http://docs.oasis-open.org/ns/cmis/core/200908/\" " +
+				"xmlns:cmisra=\"http://docs.oasis-open.org/ns/cmis/restatom/200908/\">\n" +
+				"  <atom:title>" + escapeXml(name) + "</atom:title>\n" +
+				"  <cmisra:object>\n" +
+				"    <cmis:properties>\n" +
+				"      <cmis:propertyId propertyDefinitionId=\"cmis:objectTypeId\">" +
+				"<cmis:value>cmis:document</cmis:value></cmis:propertyId>\n" +
+				"      <cmis:propertyString propertyDefinitionId=\"cmis:name\">" +
+				"<cmis:value>" + escapeXml(name) + "</cmis:value></cmis:propertyString>\n" +
+				"    </cmis:properties>\n" +
+				"  </cmisra:object>\n" +
+				"  <cmisra:content>\n" +
+				"    <cmisra:mediatype>" + escapeXml(mimeType) + "</cmisra:mediatype>\n" +
+				"    <cmisra:base64>" + base64Content + "</cmisra:base64>\n" +
+				"  </cmisra:content>\n" +
+				"</atom:entry>";
+	}
+
+	@Override
+	public Map<String, Object> deleteCmisObject(String syncId, String objectId, boolean allVersions) {
+		CmisConnectionInfo cmis = resolveCmisConnection(syncId);
+
+		if (StringUtils.isBlank(objectId)) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("objectId", "Object ID is required"));
+		}
+
+		try {
+			String encodedId = URLEncoder.encode(objectId, StandardCharsets.UTF_8);
+			String deleteUrl = cmis.realBaseUrl() + "/id?id=" + encodedId + "&allVersions=" + allVersions;
+			log.info("CMIS delete object: {} (objectId: {})", deleteUrl, objectId);
+
+			HttpURLConnection conn = openCmisConnection(deleteUrl, "DELETE", cmis);
+			try {
+				int status = conn.getResponseCode();
+
+				if (status < 200 || status >= 300) {
+					String errBody = "";
+					try (InputStream errStream = conn.getErrorStream()) {
+						if (errStream != null) errBody = new String(errStream.readAllBytes(), StandardCharsets.UTF_8);
+					}
+					catch (Exception ignored) {
+					}
+					throw new BizException(ErrorCode.INVALID_PARAMS.toError("delete",
+							"CMIS delete failed with HTTP " + status + ": " + errBody));
+				}
+
+				Map<String, Object> result = new LinkedHashMap<>();
+				result.put("status", "success");
+				result.put("objectId", objectId);
+				result.put("message", "Object deleted successfully");
+				return result;
+			}
+			finally {
+				conn.disconnect();
+			}
+		}
+		catch (BizException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("delete",
+					"Failed to delete CMIS object: " + e.getMessage()));
+		}
+	}
+
+	@Override
+	public Map<String, Object> renameCmisObject(String syncId, String objectId, String newName) {
+		CmisConnectionInfo cmis = resolveCmisConnection(syncId);
+
+		if (StringUtils.isBlank(objectId)) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("objectId", "Object ID is required"));
+		}
+		if (StringUtils.isBlank(newName)) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("newName", "New name is required"));
+		}
+
+		try {
+			String encodedId = URLEncoder.encode(objectId, StandardCharsets.UTF_8);
+			String entryUrl = cmis.realBaseUrl() + "/id?id=" + encodedId;
+			log.info("CMIS rename object: {} → {} (objectId: {})", entryUrl, newName, objectId);
+
+			// Build Atom entry with updated cmis:name property
+			String atomEntry = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+					"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\" " +
+					"xmlns:cmis=\"http://docs.oasis-open.org/ns/cmis/core/200908/\" " +
+					"xmlns:cmisra=\"http://docs.oasis-open.org/ns/cmis/restatom/200908/\">\n" +
+					"  <cmisra:object>\n" +
+					"    <cmis:properties>\n" +
+					"      <cmis:propertyString propertyDefinitionId=\"cmis:name\">" +
+					"<cmis:value>" + escapeXml(newName) + "</cmis:value></cmis:propertyString>\n" +
+					"    </cmis:properties>\n" +
+					"  </cmisra:object>\n" +
+					"</atom:entry>";
+
+			HttpURLConnection conn = openCmisConnection(entryUrl, "PUT", cmis);
+			try {
+				conn.setDoOutput(true);
+				conn.setRequestProperty("Content-Type", "application/atom+xml;type=entry");
+
+				try (java.io.OutputStream out = conn.getOutputStream()) {
+					out.write(atomEntry.getBytes(StandardCharsets.UTF_8));
+					out.flush();
+				}
+
+				int status = conn.getResponseCode();
+				if (status < 200 || status >= 300) {
+					String errBody = "";
+					try (InputStream errStream = conn.getErrorStream()) {
+						if (errStream != null) errBody = new String(errStream.readAllBytes(), StandardCharsets.UTF_8);
+					}
+					catch (Exception ignored) {
+					}
+					throw new BizException(ErrorCode.INVALID_PARAMS.toError("rename",
+							"CMIS rename failed with HTTP " + status + ": " + errBody));
+				}
+
+				Map<String, Object> result = new LinkedHashMap<>();
+				result.put("status", "success");
+				result.put("objectId", objectId);
+				result.put("name", newName);
+				result.put("message", "Object renamed successfully");
+				return result;
+			}
+			finally {
+				conn.disconnect();
+			}
+		}
+		catch (BizException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("rename",
+					"Failed to rename CMIS object: " + e.getMessage()));
+		}
+	}
+
+	@Override
+	public Map<String, Object> createCmisFolder(String syncId, String parentFolderId, String folderName) {
+		CmisConnectionInfo cmis = resolveCmisConnection(syncId);
+
+		if (StringUtils.isBlank(parentFolderId)) {
+			parentFolderId = resolveRootFolderId(cmis);
+			if (parentFolderId == null) {
+				throw new BizException(ErrorCode.INVALID_PARAMS.toError("folder", "Could not resolve root folder"));
+			}
+		}
+		if (StringUtils.isBlank(folderName)) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("folderName", "Folder name is required"));
+		}
+
+		try {
+			String encodedParentId = URLEncoder.encode(parentFolderId, StandardCharsets.UTF_8);
+			String childrenUrl = cmis.realBaseUrl() + "/children?id=" + encodedParentId;
+			log.info("CMIS create folder: {} in parent {} (name: {})", childrenUrl, parentFolderId, folderName);
+
+			// Build Atom entry for folder creation
+			String atomEntry = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+					"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\" " +
+					"xmlns:cmis=\"http://docs.oasis-open.org/ns/cmis/core/200908/\" " +
+					"xmlns:cmisra=\"http://docs.oasis-open.org/ns/cmis/restatom/200908/\">\n" +
+					"  <atom:title>" + escapeXml(folderName) + "</atom:title>\n" +
+					"  <cmisra:object>\n" +
+					"    <cmis:properties>\n" +
+					"      <cmis:propertyId propertyDefinitionId=\"cmis:objectTypeId\">" +
+					"<cmis:value>cmis:folder</cmis:value></cmis:propertyId>\n" +
+					"      <cmis:propertyString propertyDefinitionId=\"cmis:name\">" +
+					"<cmis:value>" + escapeXml(folderName) + "</cmis:value></cmis:propertyString>\n" +
+					"    </cmis:properties>\n" +
+					"  </cmisra:object>\n" +
+					"</atom:entry>";
+
+			HttpURLConnection conn = openCmisConnection(childrenUrl, "POST", cmis);
+			try {
+				conn.setDoOutput(true);
+				conn.setRequestProperty("Content-Type", "application/atom+xml;type=entry");
+
+				try (java.io.OutputStream out = conn.getOutputStream()) {
+					out.write(atomEntry.getBytes(StandardCharsets.UTF_8));
+					out.flush();
+				}
+
+				int status = conn.getResponseCode();
+				if (status < 200 || status >= 300) {
+					String errBody = "";
+					try (InputStream errStream = conn.getErrorStream()) {
+						if (errStream != null) errBody = new String(errStream.readAllBytes(), StandardCharsets.UTF_8);
+					}
+					catch (Exception ignored) {
+					}
+					throw new BizException(ErrorCode.INVALID_PARAMS.toError("createFolder",
+							"CMIS folder creation failed with HTTP " + status + ": " + errBody));
+				}
+
+				String responseXml;
+				try (InputStream in = conn.getInputStream()) {
+					responseXml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+				}
+
+				Map<String, Object> created = parseCmisEntry(responseXml, cmis.protocol());
+				Map<String, Object> result = new LinkedHashMap<>();
+				result.put("status", "success");
+				result.put("objectId", created != null ? created.get("objectId") : null);
+				result.put("name", folderName);
+				result.put("message", "Folder created successfully");
+				return result;
+			}
+			finally {
+				conn.disconnect();
+			}
+		}
+		catch (BizException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new BizException(ErrorCode.INVALID_PARAMS.toError("createFolder",
+					"Failed to create CMIS folder: " + e.getMessage()));
+		}
+	}
+
+	/**
+	 * Parse all entries from an Atom feed XML into a list of maps.
+	 */
+	private List<Map<String, Object>> parseCmisFeed(String atomXml, String protocol) {
+		List<Map<String, Object>> items = new ArrayList<>();
+		java.util.regex.Pattern entryPattern = java.util.regex.Pattern
+				.compile("<(?:atom:)?entry>(.*?)</(?:atom:)?entry>", java.util.regex.Pattern.DOTALL);
+		java.util.regex.Matcher entryMatcher = entryPattern.matcher(atomXml);
+		while (entryMatcher.find()) {
+			Map<String, Object> item = parseCmisEntry(entryMatcher.group(1), protocol);
+			if (item != null) {
+				items.add(item);
+			}
+		}
+		return items;
+	}
+
+	/**
+	 * Escape special characters for XML content.
+	 */
+	private String escapeXml(String value) {
+		if (value == null) return "";
+		return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+				.replace("\"", "&quot;").replace("'", "&apos;");
 	}
 
 }
