@@ -7,20 +7,33 @@ import { ProviderAvatar } from '../ProviderAvatar';
 import styles from './index.module.less';
 interface ModelServiceCardProps {
   service: IProvider;
+  reachable?: boolean;
   onClick?: (action?: string, data?: IProvider) => void;
 }
 
-const ModelServiceCard = ({ service, onClick }: ModelServiceCardProps) => {
-  const color = service.enable ? 'success' : 'error';
-  const text = service.enable
-    ? $i18n.get({
-        id: 'main.pages.Setting.ModelService.components.ModelServiceCard.index.started',
-        dm: 'Started',
-      })
-    : $i18n.get({
-        id: 'main.pages.Setting.ModelService.components.ModelServiceCard.index.stopped',
-        dm: 'Stopped',
-      });
+const ModelServiceCard = ({ service, reachable, onClick }: ModelServiceCardProps) => {
+  // Determine status: Stopped (disabled), Online (enabled + reachable), Unreachable (enabled + not reachable)
+  let color: string;
+  let text: string;
+  if (!service.enable) {
+    color = 'error';
+    text = $i18n.get({
+      id: 'main.pages.Setting.ModelService.components.ModelServiceCard.index.stopped',
+      dm: 'Stopped',
+    });
+  } else if (reachable === false) {
+    color = 'warning';
+    text = $i18n.get({
+      id: 'main.pages.Setting.ModelService.components.ModelServiceCard.index.unreachable',
+      dm: 'Unreachable',
+    });
+  } else {
+    color = 'success';
+    text = $i18n.get({
+      id: 'main.pages.Setting.ModelService.components.ModelServiceCard.index.online',
+      dm: 'Online',
+    });
+  }
   const updatedAt = service.gmt_modified
     ? dayjs(service.gmt_modified).format('YYYY-MM-DD HH:mm:ss')
     : '';

@@ -39,7 +39,7 @@ const getStatusInfo = (jobStatus: string) => {
     case 'paused':
       return { className: styles['status-idle'], label: 'Paused' };
     default:
-      return { className: styles['status-idle'], label: 'Ready' };
+      return { className: styles['status-done'], label: 'Connected' };
   }
 };
 
@@ -56,7 +56,6 @@ const SourceCard: React.FC<SourceCardProps> = ({
 }) => {
   const statusInfo = getStatusInfo(mcf_job_status);
   const progress = docs_total > 0 ? Math.round((docs_processed / docs_total) * 100) : 0;
-  const isIdle = !mcf_job_status || ['idle', 'not_started', ''].includes((mcf_job_status || '').toLowerCase());
 
   return (
     <ProCard
@@ -124,21 +123,7 @@ const SourceCard: React.FC<SourceCardProps> = ({
               dm: 'Test',
             })}
           </Button>
-          {isIdle && (
-            <Button
-              className={styles['operate-button']}
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                handleClickAction && handleClickAction('sync', source_id);
-              }}
-            >
-              {$i18n.get({
-                id: 'main.pages.Source.List.components.Card.startSync',
-                dm: 'Sync',
-              })}
-            </Button>
-          )}
+
           <Button
             className={styles['operate-button']}
             onClick={(e) => {

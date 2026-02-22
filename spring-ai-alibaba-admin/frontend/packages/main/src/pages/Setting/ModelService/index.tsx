@@ -4,6 +4,7 @@ import Search from '@/components/Search';
 import $i18n from '@/i18n';
 import {
   deleteProvider,
+  getProviderHealth,
   listProviders,
   updateProvider,
 } from '@/services/modelService';
@@ -18,6 +19,7 @@ import styles from './index.module.less';
 const ModelService = () => {
   const navigate = useNavigate();
   const [providers, setProviders] = useState<IProvider[]>([]);
+  const [healthMap, setHealthMap] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -42,6 +44,10 @@ const ModelService = () => {
     } finally {
       setLoading(false);
     }
+    // Fetch live health in the background (non-blocking)
+    getProviderHealth()
+      .then((res) => setHealthMap(res?.data || {}))
+      .catch(() => {});
   };
 
   const handleServiceClick = (action?: string, provider?: IProvider) => {
@@ -158,6 +164,7 @@ const ModelService = () => {
             <ModelServiceCard
               key={provider.provider}
               service={provider}
+              reachable={healthMap[provider.provider]}
               onClick={handleServiceClick}
             />
           ))}

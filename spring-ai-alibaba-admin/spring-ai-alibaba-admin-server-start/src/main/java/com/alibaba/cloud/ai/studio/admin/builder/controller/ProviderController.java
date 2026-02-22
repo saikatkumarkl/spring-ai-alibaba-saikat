@@ -51,6 +51,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -302,6 +303,61 @@ public class ProviderController {
 		redisManager.put(CACHE_PROVIDER_LIST_CACHE_PREFIX + requestContext.getWorkspaceId(), providerConfigInfos,
 				Duration.ofHours(12));
 		return Result.success(providerConfigInfos);
+	}
+
+	/**
+	 * Returns live reachability status for all enabled providers.
+	 * Pings each provider's endpoint (with a short timeout) and returns
+	 * a map of provider code → reachable (true/false).
+	 * Providers without an endpoint are considered reachable (API-key-only services).
+	 */
+	@GetMapping("/health-status")
+	public Result<Map<String, Boolean>> getProviderHealth() {
+		List<ProviderConfigInfo> providers = providerManager.queryProviders(null);
+		Map<String, Boolean> health = new HashMap<>();
+		if (CollectionUtils.isEmpty(providers)) {
+			return Result.success(health);
+		}
+		RestTemplate restTemplate = new RestTemplate();
+		// Use a short connect + read timeout
+		restTemplate.setRequestFactory(new org.springframework.http.client.SimpleClientHttpRequestFactory() {
+			{
+				setConnectTimeout(3000);
+				setReadTimeout(3000);
+			}
+		});
+		for (ProviderConfigInfo provider : providers) {
+			if (!Boolean.TRUE.equals(provider.getEnable())) {
+				health.put(provider.getProvider(), false);
+				continue;
+			}
+			ModelCredential credential = provider.getCredential();
+			if (credential == null || StringUtils.isBlank(credential.getEndpoint())) {
+				// API-key-only providers (e.g. DashScope, OpenAI cloud) — assume reachable
+				health.put(provider.getProvider(), true);
+				continue;
+			}
+			String baseUrl = credential.getEndpoint().replaceAll("/+$", "");
+			boolean reachable = false;
+			try {
+				// Try Ollama-native /api/tags first (fast)
+				restTemplate.getForEntity(baseUrl + "/api/tags", Map.class);
+				reachable = true;
+			}
+			catch (Exception e1) {
+				try {
+					// Fallback: OpenAI-compatible /v1/models
+					restTemplate.getForEntity(baseUrl + "/v1/models", Map.class);
+					reachable = true;
+				}
+				catch (Exception e2) {
+					log.debug("Provider {} at {} is unreachable: {}", provider.getProvider(), baseUrl,
+							e2.getMessage());
+				}
+			}
+			health.put(provider.getProvider(), reachable);
+		}
+		return Result.success(health);
 	}
 
 	/**
@@ -569,4 +625,5 @@ public class ProviderController {
 
 		return Result.success(Lists.newArrayList());
 	}
+
 }

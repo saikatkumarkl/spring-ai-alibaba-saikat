@@ -1543,8 +1543,11 @@ email, appId));
 	/**
 	 * Get the URL in the source system where a document can be viewed.
 	 * Uses the vendor-agnostic documentUrlTemplate from connection_config.
-	 * Template placeholders: {nodeId}, {objectId}, {protocol}, {server}, {port}, {path}, {fileName}
+	 * Template placeholders (case-insensitive for protocol/server/port):
+	 *   {nodeId}, {nodeRef}, {objectId}, {protocol}, {server}, {port}, {path}, {fileName}
+	 *   {spaceKey} (Confluence), {owner}/{repo} (GitHub)
 	 * Example (Alfresco): {protocol}://{server}:{port}/share/page/document-details?nodeRef=workspace://SpacesStore/{nodeId}
+	 * Example (Confluence): {PROTOCOL}://{SERVER}:{PORT}/wiki/spaces/{spaceKey}/pages/{nodeId}
 	 */
 	@Operation(summary = "Get source system URL for a document")
 	@GetMapping("/document-source-url")
@@ -1586,27 +1589,42 @@ email, appId));
 			String port = String.valueOf(config.getOrDefault("port",
 					config.getOrDefault("PORT", "443")));
 
-			// Extract the node ID from the objectId (strip version suffix like ";1.0")
+			// Extract nodeId (UUID only) and nodeRef from CMIS objectId
+			// Full format: "workspace://SpacesStore/uuid;1.0"
 			String nodeId = objectId;
 			if (nodeId.contains(";")) {
 				nodeId = nodeId.substring(0, nodeId.indexOf(";"));
+			}
+			// nodeRef = full reference without version
+			String nodeRef = nodeId;
+			if (!nodeRef.contains("://")) {
+				nodeRef = "workspace://SpacesStore/" + nodeRef;
+			}
+			// nodeId = UUID only (strip workspace://SpacesStore/ prefix)
+			if (nodeId.contains("/")) {
+				nodeId = nodeId.substring(nodeId.lastIndexOf("/") + 1);
 			}
 
 			// Resolve documentUrlTemplate from connection_config (vendor-agnostic)
 			String template = (String) config.getOrDefault("documentUrlTemplate", "");
 			String sourceUrl;
 			if (template != null && !template.isBlank()) {
+				// Case-insensitive replacement to handle both CMIS (lowercase) and REST API (UPPERCASE) templates
 				sourceUrl = template
-						.replace("{protocol}", protocol)
-						.replace("{server}", server)
-						.replace("{port}", port)
+						.replaceAll("(?i)\\{protocol}", protocol)
+						.replaceAll("(?i)\\{server}", server)
+						.replaceAll("(?i)\\{port}", port)
+						.replace("{nodeRef}", nodeRef)
 						.replace("{nodeId}", nodeId)
 						.replace("{objectId}", objectId)
 						.replace("{path}", String.valueOf(config.getOrDefault("path",
 								config.getOrDefault("BASEPATH", ""))))
+						.replace("{spaceKey}", String.valueOf(config.getOrDefault("spaceKey", "")))
+						.replace("{owner}", String.valueOf(config.getOrDefault("owner", "")))
+						.replace("{repo}", String.valueOf(config.getOrDefault("repo", "")))
 						.replace("{fileName}", "");
 				// Strip default port suffixes for cleaner URLs
-				sourceUrl = sourceUrl.replace(":443/", "/").replace(":80/", "/");
+				sourceUrl = sourceUrl.replaceAll(":443(/|$)", "$1").replaceAll(":80(/|$)", "$1");
 			} else {
 				// Fallback: use previewUrl or base URL
 				String previewUrl = (String) config.getOrDefault("previewUrl", "");
@@ -1671,16 +1689,19 @@ email, appId));
 				return Result.error(400, "No documentUrlTemplate configured for this source");
 			}
 
-			// 2. Find the KB linked to this source via knowledge_sync
+			// 2. Find the OpenSearch index: try knowledge_sync first, then direct sourceId index
+			String index = null;
 			List<Map<String, Object>> syncRows = jdbcTemplate.queryForList(
 				"SELECT kb_id FROM knowledge_sync WHERE source_id = ? ORDER BY gmt_modified DESC LIMIT 1", sourceId);
-			if (syncRows.isEmpty()) {
-				return Result.error(400, "No knowledge base synced from this source");
+			if (!syncRows.isEmpty()) {
+				index = String.valueOf(syncRows.get(0).get("kb_id")) + "_document";
 			}
-			String kbId = String.valueOf(syncRows.get(0).get("kb_id"));
+			else {
+				// External connectors (e.g., CMIS connector) index directly to sourceId_document
+				index = sourceId + "_document";
+			}
 
 			// 3. Query OpenSearch for top N documents (no ACL filter — admin context)
-			String index = kbId + "_document";
 			Map<String, Object> requestBody = new LinkedHashMap<>();
 			requestBody.put("query", Map.of("match_all", Map.of()));
 			requestBody.put("size", size);
@@ -1719,28 +1740,43 @@ email, appId));
 				String fileName = String.valueOf(source.getOrDefault("cmis:contentStreamFileName",
 						source.getOrDefault("cmis:name", "document")));
 
-				// Strip version suffix (e.g., "abc123;1.0" → "abc123")
+				// Extract nodeId (UUID only) and nodeRef from CMIS objectId
+				// Full format: "workspace://SpacesStore/uuid;1.0"
 				String nodeId = objectId;
 				if (nodeId.contains(";")) {
 					nodeId = nodeId.substring(0, nodeId.indexOf(";"));
 				}
+				// nodeRef = full reference without version
+				String nodeRef = nodeId;
+				if (!nodeRef.contains("://")) {
+					nodeRef = "workspace://SpacesStore/" + nodeRef;
+				}
+				// nodeId = UUID only (strip workspace://SpacesStore/ prefix)
+				if (nodeId.contains("/")) {
+					nodeId = nodeId.substring(nodeId.lastIndexOf("/") + 1);
+				}
 
-				// Apply template
+				// Apply template — case-insensitive for PROTOCOL/SERVER/PORT (REST API uses uppercase)
 				String url = template
-						.replace("{protocol}", protocol)
-						.replace("{server}", server)
-						.replace("{port}", port)
+						.replaceAll("(?i)\\{protocol}", protocol)
+						.replaceAll("(?i)\\{server}", server)
+						.replaceAll("(?i)\\{port}", port)
+						.replace("{nodeRef}", nodeRef)
 						.replace("{nodeId}", nodeId)
 						.replace("{objectId}", objectId)
 						.replace("{path}", String.valueOf(config.getOrDefault("path",
 								config.getOrDefault("BASEPATH", ""))))
+						.replace("{spaceKey}", String.valueOf(config.getOrDefault("spaceKey", "")))
+						.replace("{owner}", String.valueOf(config.getOrDefault("owner", "")))
+						.replace("{repo}", String.valueOf(config.getOrDefault("repo", "")))
 						.replace("{fileName}", fileName);
 				// Strip default port suffixes
-				url = url.replace(":443/", "/").replace(":80/", "/");
+				url = url.replaceAll(":443(/|$)", "$1").replaceAll(":80(/|$)", "$1");
 
 				Map<String, Object> entry = new LinkedHashMap<>();
 				entry.put("objectId", objectId);
 				entry.put("nodeId", nodeId);
+				entry.put("nodeRef", nodeRef);
 				entry.put("fileName", fileName);
 				entry.put("sourceUrl", url);
 				sampleUrls.add(entry);

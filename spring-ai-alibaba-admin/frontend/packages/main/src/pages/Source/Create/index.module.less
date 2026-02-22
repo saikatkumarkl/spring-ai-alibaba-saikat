@@ -82,10 +82,35 @@
   background-color: var(--ag-ant-color-primary-bg);
 }
 
+.connector-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .connector-name {
   font-size: 14px;
   font-weight: 500;
   color: var(--ag-ant-color-text);
+}
+
+.status-dot-online,
+.status-dot-offline {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot-online {
+  background-color: #52c41a;
+  box-shadow: 0 0 4px rgba(82, 196, 26, 0.4);
+}
+
+.status-dot-offline {
+  background-color: #d9d9d9;
 }
 
 .connector-class {

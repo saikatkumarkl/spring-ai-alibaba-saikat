@@ -49,11 +49,33 @@ public class SourceSystemServiceImpl extends ServiceImpl<SourceSystemMapper, Sou
 
 	private final ManifoldCFBridgeService mcfBridge;
 
+	private final ConnectorRegistryService connectorRegistry;
+
+	private final ConnectorProxyService connectorProxy;
+
 	private final ObjectMapper objectMapper;
 
-	public SourceSystemServiceImpl(ManifoldCFBridgeService mcfBridge) {
+	public SourceSystemServiceImpl(ManifoldCFBridgeService mcfBridge, ConnectorRegistryService connectorRegistry,
+			ConnectorProxyService connectorProxy) {
 		this.mcfBridge = mcfBridge;
+		this.connectorRegistry = connectorRegistry;
+		this.connectorProxy = connectorProxy;
 		this.objectMapper = new ObjectMapper();
+	}
+
+	/**
+	 * Check if a connector microservice is registered for the given connector class.
+	 * If so, use it instead of ManifoldCF.
+	 */
+	private boolean hasExternalConnector(String connectorClass) {
+		return connectorRegistry.hasActiveConnector(connectorClass);
+	}
+
+	/**
+	 * Get the base URL for an external connector.
+	 */
+	private String getConnectorBaseUrl(String connectorClass) {
+		return connectorRegistry.getBaseUrl(connectorClass);
 	}
 
 	@Override
@@ -71,19 +93,24 @@ public class SourceSystemServiceImpl extends ServiceImpl<SourceSystemMapper, Sou
 
 		String sourceId = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
 
-		// Try to create ManifoldCF repository connection (best-effort).
-		// If ManifoldCF is unavailable, we still save the source as a draft.
-		// The MCF connection will be created/re-pushed when the user tests
-		// the connection or enables the source (testConnection re-pushes config).
+		// Try to create connection — either via external connector or MCF
 		String mcfConnectionName = "src_" + sourceId;
-		try {
-			mcfBridge.createRepositoryConnection(mcfConnectionName, source.getDescription(),
-					source.getConnectorClass(), source.getConnectionConfig());
+		if (hasExternalConnector(source.getConnectorClass())) {
+			// External connector — no MCF connection needed
+			log.info("Source system uses external connector '{}' — skipping MCF connection",
+					source.getConnectorClass());
 		}
-		catch (Exception e) {
-			log.warn("Could not create MCF connection '{}' (ManifoldCF may be unavailable): {}. "
-					+ "Source will be saved as draft; MCF connection will be created on test/sync.",
-					mcfConnectionName, e.getMessage());
+		else {
+			// MCF path — create ManifoldCF repository connection (best-effort)
+			try {
+				mcfBridge.createRepositoryConnection(mcfConnectionName, source.getDescription(),
+						source.getConnectorClass(), source.getConnectionConfig());
+			}
+			catch (Exception e) {
+				log.warn("Could not create MCF connection '{}' (ManifoldCF may be unavailable): {}. "
+						+ "Source will be saved as draft; MCF connection will be created on test/sync.",
+						mcfConnectionName, e.getMessage());
+			}
 		}
 
 		// Save to database
@@ -129,13 +156,15 @@ public class SourceSystemServiceImpl extends ServiceImpl<SourceSystemMapper, Sou
 		}
 		if (source.getConnectionConfig() != null) {
 			entity.setConnectionConfig(serializeConfig(source.getConnectionConfig()));
-			// Update MCF connection too
-			try {
-				mcfBridge.createRepositoryConnection(entity.getMcfConnectionName(), entity.getDescription(),
-						entity.getConnectorClass(), source.getConnectionConfig());
-			}
-			catch (Exception e) {
-				log.warn("Failed to update MCF connection: {}", e.getMessage());
+			// Update MCF connection too (only for MCF-managed sources)
+			if (!hasExternalConnector(entity.getConnectorClass())) {
+				try {
+					mcfBridge.createRepositoryConnection(entity.getMcfConnectionName(), entity.getDescription(),
+							entity.getConnectorClass(), source.getConnectionConfig());
+				}
+				catch (Exception e) {
+					log.warn("Failed to update MCF connection: {}", e.getMessage());
+				}
 			}
 		}
 		if (source.getSyncCron() != null) {
@@ -154,19 +183,32 @@ public class SourceSystemServiceImpl extends ServiceImpl<SourceSystemMapper, Sou
 			return;
 		}
 
-		// Abort and delete MCF job if exists
+		// Abort and delete job
 		if (StringUtils.isNotBlank(entity.getMcfJobId())) {
-			try {
-				mcfBridge.abortJob(entity.getMcfJobId());
-				mcfBridge.deleteJob(entity.getMcfJobId());
+			if (hasExternalConnector(entity.getConnectorClass())) {
+				// For external connectors, just abort — jobs are managed by the connector
+				String baseUrl = getConnectorBaseUrl(entity.getConnectorClass());
+				try {
+					connectorProxy.abortJob(baseUrl, entity.getMcfJobId());
+				}
+				catch (Exception e) {
+					log.warn("Failed to abort connector job: {}", e.getMessage());
+				}
 			}
-			catch (Exception e) {
-				log.warn("Failed to delete MCF job: {}", e.getMessage());
+			else {
+				try {
+					mcfBridge.abortJob(entity.getMcfJobId());
+					mcfBridge.deleteJob(entity.getMcfJobId());
+				}
+				catch (Exception e) {
+					log.warn("Failed to delete MCF job: {}", e.getMessage());
+				}
 			}
 		}
 
-		// Delete MCF connection
-		if (StringUtils.isNotBlank(entity.getMcfConnectionName())) {
+		// Delete MCF connection (only for MCF-managed sources)
+		if (!hasExternalConnector(entity.getConnectorClass())
+				&& StringUtils.isNotBlank(entity.getMcfConnectionName())) {
 			mcfBridge.deleteRepositoryConnection(entity.getMcfConnectionName());
 		}
 
@@ -181,10 +223,17 @@ public class SourceSystemServiceImpl extends ServiceImpl<SourceSystemMapper, Sou
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("source_id", "Source system not found"));
 		}
 
-		// Refresh job status from MCF
+		// Refresh job status
 		if (StringUtils.isNotBlank(entity.getMcfJobId())) {
 			try {
-				Map<String, String> status = mcfBridge.getJobStatus(entity.getMcfJobId());
+				Map<String, String> status;
+				if (hasExternalConnector(entity.getConnectorClass())) {
+					String baseUrl = getConnectorBaseUrl(entity.getConnectorClass());
+					status = connectorProxy.getJobStatus(baseUrl, entity.getMcfJobId());
+				}
+				else {
+					status = mcfBridge.getJobStatus(entity.getMcfJobId());
+				}
 				entity.setMcfJobStatus(status.getOrDefault("status", entity.getMcfJobStatus()));
 
 				String processed = status.get("documents_processed");
@@ -229,7 +278,10 @@ public class SourceSystemServiceImpl extends ServiceImpl<SourceSystemMapper, Sou
 
 	@Override
 	public List<Map<String, String>> getConnectorTypes() {
-		return mcfBridge.getConnectorTypes();
+		// Return only dynamically registered connector microservices.
+		// The frontend maintains its own fallback list of connector types
+		// and merges registered connectors to show availability (green dot).
+		return new ArrayList<>(connectorRegistry.getRegisteredConnectorTypes());
 	}
 
 	@Override
@@ -239,10 +291,24 @@ public class SourceSystemServiceImpl extends ServiceImpl<SourceSystemMapper, Sou
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("source_id", "Source system not found"));
 		}
 
+		Map<String, Object> currentConfig = deserializeConfig(entity.getConnectionConfig());
+
+		// Route to external connector if registered
+		if (hasExternalConnector(entity.getConnectorClass())) {
+			String baseUrl = getConnectorBaseUrl(entity.getConnectorClass());
+			log.info("Testing connection via external connector at {}", baseUrl);
+			Map<String, String> result = connectorProxy.testConnection(baseUrl, currentConfig);
+			String testStatus = result.getOrDefault("result", result.getOrDefault("status", ""));
+			entity.setTestResult(testStatus.contains("working") || testStatus.contains("success") ? "PASS" : "FAIL");
+			entity.setGmtModified(new Date());
+			this.updateById(entity);
+			return result;
+		}
+
+		// Fall back to MCF
 		// Re-push current config to MCF before testing — ensures MCF connection
 		// reflects the latest saved config (fixes stale config after updates)
 		try {
-			Map<String, Object> currentConfig = deserializeConfig(entity.getConnectionConfig());
 			if (!currentConfig.isEmpty()) {
 				mcfBridge.createRepositoryConnection(entity.getMcfConnectionName(), entity.getDescription(),
 						entity.getConnectorClass(), currentConfig);
@@ -270,6 +336,41 @@ public class SourceSystemServiceImpl extends ServiceImpl<SourceSystemMapper, Sou
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("source_id", "Source system not found"));
 		}
 
+		Map<String, Object> currentConfig = deserializeConfig(entity.getConnectionConfig());
+
+		// Route to external connector if registered
+		if (hasExternalConnector(entity.getConnectorClass())) {
+			String baseUrl = getConnectorBaseUrl(entity.getConnectorClass());
+			log.info("Starting crawl via external connector at {}", baseUrl);
+
+			// Abort old job if running on connector
+			if (StringUtils.isNotBlank(entity.getMcfJobId())) {
+				try {
+					connectorProxy.abortJob(baseUrl, entity.getMcfJobId());
+				}
+				catch (Exception e) {
+					log.warn("Could not abort old connector job: {}", e.getMessage());
+				}
+			}
+
+			// For external connectors, use source-specific index name (not MCF output name).
+			// Pattern: {sourceId}_document — matches the knowledge base index convention.
+			String indexName = entity.getSourceId() + "_document";
+			String jobId = connectorProxy.startCrawl(baseUrl, currentConfig, indexName, query, null);
+
+			entity.setMcfJobId(jobId); // reuse field for connector job ID
+			entity.setMcfJobStatus("starting");
+			entity.setDocsProcessed(0L);
+			entity.setDocsFailed(0L);
+			entity.setErrorMessage(null);
+			entity.setGmtModified(new Date());
+			this.updateById(entity);
+
+			log.info("Started sync for source '{}' via connector (jobId={})", entity.getName(), jobId);
+			return jobId;
+		}
+
+		// Fall back to MCF
 		// Delete old job if exists
 		if (StringUtils.isNotBlank(entity.getMcfJobId())) {
 			try {
@@ -283,7 +384,6 @@ public class SourceSystemServiceImpl extends ServiceImpl<SourceSystemMapper, Sou
 
 		// Ensure MCF repository connection exists (may not have been created
 		// if ManifoldCF was unavailable at source creation time)
-		Map<String, Object> currentConfig = deserializeConfig(entity.getConnectionConfig());
 		if (!currentConfig.isEmpty()) {
 			mcfBridge.createRepositoryConnection(entity.getMcfConnectionName(), entity.getDescription(),
 					entity.getConnectorClass(), currentConfig);
@@ -322,7 +422,16 @@ public class SourceSystemServiceImpl extends ServiceImpl<SourceSystemMapper, Sou
 			return noJob;
 		}
 
-		Map<String, String> status = mcfBridge.getJobStatus(entity.getMcfJobId());
+		Map<String, String> status;
+
+		// Route to external connector if registered
+		if (hasExternalConnector(entity.getConnectorClass())) {
+			String baseUrl = getConnectorBaseUrl(entity.getConnectorClass());
+			status = connectorProxy.getJobStatus(baseUrl, entity.getMcfJobId());
+		}
+		else {
+			status = mcfBridge.getJobStatus(entity.getMcfJobId());
+		}
 
 		// Update local record
 		String jobStatus = status.getOrDefault("status", "unknown");
@@ -347,7 +456,14 @@ public class SourceSystemServiceImpl extends ServiceImpl<SourceSystemMapper, Sou
 			return;
 		}
 		if (StringUtils.isNotBlank(entity.getMcfJobId())) {
-			mcfBridge.abortJob(entity.getMcfJobId());
+			// Route to external connector if registered
+			if (hasExternalConnector(entity.getConnectorClass())) {
+				String baseUrl = getConnectorBaseUrl(entity.getConnectorClass());
+				connectorProxy.abortJob(baseUrl, entity.getMcfJobId());
+			}
+			else {
+				mcfBridge.abortJob(entity.getMcfJobId());
+			}
 			entity.setMcfJobStatus("aborting");
 			entity.setGmtModified(new Date());
 			this.updateById(entity);
@@ -373,7 +489,38 @@ public class SourceSystemServiceImpl extends ServiceImpl<SourceSystemMapper, Sou
 		}
 
 		Map<String, String> validationResult = new HashMap<>();
+		Map<String, Object> config = deserializeConfig(entity.getConnectionConfig());
 
+		// Route to external connector if registered
+		if (hasExternalConnector(entity.getConnectorClass())) {
+			String baseUrl = getConnectorBaseUrl(entity.getConnectorClass());
+			Map<String, String> connResult = connectorProxy.testConnection(baseUrl, config);
+			String connStatus = connResult.getOrDefault("result", connResult.getOrDefault("status", ""));
+			boolean connPassed = connStatus.contains("working") || connStatus.contains("success");
+
+			if (!connPassed) {
+				validationResult.put("status", "FAIL");
+				validationResult.put("connection_result", connStatus);
+				validationResult.put("message", "Cannot enable: connection test failed");
+				entity.setTestResult("FAIL");
+				entity.setGmtModified(new Date());
+				this.updateById(entity);
+				return validationResult;
+			}
+
+			validationResult.put("connection_result", "Connection working");
+			entity.setStatus(1);
+			entity.setTestResult("PASS");
+			entity.setGmtModified(new Date());
+			this.updateById(entity);
+
+			validationResult.put("status", "PASS");
+			validationResult.put("message", "Source enabled successfully");
+			log.info("Enabled source system '{}' via external connector (sourceId={})", entity.getName(), sourceId);
+			return validationResult;
+		}
+
+		// Fall back to MCF
 		// Step 1: Test connection
 		Map<String, String> connResult = mcfBridge.testConnection(entity.getMcfConnectionName());
 		String connStatus = connResult.getOrDefault("result", "");
@@ -392,7 +539,6 @@ public class SourceSystemServiceImpl extends ServiceImpl<SourceSystemMapper, Sou
 		validationResult.put("connection_result", "Connection working");
 
 		// Step 2: Check if ACL enforcement is configured (groupApiUrl present in config)
-		Map<String, Object> config = deserializeConfig(entity.getConnectionConfig());
 		String groupApiUrl = config.get("groupApiUrl") != null ? String.valueOf(config.get("groupApiUrl")) : "";
 
 		if (!groupApiUrl.isEmpty()) {
@@ -447,6 +593,14 @@ public class SourceSystemServiceImpl extends ServiceImpl<SourceSystemMapper, Sou
 		}
 
 		Map<String, Object> config = deserializeConfig(entity.getConnectionConfig());
+
+		// Route to external connector if registered
+		if (hasExternalConnector(entity.getConnectorClass())) {
+			String baseUrl = getConnectorBaseUrl(entity.getConnectorClass());
+			log.info("Testing query via external connector at {}", baseUrl);
+			return connectorProxy.testQuery(baseUrl, config, testType, queryOverride);
+		}
+
 		return mcfBridge.testQuery(config, entity.getConnectorClass(), testType, queryOverride);
 	}
 

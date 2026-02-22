@@ -141,7 +141,8 @@ public final class KnowledgeIndexSchema {
 			+ "\"deny_token_document\":{\"type\":\"keyword\",\"normalizer\":\"lowercase\"},"
 			+ "\"allow_token_parent\":{\"type\":\"keyword\",\"normalizer\":\"lowercase\"},"
 			+ "\"deny_token_parent\":{\"type\":\"keyword\",\"normalizer\":\"lowercase\"},"
-			+ "\"authorities\":{\"type\":\"keyword\",\"normalizer\":\"lowercase\"}"
+			+ "\"authorities\":{\"type\":\"keyword\",\"normalizer\":\"lowercase\"},"
+			+ "\"indexed_at\":{\"type\":\"date\"}"
 			+ "}}"
 			+ "}";
 

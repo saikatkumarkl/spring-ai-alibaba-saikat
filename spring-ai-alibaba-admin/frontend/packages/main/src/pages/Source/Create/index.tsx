@@ -1,11 +1,11 @@
 import InnerLayout from '@/components/InnerLayout';
 import $i18n from '@/i18n';
-import { createSource, getConnectorTypes, getSourceDetail, updateSource, testConnection, testQuery, getSampleSourceUrls } from '@/services/source';
+import { createSource, getConnectorTypes, getSourceDetail, updateSource, testConnection, testQuery } from '@/services/source';
 import { AlertDialog, Button, message } from '@spark-ai/design';
 import { useMount, useSetState } from 'ahooks';
 import { Checkbox, Collapse, Input, Select, Spin, Steps, Switch, Table, Tag } from 'antd';
 import classNames from 'classnames';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { history, useParams } from 'umi';
 import styles from './index.module.less';
 
@@ -14,6 +14,8 @@ import styles from './index.module.less';
 interface ConnectorType {
   description: string;
   class_name: string;
+  /** 'connector-service' if a live connector microservice is registered, undefined otherwise */
+  source?: string;
 }
 
 interface ConfigEntry {
@@ -66,6 +68,9 @@ interface FormState {
   queryTestResult: string | null;
   queryTestItems: Record<string, any>[];
   queryTestCount: number;
+  /** Document query results — preserved separately so group/user tests don't overwrite Browse in Source data */
+  docQueryItems: Record<string, any>[];
+  docQueryCount: number;
   /** Admin groups — selected by user after group API test; members get access to all docs */
   adminGroups: string[];
   availableGroups: { name: string; objectId: string }[];
@@ -77,10 +82,7 @@ interface FormState {
   navigateToSourceEnabled: boolean;
   /** Whether "Browse in Source" is enabled in the chat app (user verified document URL template works) */
   browseInSourceEnabled: boolean;
-  /** Live sample URLs fetched from real indexed documents */
-  liveSampleUrls: Array<{ objectId: string; nodeId: string; fileName: string; sourceUrl: string }> | null;
-  liveSampleLoading: boolean;
-  liveSampleTotalDocs: number;
+
   /** Edit mode */
   editDataLoaded: boolean;
 }
@@ -89,6 +91,7 @@ interface FormState {
 
 const CLS = {
   CMIS: 'org.apache.manifoldcf.crawler.connectors.cmis.CmisRepositoryConnector',
+  CMIS_EXTERNAL: 'com.cordondata.connector.cmis.CmisConnector',
   RESTAPI: 'org.apache.manifoldcf.crawler.connectors.restapi.RestApiRepositoryConnector',
   CONFLUENCE: 'org.apache.manifoldcf.crawler.connectors.confluence.v2.ConfluenceConnector',
   CONFLUENCE_V6: 'org.apache.manifoldcf.crawler.connectors.confluence.v2.ConfluenceConnector',
@@ -602,6 +605,7 @@ const DOCUMENTUM_FIELDS: FieldDef[] = [
 
 const CONNECTOR_FIELDS: Record<string, FieldDef[]> = {
   [CLS.CMIS]: CMIS_FIELDS,
+  [CLS.CMIS_EXTERNAL]: CMIS_FIELDS,
   [CLS.RESTAPI]: RESTAPI_FIELDS,
   [CLS.CONFLUENCE]: CONFLUENCE_FIELDS,
   [CLS.CONFLUENCE_V6]: CONFLUENCE_V6_FIELDS,
@@ -631,9 +635,22 @@ const CONNECTOR_FIELDS: Record<string, FieldDef[]> = {
   [CLS.DOCUMENTUM]: DOCUMENTUM_FIELDS,
 };
 
+/* ──────────────────────── Vendor preset type ──────────────────────── */
+
+interface VendorPreset {
+  label: string;
+  values: Record<string, string>;
+  previewUrlTemplate: string;
+  documentUrlTemplate: string;
+  /** Regex patterns matched against group name/objectId to auto-select admin groups after Group API test */
+  adminGroupPatterns?: RegExp[];
+  /** Human-readable hints showing typical admin group names for this vendor (shown before Group API test) */
+  adminGroupHints?: string[];
+}
+
 /* ──────────────────────── CMIS vendor presets ──────────────────────── */
 
-const CMIS_VENDOR_PRESETS: Record<string, { label: string; values: Record<string, string>; previewUrlTemplate: string; documentUrlTemplate: string }> = {
+const CMIS_VENDOR_PRESETS: Record<string, VendorPreset> = {
   alfresco: {
     label: 'Alfresco',
     values: {
@@ -643,6 +660,8 @@ const CMIS_VENDOR_PRESETS: Record<string, { label: string; values: Record<string
     },
     previewUrlTemplate: '{protocol}://{server}:{port}/share',
     documentUrlTemplate: '{protocol}://{server}:{port}/share/page/document-details?nodeRef=workspace://SpacesStore/{nodeId}',
+    adminGroupPatterns: [/^GROUP_ALFRESCO_ADMINISTRATORS$/i, /^GROUP_SITE_ADMINISTRATORS$/i],
+    adminGroupHints: ['ALFRESCO_ADMINISTRATORS', 'SITE_ADMINISTRATORS'],
   },
   sharepoint: {
     label: 'SharePoint (CMIS)',
@@ -653,6 +672,8 @@ const CMIS_VENDOR_PRESETS: Record<string, { label: string; values: Record<string
     },
     previewUrlTemplate: '{protocol}://{server}:{port}',
     documentUrlTemplate: '{protocol}://{server}:{port}/_layouts/15/Doc.aspx?sourcedoc={nodeId}',
+    adminGroupPatterns: [/site.collection.admin/i, /^owners$/i],
+    adminGroupHints: ['Site Collection Administrators', 'Owners'],
   },
   filenet: {
     label: 'IBM FileNet',
@@ -663,6 +684,8 @@ const CMIS_VENDOR_PRESETS: Record<string, { label: string; values: Record<string
     },
     previewUrlTemplate: '{protocol}://{server}:{port}/acce',
     documentUrlTemplate: '{protocol}://{server}:{port}/acce/#browse/{nodeId}',
+    adminGroupPatterns: [/^p8administrators$/i, /^GDAdministrators$/i],
+    adminGroupHints: ['p8administrators', 'GDAdministrators'],
   },
   nuxeo: {
     label: 'Nuxeo',
@@ -673,6 +696,8 @@ const CMIS_VENDOR_PRESETS: Record<string, { label: string; values: Record<string
     },
     previewUrlTemplate: '{protocol}://{server}:{port}/nuxeo',
     documentUrlTemplate: '{protocol}://{server}:{port}/nuxeo/ui#!/doc/{nodeId}',
+    adminGroupPatterns: [/^administrators$/i, /^powerusers$/i],
+    adminGroupHints: ['administrators', 'powerusers'],
   },
   other: {
     label: 'Other CMIS Server',
@@ -682,16 +707,20 @@ const CMIS_VENDOR_PRESETS: Record<string, { label: string; values: Record<string
     },
     previewUrlTemplate: '{protocol}://{server}:{port}',
     documentUrlTemplate: '',
+    adminGroupPatterns: [],
+    adminGroupHints: [],
   },
 };
 
 /* ──────────────────────── REST API vendor presets ──────────────────────── */
 
-const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<string, string>; previewUrlTemplate: string; documentUrlTemplate: string }> = {
+const REST_API_VENDOR_PRESETS: Record<string, VendorPreset> = {
   confluence: {
     label: 'Confluence (Atlassian)',
     previewUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}/wiki',
     documentUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}/wiki/spaces/{spaceKey}/pages/{nodeId}',
+    adminGroupPatterns: [/^confluence-administrators$/i, /^system-administrators$/i],
+    adminGroupHints: ['confluence-administrators', 'system-administrators'],
     values: {
       VENDOR: 'confluence', AUTHTYPE: 'basic', PROTOCOL: 'https', PORT: '443',
       BASEPATH: '/wiki/api/v2', SEEDENDPOINT: '/pages',
@@ -708,6 +737,8 @@ const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<st
     label: 'Jira (Atlassian)',
     previewUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}',
     documentUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}/browse/{nodeId}',
+    adminGroupPatterns: [/^jira-administrators$/i, /^jira-software-users$/i],
+    adminGroupHints: ['jira-administrators', 'jira-software-users'],
     values: {
       VENDOR: 'jira', AUTHTYPE: 'basic', PROTOCOL: 'https', PORT: '443',
       BASEPATH: '/rest/api/3', SEEDENDPOINT: '/search', DOCENDPOINT: '/issue/{id}',
@@ -721,6 +752,8 @@ const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<st
     label: 'WordPress',
     previewUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}',
     documentUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}/?p={nodeId}',
+    adminGroupPatterns: [/^administrator$/i],
+    adminGroupHints: ['administrator'],
     values: {
       VENDOR: 'wordpress', AUTHTYPE: 'basic', PROTOCOL: 'https', PORT: '443',
       BASEPATH: '/wp-json/wp/v2', SEEDENDPOINT: '/posts', DOCENDPOINT: '/posts/{id}',
@@ -734,6 +767,8 @@ const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<st
     label: 'GitHub',
     previewUrlTemplate: 'https://github.com',
     documentUrlTemplate: 'https://github.com/{owner}/{repo}/blob/main/{path}',
+    adminGroupPatterns: [/^admin$/i, /^owners$/i],
+    adminGroupHints: ['admin', 'owners'],
     values: {
       VENDOR: 'github', AUTHTYPE: 'bearer', PROTOCOL: 'https',
       SERVER: 'api.github.com', PORT: '443',
@@ -749,6 +784,8 @@ const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<st
     label: 'SharePoint Online',
     previewUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}',
     documentUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}/_layouts/15/Doc.aspx?sourcedoc={nodeId}',
+    adminGroupPatterns: [/site.collection.admin/i, /^owners$/i],
+    adminGroupHints: ['Site Collection Administrators', 'Owners'],
     values: {
       VENDOR: 'sharepoint', AUTHTYPE: 'bearer', PROTOCOL: 'https', PORT: '443',
       BASEPATH: '/_api',
@@ -766,6 +803,8 @@ const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<st
     label: 'Notion',
     previewUrlTemplate: 'https://www.notion.so',
     documentUrlTemplate: 'https://www.notion.so/{nodeId}',
+    adminGroupPatterns: [/^workspace.owners$/i],
+    adminGroupHints: ['Workspace Owners'],
     values: {
       VENDOR: 'notion', AUTHTYPE: 'bearer', PROTOCOL: 'https',
       SERVER: 'api.notion.com', PORT: '443', BASEPATH: '/v1',
@@ -782,6 +821,8 @@ const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<st
     label: 'Drupal',
     previewUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}',
     documentUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}/node/{nodeId}',
+    adminGroupPatterns: [/^administrator$/i],
+    adminGroupHints: ['administrator'],
     values: {
       VENDOR: 'drupal', AUTHTYPE: 'basic', PROTOCOL: 'https', PORT: '443',
       BASEPATH: '/jsonapi', SEEDENDPOINT: '/node/article', DOCENDPOINT: '/node/article/{id}',
@@ -796,6 +837,8 @@ const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<st
     label: 'Alfresco (REST API)',
     previewUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}/share',
     documentUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}/share/page/document-details?nodeRef=workspace://SpacesStore/{nodeId}',
+    adminGroupPatterns: [/^GROUP_ALFRESCO_ADMINISTRATORS$/i, /^GROUP_SITE_ADMINISTRATORS$/i],
+    adminGroupHints: ['ALFRESCO_ADMINISTRATORS', 'SITE_ADMINISTRATORS'],
     values: {
       VENDOR: 'alfresco', AUTHTYPE: 'basic', PROTOCOL: 'https', PORT: '443',
       BASEPATH: '/alfresco/api/-default-/public/alfresco/versions/1',
@@ -812,6 +855,8 @@ const REST_API_VENDOR_PRESETS: Record<string, { label: string; values: Record<st
     label: 'Other (Custom)',
     previewUrlTemplate: '{PROTOCOL}://{SERVER}:{PORT}',
     documentUrlTemplate: '',
+    adminGroupPatterns: [],
+    adminGroupHints: [],
     values: {
       VENDOR: 'other', AUTHTYPE: 'none', PROTOCOL: 'https', PORT: '443',
       PAGINATIONTYPE: 'offset', PAGESIZE: '100',
@@ -861,15 +906,34 @@ const ACL_GROUP_API_PRESETS: Record<string, { groupApiUrl: string; groupMembersA
 /** Returns the vendor preset map if the connector class has sub-vendor presets */
 function getVendorPresets(
   connectorClass: string,
-): Record<string, { label: string; values: Record<string, string>; previewUrlTemplate: string; documentUrlTemplate: string }> | null {
-  if (connectorClass === CLS.CMIS) return CMIS_VENDOR_PRESETS;
+): Record<string, VendorPreset> | null {
+  if (connectorClass === CLS.CMIS || connectorClass === CLS.CMIS_EXTERNAL) return CMIS_VENDOR_PRESETS;
   if (connectorClass === CLS.RESTAPI) return REST_API_VENDOR_PRESETS;
   return null;
 }
 
+/** Get admin group patterns for a vendor — always includes /admin/i as a base pattern */
+function getAdminGroupPatterns(connectorClass: string, vendorId: string | null): RegExp[] {
+  if (!vendorId) return [];
+  const presets = getVendorPresets(connectorClass);
+  return presets?.[vendorId]?.adminGroupPatterns ?? [];
+}
+
+/** Get admin group display hints for a vendor */
+function getAdminGroupHints(connectorClass: string, vendorId: string | null): string[] {
+  if (!vendorId) return [];
+  const presets = getVendorPresets(connectorClass);
+  return presets?.[vendorId]?.adminGroupHints ?? [];
+}
+
 /** Returns whether the connector supports ACL enforcement (group/user API) */
 function supportsAclEnforcement(connectorClass: string | undefined): boolean {
-  return connectorClass === CLS.CMIS || connectorClass === CLS.RESTAPI;
+  return connectorClass === CLS.CMIS || connectorClass === CLS.CMIS_EXTERNAL || connectorClass === CLS.RESTAPI;
+}
+
+/** Check if a connector class is a CMIS-type connector (MCF or external) */
+function isCmisClass(connectorClass: string | undefined): boolean {
+  return connectorClass === CLS.CMIS || connectorClass === CLS.CMIS_EXTERNAL;
 }
 
 /** Returns pre-populated ACL group API URLs for a given vendor */
@@ -1009,6 +1073,7 @@ function groupFields(fields: FieldDef[]): {
 export default function SourceCreate() {
   const params = useParams<{ id?: string }>();
   const isEdit = !!params.id;
+  const queryResultsRef = useRef<HTMLDivElement>(null);
 
   const [state, setState] = useSetState<FormState>({
     step: 0,
@@ -1033,15 +1098,15 @@ export default function SourceCreate() {
     queryTestResult: null,
     queryTestItems: [],
     queryTestCount: 0,
+    docQueryItems: [],
+    docQueryCount: 0,
     adminGroups: [],
     availableGroups: [],
     previewUrl: '',
     documentUrlTemplate: '',
     navigateToSourceEnabled: false,
     browseInSourceEnabled: false,
-    liveSampleUrls: null,
-    liveSampleLoading: false,
-    liveSampleTotalDocs: 0,
+
 
     editDataLoaded: false,
   });
@@ -1049,11 +1114,13 @@ export default function SourceCreate() {
   useMount(() => {
     getConnectorTypes()
       .then((types) => {
-        let typedTypes = (types || []) as unknown as ConnectorType[];
-        // If ManifoldCF is unavailable, fall back to built-in connector definitions
-        if (typedTypes.length === 0) {
-          typedTypes = FALLBACK_CONNECTOR_TYPES;
-        }
+        const registered = ((types || []) as unknown as ConnectorType[]);
+        // Start with fallback list; mark connectors with a live registered service
+        const registeredClassNames = new Set(registered.map((r) => r.class_name));
+        const typedTypes = FALLBACK_CONNECTOR_TYPES.map((ft) => ({
+          ...ft,
+          source: registeredClassNames.has(ft.class_name) ? 'connector-service' : undefined,
+        }));
         setState({ connectorTypes: typedTypes });
 
         // If editing, load existing source data
@@ -1073,7 +1140,7 @@ export default function SourceCreate() {
             }
             // Detect vendor from config
             let detectedVendor: string | null = null;
-            if (matchedConnector.class_name === CLS.CMIS) {
+            if (isCmisClass(matchedConnector.class_name)) {
               // Try to detect from cmisVendor param
               detectedVendor = config.cmisVendor === 'alfresco' ? 'alfresco' : 'other';
             } else if (matchedConnector.class_name === CLS.RESTAPI) {
@@ -1165,7 +1232,7 @@ export default function SourceCreate() {
     // Overlay vendor-specific values onto defaults
     const merged = { ...base, ...presets[vendorId].values };
     // Auto-set cmisVendor param for CMIS connectors (removed from UI but still needed by ManifoldCF)
-    if (state.selectedConnector.class_name === CLS.CMIS) {
+    if (isCmisClass(state.selectedConnector.class_name)) {
       merged.cmisVendor = (vendorId === 'alfresco') ? 'alfresco' : 'other';
     }
     // Pre-populate ACL group API URLs from vendor defaults
@@ -1173,14 +1240,15 @@ export default function SourceCreate() {
     // Auto-populate preview URL from vendor template
     const previewUrlTemplate = presets[vendorId].previewUrlTemplate || '';
     const resolvedPreviewUrl = resolvePreviewUrlTemplate(previewUrlTemplate, merged);
-    // Auto-populate document URL template from vendor preset
+    // Store the RAW document URL template — do NOT resolve it.
+    // It contains runtime placeholders like {nodeId}, {nodeRef}, {objectId}
+    // that must remain for Browse in Source URL generation.
     const docUrlTemplate = presets[vendorId].documentUrlTemplate || '';
-    const resolvedDocUrl = resolvePreviewUrlTemplate(docUrlTemplate, merged);
     setState({
       selectedVendor: vendorId,
       configValues: merged,
       previewUrl: resolvedPreviewUrl,
-      documentUrlTemplate: resolvedDocUrl,
+      documentUrlTemplate: docUrlTemplate,
       testResult: null,
       testPassed: false,
       aclGroupApiUrl: aclDefaults.groupApiUrl,
@@ -1205,9 +1273,8 @@ export default function SourceCreate() {
       if (presets && presets[state.selectedVendor]) {
         const template = presets[state.selectedVendor].previewUrlTemplate || '';
         patch.previewUrl = resolvePreviewUrlTemplate(template, nextConfig);
-        // Also update document URL template
-        const docTemplate = presets[state.selectedVendor].documentUrlTemplate || '';
-        patch.documentUrlTemplate = resolvePreviewUrlTemplate(docTemplate, nextConfig);
+        // Document URL template is stored RAW (with {nodeId} etc.) — no resolution needed.
+        // It only changes when vendor selection changes, not when config values change.
       }
     }
 
@@ -1245,7 +1312,7 @@ export default function SourceCreate() {
     });
     // ACL enforcement fields (CMIS connector uses groupApiUrl/groupMembersApiUrl params)
     if (state.enforceAcl && state.selectedConnector) {
-      if (state.selectedConnector.class_name === CLS.CMIS) {
+      if (isCmisClass(state.selectedConnector.class_name)) {
         if (state.aclGroupApiUrl) map.groupApiUrl = state.aclGroupApiUrl;
         if (state.aclGroupMembersApiUrl) map.groupMembersApiUrl = state.aclGroupMembersApiUrl;
         if (state.adminGroups.length > 0) map.adminGroups = state.adminGroups;
@@ -1441,15 +1508,127 @@ export default function SourceCreate() {
 
   /** Test a specific query (CMIS query, REST API seed, Group API, User API) */
   const handleTestQuery = (testType: string, queryOverride?: string) => {
+    const isDocQuery = testType !== 'group_api' && testType !== 'user_api';
 
-    /** When Group API test succeeds, populate available groups and auto-select admin groups */
+    /** When Group API test succeeds, populate available groups and auto-select admin groups using vendor-specific patterns */
     const applyGroupApiResults = (items: Record<string, any>[]) => {
       const groups = items.map((g) => ({ name: String(g.name || ''), objectId: String(g.objectId || '') }));
-      // Auto-select groups containing "admin" (case-insensitive) if user hasn't manually selected any yet
-      const autoSelected = state.adminGroups.length > 0
-        ? state.adminGroups
-        : groups.filter((g) => /admin/i.test(g.name) || /admin/i.test(g.objectId)).map((g) => g.objectId);
+      // Use vendor-specific patterns to auto-select only top-level admin groups
+      const patterns = getAdminGroupPatterns(
+        state.selectedConnector?.class_name || '', state.selectedVendor,
+      );
+      const autoSelected = groups
+        .filter((g) => patterns.some((p) => p.test(g.name) || p.test(g.objectId)))
+        .map((g) => g.objectId);
       setState({ availableGroups: groups, adminGroups: autoSelected });
+    };
+
+    /**
+     * Validate ACL compatibility of group/user API results.
+     * ManifoldCF stores ACL tokens as lowercased principals:
+     *   Groups: "GROUP_EVERYONE" → "group_everyone"
+     *   Users:  "admin" → "admin"
+     * This checks if the returned groups/users will match those ACL tokens at query time.
+     */
+    const validateAclResults = (items: Record<string, any>[], type: 'group_api' | 'user_api') => {
+      if (!items || items.length === 0) {
+        setState({
+          aclTestResult: `FAIL|No ${type === 'group_api' ? 'groups' : 'users'} returned from the API. ACL enforcement will not work without ${type === 'group_api' ? 'group' : 'user'} data.`,
+          aclTestPassed: false,
+        });
+        return;
+      }
+
+      if (type === 'group_api') {
+        // Show how group IDs will map to ACL tokens
+        const groupIds = items.map((g) => String(g.objectId || ''));
+        const aclTokens = groupIds.map((id) => id.toLowerCase());
+        const hasEveryone = aclTokens.some((t) => t === 'group_everyone');
+        const vendorPatterns = getAdminGroupPatterns(
+          state.selectedConnector?.class_name || '', state.selectedVendor,
+        );
+        const adminGroups = groupIds.filter((id) => vendorPatterns.some((p) => p.test(id)));
+
+        let message = `${items.length} group${items.length !== 1 ? 's' : ''} found. `;
+        message += `ACL tokens will be: ${aclTokens.slice(0, 5).join(', ')}${aclTokens.length > 5 ? ` … (+${aclTokens.length - 5} more)` : ''}. `;
+
+        if (hasEveryone) {
+          message += 'GROUP_EVERYONE detected — public documents will be accessible. ';
+        }
+        if (adminGroups.length > 0) {
+          message += `${adminGroups.length} admin group${adminGroups.length !== 1 ? 's' : ''} found. `;
+        }
+
+        // PASS if groups found, WARN if very few groups
+        const status = items.length < 3 ? 'WARN' : 'PASS';
+        if (items.length < 3) {
+          message += 'Very few groups — verify this source has sufficient group data for ACL filtering.';
+        } else {
+          message += 'Group data looks sufficient for ACL enforcement.';
+        }
+        setState({ aclTestResult: `${status}|${message}`, aclTestPassed: status === 'PASS' });
+      } else {
+        // user_api
+        const userIds = items.map((u) => String(u.objectId || ''));
+        const aclTokens = userIds.map((id) => id.toLowerCase());
+
+        let message = `${items.length} user${items.length !== 1 ? 's' : ''} found. `;
+        message += `ACL tokens will be: ${aclTokens.slice(0, 5).join(', ')}${aclTokens.length > 5 ? ` … (+${aclTokens.length - 5} more)` : ''}. `;
+
+        const status = items.length < 2 ? 'WARN' : 'PASS';
+        if (items.length < 2) {
+          message += 'Very few users returned — ACL user-level filtering may be limited.';
+        } else {
+          message += 'User data looks sufficient for ACL enforcement.';
+        }
+        setState({ aclTestResult: `${status}|${message}`, aclTestPassed: status === 'PASS' });
+      }
+    };
+
+    /** Process successful query result */
+    const processResult = (result: any) => {
+      const passed = result.status === 'ok' || result.status === 'PASS';
+      const allItems = result.items || [];
+      const count = result.count || 0;
+      // Limit group/user API test results to 10 for display
+      const isGroupOrUserTest = testType === 'group_api' || testType === 'user_api';
+      const items = isGroupOrUserTest ? allItems.slice(0, 10) : allItems;
+
+      const stateUpdate: any = {
+        queryTestLoading: false,
+        activeTestType: null,
+        queryTestResult: passed ? 'ok' : (result.message || 'Test failed'),
+        queryTestItems: items,
+        queryTestCount: count,
+      };
+
+      // Preserve document query results separately for Browse in Source
+      if (isDocQuery && passed && items.length > 0) {
+        stateUpdate.docQueryItems = items;
+        stateUpdate.docQueryCount = count;
+      }
+      setState(stateUpdate);
+
+      if (testType === 'group_api' && passed && allItems.length > 0) {
+        applyGroupApiResults(allItems);
+      }
+      // Validate ACL for group/user tests
+      if ((testType === 'group_api' || testType === 'user_api') && passed) {
+        validateAclResults(allItems, testType as 'group_api' | 'user_api');
+      }
+      setTimeout(() => queryResultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    };
+
+    /** Handle query error */
+    const handleError = (err: any) => {
+      setState({
+        queryTestLoading: false,
+        activeTestType: null,
+        queryTestResult: err?.message || 'Test failed',
+        queryTestItems: [],
+        queryTestCount: 0,
+      });
+      setTimeout(() => queryResultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     };
 
     if (!state.createdSourceId) {
@@ -1464,27 +1643,7 @@ export default function SourceCreate() {
       }).then((sourceId) => {
         setState({ createdSourceId: sourceId });
         return testQuery(sourceId, testType, queryOverride);
-      }).then((result) => {
-        const passed = result.status === 'ok' || result.status === 'PASS';
-        setState({
-          queryTestLoading: false,
-          activeTestType: null,
-          queryTestResult: passed ? 'ok' : (result.message || 'Test failed'),
-          queryTestItems: result.items || [],
-          queryTestCount: result.count || 0,
-        });
-        if (testType === 'group_api' && passed && result.items?.length > 0) {
-          applyGroupApiResults(result.items);
-        }
-      }).catch((err) => {
-        setState({
-          queryTestLoading: false,
-          activeTestType: null,
-          queryTestResult: err?.message || 'Test failed',
-          queryTestItems: [],
-          queryTestCount: 0,
-        });
-      });
+      }).then(processResult).catch(handleError);
       return;
     }
 
@@ -1497,27 +1656,7 @@ export default function SourceCreate() {
       connection_config: buildConfigMap(),
     }).then(() => {
       return testQuery(state.createdSourceId!, testType, queryOverride);
-    }).then((result) => {
-      const passed = result.status === 'ok' || result.status === 'PASS';
-      setState({
-        queryTestLoading: false,
-        activeTestType: null,
-        queryTestResult: passed ? 'ok' : (result.message || 'Test failed'),
-        queryTestItems: result.items || [],
-        queryTestCount: result.count || 0,
-      });
-      if (testType === 'group_api' && passed && result.items?.length > 0) {
-        applyGroupApiResults(result.items);
-      }
-    }).catch((err) => {
-      setState({
-        queryTestLoading: false,
-        activeTestType: null,
-        queryTestResult: err?.message || 'Test failed',
-        queryTestItems: [],
-        queryTestCount: 0,
-      });
-    });
+    }).then(processResult).catch(handleError);
   };
 
   /* ── Render typed config form for current connector ── */
@@ -1597,7 +1736,7 @@ export default function SourceCreate() {
         </Button>
 
         {/* ── Source System Preview URL (for "Navigate to Source" in chatbot) ── */}
-        {(connClass === CLS.CMIS || connClass === CLS.RESTAPI) && (
+        {(isCmisClass(connClass) || connClass === CLS.RESTAPI) && (
           <div style={{
             marginTop: 24, padding: 16, borderRadius: 8,
             border: '1px solid var(--ag-ant-color-border)',
@@ -1681,7 +1820,7 @@ export default function SourceCreate() {
                 dm: 'When enabled, documents will be indexed with ACL metadata for permission-aware search. Group API URLs are pre-populated based on the selected vendor and are editable.',
               })}
             </div>
-            {connClass === CLS.CMIS && (
+            {isCmisClass(connClass) && (
               <>
                 <div style={{ marginBottom: 14 }}>
                   <label style={{ display: 'block', marginBottom: 4, fontWeight: 500, fontSize: 13 }}>
@@ -1747,9 +1886,15 @@ export default function SourceCreate() {
                 })}
                 onClick={() => selectConnector(ct)}
               >
-                <div className={styles['connector-name']}>{ct.description}</div>
+                <div className={styles['connector-card-header']}>
+                  <div className={styles['connector-name']}>{ct.description}</div>
+                  <span
+                    className={ct.source === 'connector-service' ? styles['status-dot-online'] : styles['status-dot-offline']}
+                    title={ct.source === 'connector-service' ? 'Connector service online' : 'No connector service running'}
+                  />
+                </div>
                 <div className={styles['connector-class']}>
-                  {ct.class_name.split('.').pop()}
+                  {(ct.class_name || '').split('.').pop() || ct.class_name}
                 </div>
               </div>
             ))}
@@ -1759,7 +1904,7 @@ export default function SourceCreate() {
           {vendorPresets && (
             <>
               <div className={styles['form-section-title']} style={{ marginTop: 24 }}>
-                {state.selectedConnector?.class_name === CLS.CMIS
+                {isCmisClass(state.selectedConnector?.class_name)
                   ? $i18n.get({ id: 'main.pages.Source.Create.index.selectCmisVendor', dm: 'Select CMIS Vendor' })
                   : $i18n.get({ id: 'main.pages.Source.Create.index.selectRestVendor', dm: 'Select REST API Vendor' })}
               </div>
@@ -1841,7 +1986,7 @@ export default function SourceCreate() {
 
     if (state.step === 2) {
       const connClass = state.selectedConnector?.class_name || '';
-      const isCmis = connClass === CLS.CMIS;
+      const isCmis = isCmisClass(connClass);
       const isRestApi = connClass === CLS.RESTAPI;
       const cmisQuery = state.configValues.cmisQuery || 'SELECT * FROM cmis:document';
 
@@ -1980,6 +2125,40 @@ export default function SourceCreate() {
             </div>
           )}
 
+          {/* ── Query Test Results Table ── */}
+          {(state.queryTestResult || state.queryTestItems.length > 0) && (
+            <div ref={queryResultsRef} style={{ marginBottom: 20, padding: 16, borderRadius: 8, border: '1px solid var(--ag-ant-color-border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <Tag color={state.queryTestResult === 'ok' ? 'success' : 'error'}>
+                  {state.queryTestResult === 'ok' ? 'SUCCESS' : 'ERROR'}
+                </Tag>
+                <strong>Query Results</strong>
+                {state.queryTestCount > 0 && (
+                  <span style={{ color: 'var(--ag-ant-color-text-secondary)', fontSize: 13 }}>
+                    — {state.queryTestCount} item{state.queryTestCount !== 1 ? 's' : ''} found
+                    {state.queryTestItems.length < state.queryTestCount ? ` (showing first ${state.queryTestItems.length})` : ''}
+                  </span>
+                )}
+              </div>
+              {state.queryTestResult !== 'ok' && state.queryTestResult && (
+                <div style={{ color: '#ff4d4f', fontSize: 13, marginBottom: 8 }}>
+                  {state.queryTestResult}
+                </div>
+              )}
+              {state.queryTestItems.length > 0 && (
+                <Table
+                  dataSource={state.queryTestItems.map((item, idx) => ({ ...item, _key: idx }))}
+                  columns={queryTestColumns}
+                  rowKey="_key"
+                  pagination={false}
+                  size="small"
+                  scroll={{ x: 'max-content' }}
+                  style={{ marginTop: 8 }}
+                />
+              )}
+            </div>
+          )}
+
           {/* ── Group/User API Test (applies to both CMIS and REST API with ACL) ── */}
           {state.enforceAcl && supportsAclEnforcement(connClass) && (
             <div style={{ marginBottom: 20, padding: 16, borderRadius: 8, border: '1px solid var(--ag-ant-color-border)', background: 'var(--ag-ant-color-fill-secondary)' }}>
@@ -2024,79 +2203,113 @@ export default function SourceCreate() {
             </div>
           )}
 
-          {/* ── Admin Group Selection (shown after Group API test succeeds) ── */}
-          {state.enforceAcl && state.availableGroups.length > 0 && (
-            <div style={{
-              marginBottom: 20, padding: 16, borderRadius: 8,
-              border: '1px solid var(--ag-ant-color-border)',
-              background: 'var(--ag-ant-color-primary-bg)',
-            }}>
-              <div style={{ marginBottom: 8 }}>
-                <strong style={{ fontSize: 14 }}>
-                  {$i18n.get({ id: 'main.pages.Source.Create.index.adminGroups', dm: 'Admin Groups' })}
-                </strong>
-                <div style={{ fontSize: 12, color: 'var(--ag-ant-color-text-secondary)', marginTop: 4 }}>
-                  {$i18n.get({
-                    id: 'main.pages.Source.Create.index.adminGroupsDesc',
-                    dm: 'Select groups whose members should have access to all documents. Groups containing "admin" are pre-selected.',
-                  })}
+          {/* ── Admin Group Selection (shown after Group API test succeeds OR as hints before test) ── */}
+          {state.enforceAcl && (() => {
+            const hints = getAdminGroupHints(connClass, state.selectedVendor);
+            const hasGroups = state.availableGroups.length > 0;
+            const showSection = hasGroups || hints.length > 0;
+            if (!showSection) return null;
+            return (
+              <div style={{
+                marginBottom: 20, padding: 16, borderRadius: 8,
+                border: '1px solid var(--ag-ant-color-border)',
+                background: 'var(--ag-ant-color-primary-bg)',
+              }}>
+                <div style={{ marginBottom: 8 }}>
+                  <strong style={{ fontSize: 14 }}>
+                    {$i18n.get({ id: 'main.pages.Source.Create.index.adminGroups', dm: 'Admin Groups' })}
+                  </strong>
+                  <div style={{ fontSize: 12, color: 'var(--ag-ant-color-text-secondary)', marginTop: 4 }}>
+                    {$i18n.get({
+                      id: 'main.pages.Source.Create.index.adminGroupsDesc',
+                      dm: 'Select groups whose members should have access to all documents. Vendor-specific admin groups are pre-selected automatically.',
+                    })}
+                  </div>
                 </div>
+                {/* Vendor-specific hints shown before groups are fetched */}
+                {!hasGroups && hints.length > 0 && (
+                  <div style={{
+                    fontSize: 12, color: 'var(--ag-ant-color-text-secondary)',
+                    padding: '8px 12px', borderRadius: 6,
+                    background: 'var(--ag-ant-color-fill-secondary)',
+                    marginBottom: 8,
+                  }}>
+                    <strong>Expected admin groups for {state.selectedVendor}:</strong>{' '}
+                    {hints.map((h, i) => (
+                      <code key={i} style={{ marginRight: 6 }}>{h}</code>
+                    ))}
+                    <div style={{ marginTop: 4 }}>
+                      Run the <em>Group API Test</em> above to fetch actual groups and auto-select matching ones.
+                    </div>
+                  </div>
+                )}
+                {/* Group selection dropdown (shown after Group API test) */}
+                {hasGroups && (
+                  <>
+                    <Select
+                      mode="multiple"
+                      style={{ width: '100%' }}
+                      placeholder="Select admin groups..."
+                      value={state.adminGroups}
+                      onChange={(values: string[]) => setState({ adminGroups: values })}
+                      options={state.availableGroups.map((g) => ({
+                        label: `${g.name} (${g.objectId})`,
+                        value: g.objectId,
+                      }))}
+                      filterOption={(input, option) =>
+                        (option?.label as string || '').toLowerCase().includes(input.toLowerCase())
+                      }
+                      showSearch
+                      allowClear
+                    />
+                    {state.adminGroups.length > 0 && (
+                      <div style={{ fontSize: 12, color: 'var(--ag-ant-color-text-secondary)', marginTop: 8 }}>
+                        {state.adminGroups.length} group{state.adminGroups.length !== 1 ? 's' : ''} selected —
+                        members of these groups will have access to all documents during sync.
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
-              <Select
-                mode="multiple"
-                style={{ width: '100%' }}
-                placeholder="Select admin groups..."
-                value={state.adminGroups}
-                onChange={(values: string[]) => setState({ adminGroups: values })}
-                options={state.availableGroups.map((g) => ({
-                  label: `${g.name} (${g.objectId})`,
-                  value: g.objectId,
-                }))}
-                filterOption={(input, option) =>
-                  (option?.label as string || '').toLowerCase().includes(input.toLowerCase())
-                }
-                showSearch
-                allowClear
-              />
-              {state.adminGroups.length > 0 && (
-                <div style={{ fontSize: 12, color: 'var(--ag-ant-color-text-secondary)', marginTop: 8 }}>
-                  {state.adminGroups.length} group{state.adminGroups.length !== 1 ? 's' : ''} selected —
-                  members of these groups will have access to all documents during sync.
-                </div>
-              )}
-            </div>
-          )}
+            );
+          })()}
 
-          {/* ── Navigate to Source Test ── */}
-          {state.previewUrl && state.testPassed && (
+          {/* ── Browse in Source Test ── */}
+          {state.testPassed && state.docQueryItems.length > 0 && (
             <div style={{
               marginBottom: 20, padding: 16, borderRadius: 8,
               border: `1px solid ${(state.navigateToSourceEnabled || state.browseInSourceEnabled) ? '#b7eb8f' : 'var(--ag-ant-color-border)'}`,
               background: (state.navigateToSourceEnabled || state.browseInSourceEnabled) ? '#f6ffed' : 'var(--ag-ant-color-fill-secondary)',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                <strong style={{ fontSize: 14 }}>Source Access Test</strong>
-                <Button
-                  onClick={() => {
-                    window.open(state.previewUrl, '_blank', 'noopener,noreferrer');
-                  }}
-                >
-                  Open Source URL
-                </Button>
+                <strong style={{ fontSize: 14 }}>Browse in Source Test</strong>
+                {state.previewUrl && (
+                  <Button
+                    onClick={() => {
+                      window.open(state.previewUrl, '_blank', 'noopener,noreferrer');
+                    }}
+                  >
+                    Open Source URL
+                  </Button>
+                )}
               </div>
               <div style={{ fontSize: 13, color: 'var(--ag-ant-color-text-secondary)', marginBottom: 12 }}>
-                Verify that the source system is accessible by opening the URL below.
-                Then check the options you want to enable for users in the chat application.
+                Verify that document URLs open correctly by clicking the links below (generated from Query Test results).
+                Then enable the options you want for users in the chat application.
               </div>
-              <div style={{
-                padding: '8px 12px', borderRadius: 6, marginBottom: 16,
-                background: 'var(--ag-ant-color-fill-quaternary)', fontSize: 13,
-                wordBreak: 'break-all',
-              }}>
-                <a href={state.previewUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ag-ant-color-primary)' }}>
-                  {state.previewUrl}
-                </a>
-              </div>
+
+              {state.previewUrl && (
+                <div style={{
+                  padding: '8px 12px', borderRadius: 6, marginBottom: 16,
+                  background: 'var(--ag-ant-color-fill-quaternary)', fontSize: 13,
+                  wordBreak: 'break-all',
+                }}>
+                  <span style={{ color: 'var(--ag-ant-color-text-tertiary)', fontSize: 12 }}>Source URL: </span>
+                  <a href={state.previewUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ag-ant-color-primary)' }}>
+                    {state.previewUrl}
+                  </a>
+                </div>
+              )}
 
               {/* Checkbox 1: Navigate to Source */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -2130,58 +2343,48 @@ export default function SourceCreate() {
                   </div>
                 </Checkbox>
 
-                {/* Sample Browse in Source URLs — fetched from real indexed documents */}
+                {/* Sample Browse URLs generated from Query Test results */}
                 {state.documentUrlTemplate && (() => {
                   const tpl = state.documentUrlTemplate;
                   const cfg = state.configValues || {};
-                  const vendor = state.selectedVendor || '';
-
                   const proto = cfg.protocol || cfg.PROTOCOL || 'https';
-                  const server = cfg.server || cfg.SERVER || 'docs.example.com';
+                  const server = cfg.server || cfg.SERVER || '';
                   const port = cfg.port || cfg.PORT || '443';
 
-                  // Function to load real sample URLs from indexed documents
-                  const loadLiveSamples = () => {
-                    if (!state.createdSourceId) {
-                      message.warning('Save the source first, then sync documents before loading live URLs.');
-                      return;
-                    }
-                    setState({ liveSampleLoading: true });
-                    getSampleSourceUrls(state.createdSourceId, 10)
-                      .then((data) => {
-                        setState({
-                          liveSampleUrls: data.sampleUrls,
-                          liveSampleTotalDocs: data.totalDocuments,
-                          liveSampleLoading: false,
-                        });
-                        if (data.sampleUrls.length === 0) {
-                          message.info('No documents indexed yet. Run a sync job first.');
-                        }
-                      })
-                      .catch((err) => {
-                        console.error('Failed to load sample URLs:', err);
-                        message.error('Failed to load sample URLs — documents may not be indexed yet.');
-                        setState({ liveSampleLoading: false });
-                      });
-                  };
+                  const sampleUrls = state.docQueryItems.slice(0, 10).map((item) => {
+                    const objectId = String(item.objectId || item['cmis:objectId'] || item.url || '');
+                    const fileName = String(item.name || item['cmis:contentStreamFileName'] || item['cmis:name'] || 'document');
 
-                  // Build fallback URLs from template when no live data available
-                  const buildFallbackUrl = (nodeId: string, fileName: string) => {
-                    return tpl
+                    // Extract nodeId (UUID only) from CMIS objectId
+                    // Full format: "workspace://SpacesStore/7b3e4c2a-...;1.0"
+                    // → strip version suffix → "workspace://SpacesStore/7b3e4c2a-..."
+                    // → strip repository prefix → "7b3e4c2a-..."
+                    let nodeId = objectId;
+                    if (nodeId.includes(';')) nodeId = nodeId.substring(0, nodeId.indexOf(';'));
+                    if (nodeId.includes('/')) nodeId = nodeId.substring(nodeId.lastIndexOf('/') + 1);
+
+                    // nodeRef = full reference without version: "workspace://SpacesStore/7b3e4c2a-..."
+                    let nodeRef = objectId;
+                    if (nodeRef.includes(';')) nodeRef = nodeRef.substring(0, nodeRef.indexOf(';'));
+                    // If objectId didn't include the workspace prefix, construct it
+                    if (!nodeRef.includes('://')) nodeRef = 'workspace://SpacesStore/' + nodeRef;
+
+                    const sourceUrl = tpl
                       .replace(/\{protocol\}/gi, proto)
                       .replace(/\{server\}/gi, server)
                       .replace(/\{port\}/gi, port)
                       .replace(/:443(\/|$)/g, '$1').replace(/:80(\/|$)/g, '$1')
+                      .replace(/\{nodeRef\}/g, nodeRef)
                       .replace(/\{nodeId\}/g, nodeId)
-                      .replace(/\{objectId\}/g, nodeId)
-                      .replace(/\{path\}/g, 'docs/' + fileName)
+                      .replace(/\{objectId\}/g, objectId)
+                      .replace(/\{path\}/g, String(cfg.path || cfg.BASEPATH || ''))
                       .replace(/\{fileName\}/g, fileName)
-                      .replace(/\{spaceKey\}/g, 'DEMO')
-                      .replace(/\{owner\}/g, 'acme')
-                      .replace(/\{repo\}/g, 'docs');
-                  };
+                      .replace(/\{spaceKey\}/g, cfg.spaceKey || '')
+                      .replace(/\{owner\}/g, cfg.owner || '')
+                      .replace(/\{repo\}/g, cfg.repo || '');
 
-                  const hasLiveData = state.liveSampleUrls && state.liveSampleUrls.length > 0;
+                    return { objectId, nodeId, nodeRef, fileName, sourceUrl };
+                  });
 
                   return (
                     <div style={{
@@ -2189,71 +2392,30 @@ export default function SourceCreate() {
                       background: 'var(--ag-ant-color-fill-quaternary)', fontSize: 12,
                       border: '1px dashed var(--ag-ant-color-border)',
                     }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <div style={{ marginBottom: 8 }}>
                         <span style={{ fontSize: 11, color: 'var(--ag-ant-color-text-tertiary)' }}>
-                          {hasLiveData
-                            ? `${state.liveSampleUrls!.length} URLs from ${state.liveSampleTotalDocs} indexed documents — click to test:`
-                            : 'Sample URLs — click to test in a new tab:'}
+                          {sampleUrls.length} document URL{sampleUrls.length !== 1 ? 's' : ''} from query results — click to verify they open correctly:
                         </span>
-                        {state.createdSourceId && (
-                          <Button
-                            size="small"
-                            type="link"
-                            loading={state.liveSampleLoading}
-                            onClick={loadLiveSamples}
-                            style={{ fontSize: 11, padding: '0 4px', height: 20 }}
-                          >
-                            {hasLiveData ? 'Refresh' : 'Load from indexed docs'}
-                          </Button>
-                        )}
                       </div>
-
-                      {hasLiveData ? (
-                        /* Live URLs from real indexed documents */
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                          {state.liveSampleUrls!.map((item, idx) => (
-                            <div key={idx} style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                              <span style={{ color: 'var(--ag-ant-color-text-quaternary)', fontSize: 11, flexShrink: 0, minWidth: 16, textAlign: 'right' }}>{idx + 1}.</span>
-                              <a
-                                href={item.sourceUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                title={item.fileName}
-                                style={{ wordBreak: 'break-all', color: 'var(--ag-ant-color-primary)', fontFamily: 'monospace', fontSize: 11.5, lineHeight: '18px' }}
-                              >
-                                {item.sourceUrl}
-                              </a>
-                              <span style={{ color: 'var(--ag-ant-color-text-quaternary)', fontSize: 10, flexShrink: 0, whiteSpace: 'nowrap', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {item.fileName}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        /* Fallback: template-generated sample URLs */
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                          {['3f5a8b12-4c7d-49e1-a6b3-8e2f10d5c7a9', 'b7e4d821-9f3a-4b6c-82d5-1a7c3e9f0b54', 'd12c9e47-5a8b-4f31-b6d2-7e3a1c8f9054'].map((id, idx) => {
-                            const url = buildFallbackUrl(id, 'sample-document.pdf');
-                            return (
-                              <div key={idx} style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                                <span style={{ color: 'var(--ag-ant-color-text-quaternary)', fontSize: 11, flexShrink: 0, minWidth: 16, textAlign: 'right' }}>{idx + 1}.</span>
-                                <a
-                                  href={url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  style={{ wordBreak: 'break-all', color: 'var(--ag-ant-color-text-quaternary)', fontFamily: 'monospace', fontSize: 11.5, lineHeight: '18px', fontStyle: 'italic' }}
-                                >
-                                  {url}
-                                </a>
-                              </div>
-                            );
-                          })}
-                          <div style={{ fontSize: 10, color: 'var(--ag-ant-color-text-quaternary)', fontStyle: 'italic', marginTop: 2 }}>
-                            These are template previews with placeholder IDs. Save and sync documents, then click &ldquo;Load from indexed docs&rdquo; to see real URLs.
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        {sampleUrls.map((item, idx) => (
+                          <div key={idx} style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                            <span style={{ color: 'var(--ag-ant-color-text-quaternary)', fontSize: 11, flexShrink: 0, minWidth: 16, textAlign: 'right' }}>{idx + 1}.</span>
+                            <a
+                              href={item.sourceUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={item.fileName}
+                              style={{ wordBreak: 'break-all', color: 'var(--ag-ant-color-primary)', fontFamily: 'monospace', fontSize: 11.5, lineHeight: '18px' }}
+                            >
+                              {item.sourceUrl}
+                            </a>
+                            <span style={{ color: 'var(--ag-ant-color-text-quaternary)', fontSize: 10, flexShrink: 0, whiteSpace: 'nowrap', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {item.fileName}
+                            </span>
                           </div>
-                        </div>
-                      )}
-
+                        ))}
+                      </div>
                       <div style={{ fontSize: 11, color: 'var(--ag-ant-color-text-quaternary)', marginTop: 8, fontStyle: 'italic' }}>
                         Template: <code style={{ fontSize: 11 }}>{state.documentUrlTemplate}</code>
                       </div>
@@ -2275,40 +2437,6 @@ export default function SourceCreate() {
                       ? '"Navigate to Source" will be available in chat.'
                       : '"Browse in Source" will be available in chat.'}
                 </div>
-              )}
-            </div>
-          )}
-
-          {/* ── Query Test Results Table ── */}
-          {(state.queryTestResult || state.queryTestItems.length > 0) && (
-            <div style={{ marginBottom: 20, padding: 16, borderRadius: 8, border: '1px solid var(--ag-ant-color-border)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <Tag color={state.queryTestResult === 'ok' ? 'success' : 'error'}>
-                  {state.queryTestResult === 'ok' ? 'SUCCESS' : 'ERROR'}
-                </Tag>
-                <strong>Query Results</strong>
-                {state.queryTestCount > 0 && (
-                  <span style={{ color: 'var(--ag-ant-color-text-secondary)', fontSize: 13 }}>
-                    — {state.queryTestCount} item{state.queryTestCount !== 1 ? 's' : ''} found
-                    {state.queryTestItems.length < state.queryTestCount ? ` (showing first ${state.queryTestItems.length})` : ''}
-                  </span>
-                )}
-              </div>
-              {state.queryTestResult !== 'ok' && state.queryTestResult && (
-                <div style={{ color: '#ff4d4f', fontSize: 13, marginBottom: 8 }}>
-                  {state.queryTestResult}
-                </div>
-              )}
-              {state.queryTestItems.length > 0 && (
-                <Table
-                  dataSource={state.queryTestItems.map((item, idx) => ({ ...item, _key: idx }))}
-                  columns={queryTestColumns}
-                  rowKey="_key"
-                  pagination={false}
-                  size="small"
-                  scroll={{ x: 'max-content' }}
-                  style={{ marginTop: 8 }}
-                />
               )}
             </div>
           )}

@@ -83,6 +83,18 @@ export async function listProviders(
 }
 
 /**
+ * Get live reachability status for all enabled providers.
+ * Returns a map of provider code → reachable (true/false).
+ */
+export async function getProviderHealth(): Promise<IApiResponse<Record<string, boolean>>> {
+  const response = await request({
+    url: '/console/v1/providers/health-status',
+    method: 'GET',
+  });
+  return response.data;
+}
+
+/**
  * Get provider details
  * @param provider Provider identifier
  * @returns Promise containing provider details

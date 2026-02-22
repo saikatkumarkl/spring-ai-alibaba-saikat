@@ -32,6 +32,8 @@ import com.alibaba.cloud.ai.studio.core.rag.KnowledgeSyncService;
 import com.alibaba.cloud.ai.studio.core.rag.OpenSearchUtils;
 import com.alibaba.cloud.ai.studio.core.rag.index.KnowledgeIndexSchema;
 import com.alibaba.cloud.ai.studio.core.rag.index.KnowledgeIndexSchemaFactory;
+import com.alibaba.cloud.ai.studio.core.source.ConnectorProxyService;
+import com.alibaba.cloud.ai.studio.core.source.ConnectorRegistryService;
 import com.alibaba.cloud.ai.studio.core.source.ManifoldCFBridgeService;
 import com.alibaba.cloud.ai.studio.runtime.domain.RequestContext;
 import com.alibaba.cloud.ai.studio.runtime.domain.knowledgebase.IndexConfig;
@@ -103,6 +105,10 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 	private final DestinationMapper destinationMapper;
 
 	private final ManifoldCFBridgeService mcfBridge;
+
+	private final ConnectorRegistryService connectorRegistry;
+
+	private final ConnectorProxyService connectorProxy;
 
 	private final KnowledgeIndexSchemaFactory indexSchemaFactory;
 
@@ -259,11 +265,14 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 	});
 
 	public KnowledgeSyncServiceImpl(SourceSystemMapper sourceSystemMapper, DestinationMapper destinationMapper,
-			ManifoldCFBridgeService mcfBridge, KnowledgeIndexSchemaFactory indexSchemaFactory,
+			ManifoldCFBridgeService mcfBridge, ConnectorRegistryService connectorRegistry,
+			ConnectorProxyService connectorProxy, KnowledgeIndexSchemaFactory indexSchemaFactory,
 			KnowledgeBaseMapper knowledgeBaseMapper, ModelFactory modelFactory) {
 		this.sourceSystemMapper = sourceSystemMapper;
 		this.destinationMapper = destinationMapper;
 		this.mcfBridge = mcfBridge;
+		this.connectorRegistry = connectorRegistry;
+		this.connectorProxy = connectorProxy;
 		this.indexSchemaFactory = indexSchemaFactory;
 		this.knowledgeBaseMapper = knowledgeBaseMapper;
 		this.modelFactory = modelFactory;
@@ -468,25 +477,48 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 	 * (empty if all systems are reachable).
 	 *
 	 * Systems checked:
-	 * - Internal system (ManifoldCF API)
+	 * - Connector service (external connector health) OR ManifoldCF API (legacy)
 	 * - Target (OpenSearch / destination URL)
-	 * - Source (via ManifoldCF repo connection status API)
+	 * - Source (via external connector or ManifoldCF repo connection status API)
 	 */
 	private List<String> runConnectivityChecks(String destUrl, String destUsername, String destPassword,
 			SourceSystemEntity source) {
 		long timeoutSeconds = CONNECTIVITY_TIMEOUT_SECS;
 		List<String> failures = Collections.synchronizedList(new ArrayList<>());
 
+		// Determine if this source uses an external connector
+		boolean useExternalConnector = source != null
+				&& source.getConnectorClass() != null
+				&& connectorRegistry.hasActiveConnector(source.getConnectorClass());
+
 		try {
-			// Check 1: Internal system (ManifoldCF)
-			Future<?> mcfFuture = syncExecutor.submit(() -> {
-				try {
-					checkManifoldCFConnectivity();
-				}
-				catch (Exception e) {
-					failures.add("Internal system (ManifoldCF): " + summarizeError(e));
-				}
-			});
+			// Check 1: Connector or ManifoldCF
+			Future<?> connectorFuture;
+			String connectorLabel;
+			if (useExternalConnector) {
+				// External connector — check that the connector microservice is reachable
+				connectorLabel = "Connector service";
+				connectorFuture = syncExecutor.submit(() -> {
+					try {
+						checkExternalConnectorHealth(source.getConnectorClass());
+					}
+					catch (Exception e) {
+						failures.add("Connector service: " + summarizeError(e));
+					}
+				});
+			}
+			else {
+				// Legacy MCF path
+				connectorLabel = "Internal system (ManifoldCF)";
+				connectorFuture = syncExecutor.submit(() -> {
+					try {
+						checkManifoldCFConnectivity();
+					}
+					catch (Exception e) {
+						failures.add("Internal system (ManifoldCF): " + summarizeError(e));
+					}
+				});
+			}
 
 			// Check 2: Target (OpenSearch)
 			Future<?> targetFuture = syncExecutor.submit(() -> {
@@ -498,23 +530,39 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 				}
 			});
 
-			// Check 3: Source (via MCF repo connection status)
+			// Check 3: Source connectivity
 			Future<?> sourceFuture = null;
-			if (source != null && StringUtils.isNotBlank(source.getMcfConnectionName())) {
-				sourceFuture = syncExecutor.submit(() -> {
-					try {
-						checkSourceConnectivity(source);
-					}
-					catch (Exception e) {
-						String sourceName = StringUtils.isNotBlank(source.getName())
-								? source.getName() : source.getSourceId();
-						failures.add("Source system (" + sourceName + "): " + summarizeError(e));
-					}
-				});
+			if (source != null) {
+				if (useExternalConnector) {
+					// Use external connector to test the source
+					sourceFuture = syncExecutor.submit(() -> {
+						try {
+							checkSourceViaConnector(source);
+						}
+						catch (Exception e) {
+							String sourceName = StringUtils.isNotBlank(source.getName())
+									? source.getName() : source.getSourceId();
+							failures.add("Source system (" + sourceName + "): " + summarizeError(e));
+						}
+					});
+				}
+				else if (StringUtils.isNotBlank(source.getMcfConnectionName())) {
+					// Legacy MCF path
+					sourceFuture = syncExecutor.submit(() -> {
+						try {
+							checkSourceConnectivity(source);
+						}
+						catch (Exception e) {
+							String sourceName = StringUtils.isNotBlank(source.getName())
+									? source.getName() : source.getSourceId();
+							failures.add("Source system (" + sourceName + "): " + summarizeError(e));
+						}
+					});
+				}
 			}
 
 			// Wait for all checks with timeout
-			waitForCheck(mcfFuture, timeoutSeconds, "Internal system (ManifoldCF)", failures);
+			waitForCheck(connectorFuture, timeoutSeconds, connectorLabel, failures);
 			waitForCheck(targetFuture, timeoutSeconds, "Target system (OpenSearch)", failures);
 			if (sourceFuture != null) {
 				String sourceName = (source != null && StringUtils.isNotBlank(source.getName()))
@@ -570,6 +618,55 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 		}
 		catch (Exception e) {
 			throw new RuntimeException("Cannot reach ManifoldCF API: " + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * Check that the external connector microservice is reachable.
+	 * Pings the connector's base URL to verify it's running.
+	 */
+	private void checkExternalConnectorHealth(String connectorClass) {
+		String baseUrl = connectorRegistry.getBaseUrl(connectorClass);
+		if (StringUtils.isBlank(baseUrl)) {
+			throw new RuntimeException("No base URL registered for connector class: " + connectorClass);
+		}
+		RestTemplate timeoutRt = createTimeoutRestTemplate();
+		try {
+			// Use connector-types endpoint as a health check — lightweight GET
+			ResponseEntity<String> response = timeoutRt.getForEntity(baseUrl + "/api/v1/connector-types", String.class);
+			if (!response.getStatusCode().is2xxSuccessful()) {
+				throw new RuntimeException("Connector returned HTTP " + response.getStatusCode());
+			}
+			log.debug("External connector health OK at {}", baseUrl);
+		}
+		catch (Exception e) {
+			throw new RuntimeException("Cannot reach connector service at " + baseUrl + ": " + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * Check source system connectivity via the external connector's test-connection API.
+	 */
+	private void checkSourceViaConnector(SourceSystemEntity source) {
+		String baseUrl = connectorRegistry.getBaseUrl(source.getConnectorClass());
+		if (StringUtils.isBlank(baseUrl)) {
+			throw new RuntimeException("No connector registered for class: " + source.getConnectorClass());
+		}
+		try {
+			Map<String, Object> config = deserializeConfig(source.getConnectionConfig());
+			Map<String, String> result = connectorProxy.testConnection(baseUrl, config);
+			String testResult = result.getOrDefault("result", result.getOrDefault("status", ""));
+			if (testResult.toLowerCase().contains("fail") || testResult.toLowerCase().contains("error")
+					|| testResult.toLowerCase().contains("exception")) {
+				throw new RuntimeException("Source connection check failed: " + testResult);
+			}
+			log.debug("Source connectivity OK for '{}' via connector", source.getName());
+		}
+		catch (RuntimeException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new RuntimeException("Cannot verify source system via connector: " + e.getMessage(), e);
 		}
 	}
 
@@ -722,10 +819,69 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			// Step 1b: Create the authority index in OpenSearch using enforced schema
 			indexSchemaFactory.createAuthorityIndex(destUrl, destUsername, destPassword, entity.getAuthorityIndexName());
 
-			// Step 2: If source is set, trigger MCF crawl
+			// Step 1c: Determine effective lastSyncTime.
+			// If the document index is empty (e.g. user deleted it / hard-reset),
+			// force a full sync regardless of the stored lastSyncTime.
+			Date effectiveLastSyncTime = entity.getLastSyncTime();
+			if (effectiveLastSyncTime != null) {
+				long existingDocCount = countOpenSearchDocs(destUrl, destUsername, destPassword, entity.getIndexName());
+				if (existingDocCount == 0) {
+					log.info("Document index '{}' is empty but lastSyncTime is set — forcing full sync (ignoring lastSyncTime={})",
+							entity.getIndexName(), effectiveLastSyncTime);
+					effectiveLastSyncTime = null;
+				}
+			}
+
+			// Step 2: If source is set, trigger crawl (via external connector or MCF)
 			if (StringUtils.isNotBlank(entity.getSourceId())) {
 				SourceSystemEntity source = findSource(entity.getSourceId());
-				if (source != null && StringUtils.isNotBlank(source.getMcfConnectionName())) {
+				if (source != null && connectorRegistry.hasActiveConnector(source.getConnectorClass())) {
+					// ──── External connector path ────
+					// Route crawl through the registered connector microservice,
+					// bypassing ManifoldCF entirely.
+					if (!isSyncActive(entity.getSyncId(), syncToken)) {
+						log.info("Async sync for {} superseded before connector crawl, aborting",
+								entity.getSyncId());
+						return;
+					}
+					entity.setStatus(STATUS_INDEXING);
+					entity.setIndexProgress(5);
+					entity.setGmtModified(new Date());
+					this.updateById(entity);
+
+					String baseUrl = connectorRegistry.getBaseUrl(source.getConnectorClass());
+					Map<String, Object> sourceConfig = deserializeConfig(source.getConnectionConfig());
+					sourceConfig.put("authorityIndexName", entity.getAuthorityIndexName());
+
+					String cmisQuery = getConfigString(sourceConfig, "cmisQuery",
+							"SELECT * FROM cmis:document");
+					log.info("Starting crawl via external connector at {} for sync {}, query: {}",
+							baseUrl, entity.getSyncId(), cmisQuery);
+
+					// Abort old connector job if one exists
+					if (StringUtils.isNotBlank(entity.getMcfJobId())) {
+						try {
+							connectorProxy.abortJob(baseUrl, entity.getMcfJobId());
+						}
+						catch (Exception e) {
+							log.debug("Could not abort old connector job: {}", e.getMessage());
+						}
+					}
+
+					String jobId = connectorProxy.startCrawl(baseUrl, sourceConfig,
+							entity.getIndexName(), cmisQuery, effectiveLastSyncTime);
+
+					entity.setMcfJobId(jobId); // reuse field for connector job ID
+					entity.setIndexProgress(10);
+					entity.setGmtModified(new Date());
+					this.updateById(entity);
+					log.info("Started connector crawl job {} for sync {}", jobId, entity.getSyncId());
+
+					// Poll connector job status until completion
+					pollConnectorJobUntilDone(entity, syncToken, baseUrl);
+				}
+				else if (source != null && StringUtils.isNotBlank(source.getMcfConnectionName())) {
+					// ──── ManifoldCF path (legacy) ────
 					if (!isSyncActive(entity.getSyncId(), syncToken)) {
 						log.info("Async sync for {} superseded before MCF crawl, aborting", entity.getSyncId());
 						return;
@@ -842,7 +998,8 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 					pollMcfJobUntilDone(entity, syncToken);
 				}
 				else {
-					log.warn("Source '{}' has no MCF connection, skipping crawl", entity.getSourceId());
+					log.warn("Source '{}' has no MCF connection and no external connector, skipping crawl",
+							entity.getSourceId());
 					entity.setIndexProgress(100);
 					entity.setGmtModified(new Date());
 					this.updateById(entity);
@@ -927,12 +1084,19 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			this.updateById(entity);
 
 			long ragCount = populateRagIndex(entity, destUrl, destUsername, destPassword, syncToken,
-					embeddingModel, chunkSize, chunkOverlap, kbEntity.getWorkspaceId());
-			entity.setRagDocs(ragCount);
+					embeddingModel, chunkSize, chunkOverlap, kbEntity.getWorkspaceId(),
+					effectiveLastSyncTime);
+
+			// For incremental RAG, ragCount is only newly created chunks.
+			// Refresh the RAG index so countOpenSearchDocs sees all writes.
+			refreshIndex(destUrl, destUsername, destPassword, entity.getRagIndexName());
+			long totalRagChunks = countOpenSearchDocs(destUrl, destUsername, destPassword, entity.getRagIndexName());
+			entity.setRagDocs(totalRagChunks);
 			entity.setRagProgress(100);
 			entity.setGmtModified(new Date());
 			this.updateById(entity);
-			log.info("RAG chunking complete: {} chunks in index '{}'", ragCount, entity.getRagIndexName());
+			log.info("RAG chunking complete: {} new chunks, {} total in index '{}'",
+					ragCount, totalRagChunks, entity.getRagIndexName());
 
 			// ---- Step 5: Remove content from _document if full-text search is disabled ----
 			boolean fullTextSearch = (processConfig == null || processConfig.getFullTextSearch() == null
@@ -956,7 +1120,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			this.updateById(entity);
 
 			log.info("Knowledge sync completed: syncId={}, docs={}, authorities={}, ragChunks={}",
-					entity.getSyncId(), docCount, authCount, ragCount);
+					entity.getSyncId(), docCount, authCount, totalRagChunks);
 		}
 		catch (Throwable t) {
 			log.error("Knowledge sync failed: syncId={}", entity.getSyncId(), t);
@@ -1098,6 +1262,112 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 
 		log.warn("MCF job {} timed out after {} polls", jobId, maxPolls);
 		entity.setErrorMessage("MCF crawl timed out after 30 minutes");
+		entity.setGmtModified(new Date());
+		this.updateById(entity);
+	}
+
+	/**
+	 * Poll an external connector crawl job until completion.
+	 * Mirrors pollMcfJobUntilDone() but uses ConnectorProxyService instead of MCF bridge.
+	 * The connector returns MCF-compatible status fields (status, documents_processed, etc.).
+	 */
+	private void pollConnectorJobUntilDone(KnowledgeSyncEntity entity, String syncToken, String baseUrl) {
+		String jobId = entity.getMcfJobId();
+		int maxPolls = MCF_MAX_POLL_COUNT;
+		int pollCount = 0;
+		int stuckCount = 0;
+		int maxStuckPolls = MCF_STUCK_THRESHOLD;
+
+		while (pollCount < maxPolls) {
+			try {
+				Thread.sleep(MCF_POLL_INTERVAL_MS);
+			}
+			catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new RuntimeException("Connector job polling interrupted", e);
+			}
+
+			// Check if this sync has been superseded
+			if (!isSyncActive(entity.getSyncId(), syncToken)) {
+				log.info("Connector poll for job {} aborted — sync {} superseded", jobId, entity.getSyncId());
+				return;
+			}
+
+			Map<String, String> status = connectorProxy.getJobStatus(baseUrl, jobId);
+			String jobStatus = status.getOrDefault("status", "unknown");
+
+			// Parse document counts (MCF-compatible format from connector)
+			long docsProcessed = parseLong(status.get("documents_processed"), 0L);
+			long docsInQueue = parseLong(status.get("documents_in_queue"), 0L);
+			long docsOutstanding = parseLong(status.get("documents_outstanding"), 0L);
+			long totalDocs = docsProcessed + docsInQueue + docsOutstanding;
+
+			// Calculate progress percentage
+			int progress;
+			if (totalDocs > 0) {
+				progress = (int) Math.min(95, 10 + (docsProcessed * 85 / totalDocs));
+				stuckCount = 0;
+			}
+			else {
+				progress = 10;
+				if ("starting up".equalsIgnoreCase(jobStatus) || "running".equalsIgnoreCase(jobStatus)
+						|| "starting".equalsIgnoreCase(jobStatus)) {
+					stuckCount++;
+				}
+			}
+
+			entity.setIndexProgress(progress);
+			entity.setIndexedDocs(docsProcessed);
+			entity.setGmtModified(new Date());
+			this.updateById(entity);
+
+			log.debug("Connector job {} status={}, processed={}/{}, progress={}%, stuckCount={}",
+					jobId, jobStatus, docsProcessed, totalDocs, progress, stuckCount);
+
+			// If connector has been stuck with 0 docs for too long, source is likely down
+			if (stuckCount >= maxStuckPolls && totalDocs == 0) {
+				String errorMsg = "Source system not responding — connector job stuck in '"
+						+ jobStatus + "' with 0 documents for " + (stuckCount * 3) + " seconds";
+				log.warn("Connector job {} timed out waiting for source: {}", jobId, errorMsg);
+				entity.setStatus(STATUS_FAILED);
+				entity.setErrorMessage(errorMsg);
+				entity.setGmtModified(new Date());
+				this.updateById(entity);
+				try {
+					connectorProxy.abortJob(baseUrl, jobId);
+				}
+				catch (Exception e) {
+					log.debug("Could not abort stuck connector job: {}", e.getMessage());
+				}
+				throw new RuntimeException(errorMsg);
+			}
+
+			// Check terminal states
+			if ("done".equalsIgnoreCase(jobStatus) || "completed".equalsIgnoreCase(jobStatus)) {
+				entity.setIndexProgress(95);
+				entity.setIndexedDocs(docsProcessed);
+				entity.setGmtModified(new Date());
+				this.updateById(entity);
+				log.info("Connector job {} completed: {} docs processed", jobId, docsProcessed);
+				return;
+			}
+
+			if ("error".equalsIgnoreCase(jobStatus) || "aborting".equalsIgnoreCase(jobStatus)
+					|| "failed".equalsIgnoreCase(jobStatus)) {
+				String errorMsg = status.getOrDefault("error", "Connector job " + jobStatus);
+				entity.setFailedDocs(totalDocs - docsProcessed);
+				entity.setErrorMessage(errorMsg);
+				entity.setGmtModified(new Date());
+				this.updateById(entity);
+				log.warn("Connector job {} ended with status: {}", jobId, jobStatus);
+				return;
+			}
+
+			pollCount++;
+		}
+
+		log.warn("Connector job {} timed out after {} polls", jobId, maxPolls);
+		entity.setErrorMessage("Connector crawl timed out after 30 minutes");
 		entity.setGmtModified(new Date());
 		this.updateById(entity);
 	}
@@ -1850,19 +2120,29 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 	 * @param embeddingModel  the embedding model from KB config; {@code null} to skip embeddings
 	 * @param chunkSize       chunk size in chars (from KB ProcessConfig or default)
 	 * @param chunkOverlap    overlap in chars between chunks
+	 * @param lastSyncTime    timestamp of last successful sync; {@code null} for full RAG pass
 	 * @return number of chunks indexed
 	 */
 	@SuppressWarnings("unchecked")
 	private long populateRagIndex(KnowledgeSyncEntity entity, String destUrl, String username,
 			String password, String syncToken, EmbeddingModel embeddingModel,
-			int chunkSize, int chunkOverlap, String workspaceId) {
+			int chunkSize, int chunkOverlap, String workspaceId, Date lastSyncTime) {
 		String docIndexName = entity.getIndexName();
 		String ragIndexName = entity.getRagIndexName();
 		long chunksIndexed = 0;
 		int batchSize = SCROLL_BATCH_SIZE;
 
-		log.info("RAG population starting for sync {} — chunkSize={}, overlap={}, embeddings={}",
-				entity.getSyncId(), chunkSize, chunkOverlap, embeddingModel != null ? "enabled" : "disabled");
+		// Determine if this is an incremental RAG pass.
+		// When lastSyncTime is available, only re-chunk documents that were
+		// indexed during this crawl (indexed_at >= lastSyncTime).
+		boolean incremental = lastSyncTime != null;
+		String lastSyncIso = incremental ? lastSyncTime.toInstant().toString() : null;
+
+		log.info("RAG population starting for sync {} — chunkSize={}, overlap={}, embeddings={}, incremental={}{}",
+				entity.getSyncId(), chunkSize, chunkOverlap,
+				embeddingModel != null ? "enabled" : "disabled",
+				incremental,
+				incremental ? " (since " + lastSyncIso + ")" : "");
 
 		try {
 			// Initial scroll search
@@ -1872,7 +2152,16 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			HttpHeaders headers = OpenSearchUtils.buildAuthHeaders(username, password);
 			headers.setContentType(MediaType.APPLICATION_JSON);
 
-			String searchBody = "{\"size\":" + batchSize + ",\"query\":{\"match_all\":{}}}";
+			// Build search query: full crawl uses match_all, incremental filters by indexed_at
+			String searchBody;
+			if (incremental) {
+				searchBody = "{\"size\":" + batchSize
+						+ ",\"query\":{\"range\":{\"indexed_at\":{\"gte\":\""
+						+ lastSyncIso + "\"}}}}";
+			}
+			else {
+				searchBody = "{\"size\":" + batchSize + ",\"query\":{\"match_all\":{}}}";
+			}
 			HttpEntity<String> request = new HttpEntity<>(searchBody, headers);
 			ResponseEntity<String> response = exchangeWithRetry(
 					searchEndpoint, HttpMethod.POST, request, String.class);
@@ -1935,12 +2224,15 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 						continue;
 					}
 
-					// Map CMIS metadata to normalized names
-					String title = firstNonEmpty(docSource, "cm:title", "cmis:name", "cmis:contentStreamFileName");
-					String fileName = firstNonEmpty(docSource, "cmis:contentStreamFileName", "cmis:name");
-					String mimeType = firstNonEmpty(docSource, "cmis:contentStreamMimeType", "mime-type");
-					String createdBy = firstNonEmpty(docSource, "cmis:createdBy");
-					String objectId = firstNonEmpty(docSource, "cmis:objectId");
+					// Map metadata to normalized names.
+					// External connector uses flat field names (file_title, file_name, mime_type, …);
+					// MCF writes raw CMIS property names (cmis:name, cmis:contentStreamMimeType, …).
+					// List connector names first so they win when both exist.
+					String title = firstNonEmpty(docSource, "file_title", "cm:title", "cmis:name", "cmis:contentStreamFileName");
+					String fileName = firstNonEmpty(docSource, "file_name", "cmis:contentStreamFileName", "cmis:name");
+					String mimeType = firstNonEmpty(docSource, "mime_type", "cmis:contentStreamMimeType", "mime-type");
+					String createdBy = firstNonEmpty(docSource, "creator", "cmis:createdBy");
+					String objectId = firstNonEmpty(docSource, "cmis_object_id", "cmis:objectId");
 
 					// ── Check if this file type is processable by Tika ──
 					// Skip content extraction for non-processable types (images, videos, etc.)
@@ -2947,7 +3239,7 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 			this.updateById(entity);
 
 			long ragCount = populateRagIndex(entity, destUrl, destUsername, destPassword, syncToken,
-					embeddingModel, chunkSize, chunkOverlap, kbEntity.getWorkspaceId());
+					embeddingModel, chunkSize, chunkOverlap, kbEntity.getWorkspaceId(), null);
 
 			long docCount = countOpenSearchDocs(destUrl, destUsername, destPassword, entity.getIndexName());
 			entity.setTotalDocs(docCount);
@@ -3086,11 +3378,12 @@ public class KnowledgeSyncServiceImpl extends ServiceImpl<KnowledgeSyncMapper, K
 				Map<String, Object> docSource = (Map<String, Object>) doc.get("_source");
 				if (docSource == null) continue;
 
-				String title = firstNonEmpty(docSource, "cm:title", "cmis:name", "cmis:contentStreamFileName");
-				String fileName = firstNonEmpty(docSource, "cmis:contentStreamFileName", "cmis:name");
-				String mimeType = firstNonEmpty(docSource, "cmis:contentStreamMimeType", "mime-type");
-				String createdBy = firstNonEmpty(docSource, "cmis:createdBy");
-				String objectId = firstNonEmpty(docSource, "cmis:objectId");
+				// Connector flat names first, then MCF CMIS property names as fallback
+				String title = firstNonEmpty(docSource, "file_title", "cm:title", "cmis:name", "cmis:contentStreamFileName");
+				String fileName = firstNonEmpty(docSource, "file_name", "cmis:contentStreamFileName", "cmis:name");
+				String mimeType = firstNonEmpty(docSource, "mime_type", "cmis:contentStreamMimeType", "mime-type");
+				String createdBy = firstNonEmpty(docSource, "creator", "cmis:createdBy");
+				String objectId = firstNonEmpty(docSource, "cmis_object_id", "cmis:objectId");
 
 				// Skip non-processable file types (images, videos, etc.)
 				if (!isTikaProcessable(mimeType, fileName)) {
