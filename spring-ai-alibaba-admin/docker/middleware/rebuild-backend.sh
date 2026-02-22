@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== Rebuilding Spring AI Alibaba Backend for Docker ==="
+echo "=== Rebuilding CordonData Backend for Docker ==="
 
 # Navigate to admin directory
 cd "$(dirname "$0")/../.."
@@ -13,7 +13,7 @@ mvn clean package -DskipTests -pl spring-ai-alibaba-admin-server-start -am
 
 # Step 2: Build Docker image
 echo "Step 2: Building Docker image..."
-docker build -f docker/middleware/Dockerfile.backend -t spring-ai-alibaba-admin-server:latest .
+docker build -f docker/middleware/Dockerfile.backend -t cordondata-admin-server:latest .
 
 # Step 3: Restart backend container
 echo "Step 3: Restarting backend container..."
@@ -25,6 +25,6 @@ echo "Waiting for backend to start..."
 sleep 30
 
 # Check status
-docker ps --filter "name=saa-backend"
+docker ps --filter "name=cordondata-backend"
 echo ""
-echo "Check logs with: docker logs saa-backend"
+echo "Check logs with: docker logs cordondata-backend"

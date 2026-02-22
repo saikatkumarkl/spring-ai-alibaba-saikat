@@ -26,8 +26,8 @@ import java.util.Map;
 import reactor.core.publisher.Flux;
 
 /**
- * Spring AI Alibaba LLM 流式集成示例
- * 演示如何在 Spring AI Alibaba Graph 中使用 LLM 流式输出功能
+ * CordonData LLM 流式集成示例
+ * 演示如何在 CordonData Graph 中使用 LLM 流式输出功能
  */
 public class LlmStreamingSpringAiExample {
 
@@ -68,7 +68,7 @@ public class LlmStreamingSpringAiExample {
 	}
 
 	public static void main(String[] args) {
-		System.out.println("=== Spring AI Alibaba LLM 流式集成示例 ===\n");
+		System.out.println("=== CordonData LLM 流式集成示例 ===\n");
 
 		try {
 			// 示例 1: 使用流式 ChatClient（需要 ChatClient）

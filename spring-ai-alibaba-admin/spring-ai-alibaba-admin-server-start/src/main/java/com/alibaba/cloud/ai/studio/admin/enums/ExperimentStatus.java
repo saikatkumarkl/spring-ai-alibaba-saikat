@@ -5,27 +5,27 @@ public enum ExperimentStatus {
     /**
      * draft
      */
-    DRAFT("DRAFT", "草稿"),
+    DRAFT("DRAFT", "draft"),
 
     /**
      * Running
      */
-    RUNNING("RUNNING", "运行中"),
+    RUNNING("RUNNING", "Running"),
 
     /**
      * Completed
      */
-    COMPLETED("COMPLETED", "已完成"),
+    COMPLETED("COMPLETED", "Completed"),
 
     /**
      * fail
      */
-    FAILED("FAILED", "失败"),
+    FAILED("FAILED", "fail"),
 
     /**
      * Stopped
      */
-    STOPPED("STOPPED", "已停止");
+    STOPPED("STOPPED", "Stopped");
 
     private final String code;
     private final String description;

@@ -17,6 +17,8 @@
 package com.alibaba.cloud.ai.studio.admin.builder.controller;
 
 import com.alibaba.cloud.ai.studio.runtime.exception.BizException;
+import com.alibaba.cloud.ai.studio.runtime.enums.AccountStatus;
+import com.alibaba.cloud.ai.studio.runtime.enums.AccountType;
 import com.alibaba.cloud.ai.studio.runtime.enums.ErrorCode;
 import com.alibaba.cloud.ai.studio.runtime.domain.BaseQuery;
 import com.alibaba.cloud.ai.studio.runtime.domain.PagingList;
@@ -175,12 +177,28 @@ public class AccountController {
 	}
 
 	/**
-	 * Retrieves the current user's account profile
+	 * Retrieves the current user's account profile.
+	 * For Keycloak-authenticated users, returns a synthetic Account built from the JWT
+	 * claims since they may not exist in the built-in accounts table.
 	 * @return Current user's account information
 	 */
 	@GetMapping("/profile")
 	public Result<Account> getAccountProfile() {
 		RequestContext context = RequestContextHolder.getRequestContext();
+
+		// Keycloak users may not exist in the built-in accounts table.
+		// Build a synthetic Account from the JWT context instead.
+		if ("keycloak".equals(context.getSource())) {
+			Account keycloakAccount = new Account();
+			keycloakAccount.setAccountId(context.getAccountId());
+			keycloakAccount.setUsername(context.getUsername());
+			keycloakAccount.setNickname(context.getUsername());
+			keycloakAccount.setDefaultWorkspaceId(context.getWorkspaceId());
+			keycloakAccount.setType(context.getAccountType());
+			keycloakAccount.setStatus(AccountStatus.NORMAL);
+			return Result.success(context.getRequestId(), keycloakAccount);
+		}
+
 		Account account = accountService.getAccountProfile();
 		return Result.success(context.getRequestId(), account);
 	}

@@ -403,13 +403,13 @@ public class StateGraphTest {
 				.addEdge("step_3", END)
 				.compile();
 
-		// 使用实时流式处理，收集最后一个状态
+		//Using real-time streaming, collect the last state
 		final OverAllState[] finalState = new OverAllState[1];
 		workflowParent.stream(Map.of())
-				.doOnNext(System.out::println) // 实时输出每个节点执行结果
+				.doOnNext(System.out::println) //Real-time output of execution results of each node
 				.map(NodeOutput::state)
-				.doOnNext(state -> finalState[0] = state) // 保存最后的状态
-				.blockLast(); // 只等待流完成，不阻塞中间过程
+				.doOnNext(state -> finalState[0] = state) //Save the last state
+				.blockLast(); //Just wait for the stream to complete, without blocking the intermediate process
 
 		assertTrue(finalState[0] != null);
 		assertIterableEquals(List.of("step1", "step2", "child:step1", "child:step2", "child:step3", "step3"),
@@ -489,17 +489,17 @@ public class StateGraphTest {
 		List<String> messages = (List<String>) finalState[0].value("messages").get();
 		log.info("messages: {}", messages);
 
-		// 验证所有节点都被执行，但不关心并行节点的顺序
-		assertEquals("A", messages.get(0)); // A 应该是第一个
-		assertEquals("B", messages.get(messages.size() - 2)); // B 应该是倒数第二个
-		assertEquals("C", messages.get(messages.size() - 1)); // C 应该是最后一个
+		//Verify that all nodes are executed, but does not care about the order of parallel nodes
+		assertEquals("A", messages.get(0)); //A should be the first
+		assertEquals("B", messages.get(messages.size() - 2)); //B should be the second to last
+		assertEquals("C", messages.get(messages.size() - 1)); //C should be the last one
 
-		// 验证并行节点 A1, A2, A3 都在结果中
+		//Verify that parallel nodes A1, A2, and A3 are all in the result
 		assertTrue(messages.contains("A1"), "A1 should be in the result");
 		assertTrue(messages.contains("A2"), "A2 should be in the result");
 		assertTrue(messages.contains("A3"), "A3 should be in the result");
 
-		// 验证总长度正确
+		//Verify the total length is correct
 		assertEquals(6, messages.size(), "Should have 6 messages: A, A1, A2, A3, B, C");
 
 		workflow = new StateGraph(createKeyStrategyFactory()).addNode("A", makeNode("A"))
@@ -519,7 +519,7 @@ public class StateGraphTest {
 
 		app = workflow.compile();
 
-		// 第二个测试也使用实时流式处理
+		//The second test also uses live streaming
 		final OverAllState[] finalState2 = new OverAllState[1];
 		app.stream(Map.of(),
 						RunnableConfig.builder().addParallelNodeExecutor(START, Executors.newSingleThreadExecutor()).build())
@@ -531,16 +531,16 @@ public class StateGraphTest {
 		assertTrue(finalState2[0] != null);
 		List<String> messages2 = (List<String>) finalState2[0].value("messages").get();
 
-		// 验证所有节点都被执行，但不关心并行节点的顺序
-		assertEquals("B", messages2.get(messages2.size() - 2)); // B 应该是倒数第二个
-		assertEquals("C", messages2.get(messages2.size() - 1)); // C 应该是最后一个
+		//Verify that all nodes are executed, but does not care about the order of parallel nodes
+		assertEquals("B", messages2.get(messages2.size() - 2)); //B should be the second to last
+		assertEquals("C", messages2.get(messages2.size() - 1)); //C should be the last one
 
-		// 验证并行节点 A1, A2, A3 都在结果中
+		//Verify that parallel nodes A1, A2, and A3 are all in the result
 		assertTrue(messages2.contains("A1"), "A1 should be in the result");
 		assertTrue(messages2.contains("A2"), "A2 should be in the result");
 		assertTrue(messages2.contains("A3"), "A3 should be in the result");
 
-		// 验证总长度正确
+		//Verify the total length is correct
 		assertEquals(5, messages2.size(), "Should have 5 messages: A1, A2, A3, B, C");
 
 	}
@@ -583,12 +583,12 @@ public class StateGraphTest {
 				.addEdge("C2", END)
 				.compile();
 
-		// 使用实时流式处理，收集所有步骤用于测试验证
+		//Use real-time streaming to collect all steps for test verification
 		final List<NodeOutput> allSteps = new ArrayList<>();
 		graph.stream(Map.of())
-				.doOnNext(System.out::println) // 实时输出每个节点执行结果
-				.doOnNext(allSteps::add) // 收集所有步骤
-				.blockLast(); // 只等待流完成，不阻塞中间过程
+				.doOnNext(System.out::println) //Real-time output of execution results of each node
+				.doOnNext(allSteps::add) //Collect all steps
+				.blockLast(); //Just wait for the stream to complete, without blocking the intermediate process
 
 		assertEquals(5, allSteps.size());
 		assertEquals("B", allSteps.get(2).node());
@@ -620,13 +620,13 @@ public class StateGraphTest {
 		System.out.println("result = " + result);
 		assertTrue(result.isPresent());
 
-		// resume - 使用实时流式处理
+		//resume - use real-time streaming
 		final OverAllState[] resumeState = new OverAllState[1];
 		app.stream(null, runnableConfig)
-				.doOnNext(output -> System.out.println("Resume: " + output)) // 实时输出恢复过程
+				.doOnNext(output -> System.out.println("Resume: " + output)) //Real-time output recovery process
 				.map(NodeOutput::state)
-				.doOnNext(state -> resumeState[0] = state) // 保存最后的状态
-				.blockLast(); // 只等待流完成，不阻塞中间过程
+				.doOnNext(state -> resumeState[0] = state) //Save the last state
+				.blockLast(); //Just wait for the stream to complete, without blocking the intermediate process
 
 		assertTrue(resumeState[0] != null);
 		System.out.println("final result = " + Optional.of(resumeState[0]));
@@ -1249,13 +1249,13 @@ public class StateGraphTest {
 
 		Flux<NodeOutput> flux = app.stream(Map.of(OverAllState.DEFAULT_INPUT_KEY, "test1"));
 
-		// 验证前两个元素正常输出
+		//Verify that the first two elements are output normally
 		Flux<NodeOutput> fluxForFirstTwo = app.stream(Map.of(OverAllState.DEFAULT_INPUT_KEY, "test1"));
 		List<NodeOutput> firstTwoElements = fluxForFirstTwo.take(2).collectList().block();
 		assertNotNull(firstTwoElements);
 		assertEquals(2, firstTwoElements.size());
 
-		// 验证第三个元素会抛出异常
+		//Validating the third element throws an exception
 		assertThrows(RuntimeException.class, () -> flux.blockLast());
 	}
 
@@ -1269,11 +1269,11 @@ public class StateGraphTest {
 
 		CompiledGraph app = workflow.compile();
 
-		// 验证 invoke 会抛出异常
+		//Verify that invoke throws an exception
 		assertThrows(RuntimeException.class,
 				() -> app.invoke(Map.of(OverAllState.DEFAULT_INPUT_KEY, "test1")));
 
-		// 验证 stream 也会抛出异常
+		//Validating stream will also throw an exception
 		Flux<NodeOutput> flux = app.stream(Map.of(OverAllState.DEFAULT_INPUT_KEY, "test1"));
 		assertThrows(RuntimeException.class, () -> flux.blockLast());
 	}

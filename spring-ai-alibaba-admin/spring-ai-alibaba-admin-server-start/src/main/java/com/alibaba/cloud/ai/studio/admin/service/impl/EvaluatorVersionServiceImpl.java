@@ -1,6 +1,5 @@
 package com.alibaba.cloud.ai.studio.admin.service.impl;
 
-import com.alibaba.cloud.ai.studio.admin.SaaStudioAdmin;
 import com.alibaba.cloud.ai.studio.admin.common.PageResult;
 import com.alibaba.cloud.ai.studio.admin.dto.EvaluatorVersion;
 import com.alibaba.cloud.ai.studio.admin.dto.request.EvaluatorVersionCreateRequest;
@@ -26,7 +25,7 @@ public class EvaluatorVersionServiceImpl implements EvaluatorVersionService {
 
     @Override
     public EvaluatorVersion create(EvaluatorVersionCreateRequest request) {
-        log.info("创建评估器版本: {}", request);
+        log.info("Create evaluator version: {}", request);
 
         //Build DO object
         EvaluatorVersionDO evaluatorVersionDO = EvaluatorVersionDO.builder()
@@ -43,16 +42,16 @@ public class EvaluatorVersionServiceImpl implements EvaluatorVersionService {
         //Insert into database
         int result = evaluatorVersionMapper.insert(evaluatorVersionDO);
         if (result > 0) {
-            log.info("评估器版本创建成功: {}", evaluatorVersionDO.getId());
+            log.info("Evaluator version created successfully: {}", evaluatorVersionDO.getId());
             return EvaluatorVersion.fromDO(evaluatorVersionDO);
         } else {
-            throw new RuntimeException("创建评估器版本失败");
+            throw new RuntimeException("Failed to create evaluator version");
         }
     }
 
     @Override
     public PageResult<EvaluatorVersion> list(EvaluatorVersionListRequest request) {
-        log.info("查询评估器版本列表: {}", request);
+        log.info("Query evaluator version list: {}", request);
 
         //Calculate paging parameters
         int pageNumber = request.getPageNumber() != null ? request.getPageNumber() : 1;
@@ -76,21 +75,21 @@ public class EvaluatorVersionServiceImpl implements EvaluatorVersionService {
 
     @Override
     public EvaluatorVersion getById(Long id) {
-        log.info("查询评估器版本详情: {}", id);
+        log.info("Query evaluator version details: {}", id);
 
         return EvaluatorVersion.fromDO(evaluatorVersionMapper.selectById(id));
     }
 
     @Override
     public EvaluatorVersion update(EvaluatorVersionUpdateRequest request) {
-        log.info("更新评估器版本: {}", request.getEvaluatorVersionId());
+        log.info("Update evaluator version: {}", request.getEvaluatorVersionId());
 
 
         //Check whether the version already exists and verify the status
         EvaluatorVersionDO exists = evaluatorVersionMapper.selectById(request.getEvaluatorVersionId());
 
         if (Objects.isNull(exists)){
-            throw new RuntimeException("评估器版本不存在");
+            throw new RuntimeException("Evaluator version does not exist");
         }
 
         evaluatorVersionMapper.update(request.getEvaluatorVersionId(), request.getDescription(), request.getStatus());

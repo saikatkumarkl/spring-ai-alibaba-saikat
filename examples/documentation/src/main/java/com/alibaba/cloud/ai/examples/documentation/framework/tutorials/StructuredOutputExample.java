@@ -29,17 +29,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Structured Output Tutorial - 完整代码示例
- * 展示如何让Agent返回特定格式的结构化数据
+ * Structured Output Tutorial - Complete Code Examples
+ * Demonstrates how to have Agent return structured data in a specific format
  *
- * 来源：structured-output.md
+ * Source: structured-output.md
  */
 public class StructuredOutputExample {
 
-	// ==================== 基础类定义 ====================
+	// ==================== Basic Class Definitions ====================
 
 	/**
-	 * 示例1：基本 JSON Schema
+	 * Example 1: Basic JSON Schema
 	 */
 	public static void basicJsonSchema() throws GraphRunnerException {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -61,15 +61,15 @@ public class StructuredOutputExample {
 				.build();
 
 		AssistantMessage result = agent.call(
-				"从以下信息提取联系方式：张三，zhangsan@example.com，(555) 123-4567"
+				"Extract contact information from the following: Zhang San, zhangsan@example.com, (555) 123-4567"
 		);
 
 		System.out.println(result.getText());
-		// 输出: {"name": "张三", "email": "zhangsan@example.com", "phone": "(555) 123-4567"}
+		// Output: {"name": "Zhang San", "email": "zhangsan@example.com", "phone": "(555) 123-4567"}
 	}
 
 	/**
-	 * 示例2：复杂嵌套 Schema
+	 * Example 2: Complex Nested Schema
 	 */
 	public static void complexNestedSchema() throws GraphRunnerException {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -91,15 +91,15 @@ public class StructuredOutputExample {
 				.build();
 
 		AssistantMessage result = agent.call(
-				"分析评价：这个产品很棒，5星好评。配送快速，但价格稍贵。"
+				"Analyze the review: This product is great, 5-star rating. Fast delivery, but a bit pricey."
 		);
 
 		System.out.println(result.getText());
-		// 输出: {"rating": 5, "sentiment": "正面", "keyPoints": [...], "details": {...}}
+		// Output: {"rating": 5, "sentiment": "positive", "keyPoints": [...], "details": {...}}
 	}
 
 	/**
-	 * 示例3：结构化分析 Schema
+	 * Example 3: Structured Analysis Schema
 	 */
 	public static void structuredAnalysisSchema() throws GraphRunnerException {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -121,16 +121,16 @@ public class StructuredOutputExample {
 				.build();
 
 		AssistantMessage result = agent.call(
-				"分析这段文字：昨天，李明在北京参加了阿里巴巴公司的技术大会，感受到了创新的力量。"
+				"Analyze this text: Yesterday, Li Ming attended Alibaba's tech conference in Beijing and felt the power of innovation."
 		);
 
 		System.out.println(result.getText());
 	}
 
-	// ==================== 输出 Schema 策略 ====================
+	// ==================== Output Schema Strategy ====================
 
 	/**
-	 * 示例4：使用 outputType - ContactInfo
+	 * Example 4: Using outputType - ContactInfo
 	 */
 	public static void outputTypeContactInfo() throws GraphRunnerException {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -149,14 +149,14 @@ public class StructuredOutputExample {
 				.build();
 
 		AssistantMessage result = agent.call(
-				"从以下信息提取联系方式：张三，zhangsan@example.com，(555) 123-4567"
+				"Extract contact information from the following: Zhang San, zhangsan@example.com, (555) 123-4567"
 		);
 
 		System.out.println(result.getText());
 	}
 
 	/**
-	 * 示例5：使用 outputType - ProductReview
+	 * Example 5: Using outputType - ProductReview
 	 */
 	public static void outputTypeProductReview() throws GraphRunnerException {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -175,14 +175,14 @@ public class StructuredOutputExample {
 				.build();
 
 		AssistantMessage result = agent.call(
-				"分析评价：这个产品很棒，5星好评。配送快速，但价格稍贵。"
+				"Analyze the review: This product is great, 5-star rating. Fast delivery, but a bit pricey."
 		);
 
 		System.out.println(result.getText());
 	}
 
 	/**
-	 * 示例6：使用 outputType - TextAnalysis
+	 * Example 6: Using outputType - TextAnalysis
 	 */
 	public static void outputTypeTextAnalysis() throws GraphRunnerException {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -201,16 +201,16 @@ public class StructuredOutputExample {
 				.build();
 
 		AssistantMessage result = agent.call(
-				"分析这段文字：昨天，李明在北京参加了阿里巴巴公司的技术大会，感受到了创新的力量。"
+				"Analyze this text: Yesterday, Li Ming attended Alibaba's tech conference in Beijing and felt the power of innovation."
 		);
 
 		System.out.println(result.getText());
 	}
 
-	// ==================== 输出类型策略 ====================
+	// ==================== Output Type Strategy ====================
 
 	/**
-	 * 示例7：Try-Catch 模式
+	 * Example 7: Try-Catch Pattern
 	 */
 	public static void tryCatchPattern() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -228,20 +228,20 @@ public class StructuredOutputExample {
 				.build();
 
 		try {
-			AssistantMessage result = agent.call("提取数据");
+			AssistantMessage result = agent.call("Extract data");
 			ObjectMapper mapper = new ObjectMapper();
 			ContactInfo data = mapper.readValue(result.getText(), ContactInfo.class);
-			// 处理数据
+			// Process data
 			System.out.println("Name: " + data.getName());
 		}
 		catch (JsonProcessingException | GraphRunnerException e) {
-			System.err.println("JSON解析失败: " + e.getMessage());
-			// 回退处理
+			System.err.println("JSON parsing failed: " + e.getMessage());
+			// Fallback handling
 		}
 	}
 
 	/**
-	 * 示例8：验证模式
+	 * Example 8: Validation Pattern
 	 */
 	public static void validationPattern() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -259,10 +259,10 @@ public class StructuredOutputExample {
 				.build();
 
 		try {
-			AssistantMessage result = agent.call("生成评价");
+			AssistantMessage result = agent.call("Generate review");
 			ObjectMapper mapper = new ObjectMapper();
 			ValidatedOutput output = mapper.readValue(result.getText(), ValidatedOutput.class);
-			output.validate();  // 如果无效则抛出异常
+			output.validate();  // Throws exception if invalid
 			System.out.println("Valid output: " + output.getTitle());
 		}
 		catch (Exception e) {
@@ -271,7 +271,7 @@ public class StructuredOutputExample {
 	}
 
 	/**
-	 * 示例9：重试模式
+	 * Example 9: Retry Pattern
 	 */
 	public static void retryPattern() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -294,15 +294,15 @@ public class StructuredOutputExample {
 
 		for (int i = 0; i < maxRetries; i++) {
 			try {
-				AssistantMessage result = agent.call("提取数据");
+				AssistantMessage result = agent.call("Extract data");
 				data = mapper.readValue(result.getText(), ContactInfo.class);
-				break;  // 成功
+				break;  // Success
 			}
 			catch (Exception e) {
 				if (i == maxRetries - 1) {
-					throw new RuntimeException("多次尝试后仍然失败", e);
+					throw new RuntimeException("Failed after multiple attempts", e);
 				}
-				System.out.println("第" + (i + 1) + "次尝试失败，重试中...");
+				System.out.println("Attempt " + (i + 1) + " attempt failed, retrying...");
 			}
 		}
 
@@ -311,10 +311,10 @@ public class StructuredOutputExample {
 		}
 	}
 
-	// ==================== 错误处理 ====================
+	// ==================== Error Handling ====================
 
 	/**
-	 * 示例10：完整的结构化输出示例
+	 * Example 10: Complete Structured Output Example
 	 */
 	public static void comprehensiveExample() throws GraphRunnerException {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -325,7 +325,7 @@ public class StructuredOutputExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		// 使用 outputType
+		// Usage outputType
 		ReactAgent typeAgent = ReactAgent.builder()
 				.name("type_agent")
 				.model(chatModel)
@@ -333,7 +333,7 @@ public class StructuredOutputExample {
 				.saver(new MemorySaver())
 				.build();
 
-		// 使用 outputSchema (通过 BeanOutputConverter 生成)
+		// Usage outputSchema (generated via BeanOutputConverter)
 		BeanOutputConverter<ContactInfo> outputConverter = new BeanOutputConverter<>(ContactInfo.class);
 		String format = outputConverter.getFormat();
 
@@ -344,62 +344,62 @@ public class StructuredOutputExample {
 				.saver(new MemorySaver())
 				.build();
 
-		String input = "联系人：王五，wangwu@example.com，13800138000";
+		String input = "Contact: Wang Wu, wangwu@example.com, 13800138000";
 
-		// 使用 outputType
+		// Usage outputType
 		AssistantMessage typeResult = typeAgent.call(input);
 		System.out.println("Type-based: " + typeResult.getText());
 
-		// 使用 outputSchema
+		// Usage outputSchema
 		AssistantMessage schemaResult = schemaAgent.call(input);
 		System.out.println("Schema-based: " + schemaResult.getText());
 	}
 
 	public static void main(String[] args) {
 		System.out.println("=== Structured Output Tutorial Examples ===");
-		System.out.println("注意：需要设置 AI_DASHSCOPE_API_KEY 环境变量\n");
+		System.out.println("Note: AI_DASHSCOPE_API_KEY environment variable must be set\n");
 
 		try {
-			System.out.println("\n--- 示例1：基础 JSON Schema ---");
+			System.out.println("\n--- Example 1: Basic JSON Schema ---");
 			basicJsonSchema();
 
-			System.out.println("\n--- 示例2：复杂嵌套 Schema ---");
+			System.out.println("\n--- Example 2: Complex Nested Schema ---");
 			complexNestedSchema();
 
-			System.out.println("\n--- 示例3：结构化分析 Schema ---");
+			System.out.println("\n--- Example 3: Structured Analysis Schema ---");
 			structuredAnalysisSchema();
 
-			System.out.println("\n--- 示例4：OutputType - 联系信息 ---");
+			System.out.println("\n--- Example 4: OutputType - Contact Info ---");
 			outputTypeContactInfo();
 
-			System.out.println("\n--- 示例5：OutputType - 产品评论 ---");
+			System.out.println("\n--- Example 5: OutputType - Product Review ---");
 			outputTypeProductReview();
 
-			System.out.println("\n--- 示例6：OutputType - 文本分析 ---");
+			System.out.println("\n--- Example 6: OutputType - Text Analysis ---");
 			outputTypeTextAnalysis();
 
-			System.out.println("\n--- 示例7：Try-Catch 模式 ---");
+			System.out.println("\n--- Example 7: Try-Catch Pattern ---");
 			tryCatchPattern();
 
-			System.out.println("\n--- 示例8：验证模式 ---");
+			System.out.println("\n--- Example 8: Validation Pattern ---");
 			validationPattern();
 
-			System.out.println("\n--- 示例9：重试模式 ---");
+			System.out.println("\n--- Example 9: Retry Pattern ---");
 			retryPattern();
 
-			System.out.println("\n--- 示例10：综合示例 ---");
+			System.out.println("\n--- Example 10: Comprehensive Example ---");
 			comprehensiveExample();
 
-			System.out.println("\n=== 所有示例执行完成 ===");
+			System.out.println("\n=== All examples executed successfully ===");
 		}
 		catch (Exception e) {
-			System.err.println("执行示例时发生错误: " + e.getMessage());
+			System.err.println("Error executing example: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
 
 	/**
-	 * 联系信息输出类
+	 * Contact Information Output Class
 	 */
 	public static class ContactInfo {
 		private String name;
@@ -433,7 +433,7 @@ public class StructuredOutputExample {
 	}
 
 	/**
-	 * 产品评价输出类
+	 * Product Review Output Class
 	 */
 	public static class ProductReview {
 		private int rating;
@@ -495,10 +495,10 @@ public class StructuredOutputExample {
 		}
 	}
 
-	// ==================== 综合示例 ====================
+	// ==================== Comprehensive Example ====================
 
 	/**
-	 * 文本分析输出类
+	 * Text Analysis Output Class
 	 */
 	public static class TextAnalysis {
 		private String summary;
@@ -569,10 +569,10 @@ public class StructuredOutputExample {
 		}
 	}
 
-	// ==================== Main 方法 ====================
+	// ==================== Main Method ====================
 
 	/**
-	 * 验证输出类
+	 * Validated Output Class
 	 */
 	public static class ValidatedOutput {
 		private String title;
@@ -580,14 +580,14 @@ public class StructuredOutputExample {
 
 		public void validate() throws IllegalArgumentException {
 			if (title == null || title.isEmpty()) {
-				throw new IllegalArgumentException("标题不能为空");
+				throw new IllegalArgumentException("Title cannot be empty");
 			}
 			if (rating != null && (rating < 1 || rating > 5)) {
-				throw new IllegalArgumentException("评分必须在1-5之间");
+				throw new IllegalArgumentException("Rating must be between 1 and 5");
 			}
 		}
 
-		// Getter 和 Setter 方法
+		// Getter and Setter methods
 		public String getTitle() {
 			return title;
 		}

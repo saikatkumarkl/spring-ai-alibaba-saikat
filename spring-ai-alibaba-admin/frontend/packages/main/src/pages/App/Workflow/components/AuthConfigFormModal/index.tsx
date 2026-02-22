@@ -1,6 +1,6 @@
 import $i18n from '@/i18n';
 import { Form, Input, Modal, Radio } from '@spark-ai/design';
-import { IVarTreeItem, VarInputTextArea } from '@spark-ai/flow';
+import { IVarTreeItem, VarInputTextArea } from '@cordondata/flow';
 import { useSetState } from 'ahooks';
 import { message, Select } from 'antd';
 import { useCallback } from 'react';

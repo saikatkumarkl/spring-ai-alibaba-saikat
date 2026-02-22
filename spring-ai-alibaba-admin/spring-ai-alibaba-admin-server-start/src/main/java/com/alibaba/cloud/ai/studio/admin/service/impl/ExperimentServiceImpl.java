@@ -64,7 +64,7 @@ public class ExperimentServiceImpl implements ExperimentService {
     @Override
     @Transactional
     public Experiment create(ExperimentCreateRequest request) {
-        log.info("创建实验: {}", request);
+        log.info("Create experiment: {}", request);
 
 
         //Build experimental entities
@@ -88,7 +88,7 @@ public class ExperimentServiceImpl implements ExperimentService {
             throw new RuntimeException("Failed to create experiment");
         }
 
-        log.info("实验创建成功: {}", experimentDO.getId());
+        log.info("Experiment created successfully: {}", experimentDO.getId());
         
         //Start experiment execution asynchronously
         startExperimentExecution(experimentDO);
@@ -98,7 +98,7 @@ public class ExperimentServiceImpl implements ExperimentService {
 
     @Override
     public PageResult<Experiment> list(ExperimentListRequest request) {
-        log.info("查询实验列表: {}", request);
+        log.info("Query experiment list: {}", request);
 
 
         ExperimentStatus status = null;
@@ -131,7 +131,7 @@ public class ExperimentServiceImpl implements ExperimentService {
 
     @Override
     public Experiment getById(Long id) {
-        log.info("查询实验详情: {}", id);
+        log.info("Query experiment details: {}", id);
         
         if (id == null) {
             throw new IllegalArgumentException("Experiment ID cannot be null");
@@ -139,7 +139,7 @@ public class ExperimentServiceImpl implements ExperimentService {
         
         ExperimentDO experimentDO = experimentMapper.selectById(id);
         if (experimentDO == null) {
-            log.warn("未找到ID为{}的实验", id);
+            log.warn("Experiment with ID {} ​​not found", id);
             return null;
         }
 
@@ -164,19 +164,19 @@ public class ExperimentServiceImpl implements ExperimentService {
 
     @Override
     public List<ExperimentEvaluatorResult> getResults(Long experimentId) {
-        log.info("查询实验结果: {}", experimentId);
+        log.info("Query experimental results: {}", experimentId);
         
         //First check if the experiment exists
         ExperimentDO experiment = experimentMapper.selectById(experimentId);
         if (experiment == null) {
-            log.warn("实验不存在: {}", experimentId);
+            log.warn("Experiment does not exist: {}", experimentId);
             return null;
         }
 
         Integer dataCount = datasetVersionMapper.selectById(experiment.getDatasetVersionId()).getDataCount();
         //Check if dataCount is null or 0 to avoid divide-by-zero exceptions
         if (dataCount == null || dataCount == 0) {
-            log.warn("数据集版本数据量为0或不存在: {}", experiment.getDatasetVersionId());
+            log.warn("The data volume of the dataset version is 0 or does not exist: {}", experiment.getDatasetVersionId());
             dataCount = 1; //Avoid divide-by-zero exceptions and set default values
         }
 
@@ -221,7 +221,7 @@ public class ExperimentServiceImpl implements ExperimentService {
         //First check if the experiment exists
         ExperimentDO experiment = experimentMapper.selectById(request.getExperimentId());
         if (experiment == null) {
-            log.warn("实验不存在: {}", request.getExperimentId());
+            log.warn("Experiment does not exist: {}", request.getExperimentId());
             return null;
         }
         if (request.getEvaluatorVersionId() == null) {
@@ -258,7 +258,7 @@ public class ExperimentServiceImpl implements ExperimentService {
     @Override
     @Transactional
     public Experiment stop(Long id) {
-        log.info("停止实验: {}", id);
+        log.info("Stop experiment: {}", id);
         
         if (id == null) {
             throw new IllegalArgumentException("Experiment ID cannot be null");
@@ -276,7 +276,7 @@ public class ExperimentServiceImpl implements ExperimentService {
         if (ExperimentStatus.COMPLETED.getCode().equals(experimentDO.getStatus()) ||
             ExperimentStatus.FAILED.getCode().equals(experimentDO.getStatus()) ||
             ExperimentStatus.STOPPED.getCode().equals(experimentDO.getStatus())) {
-            log.warn("实验 {} 状态为 {}，无法停止", id, experimentDO.getStatus());
+            log.warn("Experiment {} has status {} and cannot be stopped", id, experimentDO.getStatus());
             return Experiment.fromDO(experimentDO);
         }
 
@@ -291,14 +291,14 @@ public class ExperimentServiceImpl implements ExperimentService {
             throw new RuntimeException("Failed to stop experiment");
         }
         
-        log.info("实验停止成功: {}", id);
+        log.info("Experiment stopped successfully: {}", id);
         return Experiment.fromDO(experimentDO);
     }
 
     @Override
     @Transactional
     public void deleteById(Long id) {
-        log.info("删除实验: {}", id);
+        log.info("Delete experiment: {}", id);
         
         if (id == null) {
             throw new IllegalArgumentException("Experiment ID cannot be null");
@@ -324,7 +324,7 @@ public class ExperimentServiceImpl implements ExperimentService {
 ////Delete related experimental results
 //        experimentResultMapper.deleteByExperimentId(id);
         
-        log.info("实验删除成功: {}", id);
+        log.info("Experiment deleted successfully: {}", id);
     }
 
     @Override
@@ -352,16 +352,16 @@ public class ExperimentServiceImpl implements ExperimentService {
                         try {
                             executeExperiment (experimentDO);
                         } catch (Exception e) {
-                            log.error("实验执行过程中发生错误: {}", experimentDO.getId(), e);
+                            log.error("An error occurred during experiment execution: {}", experimentDO.getId(), e);
                             updateExperimentStatus(experimentDO.getId(), ExperimentStatus.FAILED, null);
                         }
                     }
             );
 
-            log.info("实验执行任务已启动: {}", experimentDO.getId());
+            log.info("Experiment execution task has been started: {}", experimentDO.getId());
 
         } catch (Exception e) {
-            log.error("启动实验执行失败: {}", experimentDO.getId(), e);
+            log.error("Failed to start experiment execution: {}", experimentDO.getId(), e);
 
             //Update experiment status to failed
             updateExperimentStatus(experimentDO.getId(), ExperimentStatus.FAILED, null);
@@ -372,7 +372,7 @@ public class ExperimentServiceImpl implements ExperimentService {
      * The core logic of executing the experiment
      */
     private void executeExperiment(ExperimentDO experimentDO) throws StudioException {
-        log.info("开始执行实验: {}", experimentDO.getId());
+        log.info("Start running the experiment: {}", experimentDO.getId());
 
         //Analyze experiment target configuration
 
@@ -401,7 +401,7 @@ public class ExperimentServiceImpl implements ExperimentService {
                 datasetVersion.getDatasetId(), itemIds);
 
         if (datasetItems.isEmpty()) {
-            log.warn("数据集为空，实验完成: {}", experimentId);
+            log.warn("The data set is empty and the experiment is completed: {}", experimentId);
             updateExperimentStatus(experimentId, ExperimentStatus.COMPLETED, 100);
             return;
         }
@@ -409,7 +409,7 @@ public class ExperimentServiceImpl implements ExperimentService {
         int totalItems = datasetItems.size();
         AtomicInteger processedItems = new AtomicInteger(0);
 
-        log.info("实验 {} 开始处理 {} 个数据项", experimentId, totalItems);
+        log.info("Experiment {} starts processing {} data items", experimentId, totalItems);
 
 
         PromptVersionDetail prompt = promptVersionService.getByPromptKeyAndVersion(evaluationPromptConfig.getPromptKey(),evaluationPromptConfig.getVersion());
@@ -419,7 +419,7 @@ public class ExperimentServiceImpl implements ExperimentService {
             try {
                 //Check if the experiment has been stopped
                 if (isExperimentStopped(experimentId)) {
-                    log.info("实验 {} 已被停止", experimentId);
+                    log.info("Experiment {} has been stopped", experimentId);
                     return;
                 }
 
@@ -445,16 +445,16 @@ public class ExperimentServiceImpl implements ExperimentService {
                 int currentProgress = (processedItems.incrementAndGet() * 100) / totalItems;
                 updateExperimentProgress(experimentId, currentProgress);
 
-                log.debug("实验 {} 进度: {}/{} ({}%)", experimentId, processedItems.get(), totalItems, currentProgress);
+                log.debug("Experiment {} Progress: {}/{} ({}%)", experimentId, processedItems.get(), totalItems, currentProgress);
 
             } catch (Exception e) {
-                log.error("处理数据项失败: experimentId={}, itemId={}", experimentId, datasetItem.getId(), e);
+                log.error("Failed to process data item: experimentId={}, itemId={}", experimentId, datasetItem.getId(), e);
                 //Continue processing the next data item without interrupting the entire experiment
             }
         }
 
         //Experiment completed
-        log.info("实验 {} 执行完成，共处理 {} 个数据项", experimentId, totalItems);
+        log.info("Experiment {} has been executed and a total of {} data items have been processed.", experimentId, totalItems);
         updateExperimentStatus(experimentId, ExperimentStatus.COMPLETED, 100);
 
     }
@@ -557,10 +557,10 @@ public class ExperimentServiceImpl implements ExperimentService {
             List<ExperimentResultDO> results = new ArrayList<>();
             results.add(resultDO);
             experimentResultMapper.batchInsert(results);
-            log.debug("保存实验结果成功: experimentId={}, itemId={}", experimentId, datasetItemId);
+            log.debug("Experiment results saved successfully: experimentId={}, itemId={}", experimentId, datasetItemId);
             
         } catch (Exception e) {
-            log.error("保存实验结果失败: experimentId={}, itemId={}", experimentId, datasetItemId, e);
+            log.error("Failed to save experiment results: experimentId={}, itemId={}", experimentId, datasetItemId, e);
         }
     }
 
@@ -573,7 +573,7 @@ public class ExperimentServiceImpl implements ExperimentService {
             return experimentDO != null && 
                    ExperimentStatus.STOPPED.getCode().equals(experimentDO.getStatus());
         } catch (Exception e) {
-            log.error("检查实验状态失败: {}", experimentId, e);
+            log.error("Failed to check experiment status: {}", experimentId, e);
             return false;
         }
     }
@@ -590,7 +590,7 @@ public class ExperimentServiceImpl implements ExperimentService {
                     .build();
             experimentMapper.updateById(experimentDO);
         } catch (Exception e) {
-            log.error("更新实验进度失败: {}", experimentId, e);
+            log.error("Failed to update experiment progress: {}", experimentId, e);
         }
     }
 
@@ -611,16 +611,16 @@ public class ExperimentServiceImpl implements ExperimentService {
             }
             
             experimentMapper.updateById(experimentDO);
-            log.info("实验状态更新成功: experimentId={}, status={}", experimentId, status);
+            log.info("Experiment status updated successfully: experimentId={}, status={}", experimentId, status);
             
         } catch (Exception e) {
-            log.error("更新实验状态失败: {}", experimentId, e);
+            log.error("Failed to update experiment status: {}", experimentId, e);
         }
     }
 
     @Override
     public PageResult<Experiment> getExperimentsByEvaluator(EvaluatorExperimentsListRequest request) {
-        log.info("查询评估器关联的实验: {}", request);
+        log.info("Query the experiments associated with the evaluator: {}", request);
         
         try {
             //Calculate offset
@@ -641,7 +641,7 @@ public class ExperimentServiceImpl implements ExperimentService {
                         try {
                             return Experiment.fromDO(experimentDO);
                         } catch (Exception e) {
-                            log.warn("获取数据集版本信息失败: experimentId={}, datasetVersionId={}", 
+                            log.warn("Failed to obtain dataset version information: experimentId={}, datasetVersionId={}", 
                                 experimentDO.getId(), experimentDO.getDatasetVersionId(), e);
                             return Experiment.fromDO(experimentDO);
                         }
@@ -656,8 +656,8 @@ public class ExperimentServiceImpl implements ExperimentService {
             );
             
         } catch (Exception e) {
-            log.error("查询评估器关联的实验失败: {}", request, e);
-            throw new RuntimeException("查询评估器关联的实验失败: " + e.getMessage());
+            log.error("Experiment associated with query evaluator failed: {}", request, e);
+            throw new RuntimeException("Experiment associated with query evaluator failed:" + e.getMessage());
         }
     }
 

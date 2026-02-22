@@ -24,12 +24,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Spring AI Alibaba Documentation Examples Application
+ * CordonData Documentation Examples Application
  *
- * 本应用演示了 Spring AI Alibaba 的各种功能，包括：
- * - Agent Framework 示例
- * - A2A (Agent-to-Agent) 分布式智能体示例
- * - Graph 工作流示例
+ * This application demonstrates various CordonData features, including:
+ * - Agent Framework examples
+ * - A2A (Agent-to-Agent) distributed agent examples
+ * - Graph workflow examples
  */
 @SpringBootApplication
 public class DocumentationApplication {
@@ -44,7 +44,7 @@ public class DocumentationApplication {
 	public CommandLineRunner demoRunner(A2AExample a2aExample) {
 		return args -> {
 			logger.info("=================================================");
-			logger.info("Spring AI Alibaba Documentation Examples Started");
+			logger.info("CordonData Documentation Examples Started");
 			logger.info("=================================================");
 			// a2aExample.runDemo();
 			logger.info("Application is ready. Hit /api/a2a/demo to run the A2A demo.");

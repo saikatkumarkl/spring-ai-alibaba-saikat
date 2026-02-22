@@ -27,7 +27,7 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * Represents an application in the Spring AI Alibaba Studio system.
+ * Represents an application in the CordonData Studio system.
  *
  * @since 1.0.0.3
  */

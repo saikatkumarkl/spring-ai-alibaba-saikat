@@ -56,16 +56,16 @@ class ParallelAgentIntegrationTest {
 		ReactAgent proseWriterAgent = ReactAgent.builder()
 			.name("prose_writer_agent")
 			.model(chatModel)
-			.description("专门写散文的AI助手")
-			.instruction("你是一个知名的散文作家，擅长写优美的散文。用户会给你一个主题，你只需要创作一篇100字左右的散文，不要写诗或做总结。请专注于散文创作，确保内容优美、意境深远。")
+			.description("AI assistant specializing in prose writing")
+			.instruction("You are a well-known prose writer, good at writing beautiful prose.The user will give you a topic, and you only need to create a prose of about 100 words, no poetry or summary.Please focus on prose writing to ensure beautiful content and profound artistic conception.")
 			.outputKey("prose_result")
 			.build();
 
 		ReactAgent poemWriterAgent = ReactAgent.builder()
 			.name("poem_writer_agent")
 			.model(chatModel)
-			.description("专门写现代诗的AI助手")
-			.instruction("你是一个知名的现代诗人，擅长写现代诗。用户会给你一个主题，你只需要创作一首现代诗，不要写散文或做总结。请专注于诗歌创作，确保语言精炼、意象丰富。")
+			.description("AI assistant specializing in writing modern poetry")
+			.instruction("You are a well-known modern poet who is good at writing modern poetry.The user will give you a topic and you just need to create a modern poem, no prose or summary.Please focus on poetry creation, making sure the language is refined and the imagery is rich.")
 			.outputKey("poem_result")
 			.outputKeyStrategy(KeyStrategy.REPLACE)
 			.build();
@@ -73,15 +73,15 @@ class ParallelAgentIntegrationTest {
 		ReactAgent summaryAgent = ReactAgent.builder()
 			.name("summary_agent")
 			.model(chatModel)
-			.description("专门做内容总结的AI助手")
-			.instruction("你是一个专业的内容分析师，擅长对主题进行总结和提炼。用户会给你一个主题，你只需要对这个主题进行简要总结，不要写散文或诗歌。请专注于总结分析，确保观点清晰、概括准确。")
+			.description("AI assistant specializing in content summarization")
+			.instruction("You are a professional content analyst who is good at summarizing and refining topics.The user will give you a topic and you only need to give a brief summary of the topic, not prose or poetry.Please focus on summarizing and analyzing to ensure your views are clear and your summary is accurate.")
 			.outputKey("summary_result")
 			.build();
 
 		// Create ParallelAgent that will execute all sub-agents in parallel
 		ParallelAgent parallelAgent = ParallelAgent.builder()
 			.name("parallel_creative_agent")
-			.description("并行执行多个创作任务，包括写散文、写诗和做总结")
+			.description("Perform multiple creative tasks in parallel, including writing prose, poetry, and summarizing")
 			.mergeOutputKey("merged_results")
 			.subAgents(List.of(proseWriterAgent, poemWriterAgent, summaryAgent))
 			.mergeStrategy(new ParallelAgent.DefaultMergeStrategy())
@@ -89,7 +89,7 @@ class ParallelAgentIntegrationTest {
 
 		// Execute the parallel workflow
 		try {
-			String userRequest = "以'西湖'为主题";
+			String userRequest = "With the theme of 'West Lake'";
 
 			Optional<OverAllState> result = parallelAgent.invoke(userRequest);
 
@@ -133,7 +133,7 @@ class ParallelAgentIntegrationTest {
 
 	// @Test
 	// public void testAdkStyleWorkflow() throws Exception {
-	// // 创建共用的KeyStrategyFactory
+	////Create a shared KeyStrategyFactory
 	// KeyStrategyFactory sharedStateFactory = () -> {
 	// HashMap<String, KeyStrategy> keyStrategyHashMap = new HashMap<>();
 	// keyStrategyHashMap.put("input", new ReplaceStrategy());
@@ -143,90 +143,90 @@ class ParallelAgentIntegrationTest {
 	// keyStrategyHashMap.put("raw_data", new ReplaceStrategy());
 	// keyStrategyHashMap.put("daily_report", new ReplaceStrategy());
 	// keyStrategyHashMap.put("workflow_output", new ReplaceStrategy());
-	// keyStrategyHashMap.put("messages", new AppendStrategy()); // ReactAgent需要messages键
+	// keyStrategyHashMap.put("messages", new AppendStrategy()); // ReactAgentneedmessageskey
 	// return keyStrategyHashMap;
 	// };
 	//
-	// // 创建数据获取Agent - 模拟API调用
+	////Create data acquisition agent - simulate API call
 	// ReactAgent fetchWeatherAgent = ReactAgent.builder()
 	// .name("WeatherFetcher")
 	// .model(chatModel)
-	// .instruction("你是一个天气数据获取助手。请模拟获取杭州今天的天气信息，包括温度、湿度、风力等。直接返回模拟数据，不需要真实API调用。")
+	//.instruction("You are a weather data acquisition assistant. Please simulate to obtain today's weather information in Hangzhou, including temperature, humidity, wind, etc.. Return simulated data directly, no real API calls are required.")
 	// .outputKey("weather_data")
 	// .build();
 	//
 	// ReactAgent fetchNewsAgent = ReactAgent.builder()
 	// .name("NewsFetcher")
 	// .model(chatModel)
-	// .instruction("你是一个新闻数据获取助手。请模拟获取今天杭州的主要新闻，重点关注科技和民生。直接返回模拟数据，不需要真实API调用。")
+	//.instruction("You are a news data acquisition assistant. Please simulate to obtain today's main news in Hangzhou, focusing on technology and people's livelihood. Return simulated data directly, no real API calls are required.")
 	// .outputKey("news_data")
 	// .build();
 	//
-	// // 创建并行数据收集Agent - 实现Fan-Out模式
+	////Create parallel data collection Agent - implement Fan-Out mode
 	// ParallelAgent dataCollector = ParallelAgent.builder()
 	// .name("DataCollector")
-	// .description("并行收集天气和新闻数据")
-	// .inputKeys("input") // 改为input，避免与ReactAgent的messages冲突
+	//.description("Parallel collection of weather and news data")
+	// .inputKeys("input") // Change toinput, avoid comparing withReactAgentofmessagesconflict
 	// .outputKey("raw_data")
 	// .state(sharedStateFactory)
 	// .subAgents(List.of(fetchWeatherAgent, fetchNewsAgent))
 	// .build();
 	//
-	// // 创建结果合成Agent - 实现Gather模式
+	////Create result synthesis Agent - implement Gather mode
 	// ReactAgent synthesizer =
 	// ReactAgent.builder().name("DailyReportSynthesizer").model(chatModel).instruction("""
-	// 你是一个日报生成器。请基于以下信息生成一份杭州今日综合报告：
+	//You are a daily generator.Please generate a Hangzhou Today comprehensive report based on the following information:
 	//
-	// 天气信息: {weather_data}
-	// 新闻动态: {news_data}
+	//Weather information: {weather_data}
+	//News: {news_data}
 	//
-	// 请生成一份包含以下内容的报告：
-	// 1. 今日天气概况
-	// 2. 重要新闻摘要
-	// 3. 天气对生活的影响分析
-	// 4. 今日城市生活建议
+	//Please generate a report containing:
+	//1. Today’s weather overview
+	//2. Summary of important news
+	//3. Analysis of the impact of weather on life
+	//4. Tips for today’s city life
 	//
-	// 要求：内容要真实、具体，基于提供的数据进行分析和总结。
+	//Requirements: The content must be true and specific, and be analyzed and summarized based on the data provided.
 	// """).outputKey("daily_report").build();
 	//
-	// // 创建完整工作流 - 组合并行和顺序执行
+	//// Create a complete workflow - combining parallel and sequential execution
 	// SequentialAgent dailyWorkflow = SequentialAgent.builder()
 	// .name("DailyWorkflow")
-	// .description("收集数据并行执行，然后合成结果")
-	// .inputKeys("input") // 改为input，与dataCollector保持一致
+	//.description("Collect data and execute it in parallel, then synthesize the results")
+	// .inputKeys("input") // Change toinput,anddataCollectorBe consistent
 	// .outputKey("workflow_output")
 	// .state(sharedStateFactory)
 	// .subAgents(List.of(dataCollector, synthesizer))
 	// .build();
 	//
 	// Optional<OverAllState> result = dailyWorkflow.invoke(Map.of("input",
-	// "生成杭州今日综合报告"));
+	//"Generate Hangzhou Today's Comprehensive Report"));
 	//
-	// // 验证结果
-	// assertTrue(result.isPresent(), "工作流执行结果应该存在");
+	////Verify results
+	//assertTrue(result.isPresent(), "Workflow execution result should exist");
 	// OverAllState finalState = result.get();
 	//
-	// // 验证并行收集的数据
-	// assertTrue(finalState.value("weather_data").isPresent(), "天气数据应该存在");
-	// assertTrue(finalState.value("news_data").isPresent(), "新闻数据应该存在");
+	//// Validate data collected in parallel
+	// assertTrue(finalState.value("weather_data").isPresent(), "Weather data should exist");
+	// assertTrue(finalState.value("news_data").isPresent(), "News data should exist");
 	//
-	// // 验证合成报告
-	// assertTrue(finalState.value("daily_report").isPresent(), "综合报告应该存在");
+	//// Verify synthetic report
+	// assertTrue(finalState.value("daily_report").isPresent(), "Integrated reporting should exist");
 	//
-	// // 输出结果
-	// System.out.println("并行收集的天气数据: " + finalState.value("weather_data").get());
-	// System.out.println("并行收集的新闻数据: " + finalState.value("news_data").get());
-	// System.out.println("合成的综合报告: " + finalState.value("daily_report").get());
+	////output result
+	// System.out.println("Parallel collection of weather data: " + finalState.value("weather_data").get());
+	// System.out.println("Parallel collection of news data: " + finalState.value("news_data").get());
+	// System.out.println("Synthetic comprehensive reporting: " + finalState.value("daily_report").get());
 	// System.out.println("================================");
 	//
-	// // 验证数据质量
+	////Verify data quality
 	// String weatherData = (String) finalState.value("weather_data").get();
 	// String newsData = (String) finalState.value("news_data").get();
 	// String dailyReport = (String) finalState.value("daily_report").get();
 	//
-	// assertFalse(weatherData.trim().isEmpty(), "天气数据不应为空");
-	// assertFalse(newsData.trim().isEmpty(), "新闻数据不应为空");
-	// assertFalse(dailyReport.trim().isEmpty(), "综合报告不应为空");
+	// assertFalse(weatherData.trim().isEmpty(), "Weather data should not be empty");
+	//assertFalse(newsData.trim().isEmpty(), "News data should not be empty");
+	// assertFalse(dailyReport.trim().isEmpty(), "Comprehensive report should not be empty");
 	// }
 
 	@Test
@@ -237,16 +237,16 @@ class ParallelAgentIntegrationTest {
 		ReactAgent agent1 = ReactAgent.builder()
 			.name("agent1")
 			.model(chatModel)
-			.description("第一个测试Agent")
-			.instruction("测试助手1")
+			.description("The first test agent")
+			.instruction("Test Assistant 1")
 			.outputKey("duplicate_key") // Same output key as agent2
 			.build();
 
 		ReactAgent agent2 = ReactAgent.builder()
 			.name("agent2")
 			.model(chatModel)
-			.description("第二个测试Agent")
-			.instruction("测试助手2")
+			.description("The second test agent")
+			.instruction("Test Assistant 2")
 			.outputKey("duplicate_key") // Same output key as agent1
 			.build();
 
@@ -254,7 +254,7 @@ class ParallelAgentIntegrationTest {
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
 			ParallelAgent.builder()
 				.name("duplicate_key_test")
-				.description("测试重复outputKey的验证")
+				.description("Test verification of repeated outputKey")
 				.mergeOutputKey("output")
 				.subAgents(List.of(agent1, agent2))
 				.build();
@@ -275,23 +275,23 @@ class ParallelAgentIntegrationTest {
 		ReactAgent agent1 = ReactAgent.builder()
 			.name("agent1")
 			.model(chatModel)
-			.description("第一个测试Agent")
-			.instruction("请返回数字1")
+			.description("The first test agent")
+			.instruction("Please return number 1")
 			.outputKey("result1")
 			.build();
 
 		ReactAgent agent2 = ReactAgent.builder()
 			.name("agent2")
 			.model(chatModel)
-			.description("第二个测试Agent")
-			.instruction("请返回数字2")
+			.description("The second test agent")
+			.instruction("Please return number 2")
 			.outputKey("result2")
 			.build();
 
 		// Test with ListMergeStrategy
 		ParallelAgent listMergeAgent = ParallelAgent.builder()
 			.name("list_merge_test")
-			.description("测试列表合并策略")
+			.description("Test list merging strategy")
 			.mergeOutputKey("merged_list")
 			.mergeStrategy(new ParallelAgent.ListMergeStrategy())
 			.subAgents(List.of(agent1, agent2))
@@ -317,16 +317,16 @@ class ParallelAgentIntegrationTest {
 				.name("worker_" + i)
 				.model(chatModel)
 				.description("Worker agent " + i)
-				.instruction("请返回工作结果 " + i)
+				.instruction("Please return work results" + i)
 				.outputKey("result_" + i)
 				.build());
 		}
 
 		ParallelAgent concurrencyAgent = ParallelAgent.builder()
 			.name("concurrency_test")
-			.description("测试并发控制")
+			.description("Test concurrency control")
 			.mergeOutputKey("concurrency_results")
-			.maxConcurrency(3) // 限制最大并发数为3
+			.maxConcurrency(3) //Limit the maximum number of concurrencies to 3
 			.subAgents(agents)
 			.build();
 

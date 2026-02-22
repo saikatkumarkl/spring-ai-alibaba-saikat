@@ -45,12 +45,12 @@ public class PromptVersionServiceImpl implements PromptVersionService {
     @Override
     @Transactional
     public PromptVersion create(PromptVersionCreateRequest request) throws StudioException {
-        log.info("创建Prompt版本: {}", request);
+        log.info("Create Prompt version: {}", request);
         
         //1. First verify whether the corresponding prompt exists
         if (promptMapper.selectByPromptKey(request.getPromptKey()) == null) {
             throw new StudioException(StudioException.NOT_FOUND,
-                    String.format("Prompt不存在，promptKey: %s，请先创建对应的Prompt", request.getPromptKey()));
+                    String.format("Prompt does not exist, promptKey: %s, please create the corresponding prompt first", request.getPromptKey()));
         }
         
         //2. Check whether the version already exists and verify the status
@@ -63,19 +63,19 @@ public class PromptVersionServiceImpl implements PromptVersionService {
             //If you want to release a pre-release version, but an official version already exists, intercept
             if ("pre".equals(request.getStatus()) && "release".equals(existingStatus)) {
                 throw new StudioException(StudioException.CONFLICT,
-                        String.format("版本 %s 已经是正式版本(release)，不能再创建同版本的预发布版本",
+                        String.format("Version %s is already an official version (release) and no pre-release version of the same version can be created.",
                                 request.getVersion()));
             }
             
             //If an official version is to be released but an official version already exists, intercept
             if ("release".equals(request.getStatus()) && "release".equals(existingStatus)) {
                 throw new StudioException(StudioException.CONFLICT,
-                        String.format("版本 %s 已经是正式版本(release)，不能重复发布", request.getVersion()));
+                        String.format("Version %s is already an official version (release) and cannot be released again.", request.getVersion()));
             }
             
             //If you want to publish a pre-release version and a pre-release version already exists, it is allowed (the original pre-release version will be overwritten)
             if ("pre".equals(request.getStatus()) && "pre".equals(existingStatus)) {
-                log.info("版本 {} 已存在预发布版本，将覆盖原有预发布版本", request.getVersion());
+                log.info("Version {} already has a pre-release version and will overwrite the original pre-release version.", request.getVersion());
                 
                 //Get the previous version
                 String previousVersion = promptVersionMapper.selectLatestVersion(request.getPromptKey());
@@ -89,7 +89,7 @@ public class PromptVersionServiceImpl implements PromptVersionService {
                 
                 //Update an existing pre-release version
                 promptVersionMapper.updateByPromptKeyAndVersion(updatePromptVersionDO);
-                log.info("Prompt预发布版本更新成功: {} - {}", request.getPromptKey(), request.getVersion());
+                log.info("Prompt pre-release version updated successfully: {} - {}", request.getPromptKey(), request.getVersion());
                 
                 //Re-query the updated version details and return
                 PromptVersionDO updatedVersion = promptVersionMapper.selectByPromptKeyAndVersion(request.getPromptKey(),
@@ -107,7 +107,7 @@ public class PromptVersionServiceImpl implements PromptVersionService {
                 .status(request.getStatus()).previousVersion(previousVersion).build();
         
         promptVersionMapper.insert(promptVersionDO);
-        log.info("Prompt版本创建成功: {}", promptVersionDO.getId());
+        log.info("Prompt version created successfully: {}", promptVersionDO.getId());
         if ("release".equals(request.getStatus())) {
             publishPromptToNacos(request);
         }
@@ -130,24 +130,24 @@ public class PromptVersionServiceImpl implements PromptVersionService {
             nacosPrompt.setVariables(request.getVariables());
             boolean success = configService.publishConfig(dataId, group, objectMapper.writeValueAsString(nacosPrompt));
             if (!success) {
-                log.error("同步 Prompt {} 版本 {} 到 Nacos 失败", request.getPromptKey(), request.getVersion());
+                log.error("Synchronizing Prompt {} version {} to Nacos failed", request.getPromptKey(), request.getVersion());
             } else {
-                log.info("同步 Prompt {} 版本 {} 到 Nacos 成功", request.getPromptKey(), request.getVersion());
+                log.info("Synchronize Prompt {} version {} to Nacos successfully", request.getPromptKey(), request.getVersion());
             }
         } catch (NacosException e) {
-            log.error("同步 Prompt {} 版本 {} 到 Nacos 失败", request.getPromptKey(), request.getVersion(), e);
+            log.error("Synchronizing Prompt {} version {} to Nacos failed", request.getPromptKey(), request.getVersion(), e);
         } catch (JsonProcessingException e) {
-            log.error("同步 Nacos 时 序列化 Prompt {} 版本 {} 失败", request.getPromptKey(), request.getVersion(), e);
+            log.error("Serialization Prompt {} version {} failed when synchronizing Nacos", request.getPromptKey(), request.getVersion(), e);
         }
     }
     
     @Override
     public PromptVersionDetail getByPromptKeyAndVersion(String promptKey, String version) throws StudioException {
-        log.info("查询Prompt版本详情: promptKey={}, version={}", promptKey, version);
+        log.info("Query Prompt version details: promptKey={}, version={}", promptKey, version);
         
         PromptVersionDO promptVersionDO = promptVersionMapper.selectByPromptKeyAndVersion(promptKey, version);
         if (promptVersionDO == null) {
-            throw new StudioException(StudioException.NOT_FOUND, "Prompt版本不存在: " + promptKey + "@" + version);
+            throw new StudioException(StudioException.NOT_FOUND, "Prompt version does not exist:" + promptKey + "@" + version);
         }
         
         return PromptVersionDetail.fromDO(promptVersionDO);
@@ -155,7 +155,7 @@ public class PromptVersionServiceImpl implements PromptVersionService {
     
     @Override
     public PageResult<PromptVersion> list(PromptVersionListRequest request) {
-        log.info("查询Prompt版本列表: {}", request);
+        log.info("Query Prompt version list: {}", request);
         
         int offset = (request.getPageNo() - 1) * request.getPageSize();
         

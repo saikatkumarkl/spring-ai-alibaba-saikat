@@ -1,6 +1,6 @@
 import $i18n from '@/i18n';
 import { IAppType } from '@/services/appComponent';
-import { IValueType } from '@spark-ai/flow';
+import { IValueType } from '@cordondata/flow';
 import { IAppComponentListItem } from './appComponent';
 import { IKnowledgeListItem } from './knowledge';
 import { IMcpServer } from './mcp';

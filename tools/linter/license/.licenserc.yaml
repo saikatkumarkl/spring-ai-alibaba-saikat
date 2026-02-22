@@ -13,8 +13,8 @@
 # limitations under the License.
 header:
   license:
-    copyright-owner: Spring AI Alibaba Community
-    software-name: Spring AI Alibaba
+    copyright-owner: CordonData Community
+    software-name: CordonData
     copyright-year: '2024-2026'
     content: |
       Copyright 2024-2026 the original author or authors.

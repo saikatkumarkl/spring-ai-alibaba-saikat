@@ -38,13 +38,13 @@ public class EvaluatorController {
      */
     @PostMapping("/evaluator")
     public Result<Evaluator> create(@Validated @RequestBody EvaluatorCreateRequest request) {
-        log.info("创建评估器请求: {}", request);
+        log.info("Create evaluator request: {}", request);
         try {
             Evaluator evaluator = evaluatorService.create(request);
             return Result.success(evaluator);
         } catch (Exception e) {
-            log.error("创建评估器失败", e);
-            return Result.error("创建评估器失败: " + e.getMessage());
+            log.error("Failed to create evaluator", e);
+            return Result.error("Failed to create evaluator:" + e.getMessage());
         }
     }
 
@@ -53,13 +53,13 @@ public class EvaluatorController {
      */
     @PostMapping("/evaluatorVersion")
     public Result<EvaluatorVersion> createVersion(@RequestBody EvaluatorVersionCreateRequest request) {
-        log.info("创建评估器版本请求: {}", request);
+        log.info("Create evaluator version request: {}", request);
         try {
             EvaluatorVersion evaluatorVersion = evaluatorVersionService.create(request);
             return Result.success(evaluatorVersion);
         } catch (Exception e) {
-            log.error("创建评估器版本失败", e);
-            return Result.error("创建评估器版本失败: " + e.getMessage());
+            log.error("Failed to create evaluator version", e);
+            return Result.error("Failed to create evaluator version:" + e.getMessage());
         }
     }
 
@@ -68,13 +68,13 @@ public class EvaluatorController {
      */
     @GetMapping("/evaluators")
     public Result<PageResult<Evaluator>> list(EvaluatorListRequest evaluatorListRequest){
-        log.info("查询评估器列表请求: {}", evaluatorListRequest);
+        log.info("Query evaluator list request: {}", evaluatorListRequest);
         try {
             PageResult<Evaluator> result = evaluatorService.list(evaluatorListRequest);
             return Result.success(result);
         } catch (Exception e) {
-            log.error("查询评估器列表失败", e);
-            return Result.error("查询评估器列表失败: " + e.getMessage());
+            log.error("Querying evaluator list failed", e);
+            return Result.error("Querying evaluator list failed:" + e.getMessage());
         }
     }
 
@@ -83,29 +83,29 @@ public class EvaluatorController {
      */
     @GetMapping("/evaluator")
     public Result<Evaluator> get(Long id) {
-        log.info("查询评估器详情请求: {}", id);
+        log.info("Query evaluator details request: {}", id);
         try {
             Evaluator evaluator = evaluatorService.getById(id);
             if (evaluator == null) {
-                return Result.error(404, "评估器不存在");
+                return Result.error(404, "Evaluator does not exist");
             }
             return Result.success(evaluator);
         } catch (Exception e) {
-            log.error("查询评估器详情失败", e);
-            return Result.error("查询评估器详情失败: " + e.getMessage());
+            log.error("Failed to query evaluator details", e);
+            return Result.error("Failed to query evaluator details:" + e.getMessage());
         }
     }
 
     //Get a list of evaluator versions
     @GetMapping("/evaluatorVersions")
     public Result<PageResult<EvaluatorVersion>> listVersions(EvaluatorVersionListRequest request) {
-        log.info("查询评估器版本列表请求: {}", request);
+        log.info("Query evaluator version list request: {}", request);
         try {
             PageResult<EvaluatorVersion> result = evaluatorVersionService.list(request);
             return Result.success(result);
         } catch (Exception e) {
-            log.error("查询评估器版本列表失败", e);
-            return Result.error("查询评估器版本列表失败: " + e.getMessage());
+            log.error("Querying evaluator version list failed", e);
+            return Result.error("Failed to query evaluator version list:" + e.getMessage());
         }
     }
 
@@ -114,13 +114,13 @@ public class EvaluatorController {
      */
     @PutMapping("/evaluator")
     public Result<Evaluator> update(@RequestBody EvaluatorUpdateRequest request) {
-        log.info("更新评估器请求: {}", request);
+        log.info("Update evaluator request: {}", request);
         try {
             Evaluator updatedEvaluator = evaluatorService.update(request);
             return Result.success(updatedEvaluator);
         } catch (Exception e) {
-            log.error("更新评估器失败", e);
-            return Result.error("更新评估器失败: " + e.getMessage());
+            log.error("Update evaluator failed", e);
+            return Result.error("Failed to update evaluator:" + e.getMessage());
         }
     }
 
@@ -129,13 +129,13 @@ public class EvaluatorController {
      */
     @DeleteMapping("/evaluator")
     public Result<Void> delete(@RequestParam Long id) {
-        log.info("删除评估器请求: {}", id);
+        log.info("Delete evaluator request: {}", id);
         try {
             evaluatorService.deleteById(id);
             return Result.success();
         } catch (Exception e) {
-            log.error("删除评估器失败", e);
-            return Result.error("删除评估器失败: " + e.getMessage());
+            log.error("Removing evaluator failed", e);
+            return Result.error("Removing evaluator failed:" + e.getMessage());
         }
     }
 
@@ -144,13 +144,13 @@ public class EvaluatorController {
      */
     @PostMapping("/debug")
     public Result<EvaluatorDebugResult> debug(@RequestBody EvaluatorTestRequest request) {
-        log.info("调试评估器请求: {}", request);
+        log.info("Debug evaluator request: {}", request);
         try {
             EvaluatorDebugResult result = evaluatorService.debug(request);
             return Result.success(result);
         } catch (Exception e) {
-            log.error("调试评估器失败", e);
-            return Result.error("调试评估器失败: " + e.getMessage());
+            log.error("Debugging evaluator failed", e);
+            return Result.error("Debugging evaluator failed:" + e.getMessage());
         }
     }
 
@@ -159,13 +159,13 @@ public class EvaluatorController {
      */
     @GetMapping("/templates")
     public Result<PageResult<EvaluatorTemplate>> getTemplates(EvaluatorTemplateListRequest request) {
-        log.info("获取评估模板列表请求");
+        log.info("Get evaluation template list request");
         try {
             PageResult<EvaluatorTemplate> templates = evaluatorPromptTemplateService.list(request);
             return Result.success(templates);
         } catch (Exception e) {
-            log.error("获取评估模板列表失败", e);
-            return Result.error("获取评估模板列表失败: " + e.getMessage());
+            log.error("Failed to get list of evaluation templates", e);
+            return Result.error("Failed to get list of evaluation templates:" + e.getMessage());
         }
     }
 
@@ -175,13 +175,13 @@ public class EvaluatorController {
      */
     @GetMapping("/template")
     public Result<EvaluatorTemplate> getTemplate(Long templateId) {
-        log.info("获取评估模板列表请求");
+        log.info("Get evaluation template list request");
         try {
             EvaluatorTemplate templates = evaluatorPromptTemplateService.get(templateId);
             return Result.success(templates);
         } catch (Exception e) {
-            log.error("获取评估模板详细信息", e);
-            return Result.error("获取评估模板详细信息失败: " + e.getMessage());
+            log.error("Get assessment template details", e);
+            return Result.error("Failed to get assessment template details:" + e.getMessage());
         }
     }
 
@@ -190,13 +190,13 @@ public class EvaluatorController {
      */
     @GetMapping("/experiments")
     public Result<PageResult<Experiment>> getExperiments(EvaluatorExperimentsListRequest request) {
-        log.info("获取评估器关联的实验: {}", request);
+        log.info("Get the experiment associated with the evaluator: {}", request);
         try {
             PageResult<Experiment> experiments = experimentService.getExperimentsByEvaluator(request);
             return Result.success(experiments);
         } catch (Exception e) {
-            log.error("获取评估器关联的实验失败", e);
-            return Result.error("获取评估器关联的实验失败: " + e.getMessage());
+            log.error("Failed to get the experiment associated with the evaluator", e);
+            return Result.error("Failed to get the experiment associated with the evaluator:" + e.getMessage());
         }
     }
 

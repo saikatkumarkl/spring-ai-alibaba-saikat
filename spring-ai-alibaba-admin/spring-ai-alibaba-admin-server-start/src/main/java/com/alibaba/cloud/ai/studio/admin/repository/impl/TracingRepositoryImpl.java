@@ -33,7 +33,7 @@ public class TracingRepositoryImpl implements TracingRepository {
 
     @Override
     public PageResult<TraceSpanDTO> queryTraces(TracesQueryRequest request) {
-        log.info("查询Traces列表: {}", request);
+        log.info("Query Traces list: {}", request);
         
         SearchRequest searchRequest = queryBuilder.buildTracesQuery(request);
         SearchResponse<Map> response = elasticsearchClient.search(TRACES_INDEX, searchRequest);
@@ -47,7 +47,7 @@ public class TracingRepositoryImpl implements TracingRepository {
 
     @Override
     public TraceDetailDTO getTraceDetail(String traceId) {
-        log.info("查询Trace详情: {}", traceId);
+        log.info("Query Trace details: {}", traceId);
         
         SearchRequest searchRequest = queryBuilder.buildTraceDetailQuery(traceId);
         SearchResponse<Map> response = elasticsearchClient.search(TRACES_INDEX, searchRequest);
@@ -61,7 +61,7 @@ public class TracingRepositoryImpl implements TracingRepository {
 
     @Override
     public ServicesResponseDTO getServices(ServicesQueryRequest request) {
-        log.info("查询服务列表: {}", request);
+        log.info("Query service list: {}", request);
         
         SearchRequest searchRequest = queryBuilder.buildServicesQuery(request);
         SearchResponse<Map> response = elasticsearchClient.search(TRACES_INDEX, searchRequest);
@@ -98,7 +98,7 @@ public class TracingRepositoryImpl implements TracingRepository {
 
     @Override
     public OverviewStatsDTO getOverview(OverviewQueryRequest request) {
-        log.info("查询概览统计: {}", request);
+        log.info("Query overview statistics: {}", request);
         
         SearchRequest searchRequest = queryBuilder.buildOverviewQuery(request);
         SearchResponse<Map> response = elasticsearchClient.search(TRACES_INDEX, searchRequest);
@@ -119,7 +119,7 @@ public class TracingRepositoryImpl implements TracingRepository {
 
     @Override
     public void saveSpans(List<TraceSpanDTO> spans) {
-        log.info("批量保存Span数据: {} 条", spans.size());
+        log.info("Save Span data in batches: {} items", spans.size());
         
         List<Map<String, Object>> documents = spans.stream()
             .map(this::convertToElasticsearchDoc)

@@ -21,7 +21,7 @@ public class CommonUtils {
                     .map(obj -> Long.valueOf(obj.toString()))
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            log.warn("解析itemIds字符串失败: {}", itemIds, e);
+            log.warn("Failed to parse itemIds string: {}", itemIds, e);
             return new ArrayList<>();
         }
     }

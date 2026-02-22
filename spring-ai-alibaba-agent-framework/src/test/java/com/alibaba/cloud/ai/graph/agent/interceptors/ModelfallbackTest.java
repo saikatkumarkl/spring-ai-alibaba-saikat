@@ -84,7 +84,7 @@ class ModelfallbackTest {
 						.build();
 
 		try {
-			Optional<OverAllState> result = agent.invoke("帮我写一篇100字左右散文。");
+			Optional<OverAllState> result = agent.invoke("Help me write an essay of about 100 words.");
 
 			// Assert that the result is present
 			assertTrue(result.isPresent(), "Agent result should be present");

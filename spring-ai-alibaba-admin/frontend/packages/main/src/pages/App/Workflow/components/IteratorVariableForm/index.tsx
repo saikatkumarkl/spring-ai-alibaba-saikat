@@ -4,7 +4,7 @@ import {
   INodeDataInputParamItem,
   IVarTreeItem,
   VariableSelector,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { Flex } from 'antd';
 import { memo, useCallback } from 'react';
 

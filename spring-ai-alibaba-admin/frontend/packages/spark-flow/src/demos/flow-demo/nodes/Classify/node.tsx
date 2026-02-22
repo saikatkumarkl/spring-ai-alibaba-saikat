@@ -1,7 +1,7 @@
 import SourceHandle from '@/components/CustomHandle/SourceHandle';
 import $i18n from '@/i18n';
 import { IWorkFlowNode } from '@/types/work-flow';
-import { BaseNode } from '@spark-ai/flow';
+import { BaseNode } from '@cordondata/flow';
 import { NodeProps } from '@xyflow/react';
 import React, { memo } from 'react';
 import { IClassifierNodeParam } from '../../types/flow';

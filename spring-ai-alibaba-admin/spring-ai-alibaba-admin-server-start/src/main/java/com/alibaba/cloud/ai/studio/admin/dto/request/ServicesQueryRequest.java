@@ -6,9 +6,9 @@ import lombok.Data;
 @Data
 public class ServicesQueryRequest {
 
-    @NotBlank(message = "开始时间不能为空")
+    @NotBlank(message = "Start time cannot be empty")
     private String startTime;
 
-    @NotBlank(message = "结束时间不能为空")
+    @NotBlank(message = "End time cannot be empty")
     private String endTime;
 }

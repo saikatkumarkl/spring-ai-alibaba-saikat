@@ -27,8 +27,8 @@ spring:
             name: data_analysis_agent
             description: 专门用于数据分析和统计计算的本地智能体
             provider:
-              name: Spring AI Alibaba Documentation
-              organization: Spring AI Alibaba
+              name: CordonData Documentation
+              organization: CordonData
               url: https://sca.aliyun.com/ai/
               contact:
                 email: dev@alibabacloud.com

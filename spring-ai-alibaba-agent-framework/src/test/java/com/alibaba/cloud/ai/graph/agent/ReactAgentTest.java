@@ -92,9 +92,9 @@ class ReactAgentTest {
 		ReactAgent agent = ReactAgent.builder().name("single_agent").model(chatModel).saver(new MemorySaver()).build();
 
 		try {
-			Optional<OverAllState> result = agent.invoke("帮我写一篇100字左右散文。");
-			Optional<OverAllState> result2 = agent.invoke(new UserMessage("帮我写一首现代诗歌。"));
-			Optional<OverAllState> result3 = agent.invoke("帮我写一首现代诗歌2。");
+			Optional<OverAllState> result = agent.invoke("Help me write an essay of about 100 words.");
+			Optional<OverAllState> result2 = agent.invoke(new UserMessage("Write me a modern poem."));
+			Optional<OverAllState> result3 = agent.invoke("Help me write a modern poem2.");
 
 			assertTrue(result.isPresent(), "First result should be present");
 			OverAllState state1 = result.get();
@@ -128,7 +128,7 @@ class ReactAgentTest {
 
 		ReactAgent agent = ReactAgent.builder().name("single_agent").model(chatModel).saver(new MemorySaver())
 				.build();
-		AssistantMessage message = agent.call("帮我写一篇100字左右散文。");
+		AssistantMessage message = agent.call("Help me write an essay of about 100 words.");
 		System.out.println(message.getText());
 	}
 
@@ -162,13 +162,13 @@ class ReactAgentTest {
 				.outputSchema(customSchema)
 				.build();
 
-		AssistantMessage message = agent.call("帮我写一首关于春天的诗歌。");
+		AssistantMessage message = agent.call("Help me write a poem about spring.");
 		assertNotNull(message, "Message should not be null");
 		assertNotNull(message.getText(), "Message text should not be null");
 		System.out.println("=== Output with custom schema ===");
 		System.out.println(message.getText());
 
-		assertTrue(message.getText().contains("title") || message.getText().contains("标题"),
+		assertTrue(message.getText().contains("title") || message.getText().contains("title"),
 				"Output should contain title field");
 	}
 
@@ -183,7 +183,7 @@ class ReactAgentTest {
 				.outputType(PoemOutput.class)
 				.build();
 
-		AssistantMessage message = agent.call("帮我写一首关于秋天的现代诗。");
+		AssistantMessage message = agent.call("Help me write a modern poem about autumn.");
 		assertNotNull(message, "Message should not be null");
 		assertNotNull(message.getText(), "Message text should not be null");
 		System.out.println("=== Output with outputType (auto-generated schema) ===");
@@ -227,7 +227,7 @@ class ReactAgentTest {
 				.enableLogging(true)
 				.build();
 
-		Optional<OverAllState> result = agent.invoke("分析这句话：春天来了，万物复苏，生机勃勃。");
+		Optional<OverAllState> result = agent.invoke("Analyze this sentence: Spring is here, and everything is revived and full of vitality.");
 
 		assertTrue(result.isPresent(), "Result should be present");
 		System.out.println("=== Full state output ===");
@@ -243,7 +243,7 @@ class ReactAgentTest {
 				.enableLogging(true)
 				.build();
 
-		Optional<NodeOutput> nodeOutputOptional = agent.invokeAndGetOutput("帮我写一篇100字左右散文。");
+		Optional<NodeOutput> nodeOutputOptional = agent.invokeAndGetOutput("Help me write an essay of about 100 words.");
 
 		assertTrue(nodeOutputOptional.isPresent(), "Result should be present");
 
@@ -259,9 +259,9 @@ class ReactAgentTest {
 	}
 
 	/**
-	 * 打印ReactAgent的图表
+	 * Print diagram of ReactAgent
 	 *
-	 * 使用getAndCompileGraph方法获取并打印ReactAgent的内部状态图
+	 * Use the getAndCompileGraph method to get and print ReactAgent's internal state graph
 	 */
 	private void printReactAgentGraph(ReactAgent agent) {
 		GraphRepresentation representation = agent.getAndCompileGraph().stateGraph.getGraph(GraphRepresentation.Type.PLANTUML);
@@ -277,7 +277,7 @@ class ReactAgentTest {
 				.enableLogging(true)
 				.build();
 
-		Flux<NodeOutput> flux = agent.stream(new UserMessage("帮我写一篇100字左右散文。"));
+		Flux<NodeOutput> flux = agent.stream(new UserMessage("Help me write an essay of about 100 words."));
 
 		flux.doOnNext(output -> {
 			if (output instanceof StreamingOutput<?> streamingOutput) {
@@ -299,11 +299,11 @@ class ReactAgentTest {
 				.name("test_agent")
 				.model(chatModel)
 				.saver(new MemorySaver())
-				.systemPrompt("你是一个诗歌写作助理，你能帮我写一首关于春天的现代诗。")
+				.systemPrompt("You are a poetry writing assistant and you can help me write a modern poem about spring.")
 				.enableLogging(true)
 				.build();
 
-		AssistantMessage assistantMessage = agent.call("帮我写一首关于春天的现代诗。");
+		AssistantMessage assistantMessage = agent.call("Help me write a modern poem about spring.");
 		System.out.println(assistantMessage.getText());
 	}
 
@@ -330,7 +330,7 @@ class ReactAgentTest {
 				"Serializer should be SpringAIJacksonStateSerializer");
 
 		// Test that agent works correctly with the serializer
-		Optional<OverAllState> result = agent.invoke("帮我写一篇100字左右散文。");
+		Optional<OverAllState> result = agent.invoke("Help me write an essay of about 100 words.");
 		assertTrue(result.isPresent(), "Result should be present");
 		assertTrue(result.get().value("messages").isPresent(), "Messages should be present");
 	}
@@ -358,7 +358,7 @@ class ReactAgentTest {
 				"Serializer should be SpringAIStateSerializer");
 
 		// Test that agent works correctly with the serializer
-		Optional<OverAllState> result = agent.invoke("帮我写一篇100字左右散文。");
+		Optional<OverAllState> result = agent.invoke("Help me write an essay of about 100 words.");
 		assertTrue(result.isPresent(), "Result should be present");
 		assertTrue(result.get().value("messages").isPresent(), "Messages should be present");
 	}
@@ -383,7 +383,7 @@ class ReactAgentTest {
 				"Default serializer should be SpringAIJacksonStateSerializer");
 
 		// Test that agent works correctly with default serializer
-		Optional<OverAllState> result = agent.invoke("帮我写一篇100字左右散文。");
+		Optional<OverAllState> result = agent.invoke("Help me write an essay of about 100 words.");
 		assertTrue(result.isPresent(), "Result should be present");
 		assertTrue(result.get().value("messages").isPresent(), "Messages should be present");
 	}
@@ -403,10 +403,10 @@ class ReactAgentTest {
 				.build();
 
 		// Execute multiple invocations to test serialization/deserialization
-		Optional<OverAllState> result1 = agent.invoke("帮我写一篇100字左右散文。");
+		Optional<OverAllState> result1 = agent.invoke("Help me write an essay of about 100 words.");
 		assertTrue(result1.isPresent(), "First result should be present");
 
-		Optional<OverAllState> result2 = agent.invoke(new UserMessage("帮我写一首现代诗歌。"));
+		Optional<OverAllState> result2 = agent.invoke(new UserMessage("Write me a modern poem."));
 		assertTrue(result2.isPresent(), "Second result should be present");
 
 		// Verify messages are correctly serialized/deserialized
@@ -436,7 +436,7 @@ class ReactAgentTest {
 				.build();
 
 		// Test streaming
-		Flux<NodeOutput> flux = agent.stream(new UserMessage("帮我写一篇100字左右散文。"));
+		Flux<NodeOutput> flux = agent.stream(new UserMessage("Help me write an essay of about 100 words."));
 
 		flux.doOnNext(output -> {
 			assertNotNull(output, "NodeOutput should not be null");
@@ -460,11 +460,11 @@ class ReactAgentTest {
 		StateSerializer serializer = new SpringAIJacksonStateSerializer(OverAllState::new);
 
 		String customSchema = """
-				请按照以下JSON格式输出：
+				Please output in the following JSON format:
 				{
-					"title": "诗歌标题",
-					"content": "诗歌正文内容",
-					"style": "诗歌风格（如：现代诗、古体诗等）"
+					"title": "poem title",
+					"content": "Poetry text content",
+					"style": "Poetry style (such as modern poetry, ancient poetry, etc.)"
 				}
 				""";
 
@@ -482,7 +482,7 @@ class ReactAgentTest {
 		assertInstanceOf(SpringAIJacksonStateSerializer.class, graphSerializer);
 
 		// Test execution
-		AssistantMessage message = agent.call("帮我写一首关于春天的诗歌。");
+		AssistantMessage message = agent.call("Help me write a poem about spring.");
 		assertNotNull(message, "Message should not be null");
 		assertNotNull(message.getText(), "Message text should not be null");
 	}
@@ -518,8 +518,8 @@ class ReactAgentTest {
 				"Both agents should use the same serializer type");
 
 		// Both agents should work correctly
-		Optional<OverAllState> result1 = agent1.invoke("帮我写一篇100字左右散文。");
-		Optional<OverAllState> result2 = agent2.invoke("帮我写一篇100字左右散文。");
+		Optional<OverAllState> result1 = agent1.invoke("Help me write an essay of about 100 words.");
+		Optional<OverAllState> result2 = agent2.invoke("Help me write an essay of about 100 words.");
 
 		assertTrue(result1.isPresent(), "Agent1 result should be present");
 		assertTrue(result2.isPresent(), "Agent2 result should be present");
@@ -541,7 +541,7 @@ class ReactAgentTest {
 				.enableLogging(true)
 				.build();
 
-		AssistantMessage message = agent.call("列出3位知名演员及其代表作品，每位演员列出2-3部电影。");
+		AssistantMessage message = agent.call("List 3 well-known actors and their representative works, and list 2-3 movies for each actor.");
 		assertNotNull(message, "Message should not be null");
 		assertNotNull(message.getText(), "Message text should not be null");
 		System.out.println("=== Output with BeanOutputConverter generated schema ===");
@@ -567,7 +567,7 @@ class ReactAgentTest {
 
 
 
-		AssistantMessage message = agent.call("请提供一个包含姓名、年龄和职业的JSON对象。");
+		AssistantMessage message = agent.call("Please provide a JSON object containing name, age and occupation.");
 		assertNotNull(message, "Message should not be null");
 		assertNotNull(message.getText(), "Message text should not be null");
 		System.out.println("=== Output with MapOutputConverter generated schema ===");
@@ -590,7 +590,7 @@ class ReactAgentTest {
 				.enableLogging(true)
 				.build();
 
-		AssistantMessage message = agent.call("请列出5个你最喜欢的编程语言。");
+		AssistantMessage message = agent.call("Please list 5 of your favorite programming languages.");
 		assertNotNull(message, "Message should not be null");
 		assertNotNull(message.getText(), "Message text should not be null");
 		System.out.println("=== Output with ListOutputConverter generated schema ===");
@@ -605,18 +605,18 @@ class ReactAgentTest {
         var react = ReactAgent.builder()
                 .name("demoReactAgent")
                 .model(chatModel)
-                .instruction("地点为: {target_topic}")
+                .instruction("The location is: {target_topic}")
                 .tools(ToolCallbacks.from(new TestTools()))
-                .systemPrompt("你是一个天气预报助手，帮我查看指定地点的天气预报")
+                .systemPrompt("You are a weather forecast assistant, help me check the weather forecast for the specified location")
                 .build();
 
-        String output = react.call("上海,北京").getText();
+        String output = react.call("Shanghai,Beijing").getText();
         System.out.println("ReactAgent Output: " + output);
 
         assertNotNull(output);
         assertFalse(output.isEmpty(), "Output should not be empty");
 
-        // 校验 hasTools 以检查是否包含工具定义
+        //Verify hasTools to check if tool definitions are included
         assertTrue(testHasTools(react ), "Tools should have been set");
     }
 
@@ -648,10 +648,10 @@ class ReactAgentTest {
 		var react = ReactAgent.builder()
 				.name("demoReactAgent")
 				.model(chatModel)
-				.instruction("地点为: {target_topic}")
+				.instruction("The location is: {target_topic}")
 				.tools(ToolCallbacks.from(new TestTools()))
 				.hooks(List.of(streamingModelHook))
-				.systemPrompt("你是一个天气预报助手，帮我查看指定地点的天气预报")
+				.systemPrompt("You are a weather forecast assistant, help me check the weather forecast for the specified location")
 				.outputKey("final_answer")
 				.build();
 
@@ -661,7 +661,7 @@ class ReactAgentTest {
 		AtomicBoolean hasAgentToolFinished = new AtomicBoolean(false);
 		AtomicBoolean hasAgentHookFinished = new AtomicBoolean(false);
 
-		Flux<NodeOutput> flux = react.stream("上海,北京");
+		Flux<NodeOutput> flux = react.stream("Shanghai,Beijing");
 		NodeOutput finalOutput = flux.doOnNext(output -> {
 			// START
 			if (output instanceof StreamingOutput<?> streamingOutput) {
@@ -703,31 +703,31 @@ class ReactAgentTest {
         var reactAgent1 = ReactAgent.builder()
                 .name("demoReactAgent")
                 .model(chatModel)
-                .instruction("地点为: {target_topic}")
+                .instruction("The location is: {target_topic}")
                 .tools(ToolCallbacks.from(new TestTools()))
-                .systemPrompt("你是一个天气预报助手，帮我查看指定地点的天气预报")
+                .systemPrompt("You are a weather forecast assistant, help me check the weather forecast for the specified location")
                 .build();
 
         var reactAgent2 = ReactAgent.builder()
                 .name("demoReactAgent")
                 .model(chatModel)
                 .hooks(List.of(new TestModelHook(), new TestAgentHook()))
-                .instruction("主题为: {target_topic}")
-                .systemPrompt("你是一个诗歌写作专家，请按照给定的主题写作200字左右的诗歌")
+                .instruction("The topic is: {target_topic}")
+                .systemPrompt("You are an expert in poetry writing. Please write a poem of about 200 words according to the given theme.")
                 .build();
 
         var reactAgent3 = ReactAgent.builder()
                 .name("demoReactAgent")
                 .model(chatModel)
-                .instruction("地点为: {target_topic}")
+                .instruction("The location is: {target_topic}")
                 .tools(ToolCallbacks.from(new TestTools()))
-                .systemPrompt("你是一个天气预报助手，帮我查看指定地点的天气预报")
+                .systemPrompt("You are a weather forecast assistant, help me check the weather forecast for the specified location")
                 .build();
 
-        // 普通调用
-        String output1 = reactAgent1.call("上海,北京").getText();
-        String output2 = reactAgent2.call("春天").getText();
-        String output3 = reactAgent3.call("杭州,北京").getText();
+        //Ordinary call
+        String output1 = reactAgent1.call("Shanghai,Beijing").getText();
+        String output2 = reactAgent2.call("spring").getText();
+        String output3 = reactAgent3.call("Hangzhou,Beijing").getText();
 
         System.out.println(output1);
         System.out.println(output2);
@@ -740,7 +740,7 @@ class ReactAgentTest {
         assertNotNull(output3);
         assertFalse(output3.isEmpty(), "Output should not be empty");
 
-        // 校验工具包含
+        //Verification tools include
         assertTrue(testHasTools(reactAgent1), "Tools should have been set");
         assertFalse(testHasTools(reactAgent2), "Tools should not have been set");
         assertTrue(testHasTools(reactAgent3), "Tools should have been set");
@@ -757,10 +757,10 @@ class ReactAgentTest {
                 .name("demoReactAgent")
                 .model(chatModel)
                 .hooks(List.of(new TestModelHook(), new TestAgentHook()))
-                .instruction("主题为: {target_topic}")
-                .systemPrompt("你是一个诗歌写作专家，请按照给定的主题写作200字左右的诗歌")
+                .instruction("The topic is: {target_topic}")
+                .systemPrompt("You are an expert in poetry writing. Please write a poem of about 200 words according to the given theme.")
                 .build()
-                .call("春天")
+                .call("spring")
                 .getText();
 
         System.setOut(originalOut);
@@ -770,19 +770,19 @@ class ReactAgentTest {
         assertNotNull(agentOutput);
         assertFalse(agentOutput.isEmpty(), "Output should not be empty");
 
-        // 校验控制台输出是否包含 hooks 内容
+        //Verify whether the console output contains hooks content
         String consoleOutput = outputStream.toString();
-        assertTrue(consoleOutput.contains("准备调用模型..."), "Console output should contain '准备调用模型...'");
-        assertTrue(consoleOutput.contains("Agent 开始执行"), "Console output should contain 'Agent 开始执行'");
+        assertTrue(consoleOutput.contains("Prepare to call the model..."), "Console output should contain 'Prepare to call the model...'");
+        assertTrue(consoleOutput.contains("Agent starts executing"), "Console output should contain 'Agent Start execution'");
     }
 
     static class TestTools {
 
         @Tool(name = "getWeatherByCity", description = "Get weather information by city  name", returnDirect = false)
-        public String getWeatherByCity(@ToolParam(description = "城市地址列表") List<String> cityNameList) {
+        public String getWeatherByCity(@ToolParam(description = "City address list") List<String> cityNameList) {
             StringBuilder builder = new StringBuilder();
             for (String cityName : cityNameList) {
-                builder.append(cityName + "天气不错");
+                builder.append(cityName + "nice weather");
             }
 
             return builder.toString();
@@ -798,8 +798,8 @@ class ReactAgentTest {
 
         @Override
         public CompletableFuture<Map<String, Object>> beforeModel(OverAllState state, RunnableConfig config) {
-            System.out.println("准备调用模型...");
-            return CompletableFuture.completedFuture(Map.of("extra_context", "某些额外信息"));
+            System.out.println("Prepare to call the model...");
+            return CompletableFuture.completedFuture(Map.of("extra_context", "some additional information"));
         }
     }
 
@@ -812,7 +812,7 @@ class ReactAgentTest {
 
         @Override
         public CompletableFuture<Map<String, Object>> beforeAgent(OverAllState state, RunnableConfig config) {
-            System.out.println("Agent 开始执行");
+            System.out.println("Agent starts executing");
             return CompletableFuture.completedFuture(Map.of("start_time", System.currentTimeMillis()));
         }
     }
@@ -949,8 +949,8 @@ class ReactAgentTest {
 
 	@Test
 	public void testInstructionSentToLLM() throws Exception {
-		String systemPromptText = "你是一个专业的技术问答助手，擅长用简洁明了的语言解释复杂的技术概念。";
-		String instructionText = "请用不超过100字简洁地回答用户的问题，重点突出核心要点。";
+		String systemPromptText = "You are a professional technical Q&A assistant who is good at explaining complex technical concepts in concise and clear language.";
+		String instructionText = "Please answer the user's question concisely in no more than 100 words, focusing on the core points.";
 
 		ReactAgent agent = ReactAgent.builder()
 				.name("instruction_test_agent")
@@ -961,21 +961,21 @@ class ReactAgentTest {
 				.enableLogging(true)
 				.build();
 
-		assertNotNull(agent, "Agent 不应为空");
+		assertNotNull(agent, "Agent should not be empty");
 
-		AssistantMessage response = agent.call("什么是 RESTful API?");
-		assertNotNull(response, "响应不应为空");
-		assertNotNull(response.getText(), "响应文本不应为空");
-		assertFalse(response.getText().isEmpty(), "响应文本不应为空字符串");
-		assertTrue(response.getText().length() > 0, "响应应该有内容");
+		AssistantMessage response = agent.call("What is a RESTful API?");
+		assertNotNull(response, "Response should not be empty");
+		assertNotNull(response.getText(), "Response text should not be empty");
+		assertFalse(response.getText().isEmpty(), "Response text should not be an empty string");
+		assertTrue(response.getText().length() > 0, "The response should have content");
 	}
 
 
 	@Test
 	public void testDynamicSystemPromptUpdate() throws Exception {
-		String initialSystemPrompt = "你是一个专业的技术助手，回答要简洁明了。";
-		String updatedSystemPrompt = "你是一个诗歌创作专家，用优美的语言回答问题。";
-		String finalSystemPrompt = "你是一个数学专家，用精确的数字回答问题。";
+		String initialSystemPrompt = "You are a professional technical assistant, so your answers should be concise and clear.";
+		String updatedSystemPrompt = "You are an expert at writing poetry and answering questions with beautiful language.";
+		String finalSystemPrompt = "You are a math expert and answer questions with precise numbers.";
 
 		ReactAgent agent = ReactAgent.builder()
 				.name("dynamic_system_prompt_agent")
@@ -985,30 +985,30 @@ class ReactAgentTest {
 				.enableLogging(true)
 				.build();
 
-		assertNotNull(agent, "Agent 不应为空");
+		assertNotNull(agent, "Agent should not be empty");
 
-		AssistantMessage response1 = agent.call("什么是 Java？");
-		assertNotNull(response1, "第一次响应不应为空");
-		assertFalse(response1.getText().isEmpty(), "第一次响应不应为空字符串");
+		AssistantMessage response1 = agent.call("What is Java?");
+		assertNotNull(response1, "The first response should not be empty");
+		assertFalse(response1.getText().isEmpty(), "The first response should not be an empty string");
 		System.out.println(response1.getText());
 
 		agent.setSystemPrompt(updatedSystemPrompt);
 
-		AssistantMessage response2 = agent.call("什么是 Spring？");
-		assertNotNull(response2, "第二次响应不应为空");
-		assertFalse(response2.getText().isEmpty(), "第二次响应不应为空字符串");
+		AssistantMessage response2 = agent.call("What is Spring?");
+		assertNotNull(response2, "The second response should not be empty");
+		assertFalse(response2.getText().isEmpty(), "The second response should not be an empty string");
 		System.out.println(response2.getText());
 
 		agent.setSystemPrompt(finalSystemPrompt);
 
-		AssistantMessage response3 = agent.call("1+1等于多少？");
-		assertNotNull(response3, "第三次响应不应为空");
-		assertFalse(response3.getText().isEmpty(), "第三次响应不应为空字符串");
+		AssistantMessage response3 = agent.call("What is 1+1 equal to?");
+		assertNotNull(response3, "The third response should not be empty");
+		assertFalse(response3.getText().isEmpty(), "The third response should not be an empty string");
 		System.out.println(response3.getText());
 
-		assertTrue(response1.getText().length() > 0, "第一次响应应该有内容");
-		assertTrue(response2.getText().length() > 0, "第二次响应应该有内容");
-		assertTrue(response3.getText().length() > 0, "第三次响应应该有内容");
+		assertTrue(response1.getText().length() > 0, "The first response should have content");
+		assertTrue(response2.getText().length() > 0, "The second response should have content");
+		assertTrue(response3.getText().length() > 0, "The third response should have content");
 	}
 
 
@@ -1036,16 +1036,16 @@ class ReactAgentTest {
 			.saver(new MemorySaver())
 			.build();
 		assertEquals(originalToolCount, originalOptions.getToolCallbacks().size(),
-			"原始 chatOptions 的 toolCallbacks 数量不应改变");
+			"The number of toolCallbacks of the original chatOptions should not change");
 		assertEquals(originalModel, originalOptions.getModel(),
-			"原始 chatOptions 的 model 不应改变");
+			"The model of the original chatOptions should not change");
 		assertEquals(originalTemperature, originalOptions.getTemperature(),
-			"原始 chatOptions 的 temperature 不应改变");
+			"The temperature of the original chatOptions should not change");
 
 		List<ToolCallback> originalToolCallbacks = originalOptions.getToolCallbacks();
-		assertEquals(1, originalToolCallbacks.size(), "原始 toolCallbacks 应该只有 1 个");
+		assertEquals(1, originalToolCallbacks.size(), "The original toolCallbacks should only be 1");
 		assertEquals(originalToolName, originalToolCallbacks.get(0).getToolDefinition().name(),
-			"原始 toolCallbacks 的工具名称不应改变");
+			"The tool name of the original toolCallbacks should not be changed");
 	}
 
 	@Test
@@ -1076,7 +1076,7 @@ class ReactAgentTest {
 
 		List<ToolCallback> sharedToolCallbacks = sharedOptions.getToolCallbacks();
 		assertTrue(sharedToolCallbacks == null || sharedToolCallbacks.isEmpty(),
-			"共享的 chatOptions 不应该被设置 toolCallbacks");
+			"Shared chatOptions should not be set toolCallbacks");
 
 		assertNotNull(agent1);
 		assertNotNull(agent2);

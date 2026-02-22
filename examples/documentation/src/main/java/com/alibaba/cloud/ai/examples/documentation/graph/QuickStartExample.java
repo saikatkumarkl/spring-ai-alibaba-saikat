@@ -52,24 +52,24 @@ import static com.alibaba.cloud.ai.graph.action.AsyncEdgeAction.edge_async;
 import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
 
 /**
- * Graph 工作流编排快速入门示例
+ * Graph Workflow Orchestration Quick Start Example
  * 
- * 本示例演示如何通过将客服邮件处理流程分解为离散步骤来使用 Spring AI Alibaba Graph 构建智能工作流。
+ * This example demonstrates how to build intelligent workflows using CordonData Graph by decomposing a customer email processing flow into discrete steps.
  * 
- * 示例包含：
- * 1. 状态定义（EmailClassification）
- * 2. 节点实现（读取邮件、分类意图、搜索文档、Bug跟踪、起草回复、人工审核、发送回复）
- * 3. Graph 组装和配置
- * 4. 测试执行
+ * This example includes:
+ * 1. State definition (EmailClassification)
+ * 2. Node implementation (read email, classify intent, search docs, bug tracking, draft reply, human review, send reply)
+ * 3. Graph assembly and configuration
+ * 4. Test execution
  */
 public class QuickStartExample {
 
 	private static final Logger log = LoggerFactory.getLogger(QuickStartExample.class);
 
-	// ==================== 状态定义 ====================
+	// ==================== State Definition ====================
 
 	/**
-	 * 邮件分类结构
+	 * Email Classification Structure
 	 */
 	public static class EmailClassification {
 		private String intent;      // "question", "bug", "billing", "feature", "complex"
@@ -127,7 +127,7 @@ public class QuickStartExample {
 	}
 
 	/**
-	 * 配置状态键策略
+	 * Configure State Key Strategies
 	 */
 	public static KeyStrategyFactory createKeyStrategyFactory() {
 		return () -> {
@@ -147,16 +147,16 @@ public class QuickStartExample {
 		};
 	}
 
-	// ==================== 节点实现 ====================
+	// ==================== Node Implementation ====================
 
 	/**
-	 * 读取邮件节点
+	 * Read Email Node
 	 */
 	public static class ReadEmailNode implements NodeAction {
 
 		@Override
 		public Map<String, Object> apply(OverAllState state) throws Exception {
-			// 在生产环境中，这将连接到您的邮件服务
+			// In production, this would connect to your email service
 			String emailContent = state.value("email_content")
 					.map(v -> (String) v)
 					.orElse("");
@@ -171,7 +171,7 @@ public class QuickStartExample {
 	}
 
 	/**
-	 * 分类意图节点
+	 * Classify Intent Node
 	 */
 	public static class ClassifyIntentNode implements NodeAction {
 
@@ -190,31 +190,31 @@ public class QuickStartExample {
 					.map(v -> (String) v)
 					.orElse("unknown");
 
-			// 按需格式化提示，不存储在状态中
+			// Format prompt on demand, not stored in state
 			String classificationPrompt = String.format("""
-					分析这封客户邮件并进行分类：
+					Analyze this customer email and classify it:
 
-					邮件: %s
-					发件人: %s
+					Email: %s
+					Sender: %s
 
-					提供分类，包括意图、紧急程度、主题和摘要。
+					Provide classification including intent, urgency, topic, and summary.
 
-					意图应该是以下之一: question, bug, billing, feature, complex
-					紧急程度应该是以下之一: low, medium, high, critical
+					Intent should be one of: question, bug, billing, feature, complex
+					Urgency should be one of: low, medium, high, critical
 
-					以JSON格式返回: {"intent": "...", "urgency": "...", "topic": "...", "summary": "..."}
+					Return in JSON format: {"intent": "...", "urgency": "...", "topic": "...", "summary": "..."}
 					""", emailContent, senderEmail);
 
-			// 获取结构化响应
+			// Get structured response
 			String response = chatClient.prompt()
 					.user(classificationPrompt)
 					.call()
 					.content();
 
-			// 解析为 EmailClassification 对象
+			// Parse into EmailClassification object
 			EmailClassification classification = parseClassification(response);
 
-			// 根据分类确定下一个节点
+			// Determine next node based on classification
 			String nextNode;
 			if ("billing".equals(classification.getIntent()) ||
 					"critical".equals(classification.getUrgency())) {
@@ -227,7 +227,7 @@ public class QuickStartExample {
 				nextNode = "draft_response";
 			}
 
-			// 将分类作为单个对象存储在状态中
+			// Store classification as a single object in state
 			return Map.of(
 					"classification", classification,
 					"next_node", nextNode
@@ -235,12 +235,12 @@ public class QuickStartExample {
 		}
 
 		/**
-		 * 简化的JSON解析（实际应用中使用Jackson或Gson）
+		 * Simplified JSON parsing (use Jackson or Gson in real applications)
 		 */
 		private EmailClassification parseClassification(String jsonResponse) {
 			EmailClassification classification = new EmailClassification();
 
-			// 简单的正则表达式解析
+			// Simple regex parsing
 			Pattern intentPattern = Pattern.compile("\"intent\"\\s*:\\s*\"([^\"]+)\"");
 			Pattern urgencyPattern = Pattern.compile("\"urgency\"\\s*:\\s*\"([^\"]+)\"");
 			Pattern topicPattern = Pattern.compile("\"topic\"\\s*:\\s*\"([^\"]+)\"");
@@ -266,7 +266,7 @@ public class QuickStartExample {
 				classification.setSummary(matcher.group(1));
 			}
 
-			// 如果解析失败，设置默认值
+			// If parsing fails, set default values
 			if (classification.getIntent() == null) {
 				classification.setIntent("question");
 			}
@@ -277,7 +277,7 @@ public class QuickStartExample {
 				classification.setTopic("general");
 			}
 			if (classification.getSummary() == null) {
-				classification.setSummary("需要处理的客户邮件");
+				classification.setSummary("Customer email that needs processing");
 			}
 
 			return classification;
@@ -285,25 +285,25 @@ public class QuickStartExample {
 	}
 
 	/**
-	 * 文档搜索节点
+	 * Documentation Search Node
 	 */
 	public static class SearchDocumentationNode implements NodeAction {
 
 		@Override
 		public Map<String, Object> apply(OverAllState state) throws Exception {
-			// 从分类构建搜索查询
+			// Build search query from classification
 			EmailClassification classification = state.value("classification")
 					.map(v -> (EmailClassification) v)
 					.orElse(new EmailClassification());
 			String query = classification.getIntent() + " " + classification.getTopic();
 
 			try {
-				// 实现您的搜索逻辑
-				// 存储原始搜索结果，而不是格式化的文本
+				// Implement your search logic
+				// Store raw search results, not formatted text
 				List<String> searchResults = List.of(
-						"通过设置 > 安全 > 更改密码重置密码",
-						"密码必须至少12个字符",
-						"包含大写字母、小写字母、数字和符号"
+						"Reset password via Settings > Security > Change Password",
+						"Password must be at least 12 characters",
+						"Include uppercase, lowercase, numbers, and symbols"
 				);
 
 				log.info("Searching documentation for: {}", query);
@@ -313,9 +313,9 @@ public class QuickStartExample {
 						"next_node", "draft_response"
 				);
 			} catch (Exception e) {
-				// 对于可恢复的搜索错误，存储错误并继续
+				// For recoverable search errors, store error and continue
 				log.warn("Search error: {}", e.getMessage());
-				List<String> errorResult = List.of("搜索暂时不可用: " + e.getMessage());
+				List<String> errorResult = List.of("Search temporarily unavailable: " + e.getMessage());
 				return Map.of(
 						"search_results", errorResult,
 						"next_node", "draft_response"
@@ -325,19 +325,19 @@ public class QuickStartExample {
 	}
 
 	/**
-	 * Bug跟踪节点
+	 * Bug Tracking Node
 	 */
 	public static class BugTrackingNode implements NodeAction {
 
 		@Override
 		public Map<String, Object> apply(OverAllState state) throws Exception {
-			// 在您的bug跟踪系统中创建票据
-			String ticketId = "BUG-12345";  // 将通过API创建
+			// Create ticket in your bug tracking system
+			String ticketId = "BUG-12345";  // Will be created via API
 
 			log.info("Created bug ticket: {}", ticketId);
 
 			return Map.of(
-					"search_results", List.of("已创建Bug票据 " + ticketId),
+					"search_results", List.of("Bug ticket created: " + ticketId),
 					"current_step", "bug_tracked",
 					"next_node", "draft_response"
 			);
@@ -345,7 +345,7 @@ public class QuickStartExample {
 	}
 
 	/**
-	 * 起草回复节点
+	 * Draft Response Node
 	 */
 	public static class DraftResponseNode implements NodeAction {
 
@@ -364,42 +364,42 @@ public class QuickStartExample {
 					.map(v -> (String) v)
 					.orElse("");
 
-			// 从原始状态数据按需格式化上下文
+			// Format context on demand from raw state data
 			List<String> contextSections = new ArrayList<>();
 
 			Optional<List<String>> searchResults = state.value("search_results")
 					.map(v -> (List<String>) v);
 			if (searchResults.isPresent()) {
-				// 为提示格式化搜索结果
+				// Format search results for prompt
 				List<String> docs = searchResults.get();
 				String formattedDocs = docs.stream()
 						.map(doc -> "- " + doc)
 						.collect(Collectors.joining("\n"));
-				contextSections.add("相关文档:\n" + formattedDocs);
+				contextSections.add("Related documentation:\n" + formattedDocs);
 			}
 
 			Optional<Map<String, Object>> customerHistory = state.value("customer_history")
 					.map(v -> (Map<String, Object>) v);
 			if (customerHistory.isPresent()) {
-				// 为提示格式化客户数据
+				// Format customer data for prompt
 				Map<String, Object> history = customerHistory.get();
-				contextSections.add("客户等级: " + history.getOrDefault("tier", "standard"));
+				contextSections.add("Customer tier: " + history.getOrDefault("tier", "standard"));
 			}
 
-			// 使用格式化的上下文构建提示
+			// Build prompt with formatted context
 			String draftPrompt = String.format("""
-					为这封客户邮件起草回复:
+					Draft a reply for this customer email:
 					%s
 
-					邮件意图: %s
-					紧急程度: %s
+					Email intent: %s
+					Urgency: %s
 
 					%s
 
-					指南:
-					- 专业且有帮助
-					- 解决他们的具体问题
-					- 在相关时使用提供的文档
+					Guidelines:
+					- Be professional and helpful
+					- Address their specific issue
+					- Use the provided documentation when relevant
 					""",
 					emailContent,
 					classification.getIntent(),
@@ -412,27 +412,27 @@ public class QuickStartExample {
 					.call()
 					.content();
 
-			// 根据紧急程度和意图确定是否需要人工审核
+			// Determine if human review is needed based on urgency and intent
 			boolean needsReview =
 					List.of("high", "critical").contains(classification.getUrgency()) ||
 							"complex".equals(classification.getIntent());
 
-			// 路由到适当的下一个节点
+			// Route to appropriate next node
 			String nextNode = needsReview ? "human_review" : "send_reply";
 
 			return Map.of(
-					"draft_response", response,  // 仅存储原始响应
+					"draft_response", response,  // Store only raw response
 					"next_node", nextNode
 			);
 		}
 	}
 
 	/**
-	 * 人工审核节点
+	 * Human Review Node
 	 * 
-	 * 注意：在 interruptBefore 模式下，中断是在编译配置中设置的（见 createEmailAgentGraph 方法）。
-	 * 节点本身不需要做任何特殊处理，只需要正常返回状态即可。
-	 * 当执行到此节点前时，Graph 会自动中断，等待人工输入。
+	 * Note: In interruptBefore mode, the interruption is set in the compile configuration (see createEmailAgentGraph method).
+	 * The node itself does not need any special handling, just return state normally.
+	 * When execution reaches before this node, the Graph will automatically interrupt and wait for human input.
 	 */
 	public static class HumanReviewNode implements NodeAction {
 
@@ -442,20 +442,20 @@ public class QuickStartExample {
 					.map(v -> (EmailClassification) v)
 					.orElse(new EmailClassification());
 
-			// 准备审核数据
+			// Prepare review data
 			Map<String, Object> reviewData = Map.of(
 					"email_id", state.value("email_id").map(v -> (String) v).orElse(""),
 					"original_email", state.value("email_content").map(v -> (String) v).orElse(""),
 					"draft_response", state.value("draft_response").map(v -> (String) v).orElse(""),
 					"urgency", classification.getUrgency(),
 					"intent", classification.getIntent(),
-					"action", "请审核并批准/编辑此响应"
+					"action", "Please review and approve/edit this response"
 			);
 
 			log.info("Waiting for human review: {}", reviewData);
 
-			// 返回审核数据和下一个节点
-			// 注意：在 interruptBefore 模式下，此节点在人工输入后才会执行
+			// Return review data and next node
+			// Note: In interruptBefore mode, this node is executed only after human input
 			return Map.of(
 					"review_data", reviewData,
 					"status", "waiting_for_review",
@@ -465,7 +465,7 @@ public class QuickStartExample {
 	}
 
 	/**
-	 * 发送回复节点
+	 * Send Reply Node
 	 */
 	public static class SendReplyNode implements NodeAction {
 
@@ -475,7 +475,7 @@ public class QuickStartExample {
 					.map(v -> (String) v)
 					.orElse("");
 
-			// 与邮件服务集成
+			// Integrate with email service
 			log.info("Sending reply: {}...", 
 					draftResponse.length() > 100 
 							? draftResponse.substring(0, 100) 
@@ -485,16 +485,16 @@ public class QuickStartExample {
 		}
 	}
 
-	// ==================== Graph 组装 ====================
+	// ==================== Graph Assembly ====================
 
 	/**
-	 * 创建邮件处理 Graph
+	 * Create Email Processing Graph
 	 */
 	public static CompiledGraph createEmailAgentGraph(ChatModel chatModel) throws GraphStateException {
-		// 配置 ChatClient
+		// Configure ChatClient
 		ChatClient.Builder chatClientBuilder = ChatClient.builder(chatModel);
 
-		// 创建节点
+		// Create nodes
 		var readEmail = node_async(new ReadEmailNode());
 		var classifyIntent = node_async(new ClassifyIntentNode(chatClientBuilder));
 		var searchDocumentation = node_async(new SearchDocumentationNode());
@@ -503,7 +503,7 @@ public class QuickStartExample {
 		var humanReview = node_async(new HumanReviewNode());
 		var sendReply = node_async(new SendReplyNode());
 
-		// 创建图
+		// Create graph
 		StateGraph workflow = new StateGraph(createKeyStrategyFactory())
 				.addNode("read_email", readEmail)
 				.addNode("classify_intent", classifyIntent)
@@ -513,12 +513,12 @@ public class QuickStartExample {
 				.addNode("human_review", humanReview)
 				.addNode("send_reply", sendReply);
 
-		// 添加基本边
+		// Add basic edges
 		workflow.addEdge(START, "read_email");
 		workflow.addEdge("read_email", "classify_intent");
 		workflow.addEdge("send_reply", END);
 
-		// 添加条件边（基于节点返回的 next_node）
+		// Add conditional edges (based on next_node returned by nodes)
 		workflow.addConditionalEdges("classify_intent",
 				edge_async(state -> {
 					return (String) state.value("next_node").orElse("draft_response");
@@ -550,49 +550,49 @@ public class QuickStartExample {
 		workflow.addEdge("search_documentation", "draft_response");
 		workflow.addEdge("bug_tracking", "draft_response");
 
-		// 配置持久化
+		// Configure persistence
 		var memory = new MemorySaver();
 		var compileConfig = CompileConfig.builder()
 				.saverConfig(SaverConfig.builder()
 						.register(memory)
 						.build())
-				.interruptBefore("human_review")  // 在人工审核前中断
+				.interruptBefore("human_review")  // Interrupt before human review
 				.build();
 
 		return workflow.compile(compileConfig);
 	}
 
-	// ==================== 测试方法 ====================
+	// ==================== Test Methods ====================
 
 	/**
-	 * 测试紧急账单问题
+	 * Test Urgent Billing Issue
 	 */
 	public static void testBillingIssue(CompiledGraph app) throws Exception {
-		log.info("=== 测试紧急账单问题 ===");
+		log.info("=== Test Urgent Billing Issue ===");
 
-		// 测试紧急账单问题
+		// Test urgent billing issue
 		Map<String, Object> initialState = Map.of(
-				"email_content", "我的订阅被收费两次了！这很紧急！",
+				"email_content", "My subscription was charged twice! This is urgent!",
 				"sender_email", "customer@example.com",
 				"email_id", "email_123",
 				"messages", new ArrayList<String>()
 		);
 
-		// 使用 thread_id 运行以实现持久化
+		// Run with thread_id for persistence
 		var config = RunnableConfig.builder()
 				.threadId("customer_123")
 				.build();
 
-		// 使用 stream 执行，直到中断点（human_review）
-		// 图将在 human_review 处暂停（因为配置了 interruptBefore）
+		// Execute with stream until interrupt point (human_review)
+		// Graph will pause at human_review (because interruptBefore is configured)
 		Flux<NodeOutput> stream = app.stream(initialState, config);
 		stream
-				.doOnNext(output -> log.info("节点输出: {}", output))
-				.doOnError(error -> log.error("执行错误: {}", error.getMessage()))
-				.doOnComplete(() -> log.info("流完成"))
+				.doOnNext(output -> log.info("Node output: {}", output))
+				.doOnError(error -> log.error("Execution error: {}", error.getMessage()))
+				.doOnComplete(() -> log.info("Stream completed"))
 				.blockLast();
 
-		// 获取当前状态，检查是否有草稿回复
+		// Get current state, check if draft reply exists
 		var currentState = app.getState(config);
 		Map<String, Object> stateData = currentState.state().data();
 		String draftResponse = (String) stateData.get("draft_response");
@@ -603,34 +603,34 @@ public class QuickStartExample {
 							: draftResponse);
 		}
 
-		// 准备好后，提供人工输入以恢复
-		// 使用 updateState 更新状态（interruptBefore 模式下，传入 null 作为节点 ID）
+		// When ready, provide human input to resume
+		// Use updateState to update state (in interruptBefore mode, pass null as node ID)
 		var updatedConfig = app.updateState(config, Map.of(
 				"approved", true,
-				"edited_response", "我们对重复收费深表歉意。我已经立即启动了退款..."
+				"edited_response", "We sincerely apologize for the duplicate charge. I have immediately initiated a refund..."
 		), null);
 
-		// 继续执行（input 为 null，使用之前的状态）
+		// Continue execution (input is null, use previous state)
 		app.stream(null, updatedConfig)
-				.doOnNext(output -> log.info("节点输出: {}", output))
-				.doOnError(error -> log.error("执行错误: {}", error.getMessage()))
-				.doOnComplete(() -> log.info("流完成"))
+				.doOnNext(output -> log.info("Node output: {}", output))
+				.doOnError(error -> log.error("Execution error: {}", error.getMessage()))
+				.doOnComplete(() -> log.info("Stream completed"))
 				.blockLast();
 
-		// 获取最终状态
+		// Get final state
 		var finalState = app.getState(updatedConfig);
 		String status = (String) finalState.state().data().get("status");
 		log.info("Email sent successfully! Status: {}", status);
 	}
 
 	/**
-	 * 测试简单问题
+	 * Test Simple Question
 	 */
 	public static void testSimpleQuestion(CompiledGraph app) {
-		log.info("=== 测试简单问题 ===");
+		log.info("=== Test Simple Question ===");
 
 		Map<String, Object> initialState = Map.of(
-				"email_content", "如何重置我的密码？",
+				"email_content", "How do I reset my password?",
 				"sender_email", "user@example.com",
 				"email_id", "email_456",
 				"messages", new ArrayList<String>()
@@ -640,26 +640,26 @@ public class QuickStartExample {
 				.threadId("user_456")
 				.build();
 
-		// invoke 返回 Optional<OverAllState>，需要使用 orElseThrow() 获取结果
+		// invoke returns Optional<OverAllState>, use orElseThrow() to get result
 		var result = app.invoke(initialState, config).orElseThrow();
 		log.info("Simple question processed. Status: {}", result.data().get("status"));
 	}
 
 	/**
-	 * 主方法
+	 * Main Method
 	 */
 	public static void main(String[] args) throws Exception {
 		log.info("========================================");
-		log.info("Graph 工作流编排快速入门示例");
+		log.info("Graph Workflow Orchestration Quick Start Example");
 		log.info("========================================\n");
 
-		// 注意：实际使用时需要提供 ChatModel 实例
-		// 创建 DashScope API 实例
+		// Note: A ChatModel instance must be provided for actual usage
+		// Create DashScope API instance
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
 				.apiKey(System.getenv("AI_DASHSCOPE_API_KEY"))
 				.build();
 
-		// 创建 ChatModel
+		// Create ChatModel
 		ChatModel chatModel = DashScopeChatModel.builder()
 				.dashScopeApi(dashScopeApi)
 				.build();

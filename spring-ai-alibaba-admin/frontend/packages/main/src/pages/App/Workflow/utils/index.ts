@@ -7,7 +7,7 @@ import {
   IValueType,
   IVarTreeItem,
   IWorkFlowNode,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import {
   IIteratorNodeParam,
   ISelectedModelParams,

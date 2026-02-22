@@ -5,7 +5,7 @@ import {
   useNodesOutputParams,
   useNodesReadOnly,
   useReactFlowStore,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { memo, useCallback, useMemo } from 'react';
 import { useWorkflowAppStore } from '../../context/WorkflowAppProvider';
 import { IJudgeNodeData, IJudgeNodeParam } from '../../types';

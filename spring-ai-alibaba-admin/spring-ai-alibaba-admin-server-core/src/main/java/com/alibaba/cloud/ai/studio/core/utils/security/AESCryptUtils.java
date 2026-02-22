@@ -31,7 +31,7 @@ public class AESCryptUtils {
 	private static final String AES_CIPHER = "AES/ECB/PKCS5Padding";
 
 	/** AES encryption key */
-	public static final String AES_KEY = "agentscope_5qAI8#nO-d@xK7$kdF+Dh";
+	public static final String AES_KEY = "cordondata_5qAI8#nO-d@xK7$kdF+Dh";
 
 	/**
 	 * Encrypts a string using AES algorithm.

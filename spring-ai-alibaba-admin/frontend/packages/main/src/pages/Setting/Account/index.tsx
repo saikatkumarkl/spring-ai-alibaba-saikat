@@ -58,7 +58,7 @@ export default function Account() {
   };
 
   const handleOpenEditModal = (user: IAccount) => {
-    setEditingUser({ key: user.account_id, name: user.username });
+    setEditingUser({ key: user.account_id, name: user.username, type: user.type });
     setIsUserModalOpen(true);
   };
 

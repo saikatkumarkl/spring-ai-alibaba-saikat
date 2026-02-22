@@ -61,7 +61,7 @@ const DifyConverter: React.FC = () => {
 
       // Prepare request parameters
       const params = {
-        dependencies: 'spring-ai-alibaba-graph,web,spring-ai-starter-model-ollama',
+        dependencies: 'cordondata-graph,web,spring-ai-starter-model-ollama',
         appMode: 'workflow',
         dslDialectType: 'dify',
         type: 'maven-project',
@@ -86,7 +86,7 @@ const DifyConverter: React.FC = () => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'spring-ai-alibaba-demo.zip';
+      link.download = 'cordondata-demo.zip';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -97,7 +97,7 @@ const DifyConverter: React.FC = () => {
         'Project generated',
         'Project Type: Maven Project',
         'Language: Java 17',
-        'Includes Dependencies: spring-ai-alibaba-graph, web, spring-ai-starter-model-ollama',
+        'Includes Dependencies: cordondata-graph, web, spring-ai-starter-model-ollama',
         'Application Mode: workflow'
       ]);
 

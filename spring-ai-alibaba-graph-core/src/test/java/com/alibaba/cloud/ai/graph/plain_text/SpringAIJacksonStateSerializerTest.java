@@ -56,29 +56,29 @@ class SpringAIJacksonStateSerializerTest {
 
 	@Test
 	void testSystemMessageSerialization() throws Exception {
-		// 创建测试数据
+		//Create test data
 		Map<String, Object> metadata = new HashMap<>();
 		metadata.put("source", "test");
 		metadata.put("priority", 1);
 
 		SystemMessage original = SystemMessage.builder().text("You are a helpful assistant").metadata(metadata).build();
 
-		// 创建包含SystemMessage的状态数据
+		//Create status data containing SystemMessage
 		Map<String, Object> data = new HashMap<>();
 		data.put("systemMessage", original);
 
-		// 序列化
+		//serialization
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(baos);
 		serializer.writeData(data, oos);
 		oos.flush();
 
-		// 反序列化
+		//Deserialization
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 		ObjectInputStream ois = new ObjectInputStream(bais);
 		Map<String, Object> deserializedData = serializer.readData(ois);
 
-		// 验证
+		//verify
 		assertNotNull(deserializedData);
 		assertTrue(deserializedData.containsKey("systemMessage"));
 
@@ -91,17 +91,17 @@ class SpringAIJacksonStateSerializerTest {
 
 	@Test
 	void testUserMessageSerialization() throws Exception {
-		// 创建测试数据
+		//Create test data
 		Map<String, Object> metadata = new HashMap<>();
 		metadata.put("user_id", "12345");
 		metadata.put("session_id", "session_001");
 
 		UserMessage original = UserMessage.builder().text("Hello, how can I help you?").metadata(metadata).build();
 
-		// 直接序列化和反序列化UserMessage对象
+		//Directly serialize and deserialize UserMessage objects
 		UserMessage deserialized = serializeAndDeserialize(original);
 
-		// 验证
+		//verify
 		assertNotNull(deserialized);
 		assertEquals(original.getText(), deserialized.getText());
 		assertEquals(original.getMetadata(), deserialized.getMetadata());
@@ -110,7 +110,7 @@ class SpringAIJacksonStateSerializerTest {
 
 	@Test
 	void testAssistantMessageSerialization() throws Exception {
-		// 创建测试数据
+		//Create test data
 		Map<String, Object> metadata = new HashMap<>();
 		metadata.put("model", "gpt-3.5-turbo");
 		metadata.put("temperature", 0.7);
@@ -120,10 +120,10 @@ class SpringAIJacksonStateSerializerTest {
 			.properties(metadata)
 			.build();
 
-		// 直接序列化和反序列化AssistantMessage对象
+		//Directly serialize and deserialize AssistantMessage objects
 		AssistantMessage deserialized = serializeAndDeserialize(original);
 
-		// 验证
+		//verify
 		assertNotNull(deserialized);
 		assertEquals(original.getText(), deserialized.getText());
 		assertEquals(original.getMetadata(), deserialized.getMetadata());
@@ -132,12 +132,12 @@ class SpringAIJacksonStateSerializerTest {
 
 	@Test
 	void testToolResponseMessageSerialization() throws Exception {
-		// 创建测试数据 - 使用正确的ToolResponse结构
+		//Create test data - use correct ToolResponse structure
 		Map<String, Object> metadata = new HashMap<>();
 		metadata.put("tool_execution_id", "exec_123");
 		metadata.put("execution_time", 150);
 
-		// 创建ToolResponse对象列表 - 根据实际ToolResponse的构造方式
+		//Create a list of ToolResponse objects - based on how the actual ToolResponse is constructed
 		List<ToolResponseMessage.ToolResponse> responses = List.of(
 				new ToolResponseMessage.ToolResponse("tool_call_1", "calculator", "{\"result\": 42}"),
 				new ToolResponseMessage.ToolResponse("tool_call_2", "weather", "{\"temperature\": 25}"));
@@ -147,10 +147,10 @@ class SpringAIJacksonStateSerializerTest {
 			.metadata(metadata)
 			.build();
 
-		// 直接序列化和反序列化ToolResponseMessage对象
+		//Directly serialize and deserialize ToolResponseMessage objects
 		ToolResponseMessage deserialized = serializeAndDeserialize(original);
 
-		// 验证
+		//verify
 		assertNotNull(deserialized);
 		assertEquals(original.getResponses().size(), deserialized.getResponses().size());
 		assertEquals(original.getMetadata(), deserialized.getMetadata());
@@ -171,7 +171,7 @@ class SpringAIJacksonStateSerializerTest {
 
 	@Test
 	void testDocumentSerialization() throws Exception {
-		// 创建测试数据
+		//Create test data
 		Map<String, Object> metadata = new HashMap<>();
 		metadata.put("source", "file.pdf");
 		metadata.put("page", 1);
@@ -184,10 +184,10 @@ class SpringAIJacksonStateSerializerTest {
 			.score(0.95)
 			.build();
 
-		// 直接序列化和反序列化Document对象
+		//Directly serialize and deserialize Document objects
 		Document deserialized = serializeAndDeserialize(original);
 
-		// 验证
+		//verify
 		assertNotNull(deserialized);
 		assertEquals(original.getId(), deserialized.getId());
 		assertEquals(original.getText(), deserialized.getText());
@@ -197,17 +197,17 @@ class SpringAIJacksonStateSerializerTest {
 
 	@Test
 	void testDocumentWithoutOptionalFields() throws Exception {
-		// 测试没有可选字段的 Document
+		//Testing a Document without optional fields
 		Document original = Document.builder()
 			.id("minimal_doc")
 			.text("Minimal document")
 			.metadata(new HashMap<>())
 			.build();
 
-		// 直接序列化和反序列化Document对象
+		//Directly serialize and deserialize Document objects
 		Document deserialized = serializeAndDeserialize(original);
 
-		// 验证
+		//verify
 		assertEquals(original.getId(), deserialized.getId());
 		assertEquals(original.getText(), deserialized.getText());
 		assertNull(deserialized.getScore());
@@ -217,7 +217,7 @@ class SpringAIJacksonStateSerializerTest {
 
 	@Test
 	void testMultipleMessagesSerialization() throws Exception {
-		// 测试多种消息类型的混合序列化
+		//Test mixed serialization of multiple message types
 		SystemMessage systemMessage = SystemMessage.builder()
 			.text("You are a helpful assistant")
 			.metadata(Map.of("role", "system"))
@@ -232,17 +232,17 @@ class SpringAIJacksonStateSerializerTest {
 			.score(0.8)
 			.build();
 
-		// 创建包含多种类型的状态数据
+		//Create status data that contains multiple types
 		Map<String, Object> data = new HashMap<>();
 		data.put("system", systemMessage);
 		data.put("user", userMessage);
 		data.put("doc", document);
 		data.put("messages", List.of(systemMessage, userMessage));
 
-		// 序列化和反序列化
+		//Serialization and deserialization
 		Map<String, Object> deserializedData = serializeAndDeserialize(data);
 
-		// 验证各个对象
+		//Verify individual objects
 		SystemMessage deserializedSystem = (SystemMessage) deserializedData.get("system");
 		assertEquals(systemMessage.getText(), deserializedSystem.getText());
 
@@ -262,7 +262,7 @@ class SpringAIJacksonStateSerializerTest {
 
 	@Test
 	void testComplexMetadataSerialization() throws Exception {
-		// 测试复杂元数据的序列化
+		//Test serialization of complex metadata
 		Map<String, Object> metadata = new HashMap<>();
 		metadata.put("string_field", "test_value");
 		metadata.put("number_field", 42);
@@ -275,10 +275,10 @@ class SpringAIJacksonStateSerializerTest {
 
 		UserMessage original = UserMessage.builder().text("Message with complex metadata").metadata(metadata).build();
 
-		// 直接序列化和反序列化UserMessage对象
+		//Directly serialize and deserialize UserMessage objects
 		UserMessage deserialized = serializeAndDeserialize(original);
 
-		// 验证
+		//verify
 		assertNotNull(deserialized);
 		assertEquals(original.getText(), deserialized.getText());
 
@@ -298,22 +298,22 @@ class SpringAIJacksonStateSerializerTest {
 	}
 
 	private <T> T serializeAndDeserialize(T object) throws IOException, ClassNotFoundException {
-		// 将对象包装在Map中进行序列化
+		//Wrap object in Map for serialization
 		Map<String, Object> data = new HashMap<>();
 		data.put("object", object);
 
-		// 序列化
+		//serialization
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(baos);
 		serializer.writeData(data, oos);
 		oos.flush();
 
-		// 反序列化
+		//Deserialization
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 		ObjectInputStream ois = new ObjectInputStream(bais);
 		Map<String, Object> deserializedData = serializer.readData(ois);
 
-		// 返回反序列化的对象
+		//Returns the deserialized object
 		@SuppressWarnings("unchecked")
 		T result = (T) deserializedData.get("object");
 		return result;

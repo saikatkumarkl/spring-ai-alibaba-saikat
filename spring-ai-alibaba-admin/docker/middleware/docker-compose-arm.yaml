@@ -22,7 +22,7 @@ services:
       timeout: 10s
       retries: 10
     networks:
-      - saa-network
+      - cordondata-network
 
   # ============================
   # OpenSearch (RAG-ready) + UI
@@ -60,7 +60,7 @@ services:
       retries: 5
       start_period: 60s
     networks:
-      - saa-network
+      - cordondata-network
 
   opensearch-dashboards:
     image: opensearchproject/opensearch-dashboards:3.4.0
@@ -75,7 +75,7 @@ services:
       opensearch:
         condition: service_healthy
     networks:
-      - saa-network
+      - cordondata-network
 
   nacos:
     container_name: nacos
@@ -93,7 +93,7 @@ services:
       - ./nacos/logs:/home/nacos/logs
       - ./nacos/data:/home/nacos/data
     networks:
-      - saa-network
+      - cordondata-network
 
   redis:
     restart: always
@@ -107,7 +107,7 @@ services:
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
     networks:
-      - saa-network
+      - cordondata-network
 
   rmq-namesrv:
     image: apache/rocketmq:5.3.2
@@ -121,7 +121,7 @@ services:
     ports:
       - "9876:9876"
     networks:
-      - saa-network
+      - cordondata-network
     command: sh mqnamesrv
     healthcheck:
       test: ["CMD", "sh", "-c", "ps aux | grep mqnamesrv | grep -v grep || exit 1"]
@@ -148,7 +148,7 @@ services:
       rmq-namesrv:
         condition: service_healthy
     networks:
-      - saa-network
+      - cordondata-network
     command: sh mqbroker
     healthcheck:
       test: ["CMD", "sh", "-c", "ps aux | grep mqbroker | grep -v grep || exit 1"]
@@ -168,7 +168,7 @@ services:
       - NAMESRV_ADDR=rmq-namesrv:9876
       - HEAP_OPTS=-Xms128M -Xmx256M -Xmn128M
     networks:
-      - saa-network
+      - cordondata-network
     depends_on:
       rmq-broker:
         condition: service_healthy
@@ -190,7 +190,7 @@ services:
       rmq-broker:
         condition: service_healthy
     networks:
-      - saa-network
+      - cordondata-network
     entrypoint: >
       sh -c "
         echo 'Waiting for RocketMQ to be ready...' &&
@@ -200,8 +200,8 @@ services:
           sleep 10
         done &&
         echo 'Creating topic...' &&
-        sh mqadmin updateTopic -n rmq-namesrv:9876 -t topic_saa_studio_document_index -c DefaultCluster -a +message.type=NORMAL &&
-        sh mqadmin updateSubGroup -n rmq-namesrv:9876 -g group_saa_studio_document_index -c DefaultCluster &&
+        sh mqadmin updateTopic -n rmq-namesrv:9876 -t topic_cordondata_document_index -c DefaultCluster -a +message.type=NORMAL &&
+        sh mqadmin updateSubGroup -n rmq-namesrv:9876 -g group_cordondata_document_index -c DefaultCluster &&
         echo 'Verifying topic creation.' &&
         sh mqadmin topicList -n rmq-namesrv:9876 &&
         echo 'Topic creation completed'"
@@ -228,7 +228,7 @@ services:
   #     retries: 12
   #     start_period: 15s
   #   networks:
-  #     - saa-network
+  #     - cordondata-network
 
   # ollama-init:
   #   image: ollama/ollama:latest
@@ -245,14 +245,48 @@ services:
   #     ollama:
   #       condition: service_healthy
   #   networks:
-  #     - saa-network
+  #     - cordondata-network
+
+  # ============================
+  # Keycloak (Identity & Access Management)
+  # ============================
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: keycloak
+    restart: always
+    ports:
+      - "8180:8080"
+    environment:
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://postgres:5432/keycloak
+      - KC_DB_USERNAME=admin
+      - KC_DB_PASSWORD=admin
+      - KC_HOSTNAME_STRICT=false
+      - KC_HTTP_ENABLED=true
+      - KC_PROXY_HEADERS=xforwarded
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    command: start-dev --import-realm --health-enabled=true
+    volumes:
+      - ./keycloak/realm-config.json:/opt/keycloak/data/import/realm-config.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - cordondata-network
 
   backend:
     build:
       context: ../..
       dockerfile: docker/middleware/Dockerfile.backend
-    image: spring-ai-alibaba-admin-server:latest
-    container_name: saa-backend
+    image: cordondata-admin-server:latest
+    container_name: cordondata-backend
     restart: always
     ports:
       - "8080:8080"
@@ -314,9 +348,14 @@ services:
       # NOTE: Changing these requires re-indexing (delete the _rag index, then re-sync).
       - RAG_VECTOR_MODE=${RAG_VECTOR_MODE:-on_disk}
       - RAG_COMPRESSION_LEVEL=${RAG_COMPRESSION_LEVEL:-32x}
+      # Keycloak SSO
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+      - KEYCLOAK_PUBLIC_URL=http://localhost:8180
+      - KEYCLOAK_REALM=cordondata
+      - KEYCLOAK_ENABLED=true
     volumes:
       - ./model-config-ollama.yml:/app/model-config.yml:ro
-      - saa_storage:/home/spring/saa/storage
+      - cordondata_storage:/home/spring/cordondata/storage
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -331,7 +370,7 @@ services:
       # ollama:  # Commented out — using remote Ollama
       #   condition: service_healthy
     networks:
-      - saa-network
+      - cordondata-network
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
       interval: 30s
@@ -370,7 +409,7 @@ services:
       opensearch:
         condition: service_healthy
     networks:
-      - saa-network
+      - cordondata-network
 
   manifoldcf-init:
     image: curlimages/curl:8.5.0
@@ -411,14 +450,67 @@ services:
       manifoldcf:
         condition: service_healthy
     networks:
-      - saa-network
+      - cordondata-network
+
+  # ============================
+  # Chatbot Backend (Spring Boot)
+  # ============================
+  chatbot-backend:
+    build:
+      context: ./chatbot
+      dockerfile: Dockerfile.backend
+    container_name: chatbot-backend
+    restart: always
+    environment:
+      - SERVER_PORT=8081
+      - ADMIN_API_BASE_URL=http://backend:8080
+      - KEYCLOAK_ENABLED=true
+      - KEYCLOAK_AUTH_SERVER_URL=http://keycloak:8080
+      - KEYCLOAK_PUBLIC_URL=http://localhost:8180
+      - KEYCLOAK_REALM=cordondata
+      - KEYCLOAK_ADMIN_USERNAME=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - SPRING_AI_OLLAMA_BASE_URL=http://host.docker.internal:11434
+    ports:
+      - "8081:8081"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/chatui/index.html"]
+      interval: 30s
+      timeout: 3s
+      start_period: 60s
+      retries: 3
+    networks:
+      - cordondata-network
+
+  # ============================
+  # Chatbot Frontend (React / Nginx)
+  # ============================
+  chatbot-frontend:
+    build:
+      context: ../../../../spring-ai-alibaba-saikat-chata/frontend
+      dockerfile: Dockerfile
+    container_name: chatbot-frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - chatbot-backend
+    networks:
+      - cordondata-network
 
 volumes:
   opensearch_data:
     driver: local
-  saa_storage:
+  cordondata_storage:
     driver: local
 
 networks:
-  saa-network:
+  cordondata-network:
     driver: bridge

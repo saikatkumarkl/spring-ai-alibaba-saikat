@@ -42,10 +42,10 @@ class StreamAgentTest {
 
 	@BeforeEach
 	void setUp() {
-		// 先创建 DashScopeApi 实例
+		//First create a DashScopeApi instance
 		DashScopeApi dashScopeApi = DashScopeApi.builder().apiKey(System.getenv("AI_DASHSCOPE_API_KEY")).build();
 
-		// 创建 DashScope ChatModel 实例
+		//Create DashScope ChatModel instance
 		this.chatModel = DashScopeChatModel.builder().dashScopeApi(dashScopeApi).build();
 	}
 
@@ -54,30 +54,30 @@ class StreamAgentTest {
 		ReactAgent proseWriterAgent = ReactAgent.builder()
 			.name("prose_writer_agent")
 			.model(chatModel)
-			.description("可以写散文文章。")
-			.instruction("你是一个知名的作家，擅长写散文。请根据用户的提问进行回答。")
+			.description("Can write prose articles.")
+			.instruction("You are a well-known writer, good at writing prose.Please answer based on the user's questions.")
 			.outputKey("prose_article")
 			.build();
 
 		ReactAgent poemWriterAgent = ReactAgent.builder()
 			.name("poem_writer_agent")
 			.model(chatModel)
-			.description("可以写现代诗。")
-			.instruction("你是一个知名的诗人，擅长写现代诗。请根据用户的提问进行回答。")
+			.description("Can write modern poetry.")
+			.instruction("You are a well-known poet who is good at writing modern poetry.Please answer based on the user's questions.")
 			.outputKey("poem_article")
 			.build();
 
 		LlmRoutingAgent blogAgent = LlmRoutingAgent.builder()
 			.name("blog_agent")
 			.model(chatModel)
-			.description("可以根据用户给定的主题写文章或作诗。")
+			.description("You can write articles or poems based on topics given by the user.")
 			.subAgents(List.of(proseWriterAgent, poemWriterAgent))
 			.build();
 
 		try {
 			List<NodeOutput> outputs = new ArrayList<>();
 
-			Flux<NodeOutput> result = blogAgent.stream("帮我写一个100字左右的散文");
+			Flux<NodeOutput> result = blogAgent.stream("Help me write a prose of about 100 words");
 			result.doOnNext(nodeOutput -> {
 				System.out.println(nodeOutput);
 				outputs.add(nodeOutput);
@@ -99,13 +99,13 @@ class StreamAgentTest {
 		ReactAgent proseWriterAgent = ReactAgent.builder()
 				.name("prose_writer_agent")
 				.model(chatModel)
-				.description("可以写散文文章。")
-				.instruction("你是一个知名的作家，擅长写散文。请根据用户的提问进行回答。")
+				.description("Can write prose articles.")
+				.instruction("You are a well-known writer, good at writing prose.Please answer based on the user's questions.")
 				.build();
 
 		List<Message> outputs = new ArrayList<>();
 
-		Flux<Message> result = proseWriterAgent.streamMessages("帮我写一个100字左右的散文");
+		Flux<Message> result = proseWriterAgent.streamMessages("Help me write a prose of about 100 words");
 		result.doOnNext(message -> {
 			System.out.println(message);
 			outputs.add(message);
@@ -119,29 +119,29 @@ class StreamAgentTest {
 		ReactAgent proseWriterAgent = ReactAgent.builder()
 				.name("prose_writer_agent")
 				.model(chatModel)
-				.description("可以写散文文章。")
-				.instruction("你是一个知名的作家，只写散文，不是散文将直接拒绝写作。请根据用户的提问进行回答。")
+				.description("Can write prose articles.")
+				.instruction("You are a well-known writer who only writes prose. If you do not write prose, you will directly refuse to write.Please answer based on the user's questions.")
 				.outputKey("prose_article")
 				.build();
 
 		ReactAgent poemWriterAgent = ReactAgent.builder()
 				.name("poem_writer_agent")
 				.model(chatModel)
-				.description("可以写现代诗。")
-				.instruction("你是一个知名的诗人，只写现代诗，不是现代诗将直接拒绝写作。请根据用户的提问进行回答。")
+				.description("Can write modern poetry.")
+				.instruction("You are a well-known poet who only writes modern poetry. If you do not write modern poetry, you will directly refuse to write.Please answer based on the user's questions.")
 				.outputKey("poem_article")
 				.build();
 
 		LlmRoutingAgent writerAgent = LlmRoutingAgent.builder()
 				.name("writer_agent")
 				.model(chatModel)
-				.description("可以根据用户给定的主题写文章或作诗。")
+				.description("You can write articles or poems based on topics given by the user.")
 				.subAgents(List.of(proseWriterAgent, poemWriterAgent))
 				.build();
 
 		List<Message> outputs = new ArrayList<>();
 
-		Flux<Message> result = writerAgent.streamMessages("帮我写一个100字左右的散文");
+		Flux<Message> result = writerAgent.streamMessages("Help me write a prose of about 100 words");
 		result.doOnNext(message -> {
 			System.out.println(message);
 			outputs.add(message);
@@ -155,23 +155,23 @@ class StreamAgentTest {
 		ReactAgent oddAgent = ReactAgent.builder()
 				.name("return_agent0")
 				.model(chatModel)
-				.description("奇数 Agent")
-				.instruction("如果是奇数，返回数字111。除此之外不返回任何信息。")
+				.description("Odd Agent")
+				.instruction("If it is an odd number, the number 111 is returned.Otherwise, no information is returned.")
 				.build();
 
 		ReactAgent evenAgent = ReactAgent.builder()
 				.name("return_agent1")
 				.model(chatModel)
-				.description("偶数 Agent")
-				.instruction("如果是偶数，返回数字222。除此之外不返回任何信息。")
+				.description("Even Agent")
+				.instruction("If it is an even number, the number 222 is returned.Otherwise, no information is returned.")
 				.build();
 
 		ReactAgent numberAgent = ReactAgent.builder()
 				.name("blog_agent")
 				.model(chatModel)
-				.instruction("根据用户输入的数字交给对应的Agent处理。" +
-						"调用完成后，如果结果是 111，则输出333；如果结果是222，则输出444。" +
-						"不要再进行任何额外推理或工具调用。")
+				.instruction("The number entered by the user is handed over to the corresponding Agent for processing." +
+						"After the call is completed, if the result is 111, 333 is output; if the result is 222, 444 is output." +
+						"Don't make any additional reasoning or tool calls.")
 				.tools(List.of(
 						AgentTool.getFunctionToolCallback(oddAgent),
 						AgentTool.getFunctionToolCallback(evenAgent)

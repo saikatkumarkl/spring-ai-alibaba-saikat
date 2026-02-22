@@ -180,7 +180,7 @@ public class IteratorExecuteProcessor extends AbstractExecuteProcessor {
 
 			if (context.getTaskStatus().equals(NodeStatusEnum.FAIL.getCode())) {
 				nodeResult.setNodeStatus(NodeStatusEnum.FAIL.getCode());
-				nodeResult.setError(ErrorCode.WORKFLOW_EXECUTE_ERROR.toError("主流程已失败，循环节点失败"));
+				nodeResult.setError(ErrorCode.WORKFLOW_EXECUTE_ERROR.toError("The main process has failed and the loop node failed"));
 				break;
 			}
 

@@ -1,5 +1,5 @@
 import $i18n from '@/i18n';
-import { INodeSchema, uniqueId } from '@spark-ai/flow';
+import { INodeSchema, uniqueId } from '@cordondata/flow';
 import { IVariableHandleNodeData, IVariableHandleNodeParam } from '../../types';
 import { checkInputParams } from '../../utils';
 

@@ -14,7 +14,7 @@ RUN groupadd -r spring && useradd -r -g spring spring
 COPY spring-ai-alibaba-admin-server-start/target/spring-ai-alibaba-admin-server-start.jar app.jar
 
 # Create log + storage directories and change ownership
-RUN mkdir -p /home/spring/logs /home/spring/saa/storage \
+RUN mkdir -p /home/spring/logs /home/spring/cordondata/storage \
              /home/spring/APP_NAME_IS_UNDEFINED/logs/trace && \
     chown -R spring:spring /home/spring && \
     chown spring:spring app.jar && \

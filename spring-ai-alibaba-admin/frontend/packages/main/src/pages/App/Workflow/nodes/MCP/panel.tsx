@@ -7,7 +7,7 @@ import {
   useNodesOutputParams,
   useNodesReadOnly,
   useReactFlowStore,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { useSetState } from 'ahooks';
 import { Flex, Spin } from 'antd';
 import { memo, useEffect, useMemo } from 'react';

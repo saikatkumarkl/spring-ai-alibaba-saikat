@@ -1,16 +1,16 @@
-# Spring AI Alibaba Admin
+# CordonData Admin
 
-> Spring AI Alibaba Repo: https://github.com/saikatkumarkl/spring-ai-alibaba-saikat
+> CordonData Repo: https://github.com/saikatkumarkl/spring-ai-alibaba-saikat
 >
-> Spring AI Alibaba Website: https://java2ai.com
+> CordonData Website: https://java2ai.com
 >
-> Spring AI Alibaba Website Repo: https://github.com/springaialibaba/spring-ai-alibaba-website
+> CordonData Website Repo: https://github.com/springaialibaba/spring-ai-alibaba-website
 
 English | [Chinese](./README-zh.md) 
 
 ## Project Background
 
-Agent Studio is an AI Agent development and evaluation platform based on Spring AI Alibaba, designed to provide developers and enterprises with a complete AI Agent lifecycle management solution. The platform supports a complete workflow from Prompt engineering, dataset management, evaluator configuration to experiment execution and result analysis, helping users quickly build, test, and optimize AI Agent applications.
+Agent Studio is an AI Agent development and evaluation platform based on CordonData, designed to provide developers and enterprises with a complete AI Agent lifecycle management solution. The platform supports a complete workflow from Prompt engineering, dataset management, evaluator configuration to experiment execution and result analysis, helping users quickly build, test, and optimize AI Agent applications.
 
 ## Core Features
 
@@ -135,25 +135,25 @@ npm run dev
 
 Open your browser and visit http://localhost:8000 to use the SAA Admin platform.
 
-At this point, you can already manage, debug, evaluate, and observe prompts on the platform. If you expect your Spring AI Alibaba Agent application to integrate with Nacos for prompt loading and dynamic updates, and observe the online running status, you can refer to step 6 to configure your AI Agent application.
+At this point, you can already manage, debug, evaluate, and observe prompts on the platform. If you expect your CordonData Agent application to integrate with Nacos for prompt loading and dynamic updates, and observe the online running status, you can refer to step 6 to configure your AI Agent application.
 
 ### 6. Connect Your AI Agent Application
-In your Spring AI Alibaba Agent application, add the following dependencies
+In your CordonData Agent application, add the following dependencies
 ```xml
 <dependencies>
-    <!-- Introduce spring ai alibaba agent nacos proxy module -->
+    <!-- Introduce cordondata agent nacos proxy module -->
     <dependency>
         <groupId>com.alibaba.cloud.ai</groupId>
-        <artifactId>spring-ai-alibaba-agent-nacos</artifactId>
-        <version>{spring.ai.alibaba.version}</version>
+        <artifactId>cordondata-agent-nacos</artifactId>
+        <version>{cordondata.version}</version>
     </dependency>
 
     <!-- Introduce observability module -->
 
     <dependency>
         <groupId>com.alibaba.cloud.ai</groupId>
-        <artifactId>spring-ai-alibaba-autoconfigure-arms-observation</artifactId>
-        <version>{spring.ai.alibaba.version}</version>
+        <artifactId>cordondata-autoconfigure-arms-observation</artifactId>
+        <version>{cordondata.version}</version>
     </dependency>
     
     
@@ -191,10 +191,10 @@ In your Spring AI Alibaba Agent application, add the following dependencies
 
 Specify Nacos address and promptKey
 ```yaml
-    spring.ai.alibaba.agent.proxy.nacos.serverAddr={replace nacos address, example: 127.0.0.1:8848}
-    spring.ai.alibaba.agent.proxy.nacos.username={replace nacos username, example: nacos}
-    spring.ai.alibaba.agent.proxy.nacos.password={replace nacos password, example: nacos}
-    spring.ai.alibaba.agent.proxy.nacos.promptKey={replace with promptKey, example: mse-nacos-helper} 
+    cordondata.agent.proxy.nacos.serverAddr={replace nacos address, example: 127.0.0.1:8848}
+    cordondata.agent.proxy.nacos.username={replace nacos username, example: nacos}
+    cordondata.agent.proxy.nacos.password={replace nacos password, example: nacos}
+    cordondata.agent.proxy.nacos.promptKey={replace with promptKey, example: mse-nacos-helper} 
 ```
 
 Set observability parameters
@@ -212,10 +212,10 @@ Set observability parameters
     spring.ai.chat.observations.log-completion=true
     spring.ai.image.observations.log-prompt=true
     spring.ai.vectorstore.observations.log-query-response=true
-    spring.ai.alibaba.arms.enabled=true
-    spring.ai.alibaba.arms.tool.enabled=true
-    spring.ai.alibaba.arms.model.capture-input=true
-    spring.ai.alibaba.arms.model.capture-output=true
+    cordondata.arms.enabled=true
+    cordondata.arms.tool.enabled=true
+    cordondata.arms.model.capture-input=true
+    cordondata.arms.model.capture-output=true
 ```
 
 ## License

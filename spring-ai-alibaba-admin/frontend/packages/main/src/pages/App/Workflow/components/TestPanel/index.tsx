@@ -5,7 +5,7 @@ import {
   SelectWithDesc,
   useFlowDebugInteraction,
   useStore,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { message } from 'antd';
 import { useMemo, useState } from 'react';
 import { useWorkflowAppStore } from '../../context/WorkflowAppProvider';

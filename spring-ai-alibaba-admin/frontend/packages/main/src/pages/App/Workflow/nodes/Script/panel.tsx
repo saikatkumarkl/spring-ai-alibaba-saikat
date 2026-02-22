@@ -1,6 +1,6 @@
 import $i18n from '@/i18n';
 import { Button, IconFont, Select } from '@spark-ai/design';
-import type { INodeDataOutputParamItem } from '@spark-ai/flow';
+import type { INodeDataOutputParamItem } from '@cordondata/flow';
 import {
   CODE_DEMO_MAP,
   CustomInputsControl,
@@ -11,7 +11,7 @@ import {
   useNodesOutputParams,
   useNodesReadOnly,
   useReactFlowStore,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { Flex } from 'antd';
 import { memo, useCallback, useMemo, useState } from 'react';
 import ErrorCatchForm from '../../components/ErrorCatchForm';

@@ -1,10 +1,10 @@
-# Spring AI Alibaba Admin
+# CordonData Admin
 
-> Spring AI Alibaba Repo: https://github.com/alibaba/spring-ai-alibaba
+> CordonData Repo: https://github.com/alibaba/spring-ai-alibaba
 >
-> Spring AI Alibaba Website: https://java2ai.com
+> CordonData Website: https://java2ai.com
 >
-> Spring AI Alibaba Website Repo: https://github.com/springaialibaba/spring-ai-alibaba-website
+> CordonData Website Repo: https://github.com/springaialibaba/spring-ai-alibaba-website
 
 [English](./README.md) | 中文
 
@@ -12,7 +12,7 @@
 
 ## 项目背景
 
-Spring AI Alibaba Admin 是一个基于 Spring AI Alibaba 的 AI Agent 开发与评估平台，旨在为开发者和企业提供完整的 AI Agent 生命周期管理解决方案。平台支持从 Prompt 工程、数据集管理、评估器配置到实验执行和结果分析的完整工作流，帮助用户快速构建、测试和优化 AI Agent 应用。
+CordonData Admin 是一个基于 CordonData 的 AI Agent 开发与评估平台，旨在为开发者和企业提供完整的 AI Agent 生命周期管理解决方案。平台支持从 Prompt 工程、数据集管理、评估器配置到实验执行和结果分析的完整工作流，帮助用户快速构建、测试和优化 AI Agent 应用。
 
 
 ## 核心功能
@@ -116,25 +116,25 @@ npm run dev
 
 打开浏览器访问 http://localhost:8000 即可使用 SAA Admin 平台。
 
-至此，您已经可以在平台中对prompt进行管理、调试、评估、可观测。如果您期望Spring AI Alibaba Agent应用能够集成Nacos以实现prompt加载以及动态更新，并且观测线上的运行情况，可以参照第六步配置您的 AI Agent 应用。
+至此，您已经可以在平台中对prompt进行管理、调试、评估、可观测。如果您期望CordonData Agent应用能够集成Nacos以实现prompt加载以及动态更新，并且观测线上的运行情况，可以参照第六步配置您的 AI Agent 应用。
 
 ### 6. 连接您的 AI Agent 应用
-在您的 Spring AI Alibaba Agent应用中，引入如下依赖
+在您的 CordonData Agent应用中，引入如下依赖
 ```xml
 <dependencies>
-    <!-- 引入spring ai alibaba agent nacos代理模块 -->
+    <!-- 引入cordondata agent nacos代理模块 -->
     <dependency>
         <groupId>com.alibaba.cloud.ai</groupId>
-        <artifactId>spring-ai-alibaba-agent-nacos</artifactId>
-        <version>{spring.ai.alibaba.version}</version>
+        <artifactId>cordondata-agent-nacos</artifactId>
+        <version>{cordondata.version}</version>
     </dependency>
 
     <!-- 引入可观测模块 -->
 
     <dependency>
         <groupId>com.alibaba.cloud.ai</groupId>
-        <artifactId>spring-ai-alibaba-autoconfigure-arms-observation</artifactId>
-        <version>{spring.ai.alibaba.version}</version>
+        <artifactId>cordondata-autoconfigure-arms-observation</artifactId>
+        <version>{cordondata.version}</version>
     </dependency>
     
     
@@ -172,10 +172,10 @@ npm run dev
 
 指定nacos地址及prompKey
 ```yaml
-    spring.ai.alibaba.agent.proxy.nacos.serverAddr={ 替换 nacos address, 示例：127.0.0.1:8848}
-    spring.ai.alibaba.agent.proxy.nacos.username={ 替换 nacos 用户名, 示例：nacos}
-    spring.ai.alibaba.agent.proxy.nacos.password={ 替换 nacos 密码, 示例：nacos}
-    spring.ai.alibaba.agent.proxy.nacos.promptKey={ 替换为promptKey，示例：mse-nacos-helper } 
+    cordondata.agent.proxy.nacos.serverAddr={ 替换 nacos address, 示例：127.0.0.1:8848}
+    cordondata.agent.proxy.nacos.username={ 替换 nacos 用户名, 示例：nacos}
+    cordondata.agent.proxy.nacos.password={ 替换 nacos 密码, 示例：nacos}
+    cordondata.agent.proxy.nacos.promptKey={ 替换为promptKey，示例：mse-nacos-helper } 
 ```
 
 设置可观测参数
@@ -193,10 +193,10 @@ npm run dev
     spring.ai.chat.observations.log-completion=true
     spring.ai.image.observations.log-prompt=true
     spring.ai.vectorstore.observations.log-query-response=true
-    spring.ai.alibaba.arms.enabled=true
-    spring.ai.alibaba.arms.tool.enabled=true
-    spring.ai.alibaba.arms.model.capture-input=true
-    spring.ai.alibaba.arms.model.capture-output=true
+    cordondata.arms.enabled=true
+    cordondata.arms.tool.enabled=true
+    cordondata.arms.model.capture-input=true
+    cordondata.arms.model.capture-output=true
 ```
 
 ## 许可证

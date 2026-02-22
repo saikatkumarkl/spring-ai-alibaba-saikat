@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration("graphAppSaverConfiguration")
 public class AppSaverConfiguration {
 
-	public static final String CONFIG_PREFIX = "spring.ai.alibaba.studio";
+	public static final String CONFIG_PREFIX = "cordondata.studio";
 
 	@Bean
 	@ConditionalOnProperty(prefix = CONFIG_PREFIX, name = "saver", havingValue = "memory", matchIfMissing = true)

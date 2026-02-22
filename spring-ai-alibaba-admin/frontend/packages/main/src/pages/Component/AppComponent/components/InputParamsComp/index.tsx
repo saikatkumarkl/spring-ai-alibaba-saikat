@@ -1,7 +1,7 @@
 import { TopExpandBtn } from '@/components/ExpandBtn';
 import $i18n from '@/i18n';
 import { HelpIcon } from '@spark-ai/design';
-import { IValueType } from '@spark-ai/flow';
+import { IValueType } from '@cordondata/flow';
 import { Flex, Input, Select } from 'antd';
 import classNames from 'classnames';
 import { useState } from 'react';

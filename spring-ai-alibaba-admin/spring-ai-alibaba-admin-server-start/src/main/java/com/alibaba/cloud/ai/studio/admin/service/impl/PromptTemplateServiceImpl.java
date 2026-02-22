@@ -24,24 +24,24 @@ public class PromptTemplateServiceImpl implements PromptTemplateService {
 
     @Override
     public PromptTemplateDetail getByPromptTemplateKey(String promptTemplateKey) throws StudioException {
-        log.info("查询Prompt模板详情: {}", promptTemplateKey);
+        log.info("Query Prompt template details: {}", promptTemplateKey);
 
         PromptTemplateDO promptTemplateDO = promptTemplateMapper.selectByPromptTemplateKey(promptTemplateKey);
         if (promptTemplateDO == null) {
-            throw new StudioException(StudioException.NOT_FOUND, "Prompt模板不存在: " + promptTemplateKey);
+            throw new StudioException(StudioException.NOT_FOUND, "Prompt template does not exist:" + promptTemplateKey);
         }
         return PromptTemplateDetail.fromDO(promptTemplateDO);
     }
 
     @Override
     public PageResult<PromptTemplate> list(PromptTemplateListRequest request) throws StudioException {
-        log.info("查询Prompt模板列表: {}", request);
+        log.info("Query Prompt template list: {}", request);
         
         //Validate search pattern parameters
         if (request.getSearch() != null && 
             !"accurate".equals(request.getSearch()) &&
             !"blur".equals(request.getSearch())) {
-            throw new StudioException(StudioException.INVALID_PARAM, "搜索模式必须是accurate或blur");
+            throw new StudioException(StudioException.INVALID_PARAM, "Search mode must be accurate or blur");
         }
 
         int offset = (request.getPageNo() - 1) * request.getPageSize();

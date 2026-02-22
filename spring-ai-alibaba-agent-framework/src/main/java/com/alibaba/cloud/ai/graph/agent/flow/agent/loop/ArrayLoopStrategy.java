@@ -72,7 +72,7 @@ public class ArrayLoopStrategy implements LoopStrategy {
     }
 
     /**
-     * 默认的转换器，将最后一个消息的文本作为json数组
+     * Default converter that takes the text of the last message as a json array
      */
     private static final Converter<List<Message>, List<?>> DEFAULT_MESSAGE_CONVERTER =
             messages -> {

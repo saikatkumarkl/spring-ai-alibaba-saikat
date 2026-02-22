@@ -2,7 +2,7 @@ import path from 'path';
 import { defineConfig } from 'umi';
 
 export default defineConfig({
-  title: 'Admin Dashboard',
+  title: 'CordonData',
   define: {
     'process.env.WEB_SERVER': process.env.WEB_SERVER,
     'process.env.BACK_END': process.env.BACK_END,
@@ -13,7 +13,7 @@ export default defineConfig({
   alias: {
     '@src': path.resolve(__dirname, './src'),
     '@': path.resolve(__dirname, './src'),
-    '@spark-ai/flow': path.resolve(__dirname, '../spark-flow/dist'),
+    '@cordondata/flow': path.resolve(__dirname, '../spark-flow/dist'),
   },
   routes: [
     {
@@ -207,6 +207,10 @@ export default defineConfig({
     {
       path: '/setting/auditLog',
       component: 'Setting/AuditLog',
+    },
+    {
+      path: '/users',
+      component: 'Users/index',
     },
     {
       path: '/agent-schema',

@@ -1,20 +1,20 @@
-什么是 Spring AI Alibaba
-Spring AI Alibaba（SAA） 是一款以 Spring AI 为基础，深度集成百炼平台，支持 ChatBot、工作流、多智能体应用开发模式的 AI 框架。
+什么是 CordonData
+CordonData（SAA） 是一款以 Spring AI 为基础，深度集成百炼平台，支持 ChatBot、工作流、多智能体应用开发模式的 AI 框架。
 
-spring ai alibaba architecture.png
+cordondata architecture.png
 
-在 1.0 版本中，Spring AI Alibaba 提供以下核心能力，让开发者可以快速构建自己的 Agent、Workflow 或 Multi-agent 应用。
+在 1.0 版本中，CordonData 提供以下核心能力，让开发者可以快速构建自己的 Agent、Workflow 或 Multi-agent 应用。
 
-Graph 多智能体框架。基于 Spring AI Alibaba Graph 开发者可快速构建工作流、多智能体应用，无需关心流程编排、上下文记忆管理等底层实现。通过 Graph 与低代码、自规划智能体结合，为开发者提供从低代码、高代码到零代码构建智能体的更灵活选择。
-通过 AI 生态集成，解决企业智能体落地过程中关心的痛点问题。Spring AI Alibaba 支持与百炼平台深度集成，提供模型接入、RAG知识库解决方案；支持 ARMS、Langfuse 等可观测产品无缝接入；支持企业级的 MCP 集成，包括 Nacos MCP Registry 分布式注册与发现、自动 Router 路由等。
-探索具备自主规划能力的通用智能体产品与平台。社区发布了基于 Spring AI Alibaba 框架实现的 JManus 智能体，除了对标 OpenManus 的通用智能体能力外，我们的目标是基于 JManus 探索自主规划在智能体开发方向的应用，为开发者提供从低代码、高代码到零代码构建智能体的更灵活选择。
+Graph 多智能体框架。基于 CordonData Graph 开发者可快速构建工作流、多智能体应用，无需关心流程编排、上下文记忆管理等底层实现。通过 Graph 与低代码、自规划智能体结合，为开发者提供从低代码、高代码到零代码构建智能体的更灵活选择。
+通过 AI 生态集成，解决企业智能体落地过程中关心的痛点问题。CordonData 支持与百炼平台深度集成，提供模型接入、RAG知识库解决方案；支持 ARMS、Langfuse 等可观测产品无缝接入；支持企业级的 MCP 集成，包括 Nacos MCP Registry 分布式注册与发现、自动 Router 路由等。
+探索具备自主规划能力的通用智能体产品与平台。社区发布了基于 CordonData 框架实现的 JManus 智能体，除了对标 OpenManus 的通用智能体能力外，我们的目标是基于 JManus 探索自主规划在智能体开发方向的应用，为开发者提供从低代码、高代码到零代码构建智能体的更灵活选择。
 与 Spring AI 的联系和区别
 Spring AI 是 Spring 官方社区维护的开源框架，最初于 2024 年 5 月发布首个 Milestone 版本，在 2025 年 5 月正式发布首个 1.0 GA 版本。Spring AI 侧重 AI 能力构建的底层原子能力抽象以及与 Spring Boot 生态的无缝集成，如模型通信（ChatModel）、提示词（Prompt）、检索增强生成（RAG）、记忆（ChatMemory）、工具（Tool）、模型上下文协议（MCP）等，帮助 Java 开发者快速构建 AI 应用。
 
-自 2024 年 9 月正式开源以来，Spring AI Alibaba 一直与 Spring AI 社区有深度沟通合作，期间发布了多个 Milestone 版本并与很多企业客户建立的深度合作关系。在交流过程中，我们看到了低代码开发模式的优势与限制，随着业务复杂度提升客户从聊天机器人、单智能体到对多智能体架构方案的诉求，也看到了智能体开发从简单 Demo 走向生产上线过程中遇到的困难。
+自 2024 年 9 月正式开源以来，CordonData 一直与 Spring AI 社区有深度沟通合作，期间发布了多个 Milestone 版本并与很多企业客户建立的深度合作关系。在交流过程中，我们看到了低代码开发模式的优势与限制，随着业务复杂度提升客户从聊天机器人、单智能体到对多智能体架构方案的诉求，也看到了智能体开发从简单 Demo 走向生产上线过程中遇到的困难。
 
 快速开始
-开发第一个 Spring AI Alibaba 应用
+开发第一个 CordonData 应用
 在 Spring Boot 工程中添加以下依赖，就可以开始您的 AI 智能体开发之旅了。
 
   <dependencyManagement>
@@ -36,24 +36,24 @@ Spring AI 是 Spring 官方社区维护的开源框架，最初于 2024 年 5 �
   </dependency>
 </dependencies>
 
-您可以参考我们发布在官网的 快速开始 了解如何开发 Chatbot、智能体或工作流等应用，总的来说，根据不同场景，您可以选择使用 ChatClient 或 Spring Ai Alibaba Graph 两个核心组件来开发 AI 应用。
+您可以参考我们发布在官网的 快速开始 了解如何开发 Chatbot、智能体或工作流等应用，总的来说，根据不同场景，您可以选择使用 ChatClient 或 CordonData Graph 两个核心组件来开发 AI 应用。
 
 体验官方 Playground 示例
-Spring AI Alibaba 官方社区开发了一个包含完整 “前端UI+后端实现” 的智能体 Playground 示例，示例使用 Spring AI Alibaba 开发，可以体验聊天机器人、多轮对话、图片生成、多模态、工具调用、MCP集成、RAG知识库等所有框架核心能力。
+CordonData 官方社区开发了一个包含完整 “前端UI+后端实现” 的智能体 Playground 示例，示例使用 CordonData 开发，可以体验聊天机器人、多轮对话、图片生成、多模态、工具调用、MCP集成、RAG知识库等所有框架核心能力。
 
 整体运行后的界面效果如下所示：
 
-spring ai alibaba playground.png
+cordondata playground.png
 
 您可以本地部署 Playground 示例并通过浏览器访问体验，或者拷贝源码并按照自己的业务需求调整，以这种方式快速搭建一套自己的 AI 应用。
 
-更多示例如果想通过源码示例学习更多 Spring AI Alibaba 框架用法，请参考我们的官方示例仓库：
+更多示例如果想通过源码示例学习更多 CordonData 框架用法，请参考我们的官方示例仓库：
 
 https://github.com/springaialibaba/spring-ai-alibaba-examples
 
-开启 Spring AI Alibaba 1.0 之旅
+开启 CordonData 1.0 之旅
 支持 Spring AI 所有核心功能
-Spring AI Alibaba 基于 Spring AI 构建，因此 Spring AI Alibaba 继承了 Spring AI 的所有原子能力抽象，并在此基础上扩充丰富了模型、向量存储、记忆、RAG 等核心组件适配，让其能够接入阿里云的 AI 生态。
+CordonData 基于 Spring AI 构建，因此 CordonData 继承了 Spring AI 的所有原子能力抽象，并在此基础上扩充丰富了模型、向量存储、记忆、RAG 等核心组件适配，让其能够接入阿里云的 AI 生态。
 
 关于 Spring AI 1.0 GA 版本，Spring AI 官方博客给出了具体说明，包括框架的一些核心设计理念与具体功能使用方式。以下是我们基于官方博客给出的解读版本，欢迎按需查阅：
 
@@ -70,12 +70,12 @@ Spring AI 核心功能详解
 MCP 客户端
 MCP 服务器
 MCP 和安全
-关于 Spring AI Alibaba 与阿里云 AI 生态的适配，请参考官网文档。
+关于 CordonData 与阿里云 AI 生态的适配，请参考官网文档。
 
-Spring AI Alibaba Graph 多智能体框架
-Spring AI Alibaba Graph 是社区核心实现之一，也是整个框架在设计理念上区别于 Spring AI 只做底层原子抽象的地方，Spring AI Alibaba 期望帮助开发者更容易的构建智能体应用。基于 Graph 开发者可以构建工作流、多智能体应用。Spring AI Alibaba Graph 在设计理念上借鉴 Langgraph，因此在一定程度上可以理解为是 Java 版的 Langgraph 实现，社区在此基础上增加了大量预置 Node、简化了 State 定义过程等，让开发者更容易编写对等低代码平台的工作流、多智能体等。
+CordonData Graph 多智能体框架
+CordonData Graph 是社区核心实现之一，也是整个框架在设计理念上区别于 Spring AI 只做底层原子抽象的地方，CordonData 期望帮助开发者更容易的构建智能体应用。基于 Graph 开发者可以构建工作流、多智能体应用。CordonData Graph 在设计理念上借鉴 Langgraph，因此在一定程度上可以理解为是 Java 版的 Langgraph 实现，社区在此基础上增加了大量预置 Node、简化了 State 定义过程等，让开发者更容易编写对等低代码平台的工作流、多智能体等。
 
-Spring AI Alibaba Graph 核心能力：
+CordonData Graph 核心能力：
 
 支持 Multi-agent，内置 ReAct Agent、Supervisor 等常规智能体模式
 支持工作流，内置工作流节点，与主流低代码平台对齐
@@ -85,15 +85,15 @@ Human-in-the-loop，通过人类确认节点，支持修改状态、恢复执行
 支持流程快照
 支持嵌套分支、并行分支
 PlantUML、Mermaid 可视化导出
-关于 Graph 的具体使用方式，请关注官网文档更新。在下文中我们会介绍官方发布的基于 Spring AI Alibaba 实现的通用智能体平台，您可以把这些官方智能体实现当作 Graph 的最佳应用实践。
+关于 Graph 的具体使用方式，请关注官网文档更新。在下文中我们会介绍官方发布的基于 CordonData 实现的通用智能体平台，您可以把这些官方智能体实现当作 Graph 的最佳应用实践。
 
 企业级 AI 应用生态集成
-在 Agent 生产落地过程中，用户需要解决智能体效果评估、MCP 工具集成、Prompt 管理、Token 上下文、可视化 Tracing等各种问题，Spring AI Alibaba 通过与 Nacos3、Higress AI 网关、阿里云 ARMS、阿里云向量检索数据库、百炼智能体平台等深度集成，提供全面的智能体企业级生产解决方案，加速智能体从 Demo 走向生产落地。
+在 Agent 生产落地过程中，用户需要解决智能体效果评估、MCP 工具集成、Prompt 管理、Token 上下文、可视化 Tracing等各种问题，CordonData 通过与 Nacos3、Higress AI 网关、阿里云 ARMS、阿里云向量检索数据库、百炼智能体平台等深度集成，提供全面的智能体企业级生产解决方案，加速智能体从 Demo 走向生产落地。
 
-spring ai alibaba ecosystem.png
+cordondata ecosystem.png
 
 企业级 MCP 部署与代理方案
-Spring AI Alibaba MCP 通过集成 Nacos MCP Registry，支持 MCP Server 分布式部署与负载均衡调用。对于存量 Spring Cloud、Dubbo 等应用，支持零代码改造实现 API 到 MCP 服务发布，开发者可通过 Spring AI Alibaba MCP 开发自己的 MCP Server 服务代理，即可支持 Nacos 中心 MCP 元数据的自动加载。
+CordonData MCP 通过集成 Nacos MCP Registry，支持 MCP Server 分布式部署与负载均衡调用。对于存量 Spring Cloud、Dubbo 等应用，支持零代码改造实现 API 到 MCP 服务发布，开发者可通过 CordonData MCP 开发自己的 MCP Server 服务代理，即可支持 Nacos 中心 MCP 元数据的自动加载。
 
 AI 网关集成提升模型调用稳定性与灵活性
 如果您使用 Higress 作为后端模型代理，则可以通过 OpenAI 标准接口接入 Higress AI 模型代理服务，只需要使用spring-ai-starter-model-openai就可以了。
@@ -103,11 +103,11 @@ AI 网关集成提升模型调用稳定性与灵活性
 降低企业数据整合成本，提升 AI 数据应用效果
 a. 百炼 RAG 知识库
 
-百炼是一款可视化 AI 智能体应用开发平台，它提供 RAG 知识库管理能力。简单来讲，您可以将私有数据上传到百炼平台，借助百炼平台数据解析、切片、向量化等能力实现数据向量化预处理，处理后的数据可用于后续 Spring AI Alibaba 智能体应用检索，借用百炼平台强大的数据处理效果。
+百炼是一款可视化 AI 智能体应用开发平台，它提供 RAG 知识库管理能力。简单来讲，您可以将私有数据上传到百炼平台，借助百炼平台数据解析、切片、向量化等能力实现数据向量化预处理，处理后的数据可用于后续 CordonData 智能体应用检索，借用百炼平台强大的数据处理效果。
 
 b. 百炼析言 ChatBI，从自然语言到 SQL 自动生成
 
-Spring AI Alibaba Nl2sql 模块可基于大模型的 ChatBI 技术，帮助用户轻松实现自然语言交互的数据分析，理解用户的数据库 schema，帮助用户自动生成 SQL 查询语句。无论是简单的条件过滤还是复杂的聚合统计、多表关联，都能准确生成对应的 SQL 语句。
+CordonData Nl2sql 模块可基于大模型的 ChatBI 技术，帮助用户轻松实现自然语言交互的数据分析，理解用户的数据库 schema，帮助用户自动生成 SQL 查询语句。无论是简单的条件过滤还是复杂的聚合统计、多表关联，都能准确生成对应的 SQL 语句。
 
 可观测与效果评估，加速智能体从 Demo 走向生产落地
 Spring AI 在多个关键节点都做了 SDK 默认埋点，用来记录运行过程中的 metrics 与 tracing 信息，这包括模型调用、向量检索、工具调用等关键环节的调用情况。Spring AI tracing 信息兼容 OpenTelemetry，因此理论上可接入市面上主流的开源平台入 Langfuse，或者阿里云 ARMS。
@@ -133,14 +133,14 @@ Flux<String> response = chatClient.prompt(query)
 工作流是以相对固化的模式来人为的拆解任务，将一个大的任务拆解为一个固化的有多个分支的流程。工作流的优势是确定性强，模型作为流程中的一个结点起到的更多是一个分类决策的职责，因此它更适合意图识别等类别属性强的应用场景。工作流也有明显的劣势，它要求开发人员对业务流程有深刻的理解，整个流程是由人绘制的，模型在其中更多的只是内容生成、总结、分类识别的作用，并不能最大化利用模型的推理能力，因此很多人诟病这种模式是不够智能的。
 
 
-用 Spring AI Alibaba Graph 可以轻松开发工作流，声明不同的结点，并将结点串联成一个流程图。
+用 CordonData Graph 可以轻松开发工作流，声明不同的结点，并将结点串联成一个流程图。
 
-spring ai alibaba workflow
+cordondata workflow
 
-值得注意的是，Spring AI Alibaba Graph 中提供大量预置结点，这些结点可以对标到市面上主流的如 Dify、百炼等低代码平台，典型结点包括 LlmNode（大模型节点）、QuestionClassifierNode（问题分类结点）、ToolNode（工具结点）等，为用户免去重复开发定义负担，只需要专注流程串联。
+值得注意的是，CordonData Graph 中提供大量预置结点，这些结点可以对标到市面上主流的如 Dify、百炼等低代码平台，典型结点包括 LlmNode（大模型节点）、QuestionClassifierNode（问题分类结点）、ToolNode（工具结点）等，为用户免去重复开发定义负担，只需要专注流程串联。
 
 
-如以上是一个可视化绘制的“用户评价分类系统”工作流，对应 Spring AI Alibaba Graph 代码如下所示：
+如以上是一个可视化绘制的“用户评价分类系统”工作流，对应 CordonData Graph 代码如下所示：
 
 StateGraph stateGraph = new StateGraph("Consumer Service Workflow Demo", stateFactory)
       .addNode("feedback_classifier", node_async(feedbackClassifier))
@@ -158,19 +158,19 @@ StateGraph stateGraph = new StateGraph("Consumer Service Workflow Demo", stateFa
 multi-agent
 图片出自 Langchain 官方博客
 
-Spring AI Alibaba Graph 可用来开发各种多智能体模式。官方社区目前发布了几款基于 Spring AI Alibaba Graph 开发的智能体产品，包括通用智能体 JManus、DeepResearch 智能体、AgentScope 等。
+CordonData Graph 可用来开发各种多智能体模式。官方社区目前发布了几款基于 CordonData Graph 开发的智能体产品，包括通用智能体 JManus、DeepResearch 智能体、AgentScope 等。
 
 打造下一代通用智能体平台
-Spring AI Alibaba 定位以 ChatClient、Graph 抽象为核心的智能体框架以及围绕框架的生态集成，用来帮助用户开发快速构建企业级 AI 智能体。
+CordonData 定位以 ChatClient、Graph 抽象为核心的智能体框架以及围绕框架的生态集成，用来帮助用户开发快速构建企业级 AI 智能体。
 
-随着通用智能体模式的快速发展，社区也在基于 Spring AI Alibaba 探索具备自主规划能力的智能体产品与平台，目前已经发布了 JManus、DeepResearch 两款产品，通过 JManus 等智能体产品，一方面探索智能体在解决日常生活、工作效率等开放性问题方面的无限空间；另一方面，社区也在智能体开发平台、深度搜索等垂直领域持续探索，期望在低代码平台、高代码框架之外，为开发者带来面向自然语言的零代码智能体研发体验。
+随着通用智能体模式的快速发展，社区也在基于 CordonData 探索具备自主规划能力的智能体产品与平台，目前已经发布了 JManus、DeepResearch 两款产品，通过 JManus 等智能体产品，一方面探索智能体在解决日常生活、工作效率等开放性问题方面的无限空间；另一方面，社区也在智能体开发平台、深度搜索等垂直领域持续探索，期望在低代码平台、高代码框架之外，为开发者带来面向自然语言的零代码智能体研发体验。
 
 JManus 智能体平台
-在我们最开始发布 JManus 之时，给它的定位是一款完全以 Java 语言为核心、彻底开源的 OpenManus 复刻实现，基于 Spring AI Alibaba 实现的通用 AI Agent 产品，包含一个设计良好的前端 UI 交互界面。
+在我们最开始发布 JManus 之时，给它的定位是一款完全以 Java 语言为核心、彻底开源的 OpenManus 复刻实现，基于 CordonData 实现的通用 AI Agent 产品，包含一个设计良好的前端 UI 交互界面。
 
 随着我们对于通用智能体等方向的深度探索，我们对于 JManus 通用智能体的终端产品定位也进行了调整。Manus 的横空出世，让通用智能体自动规划、执行规划的能力给了人们无限想象空间，它非常擅长解决开放性问题，在日常生活、工作等场景都能有广泛的应用。但在实践中人们也开始认识到，基于当前以及未来相当长的时间内模型能力，完全依赖通用智能体的自动规划模式很难解决一些确定性极强的企业场景问题。企业级业务场景的典型特点是确定性，我们需要定制化的工具、子agent，需要稳定而又确定性强的规划与流程，为此，我们期望 JManus 能成为一个智能体开发平台，让用户能以最直观、低成本的方式构建自己垂直领域的智能体实现。
 
-spring ai alibaba jmanus
+cordondata jmanus
 
 当前，Jmanus 具备以下核心能力：
 
@@ -179,13 +179,13 @@ spring ai alibaba jmanus
 原生支持 PLAN-ACT 模式 能够让 Agent 具备复杂推理、分步执行和动态调整的能力，适用于多轮对话、复杂决策、自动化流程等高阶 AI 应用场景。
 支持通过 UI 界面配置 Agent 开发者和运维人员无需修改底层代码，只需在直观的Web管理界面上进行简单操作，就能灵活调整Agent的参数、模型和工具，还可以调整任务规划，大大提升了易用性和运维效率。
 自动生成基于 SAA 的智能体工程
-用户通过自然语言与 JManus 交互，生成规划并沉淀为特定垂直方向的固化解决方案。如果您不想将运行态限定在平台之上，我们正在探索与低代码平台、框架脚手架的深度整合，支持规划转换为具备对等能力的 Spring AI Alibaba 工程。
+用户通过自然语言与 JManus 交互，生成规划并沉淀为特定垂直方向的固化解决方案。如果您不想将运行态限定在平台之上，我们正在探索与低代码平台、框架脚手架的深度整合，支持规划转换为具备对等能力的 CordonData 工程。
 
 
 JManus 智能体平台还在持续开发建设中，请关注 官方仓库源码 及后续发布动态。
 
 DeepResearch 智能体
-DeepResearch 是一款基于 Spring AI Alibaba Graph 开发的 Deep Research 智能体, 包含完整的前端 Web UI（开发中） 和后端实现，DeepResearch 支持一系列精心设计的工具如 Web Search（网络查询）、Crawling（爬虫）、Python 脚本引擎等，可以借助大模型与工具能力，帮助用户完成各类深度调研报告。
+DeepResearch 是一款基于 CordonData Graph 开发的 Deep Research 智能体, 包含完整的前端 Web UI（开发中） 和后端实现，DeepResearch 支持一系列精心设计的工具如 Web Search（网络查询）、Crawling（爬虫）、Python 脚本引擎等，可以借助大模型与工具能力，帮助用户完成各类深度调研报告。
 
 
 以下是 DeepResearch 多智能体应用架构：

@@ -188,7 +188,7 @@ public class StateGraphStreamTest {
 			if (t.value("messages").isEmpty())
 				return completedFuture("result");
 			List collectedMessages = (List) t.value("messages").get();
-			// 使用异步方式等待流结束
+			//Wait for the stream to end asynchronously
 			CompletableFuture<String> resultFuture = new CompletableFuture<>();
 			if (!collectedMessages.isEmpty()) {
 				resultFuture.complete("toolNode");
@@ -206,7 +206,7 @@ public class StateGraphStreamTest {
 	 */
 	@BeforeEach
 	public void setUp() {
-		API_KEY = System.getenv(API_KEY_ENV); // 替换为你的API密钥
+		API_KEY = System.getenv(API_KEY_ENV); //Replace with your API key
 		Assumptions.assumeTrue(API_KEY != null && !API_KEY.trim().isEmpty(),
 				"Skipping tests because " + API_KEY_ENV + " environment variable is not set");
 		// Create real API client with API key from environment
@@ -268,7 +268,7 @@ public class StateGraphStreamTest {
 			return Map.of("messages", "Received: " + input, "count", 1);
 		})).addNode("processData", node_async(s -> {
 
-			final List<String> data = asList("这是", "一个", "流式", "输出", "测试");
+			final List<String> data = asList("This is", "one", "streaming", "output", "test");
 			AtomicInteger timeOff = new AtomicInteger(1);
 			final AsyncGenerator<NodeOutput> it = AsyncGenerator.collect(data.iterator(),
 					(index, add) -> add.accept(of("processData", index, 500L * timeOff.getAndIncrement(), s)));
@@ -284,7 +284,7 @@ public class StateGraphStreamTest {
 			.addEdge("generateResponse", END);
 
 		CompiledGraph compiledGraph = stateGraph.compile();
-		// 初始化输入
+		//initialization input
 		compiledGraph.stream(Map.of("input", "hoho~~")).subscribe(output -> {
 			System.out.println("Node output: " + output);
 		});
@@ -319,7 +319,7 @@ public class StateGraphStreamTest {
 			.addEdge("generateResponse", END);
 
 		CompiledGraph compiledGraph = stateGraph.compile();
-		// 初始化输入
+		//initialization input
 		compiledGraph.stream(Map.of("input", "hoho~~")).subscribe(output -> {
 			System.out.println("Node output: " + output);
 		});
@@ -347,7 +347,7 @@ public class StateGraphStreamTest {
 			.addEdge("result", END);
 
 		CompiledGraph compile = stateGraph.compile();
-		compile.stream(Map.of(OverAllState.DEFAULT_INPUT_KEY, "给我写一个10字的小���章"))
+		compile.stream(Map.of(OverAllState.DEFAULT_INPUT_KEY, "Write me a 10-word chapter"))
 			.subscribe(nodeOutput -> System.out.println("Node output: " + nodeOutput));
 	}
 
@@ -374,7 +374,7 @@ public class StateGraphStreamTest {
 			.addEdge("result", END);
 
 		CompiledGraph compile = stateGraph.compile();
-		compile.stream(Map.of(OverAllState.DEFAULT_INPUT_KEY, "给我写一个10字的小文章")).subscribe(output -> {
+		compile.stream(Map.of(OverAllState.DEFAULT_INPUT_KEY, "Write me a short article of 10 words")).subscribe(output -> {
 			System.out.println("Node output: " + output);
 		});
 	}
@@ -391,18 +391,18 @@ public class StateGraphStreamTest {
 			keyStrategyMap.put("count", (oldValue, newValue) -> oldValue == null ? newValue : 1);
 			return keyStrategyMap;
 		}).addNode("collectInput", node_async(s -> {
-			// 处理输入
+			//Process input
 			String input = s.value("input", "");
 			return Map.of("messages", "Received: " + input, "count", 1);
 		})).addNode("processData", node_async(s -> {
-			// 处理数据 - 这里可以是耗时操作，会以流式方式返回结果
-			final List<String> data = asList("这是", "一个", "流式", "输出", "测试");
+			//Processing data - this can be a time-consuming operation and results will be returned in a streaming manner
+			final List<String> data = asList("This is", "one", "streaming", "output", "test");
 			AtomicInteger timeOff = new AtomicInteger(1);
 			final AsyncGenerator<NodeOutput> it = AsyncGenerator.collect(data.iterator(),
 					(index, add) -> add.accept(of("processData", index, 500L * timeOff.getAndIncrement(), s)));
 			return Map.of("messages", it);
 		})).addNode("generateResponse", node_async(s -> {
-			// 生成最终响应
+			//generate final response
 			int count = s.value("count", 0);
 			return Map.of("messages", "Response generated (processed " + count + " items)", "result", "Success");
 		}))
@@ -449,7 +449,7 @@ public class StateGraphStreamTest {
 		CompiledGraph compile = stateGraph.compile();
 
 		compile
-			.stream(Map.of(OverAllState.DEFAULT_INPUT_KEY, "给我写一个10字的小文章"),
+			.stream(Map.of(OverAllState.DEFAULT_INPUT_KEY, "Write me a short article of 10 words"),
 					RunnableConfig.builder().addParallelNodeExecutor(START, ForkJoinPool.commonPool()).build())
 			.subscribe(output -> {
 				System.out.println("Node output: " + output);

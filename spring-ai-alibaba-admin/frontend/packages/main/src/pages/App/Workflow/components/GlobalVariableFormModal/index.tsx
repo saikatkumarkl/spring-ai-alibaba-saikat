@@ -7,7 +7,7 @@ import {
   IValueType,
   VariableBaseInput,
   VariableTypeSelect,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { Flex } from 'antd';
 import { omit } from 'lodash-es';
 import { useState } from 'react';

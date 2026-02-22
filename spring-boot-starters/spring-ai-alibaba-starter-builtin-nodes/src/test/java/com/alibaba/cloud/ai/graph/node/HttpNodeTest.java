@@ -211,7 +211,7 @@ public class HttpNodeTest {
 	@Test
 	void testApply_WithFileResponse() throws Exception {
 		InputStream is = getClass().getResourceAsStream("/test.png");
-		assertNotNull(is, "测试资源 test.png 未找到，请将文件放在 src/test/resources/ 根目录下");
+		assertNotNull(is, "The test resource test.png was not found. Please place the file in the src/test/resources/ root directory.");
 		byte[] fileBytes = is.readAllBytes();
 		MockResponse mockResponse = new MockResponse().setResponseCode(200)
 			.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"test.png\"")
@@ -225,16 +225,16 @@ public class HttpNodeTest {
 		Map<String, Object> result = node.apply(new OverAllState());
 		Map<String, Object> messages = (Map<String, Object>) result.get("messages");
 
-		assertTrue(messages.containsKey("files"), "应包含 files 键");
+		assertTrue(messages.containsKey("files"), "Should contain files key");
 		@SuppressWarnings("unchecked")
 		List<String> files = (List<String>) messages.get("files");
 		String fileId = files.get(0);
-		assertNotNull(fileId, "应有 File ID");
+		assertNotNull(fileId, "Should have File ID");
 
 		InMemoryFileStorage.FileRecord record = InMemoryFileStorage.get(fileId);
-		assertNotNull(record, "应能通过 ID 获取缓存的 FileRecord");
-		assertEquals("test.png", record.getName(), "record 名称应为 test.png");
-		assertArrayEquals(fileBytes, record.getContent(), "缓存的内容应与原始字节一致");
+		assertNotNull(record, "Should be able to get cached FileRecord by ID");
+		assertEquals("test.png", record.getName(), "The record name should be test.png");
+		assertArrayEquals(fileBytes, record.getContent(), "The cached content should be consistent with the original bytes");
 		InMemoryFileStorage.clear();
 	}
 

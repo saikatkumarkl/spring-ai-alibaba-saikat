@@ -15,6 +15,7 @@
  */
 package com.alibaba.cloud.ai.examples.chatbot;
 
+import com.nimbusds.jwt.JWTClaimsSet;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,15 @@ import java.util.Map;
 
 /**
  * Controller for handling user authentication and session management.
+ * All authentication is handled by Keycloak (OIDC). The admin backend
+ * handles authorization (which apps/workspaces a user can access).
+ *
+ * <p>Primary flow: Frontend performs Keycloak OIDC login → sends access_token
+ * to /api/auth/sso-login → backend validates JWT and fetches user's apps
+ * from admin backend → creates server-side session.</p>
+ *
+ * <p>Legacy password login is kept for backward compatibility but delegates
+ * to the admin backend's simple_users table.</p>
  */
 @Slf4j
 @RestController
@@ -35,8 +45,11 @@ public class AuthController {
 
 	private final AdminApiService adminApi;
 
-	public AuthController(AdminApiService adminApi) {
+	private final KeycloakConfig keycloakConfig;
+
+	public AuthController(AdminApiService adminApi, KeycloakConfig keycloakConfig) {
 		this.adminApi = adminApi;
+		this.keycloakConfig = keycloakConfig;
 	}
 
 	@Data
@@ -109,6 +122,59 @@ public class AuthController {
 		}
 		return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 			.body(LoginResponse.error("Not logged in")));
+	}
+
+	/**
+	 * SSO login endpoint — the PRIMARY authentication path.
+	 * The frontend sends the Keycloak access_token after OIDC login.
+	 * We validate it locally via JWKS, then call the admin backend's
+	 * /console/v1/chatbot/token-login to get user's authorized apps.
+	 */
+	@PostMapping("/sso-login")
+	public Mono<ResponseEntity<LoginResponse>> ssoLogin(@RequestBody Map<String, String> body, HttpSession session) {
+		String accessToken = body.get("access_token");
+		if (accessToken == null || accessToken.isBlank()) {
+			return Mono.just(ResponseEntity.badRequest()
+					.body(LoginResponse.error("Missing access_token")));
+		}
+
+		if (!keycloakConfig.isEnabled()) {
+			return Mono.just(ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+					.body(LoginResponse.error("SSO is not enabled")));
+		}
+
+		JWTClaimsSet claims = keycloakConfig.validateToken(accessToken);
+		if (claims == null) {
+			return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(LoginResponse.error("Invalid SSO token")));
+		}
+
+		// Call admin backend to get user's authorized apps
+		return adminApi.tokenLogin(accessToken)
+			.map(data -> {
+				// Store in session (includes email, fullName, apps, token)
+				session.setAttribute("user", data);
+				session.setAttribute("token", accessToken);
+				session.setAttribute("email", data.get("email"));
+
+				String email = (String) data.get("email");
+				log.info("SSO login successful for user: {} with {} apps", email,
+						data.get("apps") != null ? ((java.util.List<?>) data.get("apps")).size() : 0);
+				adminApi.logAuditAction(email != null ? email : "sso-user", "SSO_LOGIN", "session", session.getId(), null)
+						.subscribe();
+
+				return ResponseEntity.ok(LoginResponse.success(data));
+			})
+			.onErrorResume(error -> {
+				log.error("SSO login failed — admin backend rejected token", error);
+				// Fallback: use Keycloak user info directly (no apps)
+				Map<String, Object> userInfo = keycloakConfig.extractUserInfo(claims);
+				userInfo.put("apps", java.util.Collections.emptyList());
+				session.setAttribute("user", userInfo);
+				session.setAttribute("token", accessToken);
+				session.setAttribute("email", userInfo.get("email"));
+				return Mono.just(ResponseEntity.ok(LoginResponse.success(userInfo)));
+			});
 	}
 
 }

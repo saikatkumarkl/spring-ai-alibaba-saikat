@@ -45,7 +45,7 @@ public class IterationNodeTest {
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	private String runGraph(String input, NodeAction action) throws Exception {
-		// 配置子图：START -> iterator -> END
+		// Configure subgraph:START -> iterator -> END
 		KeyStrategyFactory subFactory = () -> {
 			Map<String, KeyStrategy> map = new HashMap<>();
 			map.put("iterator_item", new ReplaceStrategy());
@@ -56,7 +56,7 @@ public class IterationNodeTest {
 			.addEdge(StateGraph.START, "iterator")
 			.addEdge("iterator", StateGraph.END);
 
-		// 配置主图：START -> generate -> IterationNodeGraph -> END
+		// Configure the main image:START -> generate -> IterationNodeGraph -> END
 		KeyStrategyFactory mainFactory = () -> {
 			Map<String, KeyStrategy> map = new HashMap<>();
 			map.put("input_array", new ReplaceStrategy());
@@ -140,7 +140,7 @@ public class IterationNodeTest {
 	@Test
 	@DisplayName("Test two IterationNodes")
 	public void testTwoIterationNodes() throws Exception {
-		// 配置子图：START -> iterator -> END
+		// Configure subgraph:START -> iterator -> END
 		KeyStrategyFactory subFactory1 = () -> {
 			Map<String, KeyStrategy> map = new HashMap<>();
 			map.put("iterator_item", new ReplaceStrategy());
@@ -170,7 +170,7 @@ public class IterationNodeTest {
 			.addEdge(StateGraph.START, "iterator")
 			.addEdge("iterator", StateGraph.END);
 
-		// 配置主图：START -> generate -> IterationNode1 -> IterationNode2 -> END
+		// Configure the main image:START -> generate -> IterationNode1 -> IterationNode2 -> END
 		KeyStrategyFactory mainFactory = () -> {
 			Map<String, KeyStrategy> map = new HashMap<>();
 			map.put("input_array", new ReplaceStrategy());
@@ -246,7 +246,7 @@ public class IterationNodeTest {
 				int x = state.value("item", Integer.class).orElseThrow();
 				return Map.of("item_result", x * x * x);
 			}));
-		// 构造迭代节点
+		//Construct iteration node
 		IterationNode.<Integer, Integer>converter()
 			.subGraphStartNodeName("apply")
 			.subGraphEndNodeName("apply")

@@ -19,14 +19,14 @@ public class PromptRunRequest {
     /**
      * Prompt Key (optional)
      */
-    @Size(max = 255, message = "Prompt Key长度不能超过255个字符")
-    @Pattern(regexp = "^[a-zA-Z0-9_-]*$", message = "Prompt Key只能包含字母、数字、下划线和短横线")
+    @Size(max = 255, message = "Prompt Key length cannot exceed 255 characters")
+    @Pattern(regexp = "^[a-zA-Z0-9_-]*$", message = "Prompt Key can only contain letters, numbers, underscores and dashes")
     private String promptKey;
 
     /**
      * Version number (optional)
      */
-    @Size(max = 32, message = "版本号长度不能超过32个字符")
+    @Size(max = 32, message = "The length of the version number cannot exceed 32 characters")
     private String version;
 
     /**
@@ -47,7 +47,7 @@ public class PromptRunRequest {
     /**
      * User message content
      */
-    @NotBlank(message = "用户消息不能为空")
+    @NotBlank(message = "User message cannot be empty")
     private String message;
 
     /**

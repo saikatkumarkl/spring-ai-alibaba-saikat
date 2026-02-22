@@ -2,7 +2,7 @@
 
 ## Overview
 
-This implements a complete end-to-end authentication system for chatbot applications that connect to the Spring AI Alibaba Admin backend. The system provides:
+This implements a complete end-to-end authentication system for chatbot applications that connect to the CordonData Admin backend. The system provides:
 
 - User authentication via email/password
 - JWT token-based session management

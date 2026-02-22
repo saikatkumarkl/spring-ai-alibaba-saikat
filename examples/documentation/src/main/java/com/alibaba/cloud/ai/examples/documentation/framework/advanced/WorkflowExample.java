@@ -54,15 +54,15 @@ import static com.alibaba.cloud.ai.graph.action.AsyncEdgeAction.edge_async;
 import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
 
 /**
- * 工作流（Workflow）示例
+ * Workflow Example
  *
- * 演示如何使用StateGraph构建智能工作流，包括：
- * 1. 定义自定义Node
- * 2. Agent作为Node
- * 3. 混合使用Agent Node和普通Node
- * 4. 执行工作流
+ * Demonstrates how to build intelligent workflows using StateGraph, including:
+ * 1. Defining custom Nodes
+ * 2. Agent as Node
+ * 3. Mixing Agent Nodes and regular Nodes
+ * 4. Executing workflows
  *
- * 参考文档: advanced_doc/workflow.md
+ * Reference: advanced_doc/workflow.md
  */
 public class WorkflowExample {
 
@@ -73,50 +73,50 @@ public class WorkflowExample {
 	}
 
 	/**
-	 * Main方法：运行所有示例
+	 * Main method: run all examples
 	 *
-	 * 注意：需要配置ChatModel实例才能运行
+	 * Note: ChatModel instance must be configured to run
 	 */
 	public static void main(String[] args) {
-		// 创建 DashScope API 实例
+		// Create DashScope API instance
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
 				.apiKey(System.getenv("AI_DASHSCOPE_API_KEY"))
 				.build();
 
-		// 创建 ChatModel
+		// Create ChatModel
 		ChatModel chatModel = DashScopeChatModel.builder()
 				.dashScopeApi(dashScopeApi)
 				.build();
 
 		if (chatModel == null) {
-			System.err.println("错误：请先配置ChatModel实例");
-			System.err.println("请设置 AI_DASHSCOPE_API_KEY 环境变量");
+			System.err.println("Error: Please configure a ChatModel instance first");
+			System.err.println("Please set the AI_DASHSCOPE_API_KEY environment variable");
 			return;
 		}
 
-		// 创建示例实例
+		// Create example instance
 		WorkflowExample example = new WorkflowExample(chatModel);
 
-		// 运行所有示例
+		// Run all examples
 		example.runAllExamples();
 	}
 
 	/**
-	 * 示例1：基础Node定义
+	 * Example 1: Basic Node Definition
 	 *
-	 * 创建简单的文本处理Node
+	 * Create a simple text processing Node
 	 */
 	public void example1_basicNode() {
 		class TextProcessorNode implements NodeAction {
 			@Override
 			public Map<String, Object> apply(OverAllState state) throws Exception {
-				// 1. 从状态中获取输入
+				// 1. Get input from state
 				String input = state.value("query", "").toString();
 
-				// 2. 执行业务逻辑
+				// 2. Execute business logic
 				String processedText = input.toUpperCase().trim();
 
-				// 3. 返回更新后的状态
+				// 3. Return updated state
 				Map<String, Object> result = new HashMap<>();
 				result.put("processed_text", processedText);
 				return result;
@@ -124,13 +124,13 @@ public class WorkflowExample {
 		}
 
 		TextProcessorNode processor = new TextProcessorNode();
-		System.out.println("基础Node定义示例完成");
+		System.out.println("Basic Node definition example completed");
 	}
 
 	/**
-	 * 示例2：带配置的AI Node
+	 * Example 2: AI Node with Configuration
 	 *
-	 * 创建调用LLM的Node
+	 * Create a Node that calls an LLM
 	 */
 	public void example2_aiNode() {
 		class QueryExpanderNode implements NodeActionWithConfig {
@@ -140,19 +140,19 @@ public class WorkflowExample {
 			public QueryExpanderNode(ChatClient.Builder chatClientBuilder) {
 				this.chatClient = chatClientBuilder.build();
 				this.promptTemplate = new PromptTemplate(
-						"你是一个搜索优化专家。请为以下查询生成 {number} 个不同的变体。\n" +
-								"原始查询：{query}\n\n" +
-								"查询变体：\n"
+						"You are a search optimization expert. Please generate {number} different variants for the following query.\n" +
+								"Original query: {query}\n\n" +
+								"Query variants:\n"
 				);
 			}
 
 			@Override
 			public Map<String, Object> apply(OverAllState state, RunnableConfig config) throws Exception {
-				// 获取输入参数
+				// Get input parameters
 				String query = state.value("query", "").toString();
 				Integer number = (Integer) state.value("expanderNumber", 3);
 
-				// 调用 LLM
+				// Call LLM
 				String result = chatClient.prompt()
 						.user(user -> user
 								.text(promptTemplate.getTemplate())
@@ -161,10 +161,10 @@ public class WorkflowExample {
 						.call()
 						.content();
 
-				// 处理结果
+				// Process result
 				String[] variants = result.split("\n");
 
-				// 返回更新的状态
+				// Return updated state
 				Map<String, Object> output = new HashMap<>();
 				output.put("queryVariants", Arrays.asList(variants));
 				return output;
@@ -172,13 +172,13 @@ public class WorkflowExample {
 		}
 
 		QueryExpanderNode expander = new QueryExpanderNode(ChatClient.builder(chatModel));
-		System.out.println("AI Node示例完成");
+		System.out.println("AI Node example completed");
 	}
 
 	/**
-	 * 示例3：条件评估Node
+	 * Example 3: Condition Evaluation Node
 	 *
-	 * 用于工作流中的条件分支判断
+	 * Used for conditional branching in workflows
 	 */
 	public void example3_conditionNode() {
 		class ConditionEvaluatorNode implements NodeAction {
@@ -186,15 +186,15 @@ public class WorkflowExample {
 			public Map<String, Object> apply(OverAllState state) throws Exception {
 				String input = state.value("input", "").toString().toLowerCase();
 
-				// 根据输入内容决定路由
+				// Decide routing based on input content
 				String route;
-				if (input.contains("错误") || input.contains("异常")) {
+				if (input.contains("error") || input.contains("exception")) {
 					route = "error_handling";
 				}
-				else if (input.contains("数据") || input.contains("分析")) {
+				else if (input.contains("data") || input.contains("analysis")) {
 					route = "data_processing";
 				}
-				else if (input.contains("报告") || input.contains("总结")) {
+				else if (input.contains("report") || input.contains("summary")) {
 					route = "report_generation";
 				}
 				else {
@@ -208,17 +208,17 @@ public class WorkflowExample {
 		}
 
 		ConditionEvaluatorNode evaluator = new ConditionEvaluatorNode();
-		System.out.println("条件评估Node示例完成");
+		System.out.println("Condition evaluation Node example completed");
 	}
 
 	/**
-	 * 示例4：并行结果聚合Node
+	 * Example 4: Parallel Result Aggregation Node
 	 *
-	 * 用于收集和聚合并行执行的多个Node的结果
+	 * Used to collect and aggregate results from multiple parallel Nodes
 	 */
 	public void example4_aggregatorNode() {
 		ParallelResultAggregatorNode aggregator = new ParallelResultAggregatorNode("merged_results");
-		System.out.println("聚合Node示例完成");
+		System.out.println("Aggregation Node example completed");
 	}
 
 	public static class ParallelResultAggregatorNode implements NodeAction {
@@ -230,15 +230,15 @@ public class WorkflowExample {
 
 		@Override
 		public Map<String, Object> apply(OverAllState state) throws Exception {
-			// 收集所有并行任务的结果
+			// Collect all parallel task results
 			List<String> results = new ArrayList<>();
 
-			// 假设并行任务将结果存储在不同的键中
+			// Assume parallel tasks store results in different keys
 			state.value("result_1").ifPresent(r -> results.add(r.toString()));
 			state.value("result_2").ifPresent(r -> results.add(r.toString()));
 			state.value("result_3").ifPresent(r -> results.add(r.toString()));
 
-			// 聚合结果
+			// Aggregate results
 			String aggregatedResult = String.join("\n---\n", results);
 
 			Map<String, Object> output = new HashMap<>();
@@ -249,12 +249,12 @@ public class WorkflowExample {
 
 
 	/**
-	 * 示例5：集成自定义Node到StateGraph
+	 * Example 5: Integrating Custom Nodes into StateGraph
 	 *
-	 * 构建包含自定义Node的工作流
+	 * Build a workflow with custom Nodes
 	 */
 	public void example5_buildWorkflowWithCustomNodes() throws Exception {
-		// 定义状态管理策略
+		// Define state management strategies
 		KeyStrategyFactory keyStrategyFactory = () -> {
 			HashMap<String, KeyStrategy> strategies = new HashMap<>();
 			strategies.put("query", new ReplaceStrategy());
@@ -264,7 +264,7 @@ public class WorkflowExample {
 			return strategies;
 		};
 
-		// 创建Node实例
+		// Create Node instances
 		class TextProcessorNode implements NodeAction {
 			@Override
 			public Map<String, Object> apply(OverAllState state) throws Exception {
@@ -283,49 +283,49 @@ public class WorkflowExample {
 			}
 		}
 
-		// 构建 StateGraph
+		// Build StateGraph
 		StateGraph graph = new StateGraph(keyStrategyFactory);
 
-		// 添加自定义 Node
+		// Add custom Nodes
 		graph.addNode("processor", node_async(new TextProcessorNode()));
 		graph.addNode("condition", node_async(new ConditionNode()));
 
-		// 定义边（流程连接）
+		// Define edges (flow connections)
 		graph.addEdge(StateGraph.START, "processor");
 		graph.addEdge("processor", "condition");
 
-		// 条件边：根据 condition node 的结果路由
+		// Conditional edge: route based on condition node result
 		graph.addConditionalEdges(
 				"condition",
 				edge_async(state -> state.value("_condition_result", "short").toString()),
 				Map.of(
-						"long", "processor",  // 长文本重新处理
-						"short", StateGraph.END  // 短文本结束
+						"long", "processor",  // Long text gets reprocessed
+						"short", StateGraph.END  // Short text ends
 				)
 		);
 
-		System.out.println("自定义Node工作流构建完成");
+		System.out.println("Custom Node workflow built successfully");
 	}
 
 	/**
-	 * 示例6：Agent作为SubGraph Node
+	 * Example 6: Agent as SubGraph Node
 	 *
-	 * 将ReactAgent嵌入到工作流中
+	 * Embed a ReactAgent into a workflow
 	 */
 	public void example6_agentAsNode() throws Exception {
-		// 创建专门的数据分析 Agent
+		// Create a specialized data analysis Agent
 		ReactAgent analysisAgent = ReactAgent.builder()
 				.name("data_analyzer")
 				.model(chatModel)
-				.instruction("你是一个数据分析专家，负责分析数据并提供洞察，请分析以下输入数据：\n {input}")
+				.instruction("You are a data analysis expert responsible for analyzing data and providing insights. Please analyze the following input data:\n {input}")
 				.outputKey("analysis_result")
 				.build();
 
-		// 创建报告生成 Agent
+		// Create a report generation Agent
 		ReactAgent reportAgent = ReactAgent.builder()
 				.name("report_generator")
 				.model(chatModel)
-				.instruction("你是一个报告生成专家，负责将分析结果 “{analysis_result}” 转化为专业报告")
+				.instruction("You are a report generation expert responsible for converting the analysis result \"{analysis_result}\" into a professional report")
 				.outputKey("final_report")
 				.build();
 
@@ -335,49 +335,49 @@ public class WorkflowExample {
 			return strategies;
 		};
 
-		// 构建包含 Agent 的工作流
+		// Build a workflow containing Agents
 		StateGraph workflow = new StateGraph(keyStrategyFactory);
 
-		// 将 Agent 作为 SubGraph Node 添加
+		// Add Agent as SubGraph Node
 		workflow.addNode(analysisAgent.name(), analysisAgent.asNode(
-				true,                     // includeContents: 是否传递父图的消息历史
+				true,                     // includeContents: whether to pass parent graph's message history
 				false));
 
 		workflow.addNode(reportAgent.name(), reportAgent.asNode(
 				true,
 				false));
 
-		// 定义流程
+		// Define flow
 		workflow.addEdge(StateGraph.START, analysisAgent.name());
 		workflow.addEdge(analysisAgent.name(), reportAgent.name());
 		workflow.addEdge(reportAgent.name(), StateGraph.END);
 
 		CompiledGraph compiledGraph = workflow.compile(CompileConfig.builder().build());
-		NodeOutput lastOutput = compiledGraph.stream(Map.of("input", "2025年全年销量100亿，毛利率 23%，净利率 13%。2024年全年销量80亿，毛利率 20%，净利率 8%。")).doOnNext(output -> {
+		NodeOutput lastOutput = compiledGraph.stream(Map.of("input", "Full year sales of 10 billion in 2025, gross margin 23%, net margin 13%. Full year sales of 8 billion in 2024, gross margin 20%, net margin 8%.")).doOnNext(output -> {
 			if (output instanceof StreamingOutput<?> streamingOutput) {
 				System.out.println("Output from node " + streamingOutput.node() + ": " + streamingOutput.message().getText());
 			}
 		}).blockLast();
 
-		System.out.println("\n\n最终结果，包含所有节点状态：\n" + lastOutput.state().data());
+		System.out.println("\n\nFinal result, containing all node states:\n" + lastOutput.state().data());
 	}
 
 	/**
-	 * 示例7：混合使用Agent Node和普通Node
+	 * Example 7: Mixing Agent Nodes and Regular Nodes
 	 *
-	 * 在工作流中结合Agent和自定义Node
+	 * Combine Agents and custom Nodes in a workflow
 	 */
 	public void example7_hybridWorkflow() throws Exception {
-		// 创建 Agent
+		// Create Agent
 		ReactAgent qaAgent = ReactAgent.builder()
 				.name("qa_agent")
 				.model(chatModel)
-				.instruction("你是一个问答专家，负责回答用户的问题：\n {cleaned_input}")
+				.instruction("You are a Q&A expert responsible for answering the user's questions:\n {cleaned_input}")
 				.outputKey("qa_result")
 				.enableLogging(true)
 				.build();
 
-		// 创建自定义 Node
+		// Create custom Nodes
 		class PreprocessorNode implements NodeAction {
 			@Override
 			public Map<String, Object> apply(OverAllState state) throws Exception {
@@ -391,7 +391,7 @@ public class WorkflowExample {
 			@Override
 			public Map<String, Object> apply(OverAllState state) throws Exception {
 				Message message = (Message)state.value("qa_result").get();
-				boolean isValid = message.getText().length() > 50; // 简单验证
+				boolean isValid = message.getText().length() > 50; // Simple validation
 				return Map.of("is_valid", isValid);
 			}
 		}
@@ -405,24 +405,24 @@ public class WorkflowExample {
 			return strategies;
 		};
 
-		// 构建混合工作流
+		// Build hybrid workflow
 		StateGraph workflow = new StateGraph(keyStrategyFactory);
 
-		// 添加普通 Node
+		// Add regular Nodes
 		workflow.addNode("preprocess", node_async(new PreprocessorNode()));
 		workflow.addNode("validate", node_async(new ValidatorNode()));
 
-		// 添加 Agent Node
+		// Add Agent Node
 		workflow.addNode(qaAgent.name(), qaAgent.asNode(
 				true,
 				false));
 
-		// 定义流程：预处理 -> Agent处理 -> 验证
+		// Define flow: preprocess -> Agent processing -> validate
 		workflow.addEdge(StateGraph.START, "preprocess");
 		workflow.addEdge("preprocess", qaAgent.name());
 		workflow.addEdge(qaAgent.name(), "validate");
 
-		// 条件边：验证通过则结束，否则重新处理
+		// Conditional edge: end if validation passes, otherwise reprocess
 		workflow.addConditionalEdges(
 				"validate",
 				edge_async(state -> (Boolean) state.value("is_valid", false) ? "end" : qaAgent.name()),
@@ -430,7 +430,7 @@ public class WorkflowExample {
 		);
 
 		CompiledGraph compiledGraph = workflow.compile(CompileConfig.builder().build());
-		NodeOutput lastOutput = compiledGraph.stream(Map.of("input", "请解释量子计算的基本原理")).doOnNext(output -> {
+		NodeOutput lastOutput = compiledGraph.stream(Map.of("input", "Please explain the basic principles of quantum computing")).doOnNext(output -> {
 			if (output instanceof StreamingOutput<?> streamingOutput) {
 				if (streamingOutput.message() != null) {
 					// steaming output from streaming llm node
@@ -442,16 +442,16 @@ public class WorkflowExample {
 			}
 		}).blockLast();
 
-		System.out.println("\n\n\n最终结果，包含所有节点状态：\n" + lastOutput.state().data());
+		System.out.println("\n\n\nFinal result, containing all node states:\n" + lastOutput.state().data());
 	}
 
 	/**
-	 * 示例8：执行工作流
+	 * Example 8: Executing a Workflow
 	 *
-	 * 编译并执行StateGraph工作流
+	 * Compile and execute a StateGraph workflow
 	 */
 	public void example8_executeWorkflow() throws Exception {
-		// 创建简单的工作流
+		// Create a simple workflow
 		KeyStrategyFactory keyStrategyFactory = () -> {
 			HashMap<String, KeyStrategy> strategies = new HashMap<>();
 			strategies.put("input", new ReplaceStrategy());
@@ -473,105 +473,105 @@ public class WorkflowExample {
 		workflow.addEdge(StateGraph.START, "process");
 		workflow.addEdge("process", StateGraph.END);
 
-		// 编译工作流
+		// Compile workflow
 		CompileConfig compileConfig = CompileConfig.builder().build();
 		CompiledGraph compiledGraph = workflow.compile(compileConfig);
 
-		// 准备输入
+		// Prepare input
 		Map<String, Object> input = Map.of(
-				"input", "请分析2024年AI行业发展趋势"
+				"input", "Please analyze the 2024 AI industry development trends"
 		);
 
-		// 配置运行参数
+		// Configure runtime parameters
 		RunnableConfig runnableConfig = RunnableConfig.builder()
 				.threadId("workflow-001")
 				.build();
 
-		// 执行工作流
+		// Execute workflow
 		Optional<OverAllState> result = compiledGraph.invoke(input, runnableConfig);
 
-		// 处理结果
+		// Process results
 		result.ifPresent(state -> {
-			System.out.println("输入: " + state.value("input").orElse("无"));
-			System.out.println("输出: " + state.value("output").orElse("无"));
+			System.out.println("Input: " + state.value("input").orElse("none"));
+			System.out.println("Output: " + state.value("output").orElse("none"));
 		});
 
-		System.out.println("工作流执行完成");
+		System.out.println("Workflow execution completed");
 	}
 
 	/**
-	 * 示例9：多Agent协作工作流
+	 * Example 9: Multi-Agent Collaborative Workflow
 	 *
-	 * 构建完整的研究工作流
+	 * Build a complete research workflow
 	 */
 	private static final String RESEARCH_RESULT = """
-			#### 1. 引言
-			AI Agent（人工智能代理）是近年来人工智能领域的重要研究方向之一。它指的是一种能够感知环境、自主决策并采取行动以实现特定目标的智能系统。随着深度学习、强化学习和自然语言处理等技术的发展，AI Agent 在多个领域展现出巨大的潜力。
+			#### 1. Introduction
+			AI Agent (Artificial Intelligence Agent) is one of the important research directions in the AI field in recent years. It refers to an intelligent system capable of perceiving the environment, making autonomous decisions, and taking actions to achieve specific goals. With the development of deep learning, reinforcement learning, and natural language processing, AI Agents have demonstrated tremendous potential across multiple domains.
 			
-			本报告旨在全面梳理 AI Agent 的技术发展、应用场景、典型案例以及未来趋势，为相关研究和应用提供参考。
+			This report aims to comprehensively review the technological development, application scenarios, typical cases, and future trends of AI Agents, providing reference for related research and applications.
 			
 			---
 			
-			#### 2. 技术发展
+			#### 2. Technological Development
 			
-			##### 2.1 核心技术
-			- **感知能力**：通过计算机视觉、语音识别和传感器数据处理，AI Agent 能够理解外部环境。
-			- **决策能力**：基于强化学习、规则引擎或大模型推理，AI Agent 可以在复杂环境中做出最优决策。
-			- **执行能力**：通过与物理设备（如机器人）或软件系统（如自动化工具）集成，AI Agent 实现任务执行。
-			- **学习与适应**：利用在线学习和迁移学习技术，AI Agent 能够不断优化自身行为。
+			##### 2.1 Core Technologies
+			- **Perception**: Through computer vision, speech recognition, and sensor data processing, AI Agents can understand the external environment.
+			- **Decision-Making**: Based on reinforcement learning, rule engines, or large model reasoning, AI Agents can make optimal decisions in complex environments.
+			- **Execution**: By integrating with physical devices (e.g., robots) or software systems (e.g., automation tools), AI Agents carry out task execution.
+			- **Learning and Adaptation**: Using online learning and transfer learning techniques, AI Agents can continuously optimize their behavior.
 			
-			##### 2.2 关键进展
-			- **大模型驱动的 Agent**：以 LLM（大语言模型）为基础的 AI Agent 成为研究热点，例如 AutoGPT、BabyAGI 等项目展示了自主任务分解与执行的能力。
-			- **多模态融合**：结合文本、图像、音频等多种输入形式，提升 Agent 的环境理解能力。
-			- **人机协作**：设计更自然的人机交互机制，使 AI Agent 更好地融入人类工作流程。
+			##### 2.2 Key Advances
+			- **Large Model-Driven Agents**: LLM (Large Language Model)-based AI Agents have become a research hotspot, with projects like AutoGPT and BabyAGI demonstrating autonomous task decomposition and execution capabilities.
+			- **Multi-Modal Fusion**: Combining text, image, audio, and other input modalities to enhance the Agent's environmental understanding.
+			- **Human-Agent Collaboration**: Designing more natural human-computer interaction mechanisms to better integrate AI Agents into human workflows.
 		
 			""";
 
 	public void example9_multiAgentResearchWorkflow() throws Exception {
-		// 创建工具（示例）
+		// Create tools (example)
 		ToolCallback searchTool = FunctionToolCallback
 				.builder("search", (args) -> RESEARCH_RESULT)
-				.description("搜索工具")
+				.description("Search tool")
 				.inputType(String.class)
 				.build();
 
 		ToolCallback analysisTool = FunctionToolCallback
-				.builder("analysis", (args) -> "分析结果")
-				.description("分析工具")
+				.builder("analysis", (args) -> "Analysis result")
+				.description("Analysis tool")
 				.inputType(String.class)
 				.build();
 
 		ToolCallback summaryTool = FunctionToolCallback
-				.builder("summary", (args) -> "总结结果")
-				.description("总结结果。")
+				.builder("summary", (args) -> "Summary result")
+				.description("Summary tool.")
 				.inputType(String.class)
 				.build();
 
-		// 1. 创建信息收集 Agent
+		// 1. Create information gathering Agent
 		ReactAgent researchAgent = ReactAgent.builder()
 				.name("researcher")
 				.model(chatModel)
-				.instruction("你是一个研究专家，负责收集和整理相关信息，请研究主题： {input}")
+				.instruction("You are a research expert responsible for collecting and organizing relevant information. Please research the topic: {input}")
 				.tools(searchTool)
 				.outputKey("research_data")
 				.enableLogging(true)
 				.build();
 
-		// 2. 创建数据分析 Agent
+		// 2. Create data analysis Agent
 		ReactAgent analysisAgent = ReactAgent.builder()
 				.name("analyst")
 				.model(chatModel)
-				.instruction("你是一个分析专家，负责深入分析关于主题 “{input}” 的研究数据。数据如下： \n\n {research_data}")
+				.instruction("You are an analysis expert responsible for in-depth analysis of the research data on the topic \"{input}\". Data is as follows: \n\n {research_data}")
 				.tools(analysisTool)
 				.outputKey("analysis_result")
 				.enableLogging(true)
 				.build();
 
-		// 3. 创建总结 Agent
+		// 3. Create summary Agent
 		ReactAgent summaryAgent = ReactAgent.builder()
 				.name("summarizer")
 				.model(chatModel)
-				.instruction("你是一个总结专家，负责将分析结果提炼为简洁的结论，结果：\n\n {analysis_result}")
+				.instruction("You are a summary expert responsible for distilling the analysis results into concise conclusions. Results:\n\n {analysis_result}")
 				.tools(summaryTool)
 				.outputKey("final_summary")
 				.enableLogging(true)
@@ -583,13 +583,13 @@ public class WorkflowExample {
 			return strategies;
 		};
 
-		// 4. 构建工作流
+		// 4. Build workflow
 		StateGraph workflow = new StateGraph(keyStrategyFactory);
 
-		// 添加 Agent 节点
+		// Add Agent nodes
 		workflow.addNode(researchAgent.name(), researchAgent.asNode(
-				true,    // 包含历史消息
-				false   // 不返回推理过程
+				true,    // Include message history
+				false   // Do not return reasoning process
 		));
 
 		workflow.addNode(analysisAgent.name(), analysisAgent.asNode(
@@ -598,10 +598,10 @@ public class WorkflowExample {
 
 		workflow.addNode(summaryAgent.name(), summaryAgent.asNode(
 				true,
-				true    // 返回完整推理过程
+				true    // Return full reasoning process
 		));
 
-		// 定义顺序执行流程
+		// Define sequential execution flow
 		workflow.addEdge(StateGraph.START, researchAgent.name());
 		workflow.addEdge(researchAgent.name(), analysisAgent.name());
 		workflow.addEdge(analysisAgent.name(), summaryAgent.name());
@@ -609,114 +609,114 @@ public class WorkflowExample {
 
 
 		CompiledGraph compiledGraph = workflow.compile(CompileConfig.builder().build());
-		NodeOutput finaOutput = compiledGraph.stream(Map.of("input", "帮我做一份关于AI Agent的研究报告")).doOnNext(output -> {
+		NodeOutput finaOutput = compiledGraph.stream(Map.of("input", "Help me create a research report on AI Agents")).doOnNext(output -> {
 			if (output instanceof StreamingOutput<?> streamingOutput) {
 				System.out.println("Output from node " + streamingOutput.node() + ": " + streamingOutput.message().getText());
 			}
 		}).blockLast();
 
-		System.out.println("多Agent研究工作流构建完成");
-		System.out.println("最终输出: " + finaOutput.state().value("final_summary").orElse("无"));
+		System.out.println("Multi-Agent research workflow built successfully");
+		System.out.println("Final output: " + finaOutput.state().value("final_summary").orElse("none"));
 	}
 
 	/**
-	 * 示例10：使用RoutingAgent作为工作流节点
-	 * START → preprocess → content_router (RoutingAgent) → postprocess → END
-	 * 演示如何将LlmRoutingAgent作为StateGraph中的一个节点，
-	 * 通过getStateGraph()方法集成到更大的工作流中
+	 * Example 10: Using RoutingAgent as a Workflow Node
+	 * START -> preprocess -> content_router (RoutingAgent) -> postprocess -> END
+	 * Demonstrates how to integrate LlmRoutingAgent as a node in StateGraph,
+	 * using the getStateGraph() method to embed it in a larger workflow
 	 */
 	public void example10_routingAgentAsNode() throws Exception {
-		// 创建专门的子Agent
+		// Create specialized sub-Agents
 		ReactAgent technicalAgent = ReactAgent.builder()
 				.name("technical_writer")
 				.model(chatModel)
-				.description("擅长撰写技术文档和API文档")
-				.instruction("你是一个技术文档专家，擅长将技术内容转化为清晰易懂的文档。请处理以下内容：\n{content}")
+				.description("Specializes in writing technical documentation and API docs")
+				.instruction("You are a technical documentation expert who excels at transforming technical content into clear and easy-to-understand documents. Please process the following content:\n{content}")
 				.outputKey("technical_output")
 				.build();
 
 		ReactAgent marketingAgent = ReactAgent.builder()
 				.name("marketing_writer")
 				.model(chatModel)
-				.description("擅长撰写营销文案和产品介绍")
-				.instruction("你是一个营销文案专家，擅长创作吸引人的宣传内容。请处理以下内容：\n{content}")
+				.description("Specializes in writing marketing copy and product introductions")
+				.instruction("You are a marketing copywriting expert who excels at creating compelling promotional content. Please process the following content:\n{content}")
 				.outputKey("marketing_output")
 				.build();
 
 		ReactAgent customerAgent = ReactAgent.builder()
 				.name("customer_support")
 				.model(chatModel)
-				.description("擅长处理客户咨询和问题解答")
-				.instruction("你是一个客服专家，擅长友好、专业地回答客户问题。请处理以下咨询：\n{content}")
+				.description("Specializes in handling customer inquiries and answering questions")
+				.instruction("You are a customer service expert who excels at answering customer questions in a friendly and professional manner. Please handle the following inquiry:\n{content}")
 				.outputKey("customer_output")
 				.build();
 
-		// 创建路由Agent - 用于智能分发任务
+		// Create routing Agent - for intelligent task distribution
 		LlmRoutingAgent routingAgent = LlmRoutingAgent.builder()
 				.name("content_router")
-				.description("根据内容类型智能路由到合适的专家")
+				.description("Intelligently routes to the appropriate expert based on content type")
 				.model(chatModel)
 				.subAgents(List.of(technicalAgent, marketingAgent, customerAgent))
-//				.systemPrompt("你负责分析输入内容的性质，并选择最合适的专家处理。")
+//				.systemPrompt("You are responsible for analyzing the nature of input content and selecting the most appropriate expert to handle it.")
 				.build();
 
-		// 创建前置处理Node
+		// Create preprocessor Node
 		class PreprocessorNode implements NodeAction {
 			@Override
 			public Map<String, Object> apply(OverAllState state) throws Exception {
 				String input = (String) state.value("input", "");
-				// 清理和标准化输入
+				// Clean and normalize input
 				String cleaned = input.trim();
-				System.out.println("预处理: " + cleaned);
+				System.out.println("Preprocessing: " + cleaned);
 				return Map.of("content", cleaned);
 			}
 		}
 
-		// 创建后置处理Node
+		// Create postprocessor Node
 		class PostprocessorNode implements NodeAction {
 			@Override
 			public Map<String, Object> apply(OverAllState state) throws Exception {
-				// 独立获取每个Agent的输出结果
+				// Independently get each Agent's output result
 				StringBuilder mergedResult = new StringBuilder();
 
-				// 检查技术文档Agent的输出
+				// Check technical documentation Agent's output
 				Optional<Object> technicalOutput = state.value("technical_output");
 				if (technicalOutput.isPresent()) {
 					GraphResponse response = (GraphResponse) technicalOutput.get();
 					Map<String, Object> resultValue = (Map<String, Object>) response.resultValue().get();
-					mergedResult.append("[技术文档] ").append(resultValue.get("technical_output")).append("\n");
+					mergedResult.append("[Technical Doc] ").append(resultValue.get("technical_output")).append("\n");
 				}
 
-				// 检查营销文案Agent的输出
+				// Check marketing copy Agent's output
 				Optional<Object> marketingOutput = state.value("marketing_output");
 				if (marketingOutput.isPresent()) {
 					GraphResponse response = (GraphResponse) marketingOutput.get();
 					Map<String, Object> resultValue = (Map<String, Object>) response.resultValue().get();
-					mergedResult.append("[营销文案] ").append(resultValue.get("marketing_output")).append("\n");
+					mergedResult.append("[Marketing Copy] ").append(resultValue.get("marketing_output")).append("\n");
 				}
 
-				// 检查客户服务Agent的输出
+				// Check customer service Agent's output
 				Optional<Object> customerOutput = state.value("customer_output");
 				if (customerOutput.isPresent()) {
 					GraphResponse response = (GraphResponse) customerOutput.get();
 					Map<String, Object> resultValue = (Map<String, Object>) response.resultValue().get();
-					mergedResult.append("[客户服务] ").append(resultValue.get("customer_output")).append("\n");
+					mergedResult.append("[Customer Service] ").append(resultValue.get("customer_output")).append("\n");
 				}
 
-				// 合并所有非空结果
-				String result = mergedResult.length() > 0 ? mergedResult.toString().trim() : "无输出";
+				// Merge all non-empty results
+				String result = mergedResult.length() > 0 ? mergedResult.toString().trim() : "No output";
 
-				// 添加格式化
-				String formatted = "=== 处理结果 ===\n" + result + "\n===============";
-				System.out.println("后处理完成，合并了 " +
+				// Add formatting
+				String formatted = "=== Processing Result ===\n" + result + "\n===============";
+				System.out.println("Post-processing completed, merged " +
 						(technicalOutput.isPresent() ? 1 : 0) +
 						(marketingOutput.isPresent() ? 1 : 0) +
-						(customerOutput.isPresent() ? 1 : 0) + " 个结果");
+						(customerOutput.isPresent() ? 1 : 0) + " results");
 				return Map.of("final_output", formatted);
 			}
 		}
 
-		// 定义状态管理策略
+		// Define state management strategies
 		KeyStrategyFactory keyStrategyFactory = () -> {
 			HashMap<String, KeyStrategy> strategies = new HashMap<>();
 			strategies.put("input", new ReplaceStrategy());
@@ -726,43 +726,43 @@ public class WorkflowExample {
 			return strategies;
 		};
 
-		// 构建包含RoutingAgent的工作流
+		// Build workflow containing RoutingAgent
 		StateGraph workflow = new StateGraph(keyStrategyFactory);
 
-		// 添加前置处理节点
+		// Add preprocessor node
 		workflow.addNode("preprocess", node_async(new PreprocessorNode()));
 
-		// 关键：使用 asStateGraph() 将 RoutingAgent 作为子图节点添加到工作流
+		// Key: use asStateGraph() to add RoutingAgent as a sub-graph node into the workflow
 		workflow.addNode(routingAgent.name(), routingAgent.asStateGraph());
 
-		// 添加后置处理节点
+		// Add postprocessor node
 		workflow.addNode("postprocess", node_async(new PostprocessorNode()));
 
-		// 定义工作流程
+		// Define workflow flow
 		workflow.addEdge(StateGraph.START, "preprocess");
 		workflow.addEdge("preprocess", routingAgent.name());
 		workflow.addEdge(routingAgent.name(), "postprocess");
 		workflow.addEdge("postprocess", StateGraph.END);
 
-		// 编译并执行工作流
+		// Compile and execute workflow
 		CompiledGraph compiledGraph = workflow.compile(CompileConfig.builder().build());
 
 		System.out.println(compiledGraph.getGraph(GraphRepresentation.Type.PLANTUML).content());
 
-		System.out.println("\n=== 测试1: 技术问题 ===");
-		// 用于记录当前正在输出的Agent，避免多个Agent输出混乱
+		System.out.println("\n=== Test 1: Technical Question ===");
+		// Track the currently outputting Agent to avoid mixed output from multiple Agents
 		final String[] currentAgent = {null};
 		NodeOutput result1 = compiledGraph.stream(
-				Map.of("input", "如何使用Spring AI Alibaba框架实现Agent开发？")
+				Map.of("input", "How to implement Agent development using the CordonData framework?")
 		).doOnNext(output -> {
 			if (output instanceof StreamingOutput<?> streamingOutput) {
 				if (streamingOutput.message() != null) {
-					// 根据agent属性分类输出
+					// Categorize output by agent attribute
 					String agent = streamingOutput.agent();
 					if (agent != null && !agent.equals(currentAgent[0])) {
-						// 切换到新的Agent时，先换行并打印Agent标识
+						// When switching to a new Agent, add a newline and print Agent identifier
 						if (currentAgent[0] != null) {
-							System.out.println(); // 结束上一个Agent的输出
+							System.out.println(); // End previous Agent's output
 						}
 						System.out.print("\n[" + agent + "] ");
 						currentAgent[0] = agent;
@@ -771,21 +771,21 @@ public class WorkflowExample {
 				}
 			}
 		}).blockLast();
-		System.out.println("\n\n最终输出: " + result1.state().value("final_output").orElse("无"));
+		System.out.println("\n\nFinal output: " + result1.state().value("final_output").orElse("none"));
 
-		System.out.println("\n=== 测试2: 营销内容 ===");
-		currentAgent[0] = null; // 重置Agent标识
+		System.out.println("\n=== Test 2: Marketing Content ===");
+		currentAgent[0] = null; // Reset Agent identifier
 		NodeOutput result2 = compiledGraph.stream(
-				Map.of("input", "为新产品写一段吸引人的宣传文案")
+				Map.of("input", "Write an engaging promotional copy for a new product")
 		).doOnNext(output -> {
 			if (output instanceof StreamingOutput<?> streamingOutput) {
 				if (streamingOutput.message() != null) {
-					// 根据agent属性分类输出
+					// Categorize output by agent attribute
 					String agent = streamingOutput.agent();
 					if (agent != null && !agent.equals(currentAgent[0])) {
-						// 切换到新的Agent时，先换行并打印Agent标识
+						// When switching to a new Agent, add a newline and print Agent identifier
 						if (currentAgent[0] != null) {
-							System.out.println(); // 结束上一个Agent的输出
+							System.out.println(); // End previous Agent's output
 						}
 						System.out.print("\n[" + agent + "] ");
 						currentAgent[0] = agent;
@@ -794,21 +794,21 @@ public class WorkflowExample {
 				}
 			}
 		}).blockLast();
-		System.out.println("\n\n最终输出: " + result2.state().value("final_output").orElse("无"));
+		System.out.println("\n\nFinal output: " + result2.state().value("final_output").orElse("none"));
 
-		System.out.println("\n=== 测试3: 客户咨询 ===");
-		currentAgent[0] = null; // 重置Agent标识
+		System.out.println("\n=== Test 3: Customer Inquiry ===");
+		currentAgent[0] = null; // Reset Agent identifier
 		NodeOutput result3 = compiledGraph.stream(
-				Map.of("input", "我的订单什么时候能到？")
+				Map.of("input", "When will my order arrive?")
 		).doOnNext(output -> {
 			if (output instanceof StreamingOutput<?> streamingOutput) {
 				if (streamingOutput.message() != null) {
-					// 根据agent属性分类输出
+					// Categorize output by agent attribute
 					String agent = streamingOutput.agent();
 					if (agent != null && !agent.equals(currentAgent[0])) {
-						// 切换到新的Agent时，先换行并打印Agent标识
+						// When switching to a new Agent, add a newline and print Agent identifier
 						if (currentAgent[0] != null) {
-							System.out.println(); // 结束上一个Agent的输出
+							System.out.println(); // End previous Agent's output
 						}
 						System.out.print("\n[" + agent + "] ");
 						currentAgent[0] = agent;
@@ -817,9 +817,9 @@ public class WorkflowExample {
 				}
 			}
 		}).blockLast();
-		System.out.println("\n\n最终输出: " + result3.state().value("final_output").orElse("无"));
+		System.out.println("\n\nFinal output: " + result3.state().value("final_output").orElse("none"));
 
-		System.out.println("\nRoutingAgent作为节点的工作流示例完成");
+		System.out.println("\nRoutingAgent as workflow node example completed");
 	}
 
 	private void printGraphRepresentation(FlowAgent agent) {
@@ -828,55 +828,55 @@ public class WorkflowExample {
 	}
 
 	/**
-	 * 运行所有示例
+	 * Run all examples
 	 */
 	public void runAllExamples() {
-		System.out.println("=== 工作流（Workflow）示例 ===\n");
+		System.out.println("=== Workflow Examples ===\n");
 
 		try {
-			System.out.println("示例1: 基础Node定义");
+			System.out.println("Example 1: Basic Node Definition");
 			example1_basicNode();
 			System.out.println();
 
-			System.out.println("示例2: 带配置的AI Node");
+			System.out.println("Example 2: AI Node with Configuration");
 			example2_aiNode();
 			System.out.println();
 
-			System.out.println("示例3: 条件评估Node");
+			System.out.println("Example 3: Condition Evaluation Node");
 			example3_conditionNode();
 			System.out.println();
 
-			System.out.println("示例4: 并行结果聚合Node");
+			System.out.println("Example 4: Parallel Result Aggregation Node");
 			example4_aggregatorNode();
 			System.out.println();
 
-			System.out.println("示例5: 集成自定义Node到StateGraph");
+			System.out.println("Example 5: Integrating Custom Nodes into StateGraph");
 			example5_buildWorkflowWithCustomNodes();
 			System.out.println();
 
-			System.out.println("示例6: Agent作为SubGraph Node");
+			System.out.println("Example 6: Agent as SubGraph Node");
 			example6_agentAsNode();
 			System.out.println();
 //
-			System.out.println("示例7: 混合使用Agent Node和普通Node");
+			System.out.println("Example 7: Mixing Agent Nodes and Regular Nodes");
 			example7_hybridWorkflow();
 			System.out.println();
 
-			System.out.println("示例8: 执行工作流");
+			System.out.println("Example 8: Executing a Workflow");
 			example8_executeWorkflow();
 			System.out.println();
 
-			System.out.println("示例9: 多Agent协作工作流");
+			System.out.println("Example 9: Multi-Agent Collaborative Workflow");
 			example9_multiAgentResearchWorkflow();
 			System.out.println();
 
-			System.out.println("示例10: 使用RoutingAgent作为工作流节点");
+			System.out.println("Example 10: Using RoutingAgent as a Workflow Node");
 			example10_routingAgentAsNode();
 			System.out.println();
 
 		}
 		catch (Exception e) {
-			System.err.println("执行示例时出错: " + e.getMessage());
+			System.err.println("Error running example: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}

@@ -48,17 +48,17 @@ import java.util.function.BiFunction;
 import static com.alibaba.cloud.ai.graph.agent.tools.ToolContextConstants.AGENT_CONFIG_CONTEXT_KEY;
 
 /**
- * 记忆管理（Memory）示例
+ * Memory management (Memory) example
  *
- * 演示如何在Agent中使用记忆管理功能，包括：
- * 1. 在工具中读取长期记忆
- * 2. 在工具中写入长期记忆
- * 3. 使用ModelHook管理长期记忆
- * 4. 结合短期和长期记忆
- * 5. 跨会话记忆
- * 6. 用户偏好学习
+ * Demonstrate how to use memory management functions in Agent, including:
+ * 1. Read long-term memory in the tool
+ * 2. Write long-term memory in the tool
+ * 3. Use ModelHook to manage long-term memory
+ * 4. Combine short-term and long-term memory
+ * 5. Cross-session memory
+ * 6. User preference learning
  *
- * 参考文档: advanced_doc/memory.md
+ * Reference documentation: advanced_doc/memory.md
  */
 public class MemoryExample {
 
@@ -69,55 +69,55 @@ public class MemoryExample {
 	}
 
 	/**
-	 * Main方法：运行所有示例
+	 * Main method: run all examples
 	 *
-	 * 注意：需要配置ChatModel实例才能运行
+	 * Note: A ChatModel instance needs to be configured to run
 	 */
 	public static void main(String[] args) {
-		// 创建 DashScope API 实例
+		//Create a DashScope API instance
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
 				.apiKey(System.getenv("AI_DASHSCOPE_API_KEY"))
 				.build();
 
-		// 创建 ChatModel
+		//Create ChatModel
 		ChatModel chatModel = DashScopeChatModel.builder()
 				.dashScopeApi(dashScopeApi)
 				.build();
 
 		if (chatModel == null) {
-			System.err.println("错误：请先配置ChatModel实例");
-			System.err.println("请设置 AI_DASHSCOPE_API_KEY 环境变量");
+			System.err.println("Error: Please configure ChatModel instance first");
+			System.err.println("Please set the AI_DASHSCOPE_API_KEY environment variable");
 			return;
 		}
 
-		// 创建示例实例
+		//Create a sample instance
 		MemoryExample example = new MemoryExample(chatModel);
 
-		// 运行所有示例
+		//Run all examples
 		example.runAllExamples();
 	}
 
 	private static void mockInsertToStore(MemoryStore store) {
-		// 向存储中写入示例数据
+		//Writing sample data to storage
 		Map<String, Object> userData = new HashMap<>();
-		userData.put("name", "张三");
-		userData.put("language", "中文");
+		userData.put("name", "Zhang San");
+		userData.put("language", "Chinese");
 
 		StoreItem userItem = StoreItem.of(List.of("users"), "user_123", userData);
 		store.putItem(userItem);
 	}
 
 	/**
-	 * 示例1：在工具中读取长期记忆
+	 * Example 1: Reading long-term memory in a tool
 	 *
-	 * 创建一个工具，让Agent能够查询用户信息
+	 * Create a tool that allows Agent to query user information
 	 */
 	public void example1_readMemoryInTool() throws GraphRunnerException {
-		// 定义请求和响应记录
+		//Define request and response records
 		record GetMemoryRequest(List<String> namespace, String key) { }
 		record MemoryResponse(String message, Map<String, Object> value) { }
 
-		// 创建获取用户信息的工具
+		//Create tools to obtain user information
 		BiFunction<GetMemoryRequest, ToolContext, MemoryResponse> getUserInfoFunction =
 				(request, context) -> {
 					RunnableConfig runnableConfig = (RunnableConfig) context.getContext().get(AGENT_CONFIG_CONTEXT_KEY);
@@ -125,17 +125,17 @@ public class MemoryExample {
 					Optional<StoreItem> itemOpt = store.getItem(request.namespace(), request.key());
 					if (itemOpt.isPresent()) {
 						Map<String, Object> value = itemOpt.get().getValue();
-						return new MemoryResponse("找到用户信息", value);
+						return new MemoryResponse("Find user information", value);
 					}
-					return new MemoryResponse("未找到用户", Map.of());
+					return new MemoryResponse("User not found", Map.of());
 				};
 
 		ToolCallback getUserInfoTool = FunctionToolCallback.builder("getUserInfo", getUserInfoFunction)
-				.description("查询用户信息")
+				.description("Query user information")
 				.inputType(GetMemoryRequest.class)
 				.build();
 
-		// 创建Agent
+		//CreateAgent
 		ReactAgent agent = ReactAgent.builder()
 				.name("memory_agent")
 				.model(chatModel)
@@ -144,48 +144,48 @@ public class MemoryExample {
 				.build();
 
 
-		// 创建内存存储
+		//Create memory storage
 		MemoryStore store = new MemoryStore();
-		// 在Store中放入模拟数据，实际应用中，存储可能是其他流程中生成
+		//Put simulated data in the Store. In actual applications, the storage may be generated in other processes.
 		mockInsertToStore(store);
-		// 运行Agent
+		//RunAgent
 		RunnableConfig config = RunnableConfig.builder()
 				.threadId("session_001")
 				.addMetadata("user_id", "user_123")
 				.store(store)
 				.build();
 
-		agent.invoke("查询用户信息，namespace=['users'], key='user_123'", config);
+		agent.invoke("Query user information,namespace=['users'], key='user_123'", config);
 
-		System.out.println("工具读取长期记忆示例执行完成");
+		System.out.println("Tool reading long-term memory example execution completed");
 	}
 
 	/**
-	 * 示例2：在工具中写入长期记忆
+	 * Example 2: Writing long-term memory in tools
 	 *
-	 * 创建一个更新用户信息的工具
+	 * Create a tool to update user information
 	 */
 	public void example2_writeMemoryInTool() throws GraphRunnerException {
-		// 定义请求记录
+		//Define request records
 		record SaveMemoryRequest(List<String> namespace, String key, Map<String, Object> value) { }
 		record MemoryResponse(String message, Map<String, Object> value) { }
 
-		// 创建保存用户信息的工具
+		//Create a tool to save user information
 		BiFunction<SaveMemoryRequest, ToolContext, MemoryResponse> saveUserInfoFunction =
 				(request, context) -> {
 					RunnableConfig runnableConfig = (RunnableConfig) context.getContext().get(AGENT_CONFIG_CONTEXT_KEY);
 					Store store = runnableConfig.store();
 					StoreItem item = StoreItem.of(request.namespace(), request.key(), request.value());
 					store.putItem(item);
-					return new MemoryResponse("成功保存用户信息", request.value());
+					return new MemoryResponse("User information saved successfully", request.value());
 				};
 
 		ToolCallback saveUserInfoTool = FunctionToolCallback.builder("saveUserInfo", saveUserInfoFunction)
-				.description("保存用户信息")
+				.description("Save user information")
 				.inputType(SaveMemoryRequest.class)
 				.build();
 
-		// 创建Agent
+		//CreateAgent
 		ReactAgent agent = ReactAgent.builder()
 				.name("save_memory_agent")
 				.model(chatModel)
@@ -193,36 +193,36 @@ public class MemoryExample {
 				.saver(new MemorySaver())
 				.build();
 
-		// 创建内存存储
+		//Create memory storage
 		MemoryStore store = new MemoryStore();
 		RunnableConfig config = RunnableConfig.builder()
 				.threadId("session_001")
 				.addMetadata("user_id", "user_123")
 				.store(store)
 				.build();
-		// 运行Agent
+		//RunAgent
 		agent.invoke(
-				"我叫张三，请保存我的信息。使用 saveUserInfo 工具，namespace=['users'], key='user_123', value={'name': '张三'}",
+				"My name is Zhang San, please save my information.Use the saveUserInfo tool, namespace=['users'], key='user_123', value={'name': 'Zhang San'}",
 				config
 		);
 
-		// 可以直接访问存储获取值
+		//You can directly access the storage to get the value
 		Optional<StoreItem> savedItem = store.getItem(List.of("users"), "user_123");
 		if (savedItem.isPresent()) {
 			Map<String, Object> savedValue = savedItem.get().getValue();
-			System.out.println("保存的数据: " + savedValue);
+			System.out.println("Saved data:" + savedValue);
 		}
 
-		System.out.println("工具写入长期记忆示例执行完成");
+		System.out.println("Tools write long-term memory example execution completed");
 	}
 
 	/**
-	 * 示例3：使用MessagesModelHook管理长期记忆
+	 * Example 3: Using MessagesModelHook to manage long-term memory
 	 *
-	 * 在模型调用前后自动加载和保存长期记忆
+	 * Automatically load and save long-term memory before and after model calls
 	 */
 	public void example3_memoryWithModelHook() throws GraphRunnerException {
-		// 创建记忆拦截器
+		//Create a memory interceptor
 		@HookPositions({HookPosition.BEFORE_MODEL, HookPosition.AFTER_MODEL})
 		class MemoryInterceptor extends MessagesModelHook {
 			@Override
@@ -232,28 +232,28 @@ public class MemoryExample {
 
 			@Override
 			public AgentCommand beforeModel(List<Message> previousMessages, RunnableConfig config) {
-				// 从配置中获取用户ID
+				//Get user ID from configuration
 				String userId = (String) config.metadata("user_id").orElse(null);
 				if (userId == null) {
 					return new AgentCommand(previousMessages);
 				}
 
 				Store store = config.store();
-				// 从记忆存储中加载用户画像
+				//Load user portrait from memory storage
 				Optional<StoreItem> itemOpt = store.getItem(List.of("user_profiles"), userId);
 				if (itemOpt.isPresent()) {
 					Map<String, Object> profile = itemOpt.get().getValue();
 
-					// 将用户上下文注入系统消息
+					//Inject user context into system messages
 					String userContext = String.format(
-							"用户信息：姓名=%s, 年龄=%s, 邮箱=%s, 偏好=%s",
+							"User information: name=%s, age=%s, email=%s, preference=%s",
 							profile.get("name"),
 							profile.get("age"),
 							profile.get("email"),
 							profile.get("preferences")
 					);
 
-					// 查找是否已存在 SystemMessage
+					//Find if SystemMessage already exists
 					SystemMessage existingSystemMessage = null;
 					int systemMessageIndex = -1;
 					for (int i = 0; i < previousMessages.size(); i++) {
@@ -265,23 +265,23 @@ public class MemoryExample {
 						}
 					}
 
-					// 如果找到 SystemMessage，更新它；否则创建新的
+					//If SystemMessage is found, update it; otherwise create a new one
 					SystemMessage enhancedSystemMessage;
 					if (existingSystemMessage != null) {
-						// 更新现有的 SystemMessage
+						//Update existing SystemMessage
 						enhancedSystemMessage = new SystemMessage(
 								existingSystemMessage.getText() + "\n\n" + userContext
 						);
 					}
 					else {
-						// 创建新的 SystemMessage
+						//Create new SystemMessage
 						enhancedSystemMessage = new SystemMessage(userContext);
 					}
 
-					// 构建新的消息列表
+					//Build a new message list
 					List<Message> newMessages = new ArrayList<>();
 					if (systemMessageIndex >= 0) {
-						// 如果找到了 SystemMessage，替换它
+						//If SystemMessage is found, replace it
 						for (int i = 0; i < previousMessages.size(); i++) {
 							if (i == systemMessageIndex) {
 								newMessages.add(enhancedSystemMessage);
@@ -292,12 +292,12 @@ public class MemoryExample {
 						}
 					}
 					else {
-						// 如果没有找到 SystemMessage，在开头添加新的
+						//If SystemMessage is not found, add a new one at the beginning
 						newMessages.add(enhancedSystemMessage);
 						newMessages.addAll(previousMessages);
 					}
 
-					// 使用 REPLACE 策略替换所有消息
+					//Replace all messages using REPLACE policy
 					return new AgentCommand(newMessages, UpdatePolicy.REPLACE);
 				}
 
@@ -306,15 +306,15 @@ public class MemoryExample {
 
 			@Override
 			public AgentCommand afterModel(List<Message> previousMessages, RunnableConfig config) {
-				// 可以在这里实现对话后的记忆保存逻辑
-				// 不修改消息，返回原始消息
+				//The memory saving logic after the dialogue can be implemented here
+				//Do not modify the message, return the original message
 				return new AgentCommand(previousMessages);
 			}
 		}
 
 		MessagesModelHook memoryInterceptor = new MemoryInterceptor();
 
-		// 创建带有记忆拦截器的Agent
+		//Create an Agent with a memory interceptor
 		ReactAgent agent = ReactAgent.builder()
 				.name("memory_agent")
 				.model(chatModel)
@@ -323,15 +323,15 @@ public class MemoryExample {
 				.build();
 
 
-		// 创建内存存储
+		//Create memory storage
 		MemoryStore memoryStore = new MemoryStore();
 
-		// 模拟数据，预先填充用户画像
+		//Simulate data and pre-populate user portraits
 		Map<String, Object> profileData = new HashMap<>();
-		profileData.put("name", "王小明");
+		profileData.put("name", "Wang Xiaoming");
 		profileData.put("age", 28);
 		profileData.put("email", "wang@example.com");
-		profileData.put("preferences", List.of("喜欢咖啡", "喜欢阅读"));
+		profileData.put("preferences", List.of("like coffee", "like reading"));
 
 		StoreItem profileItem = StoreItem.of(List.of("user_profiles"), "user_001", profileData);
 		memoryStore.putItem(profileItem);
@@ -341,20 +341,20 @@ public class MemoryExample {
 				.store(memoryStore)
 				.build();
 
-		// Agent会自动加载用户画像信息
-		agent.invoke("请介绍一下我的信息。", config);
+		//Agent will automatically load user portrait information
+		agent.invoke("Please give me some information.", config);
 
-		System.out.println("ModelHook管理长期记忆示例执行完成");
+		System.out.println("ModelHook management long-term memory example execution completed");
 	}
 
 	/**
-	 * 示例4：结合短期和长期记忆
+	 * Example 4: Combining short-term and long-term memory
 	 *
-	 * 短期记忆用于存储对话上下文，长期记忆用于存储持久化数据
-	 * 使用MessagesModelHook实现
+	 * Short-term memory is used to store conversation context, and long-term memory is used to store persistent data.
+	 * Implemented using MessagesModelHook
 	 */
 	public void example4_combinedMemory() throws GraphRunnerException {
-		// 创建组合记忆Hook
+		//Create a combined memory Hook
 		@HookPositions({HookPosition.BEFORE_MODEL})
 		class CombinedMemoryHook extends MessagesModelHook {
 			@Override
@@ -371,17 +371,17 @@ public class MemoryExample {
 				String userId = (String) userIdOpt.get();
 
 				Store memoryStore = config.store();
-				// 从长期记忆加载
+				//Loading from long-term memory
 				Optional<StoreItem> profileOpt = memoryStore.getItem(List.of("profiles"), userId);
 				if (profileOpt.isEmpty()) {
 					return new AgentCommand(previousMessages);
 				}
 
 				Map<String, Object> profile = profileOpt.get().getValue();
-				String contextInfo = String.format("长期记忆：用户 %s, 职业: %s",
+				String contextInfo = String.format("Long-term memory: User %s, Occupation: %s",
 						profile.get("name"), profile.get("occupation"));
 
-				// 查找是否已存在 SystemMessage
+				//Find if SystemMessage already exists
 				SystemMessage existingSystemMessage = null;
 				int systemMessageIndex = -1;
 				for (int i = 0; i < previousMessages.size(); i++) {
@@ -393,23 +393,23 @@ public class MemoryExample {
 					}
 				}
 
-				// 如果找到 SystemMessage，更新它；否则创建新的
+				//If SystemMessage is found, update it; otherwise create a new one
 				SystemMessage enhancedSystemMessage;
 				if (existingSystemMessage != null) {
-					// 更新现有的 SystemMessage
+					//Update existing SystemMessage
 					enhancedSystemMessage = new SystemMessage(
 							existingSystemMessage.getText() + "\n\n" + contextInfo
 					);
 				}
 				else {
-					// 创建新的 SystemMessage
+					//Create new SystemMessage
 					enhancedSystemMessage = new SystemMessage(contextInfo);
 				}
 
-				// 构建新的消息列表
+				//Build a new message list
 				List<Message> newMessages = new ArrayList<>();
 				if (systemMessageIndex >= 0) {
-					// 如果找到了 SystemMessage，替换它
+					//If SystemMessage is found, replace it
 					for (int i = 0; i < previousMessages.size(); i++) {
 						if (i == systemMessageIndex) {
 							newMessages.add(enhancedSystemMessage);
@@ -420,32 +420,32 @@ public class MemoryExample {
 					}
 				}
 				else {
-					// 如果没有找到 SystemMessage，在开头添加新的
+					//If SystemMessage is not found, add a new one at the beginning
 					newMessages.add(enhancedSystemMessage);
 					newMessages.addAll(previousMessages);
 				}
 
-				// 使用 REPLACE 策略替换所有消息
+				//Replace all messages using REPLACE policy
 				return new AgentCommand(newMessages, UpdatePolicy.REPLACE);
 			}
 		}
 
 		MessagesModelHook combinedMemoryHook = new CombinedMemoryHook();
 
-		// 创建Agent
+		//CreateAgent
 		ReactAgent agent = ReactAgent.builder()
 				.name("combined_memory_agent")
 				.model(chatModel)
 				.hooks(combinedMemoryHook)
-				.saver(new MemorySaver()) // 短期记忆
+				.saver(new MemorySaver()) //short term memory
 				.build();
 
-		// 创建记忆存储
+		//Create memory storage
 		MemoryStore memoryStore = new MemoryStore();
-		// 设置长期记忆
+		//Set up long-term memory
 		Map<String, Object> userProfile = new HashMap<>();
-		userProfile.put("name", "李工程师");
-		userProfile.put("occupation", "软件工程师");
+		userProfile.put("name", "Engineer Li");
+		userProfile.put("occupation", "software engineer");
 		StoreItem profileItem = StoreItem.of(List.of("profiles"), "user_002", userProfile);
 		memoryStore.putItem(profileItem);
 
@@ -455,20 +455,20 @@ public class MemoryExample {
 				.store(memoryStore)
 				.build();
 
-		// 短期记忆：在对话中记住
-		agent.invoke("我今天在做一个 Spring 项目。", config);
+		//Short-term memory: remembering during conversations
+		agent.invoke("I'm working on a Spring project today.", config);
 
-		// 提出需要同时使用两种记忆的问题
-		agent.invoke("根据我的职业和今天的工作，给我一些建议。", config);
-		// 响应会同时使用长期记忆（职业）和短期记忆（Spring项目）
+		//Asking questions that require the use of both memories
+		agent.invoke("Give me some advice based on my career and what I do today.", config);
+		//Response uses both long-term memory (career) and short-term memory (Spring project)
 
-		System.out.println("结合短期和长期记忆示例执行完成");
+		System.out.println("Completed by combining short-term and long-term memory examples");
 	}
 
 	/**
-	 * 示例5：跨会话记忆
+	 * Example 5: Memory across sessions
 	 *
-	 * 同一用户在不同会话中应该能够访问相同的长期记忆
+	 * The same user should be able to access the same long-term memory in different sessions
 	 */
 	public void example5_crossSessionMemory() throws GraphRunnerException {
 		record SaveMemoryRequest(List<String> namespace, String key, Map<String, Object> value) { }
@@ -482,9 +482,9 @@ public class MemoryExample {
 							RunnableConfig runnableConfig = (RunnableConfig) context.getContext().get(AGENT_CONFIG_CONTEXT_KEY);
 							Store memoryStore = runnableConfig.store();
 							memoryStore.putItem(item);
-							return new MemoryResponse("已保存", request.value());
+							return new MemoryResponse("saved", request.value());
 						})
-				.description("保存到长期记忆")
+				.description("Save to long-term memory")
 				.inputType(SaveMemoryRequest.class)
 				.build();
 
@@ -494,11 +494,11 @@ public class MemoryExample {
 							Store memoryStore = runnableConfig.store();
 							Optional<StoreItem> itemOpt = memoryStore.getItem(request.namespace(), request.key());
 							return new MemoryResponse(
-									itemOpt.isPresent() ? "找到" : "未找到",
+									itemOpt.isPresent() ? "turn up" : "not found",
 									itemOpt.map(StoreItem::getValue).orElse(Map.of())
 							);
 						})
-				.description("从长期记忆获取")
+				.description("Retrieve from long-term memory")
 				.inputType(GetMemoryRequest.class)
 				.build();
 
@@ -509,9 +509,9 @@ public class MemoryExample {
 				.saver(new MemorySaver())
 				.build();
 
-		// 创建记忆存储和工具
+		//Create memory stores and tools
 		MemoryStore memoryStore = new MemoryStore();
-		// 会话1：保存信息
+		//Session 1: Save information
 		RunnableConfig session1 = RunnableConfig.builder()
 				.threadId("session_morning")
 				.addMetadata("user_id", "user_003")
@@ -519,11 +519,11 @@ public class MemoryExample {
 				.build();
 
 		agent.invoke(
-				"记住我的密码是 secret123。用 saveMemory 保存，namespace=['credentials'], key='user_003_password', value={'password': 'secret123'}。",
+				"Remember my password is secret123.use saveMemory save,namespace=['credentials'], key='user_003_password', value={'password': 'secret123'}。",
 				session1
 		);
 
-		// 会话2：检索信息（不同的线程，同一用户）
+		//Session 2: Retrieving information (different thread, same user)
 		RunnableConfig session2 = RunnableConfig.builder()
 				.threadId("session_afternoon")
 				.addMetadata("user_id", "user_003")
@@ -531,19 +531,19 @@ public class MemoryExample {
 				.build();
 
 		agent.invoke(
-				"我的密码是什么？用 getMemory 获取，namespace=['credentials'], key='user_003_password'。",
+				"What is my password?use getMemory get,namespace=['credentials'], key='user_003_password'。",
 				session2
 		);
-		// 长期记忆在不同会话间持久化
+		//Long-term memory persists across sessions
 
-		System.out.println("跨会话记忆示例执行完成");
+		System.out.println("Cross-session memory example execution completed");
 	}
 
 	/**
-	 * 示例6：用户偏好学习
+	 * Example 6: User preference learning
 	 *
-	 * Agent可以随着时间的推移学习并存储用户偏好
-	 * 使用MessagesModelHook实现
+	 * Agents can learn and store user preferences over time
+	 * Implemented using MessagesModelHook
 	 */
 	public void example6_preferLearning() throws GraphRunnerException {
 		MemoryStore memoryStore = new MemoryStore();
@@ -568,12 +568,12 @@ public class MemoryExample {
 					return new AgentCommand(previousMessages);
 				}
 
-				// 提取用户输入
+				//Extract user input
 				if (previousMessages.isEmpty()) {
 					return new AgentCommand(previousMessages);
 				}
 
-				// 加载现有偏好
+				//Load existing preferences
 				Optional<StoreItem> prefsOpt = store.getItem(List.of("user_data"), userId + "_preferences");
 				List<String> prefs = new ArrayList<>();
 				if (prefsOpt.isPresent()) {
@@ -581,10 +581,10 @@ public class MemoryExample {
 					prefs = (List<String>) prefsData.getOrDefault("items", new ArrayList<>());
 				}
 
-				// 简单的偏好提取（实际应用中使用NLP）
+				//Simple preference extraction (using NLP in practical applications)
 				for (Message msg : previousMessages) {
 					String content = msg.getText().toLowerCase();
-					if (content.contains("喜欢") || content.contains("偏好")) {
+					if (content.contains("like") || content.contains("Preference")) {
 						prefs.add(msg.getText());
 
 						Map<String, Object> prefsData = new HashMap<>();
@@ -592,11 +592,11 @@ public class MemoryExample {
 						StoreItem item = StoreItem.of(List.of("user_data"), userId + "_preferences", prefsData);
 						store.putItem(item);
 
-						System.out.println("学习到用户偏好 " + userId + ": " + msg.getText());
+						System.out.println("Learn user preferences" + userId + ": " + msg.getText());
 					}
 				}
 
-				// 不修改消息，返回原始消息
+				//Do not modify the message, return the original message
 				return new AgentCommand(previousMessages);
 			}
 		}
@@ -615,53 +615,53 @@ public class MemoryExample {
 				.addMetadata("user_id", "user_004")
 				.build();
 
-		// 用户表达偏好
-		agent.invoke("我喜欢喝绿茶。", config);
-		agent.invoke("我偏好早上运动。", config);
+		//User expressed preference
+		agent.invoke("I like drinking green tea.", config);
+		agent.invoke("I prefer to exercise in the morning.", config);
 
-		// 验证偏好已被存储
+		//Verification preferences have been stored
 		Optional<StoreItem> savedPrefs = memoryStore.getItem(List.of("user_data"), "user_004_preferences");
 		if (savedPrefs.isPresent()) {
-			System.out.println("已保存的偏好: " + savedPrefs.get().getValue());
+			System.out.println("Saved preferences:" + savedPrefs.get().getValue());
 		}
 
-		System.out.println("用户偏好学习示例执行完成");
+		System.out.println("User preference learning example execution completed");
 	}
 
 	/**
-	 * 运行所有示例
+	 * Run all examples
 	 */
 	public void runAllExamples() {
-		System.out.println("=== 记忆管理（Memory）示例 ===\n");
+		System.out.println("=== Memory management example ===\n");
 
 		try {
-			System.out.println("示例1: 在工具中读取长期记忆");
+			System.out.println("Example 1: Reading long-term memory in a tool");
 			example1_readMemoryInTool();
 			System.out.println();
 
-			System.out.println("示例2: 在工具中写入长期记忆");
+			System.out.println("Example 2: Writing long-term memory in a tool");
 			example2_writeMemoryInTool();
 			System.out.println();
 
-			System.out.println("示例3: 使用ModelHook管理长期记忆");
+			System.out.println("Example 3: Using ModelHook to manage long-term memory");
 			example3_memoryWithModelHook();
 			System.out.println();
 
-			System.out.println("示例4: 结合短期和长期记忆");
+			System.out.println("Example 4: Combining short-term and long-term memory");
 			example4_combinedMemory();
 			System.out.println();
 
-			System.out.println("示例5: 跨会话记忆");
+			System.out.println("Example 5: Cross-session memory");
 			example5_crossSessionMemory();
 			System.out.println();
 
-			System.out.println("示例6: 用户偏好学习");
+			System.out.println("Example 6: User preference learning");
 			example6_preferLearning();
 			System.out.println();
 
 		}
 		catch (Exception e) {
-			System.err.println("执行示例时出错: " + e.getMessage());
+			System.err.println("An error occurred while executing the example:" + e.getMessage());
 			e.printStackTrace();
 		}
 	}

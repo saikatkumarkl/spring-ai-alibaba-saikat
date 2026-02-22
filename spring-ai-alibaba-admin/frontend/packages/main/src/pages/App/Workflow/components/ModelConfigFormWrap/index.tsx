@@ -1,7 +1,7 @@
 import ModelConfigForm from '@/components/ModelConfigForm';
 import $i18n from '@/i18n';
 import { IModel } from '@/types/modelService';
-import { IVarTreeItem, VariableSelector } from '@spark-ai/flow';
+import { IVarTreeItem, VariableSelector } from '@cordondata/flow';
 import { Flex, Switch } from 'antd';
 import { memo, useMemo, useState } from 'react';
 import { SELECTED_MODEL_PARAMS_DEFAULT } from '../../constant';

@@ -75,18 +75,18 @@ public class Issue2702ReproductionTest {
 		return new ChatModel() {
 			@Override
 			public ChatResponse call(Prompt prompt) {
-				return new ChatResponse(List.of(new Generation(new AssistantMessage("这是一个测试"))));
+				return new ChatResponse(List.of(new Generation(new AssistantMessage("this is a test"))));
 			}
 
 			@Override
 			public Flux<ChatResponse> stream(Prompt prompt) {
 				return Flux.concat(
 					// Normal chunk 1
-					Flux.just(new ChatResponse(List.of(new Generation(new AssistantMessage("这是"))))),
+					Flux.just(new ChatResponse(List.of(new Generation(new AssistantMessage("This is"))))),
 					
 					// Normal chunk 2
 					Mono.delay(Duration.ofMillis(10))
-						.map(i -> new ChatResponse(List.of(new Generation(new AssistantMessage("一个"))))),
+						.map(i -> new ChatResponse(List.of(new Generation(new AssistantMessage("one"))))),
 					
 					// 🔥 Simulate usage-only chunk (null result) - this is what causes the NPE
 					Mono.delay(Duration.ofMillis(10))
@@ -102,7 +102,7 @@ public class Issue2702ReproductionTest {
 					
 					// Normal chunk 3
 					Mono.delay(Duration.ofMillis(10))
-						.map(i -> new ChatResponse(List.of(new Generation(new AssistantMessage("测试")))))
+						.map(i -> new ChatResponse(List.of(new Generation(new AssistantMessage("test")))))
 				);
 			}
 		};
@@ -133,7 +133,7 @@ public class Issue2702ReproductionTest {
 
 		// 3. Prepare input
 		Map<String, Object> input = new HashMap<>();
-		input.put(OverAllState.DEFAULT_INPUT_KEY, "测试");
+		input.put(OverAllState.DEFAULT_INPUT_KEY, "test");
 
 		// 4. Stream and verify no NPE occurs
 		CountDownLatch latch = new CountDownLatch(1);
@@ -142,22 +142,22 @@ public class Issue2702ReproductionTest {
 
 		compiledGraph.stream(input)
 			.doOnNext(output -> {
-				log.info("✅ 接收到流式输出: {}", output);
+				log.info("✅ Streaming output received: {}", output);
 			})
 			.doOnError(error -> {
 				if (error instanceof NullPointerException) {
 					hasNPE.set(true);
-					log.error("❌ 检测到 NullPointerException (Issue #2702 未修复):", error);
+					log.error("❌ detected NullPointerException (Issue #2702 not fixed):", error);
 				} else if (error.getCause() instanceof NullPointerException) {
 					hasNPE.set(true);
-					log.error("❌ 检测到 NullPointerException (Issue #2702 未修复, 在 cause 中):", error.getCause());
+					log.error("❌ detected NullPointerException (Issue #2702 not fixed, exist cause middle):", error.getCause());
 				} else {
 					hasError.set(true);
-					log.warn("⚠️ 检测到其他错误:", error);
+					log.warn("⚠️ Other errors detected:", error);
 				}
 			})
 			.doOnComplete(() -> {
-				log.info("✅ 流式调用完成");
+				log.info("✅ Streaming call completed");
 				latch.countDown();
 			})
 			.subscribe(
@@ -171,17 +171,17 @@ public class Issue2702ReproductionTest {
 			);
 
 		// 5. Wait for completion
-		assertTrue(latch.await(10, TimeUnit.SECONDS), "流式调用应在 10 秒内完成");
+		assertTrue(latch.await(10, TimeUnit.SECONDS), "Streaming call should complete within 10 seconds");
 
 		// 6. Verify no NPE occurred
 		assertFalse(hasNPE.get(), 
-			"❌ 检测到 NodeExecutor 中的 NullPointerException！这表示 Issue #2702 未修复。");
+			"❌ NullPointerException in NodeExecutor detected!This means that Issue #2702 is not fixed.");
 
 		if (hasError.get()) {
-			log.warn("注意：检测到其他错误（可能是 GraphFluxGenerator 等其他组件需要类似修复）");
+			log.warn("NOTE: Other errors detected (possibly other components such as GraphFluxGenerator that require similar fixes)");
 		}
 
-		log.info("✅ 测试通过：NodeExecutor 中的 null result NPE 已修复（Issue #2702）");
+		log.info("✅ Test passed: null result NPE in NodeExecutor fixed (Issue #2702)");
 	}
 }
 

@@ -1,5 +1,5 @@
 import $i18n from '@/i18n';
-import { SelectWithDesc, VariableInput } from '@spark-ai/flow';
+import { SelectWithDesc, VariableInput } from '@cordondata/flow';
 import { Switch } from 'antd';
 import React, { memo } from 'react';
 import { ITryCatchConfig } from '../../types/flow';

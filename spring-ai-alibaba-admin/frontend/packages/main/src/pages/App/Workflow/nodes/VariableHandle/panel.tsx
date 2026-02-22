@@ -3,7 +3,7 @@ import { Button, IconFont } from '@spark-ai/design';
 import type {
   INodeDataInputParamItem,
   INodeDataOutputParamItem,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import {
   CustomInputsControl,
   OutputParamsTree,
@@ -15,7 +15,7 @@ import {
   useNodesOutputParams,
   useNodesReadOnly,
   useReactFlowStore,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { Flex } from 'antd';
 import { memo, useCallback, useMemo } from 'react';
 import GroupVariableForm from '../../components/GroupVariableForm';

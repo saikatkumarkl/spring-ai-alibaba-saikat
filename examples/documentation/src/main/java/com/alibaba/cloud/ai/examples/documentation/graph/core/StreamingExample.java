@@ -40,19 +40,19 @@ import static com.alibaba.cloud.ai.graph.StateGraph.END;
 import static com.alibaba.cloud.ai.graph.StateGraph.START;
 
 /**
- * 流式输出示例
- * 演示如何在 Spring AI Alibaba Graph 中实现流式输出
+ * Streaming Output Example
+ * Demonstrates how to implement streaming output in CordonData Graph
  */
 public class StreamingExample {
 
 	/**
-	 * 使用 StateGraph 实现流式输出的完整示例
+	 * Complete example of implementing streaming output using StateGraph
 	 *
-	 * @param chatClientBuilder ChatClient 构建器
-	 * @throws GraphStateException 图执行异常
+	 * @param chatClientBuilder ChatClient builder
+	 * @throws GraphStateException graph execution exception
 	 */
 	public static void streamLLMTokens(ChatClient.Builder chatClientBuilder) throws GraphStateException {
-		// 定义状态策略
+		// Define state strategies
 		KeyStrategyFactory keyStrategyFactory = () -> {
 			Map<String, KeyStrategy> keyStrategyMap = new HashMap<>();
 			keyStrategyMap.put("query", new AppendStrategy());
@@ -61,13 +61,13 @@ public class StreamingExample {
 			return keyStrategyMap;
 		};
 
-		// 创建流式节点
+		// Create streaming node
 		StreamingNode streamingNode = new StreamingNode(chatClientBuilder, "streaming_node");
 
-		// 创建处理节点
+		// Create processing node
 		ProcessStreamingNode processNode = new ProcessStreamingNode();
 
-		// 构建图
+		// Build graph
 		StateGraph stateGraph = new StateGraph(keyStrategyFactory)
 				.addNode("streaming_node", AsyncNodeAction.node_async(streamingNode))
 				.addNode("process_node", AsyncNodeAction.node_async(processNode))
@@ -75,65 +75,65 @@ public class StreamingExample {
 				.addEdge("streaming_node", "process_node")
 				.addEdge("process_node", END);
 
-		// 编译图
+		// Compile graph
 		CompiledGraph graph = stateGraph.compile(
 				CompileConfig.builder()
 						.build()
 		);
 
-		// 创建配置
+		// Create configuration
 		RunnableConfig config = RunnableConfig.builder()
 				.threadId("streaming_thread")
 				.build();
 
-		// 使用流式方式执行图
-		System.out.println("开始流式输出...\n");
+		// Execute graph in streaming mode
+		System.out.println("Starting streaming output...\n");
 
-		graph.stream(Map.of("query", "请用一句话介绍 Spring AI"), config)
+		graph.stream(Map.of("query", "Describe Spring AI in one sentence"), config)
 				.doOnNext(output -> {
-					// 处理流式输出
+					// Process streaming output
 					if (output instanceof StreamingOutput<?> streamingOutput) {
-						// 流式输出块
+						// Streaming output chunk
 						String chunk = streamingOutput.chunk();
 						if (chunk != null && !chunk.isEmpty()) {
-							System.out.print(chunk); // 实时打印流式内容
+							System.out.print(chunk); // Print streaming content in real-time
 						}
 					}
 					else {
-						// 普通节点输出
+						// Normal node output
 						String nodeId = output.node();
 						Map<String, Object> state = output.state().data();
-						System.out.println("\n节点 '" + nodeId + "' 执行完成");
+						System.out.println("\nNode '" + nodeId + "' execution completed");
 						if (state.containsKey("result")) {
-							System.out.println("最终结果: " + state.get("result"));
+							System.out.println("Final result: " + state.get("result"));
 						}
 					}
 				})
 				.doOnComplete(() -> {
-					System.out.println("\n\n流式输出完成");
+					System.out.println("\n\nStreaming output completed");
 				})
 				.doOnError(error -> {
-					System.err.println("流式输出错误: " + error.getMessage());
+					System.err.println("Streaming output error: " + error.getMessage());
 				})
-				.blockLast(); // 阻塞等待流完成
+				.blockLast(); // Block and wait for stream completion
 	}
 
 	public static void main(String[] args) {
-		System.out.println("=== 流式输出示例 ===\n");
+		System.out.println("=== Streaming Output Example ===\n");
 
 		try {
-			// 示例 1: 使用 Spring AI 的流式 LLM tokens（需要 ChatClient）
-			System.out.println("示例 1: 使用 Spring AI 的流式 LLM tokens");
-			System.out.println("注意: 此示例需要 ChatClient，跳过执行");
-			System.out.println("使用方法: streamLLMTokens(ChatClient.builder()...)");
+			// Example 1: Streaming LLM tokens with Spring AI (requires ChatClient)
+			System.out.println("Example 1: Streaming LLM tokens with Spring AI");
+			System.out.println("Note: This example requires ChatClient, skipping execution");
+			System.out.println("Usage: streamLLMTokens(ChatClient.builder()...)");
 			// streamLLMTokens(ChatClient.builder()...);
 			System.out.println();
 
-			System.out.println("所有示例执行完成");
-			System.out.println("提示: 请配置 ChatClient 后运行完整示例");
+			System.out.println("All examples completed");
+			System.out.println("Tip: Configure ChatClient before running the full example");
 		}
 		catch (Exception e) {
-			System.err.println("执行示例时出错: " + e.getMessage());
+			System.err.println("Error executing example: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
@@ -152,7 +152,7 @@ public class StreamingExample {
 		public Map<String, Object> apply(OverAllState state) {
 			String query = (String) state.value("query").orElse("");
 
-			// 获取流式响应
+			// Get streaming response
 			Flux<ChatResponse> chatResponseFlux = chatClient.prompt()
 					.user(query)
 					.stream()
@@ -163,15 +163,15 @@ public class StreamingExample {
 	}
 
 	/**
-	 * 处理流式输出的节点 - 接收并处理流式响应
+	 * Node for processing streaming output - receives and processes streaming responses
 	 */
 	public static class ProcessStreamingNode implements NodeAction {
 
 		@Override
 		public Map<String, Object> apply(OverAllState state) {
-			// 从状态中获取流式响应结果
+			// Get streaming response result from state
 			Object messages = state.value("messages").orElse("");
-			String result = "流式响应已处理完成: " + messages;
+			String result = "Streaming response processed: " + messages;
 			return Map.of("result", result);
 		}
 	}

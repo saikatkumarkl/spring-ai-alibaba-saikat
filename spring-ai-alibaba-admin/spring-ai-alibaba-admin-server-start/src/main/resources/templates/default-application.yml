@@ -17,7 +17,7 @@ server:
   port: 28080
 spring:
   application:
-    name: spring-ai-alibaba-graph-example
+    name: cordondata-graph-example
   ai:
     dashscope:
       api-key: ${DASHSCOPE_API_KEY}

@@ -34,19 +34,19 @@ public class ReviewerTool implements BiFunction<String, ToolContext, String> {
 			ToolContext toolContext) {
 		count++;
 		System.out.println("Reviewer tool called : " + article);
-		return "晨光初透，薄雾如纱，轻轻覆在西湖的湖面上。断桥残影映水，柳丝拂波，露珠悬于草尖，欲坠未坠。远处山色空蒙，画舫轻移，划开一池碧琉璃。风过处，荷香暗送，落叶轻旋，似在低语岁月的秘密。原来人间至美，不过西湖一瞬的静谧与诗意。";
+		return "The morning light is beginning to shine through, and the mist is like a gauze, gently covering the surface of the West Lake.The shadow of the broken bridge reflects in the water, willow silk ruffles the waves, and dewdrops hang on the grass tips, about to fall but not yet.The mountains in the distance are empty, and the boat gently moves, opening a pool of green glass.Wherever the wind passes, the fragrance of lotus is carried secretly, and the fallen leaves swirl gently, as if whispering the secrets of the years.It turns out that the most beautiful thing in the world is the silence and poetry of the West Lake for a moment.";
 	}
 
 	public static ToolCallback createReviewerToolCallback() {
 		return FunctionToolCallback.builder("reviewer", new ReviewerTool())
-				.description("用来评论或修改诗、散文的工具")
+				.description("Tools for commenting or revising poetry and prose")
 				.inputType(String.class)
 				.build();
 	}
 
 	public static ToolCallback createReviewerToolCallback(String name, ReviewerTool reviewerTool) {
 		return FunctionToolCallback.builder(name, reviewerTool)
-				.description("用来评论或修改诗、散文的工具")
+				.description("Tools for commenting or revising poetry and prose")
 				.inputType(String.class)
 				.build();
 	}

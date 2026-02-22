@@ -26,3 +26,13 @@ server:
 admin:
   api:
     base-url: http://localhost:8080
+
+# Keycloak SSO configuration
+keycloak:
+  enabled: ${KEYCLOAK_ENABLED:true}
+  auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL:http://localhost:8180}
+  public-url: ${KEYCLOAK_PUBLIC_URL:http://localhost:8180}
+  realm: ${KEYCLOAK_REALM:spring-ai-alibaba}
+  client-id: chatbot
+  admin-username: ${KEYCLOAK_ADMIN_USERNAME:admin}
+  admin-password: ${KEYCLOAK_ADMIN_PASSWORD:admin}

@@ -33,10 +33,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 
 /**
- * Main entry point for the Spring AI Alibaba Studio application.
+ * Main entry point for the CordonData Studio application.
  * <p>
- * A Spring Boot application that provides core server functionality for the Spring AI
- * Alibaba Studio Admin, enabling Agent Evaluation and Observability.
+ * A Spring Boot application that provides core server functionality for the CordonData
+ * Studio Admin, enabling Agent Evaluation and Observability.
  * <p>
  * Features: - Component scanning across studio package - Customizable configuration
  * properties - Graceful shutdown handling - Middleware integration (MySQL, Redis,
@@ -55,7 +55,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 				@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
 						classes = GeneratorApplication.MockLoginController.class) })
 @EnableConfigurationProperties(StudioProperties.class)
-public class SaaStudioAdmin {
+public class CordonDataAdmin {
 
 	/**
 	 * Bootstraps the Spring Boot application. Initializes the application context and
@@ -63,7 +63,7 @@ public class SaaStudioAdmin {
 	 * @param args Command line arguments
 	 */
 	public static void main(String[] args) {
-		SpringApplication.run(SaaStudioAdmin.class, args).registerShutdownHook();
+		SpringApplication.run(CordonDataAdmin.class, args).registerShutdownHook();
 	}
 
 	/**

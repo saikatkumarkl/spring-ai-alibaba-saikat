@@ -1,5 +1,5 @@
 import $i18n from '@/i18n';
-import { CODE_DEMO_MAP, INodeSchema } from '@spark-ai/flow';
+import { CODE_DEMO_MAP, INodeSchema } from '@cordondata/flow';
 import {
   RETRY_CONFIG_DEFAULT,
   SCRIPT_NODE_INPUT_PARAMS_DEFAULT,

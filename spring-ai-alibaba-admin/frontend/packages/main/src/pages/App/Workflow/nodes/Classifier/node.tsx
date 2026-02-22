@@ -1,6 +1,6 @@
 import $i18n from '@/i18n';
-import type { IWorkFlowNode } from '@spark-ai/flow';
-import { BaseNode, NodeProps, SourceHandle } from '@spark-ai/flow';
+import type { IWorkFlowNode } from '@cordondata/flow';
+import { BaseNode, NodeProps, SourceHandle } from '@cordondata/flow';
 import { Typography } from 'antd';
 import { memo } from 'react';
 import { IClassifierNodeParam } from '../../types';

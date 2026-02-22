@@ -61,30 +61,30 @@ public class PIIDectionHookTest {
 
         ReactAgent agent = createAgent(hook, "test-pii-redact-agent", chatModel);
 
-        System.out.println("=== 测试PII检测（REDACT策略）===");
+        System.out.println("=== Test PII detection (REDACT strategy) ===");
 
         List<Message> messages = new ArrayList<>();
-        messages.add(new UserMessage("我的邮箱地址是 test@example.com，请记住它。"));
+        messages.add(new UserMessage("My email address is test@example.com, please remember it."));
 
         Optional<OverAllState> result = agent.invoke(messages);
 
-        assertTrue(result.isPresent(), "结果应该存在");
+        assertTrue(result.isPresent(), "The result should exist");
         Object messagesObj = result.get().value("messages").get();
-        assertNotNull(messagesObj, "消息应该存在于结果中");
+        assertNotNull(messagesObj, "The message should be present in the result");
 
         if (messagesObj instanceof List) {
             List<Message> resultMessages = (List<Message>) messagesObj;
-            System.out.println("返回消息数量: " + resultMessages.size());
+            System.out.println("Number of messages returned:" + resultMessages.size());
 
             for (Message message : resultMessages) {
                 if (message instanceof UserMessage) {
                     String content = message.getText();
                     if (content.contains("[REDACTED_EMAIL]")) {
-                        System.out.println("✓ 成功检测并替换用户消息中的邮箱地址");
+                        System.out.println("✓ Successfully detect and replace email addresses in user messages");
                     }
                 } else if (message instanceof AssistantMessage) {
                     String content = message.getText();
-                    System.out.println("AI回复: " + content);
+                    System.out.println("AI reply:" + content);
                 }
             }
         }
@@ -101,27 +101,27 @@ public class PIIDectionHookTest {
 
         ReactAgent agent = createAgent(hook, "test-pii-mask-agent", chatModel);
 
-        System.out.println("\n=== 测试PII检测（MASK策略）===");
+        System.out.println("\n=== Test PII detection (MASK strategy) ===");
 
         List<Message> messages = new ArrayList<>();
-        messages.add(new UserMessage("我的信用卡号是 1234 5678 9012 3456，请帮我检查一下。"));
+        messages.add(new UserMessage("My credit card number is 1234 5678 9012 3456, please check it for me."));
 
         Optional<OverAllState> result = agent.invoke(messages);
 
-        assertTrue(result.isPresent(), "结果应该存在");
+        assertTrue(result.isPresent(), "The result should exist");
         Object messagesObj = result.get().value("messages").get();
-        assertNotNull(messagesObj, "消息应该存在于结果中");
+        assertNotNull(messagesObj, "The message should be present in the result");
 
         if (messagesObj instanceof List) {
             List<Message> resultMessages = (List<Message>) messagesObj;
-            System.out.println("返回消息数量: " + resultMessages.size());
+            System.out.println("Number of messages returned:" + resultMessages.size());
             for (Message message : resultMessages) {
                 if (message instanceof UserMessage) {
                     String content = message.getText();
                     if (content.contains("****") && content.contains("3456")) {
-                        System.out.println("成功检测并部分掩码用户消息中的信用卡号");
+                        System.out.println("Successfully detects and partially masks credit card numbers in user messages");
                     }
-                    System.out.println("处理后的用户消息: " + content);
+                    System.out.println("Processed user message:" + content);
                 }
             }
         }
@@ -137,19 +137,19 @@ public class PIIDectionHookTest {
 
         ReactAgent agent = createAgent(hook, "test-pii-block-agent", chatModel);
 
-        System.out.println("\n=== 测试PII检测（BLOCK策略）===");
+        System.out.println("\n=== Test PII detection (BLOCK strategy) ===");
 
         List<Message> messages = new ArrayList<>();
-        messages.add(new UserMessage("我的服务器IP地址是 192.168.1.100，请不要泄露。"));
+        messages.add(new UserMessage("My server IP address is 192.168.1.100, please do not disclose it."));
 
         try {
             Optional<OverAllState> result = agent.invoke(messages);
-            System.out.println("未抛出异常，可能IP未被正确检测");
+            System.out.println("No exception was thrown, maybe the IP was not detected correctly");
         } catch (Exception e) {
             if (e.getCause() instanceof com.alibaba.cloud.ai.graph.agent.hook.pii.PIIDetectionException) {
-                System.out.println("✓ 成功检测到IP地址并阻止处理: " + e.getCause().getMessage());
+                System.out.println("✓ IP address successfully detected and blocked for processing:" + e.getCause().getMessage());
             } else {
-                System.out.println("抛出其他异常: " + e.getMessage());
+                System.out.println("Throw other exceptions:" + e.getMessage());
             }
         }
     }
@@ -162,21 +162,21 @@ public class PIIDectionHookTest {
                 .saver(new MemorySaver())
                 .build();
 
-        System.out.println("\n=== 测试不带PII检测的对话 ===");
+        System.out.println("\n=== Testing the conversation without PII detection ===");
 
         List<Message> messages = new ArrayList<>();
-        messages.add(new UserMessage("你好，有什么可以帮助你的吗？"));
+        messages.add(new UserMessage("Hello, how can I help you?"));
 
         Optional<OverAllState> result = agent.invoke(messages);
 
-        assertTrue(result.isPresent(), "结果应该存在");
+        assertTrue(result.isPresent(), "The result should exist");
         Object messagesObj = result.get().value("messages").get();
-        assertNotNull(messagesObj, "消息应该存在于结果中");
+        assertNotNull(messagesObj, "The message should be present in the result");
 
         if (messagesObj instanceof List) {
             List<Message> resultMessages = (List<Message>) messagesObj;
-            System.out.println("返回消息数量: " + resultMessages.size());
-            System.out.println("✓ 正常对话流程，未触发PII检测");
+            System.out.println("Number of messages returned:" + resultMessages.size());
+            System.out.println("✓ Normal conversation flow, no PII detection triggered");
         }
     }
 
@@ -191,28 +191,28 @@ public class PIIDectionHookTest {
 
         ReactAgent agent = createAgent(hook, "test-custom-pii-agent", chatModel);
 
-        System.out.println("\n=== 测试自定义PII检测器 ===");
+        System.out.println("\n=== Test custom PII detector ===");
 
         List<Message> messages = new ArrayList<>();
-        messages.add(new UserMessage("我的手机号码是 13812345678，请保存。"));
+        messages.add(new UserMessage("My mobile phone number is 13812345678, please save it."));
 
         Optional<OverAllState> result = agent.invoke(messages);
 
-        assertTrue(result.isPresent(), "结果应该存在");
+        assertTrue(result.isPresent(), "The result should exist");
         Object messagesObj = result.get().value("messages").get();
-        assertNotNull(messagesObj, "消息应该存在于结果中");
+        assertNotNull(messagesObj, "The message should be present in the result");
 
         if (messagesObj instanceof List) {
             List<Message> resultMessages = (List<Message>) messagesObj;
-            System.out.println("返回消息数量: " + resultMessages.size());
+            System.out.println("Number of messages returned:" + resultMessages.size());
 
             for (Message message : resultMessages) {
                 if (message instanceof UserMessage) {
                     String content = message.getText();
                     if (content.contains("[REDACTED_PHONE]")) {
-                        System.out.println("成功检测并替换用户消息中的手机号码");
+                        System.out.println("Successfully detected and replaced mobile phone numbers in user messages");
                     }
-                    System.out.println("处理后的用户消息: " + content);
+                    System.out.println("Processed user message:" + content);
                 }
             }
         }

@@ -35,14 +35,14 @@ public class ModelConfigParser {
      */
     public ModelConfigInfo parseModelConfig(String modelConfigJson) {
         if (!StringUtils.hasText(modelConfigJson)) {
-            throw new IllegalArgumentException("模型配置不能为空");
+            throw new IllegalArgumentException("Model configuration cannot be empty");
         }
         
         try {
             return objectMapper.readValue(modelConfigJson, ModelConfigInfo.class);
         } catch (Exception e) {
-            log.error("解析模型配置JSON失败: {}", modelConfigJson, e);
-            throw new IllegalArgumentException("模型配置格式错误: " + e.getMessage(), e);
+            log.error("Failed to parse model configuration JSON: {}", modelConfigJson, e);
+            throw new IllegalArgumentException("Model configuration format error:" + e.getMessage(), e);
         }
     }
     
@@ -66,7 +66,7 @@ public class ModelConfigParser {
                         workspaceId = context.getWorkspaceId();
                     }
                 } catch (Exception e) {
-                    log.warn("无法获取 RequestContext 的 workspaceId，将不使用 workspace 过滤: {}", e.getMessage());
+                    log.warn("Unable to obtain workspaceId of RequestContext, workspace filtering will not be used: {}", e.getMessage());
                 }
                 
                 ModelEntity modelEntity = null;
@@ -86,20 +86,20 @@ public class ModelConfigParser {
                 
                 //3. If still not found, throw an exception
                 if (modelEntity == null) {
-                    throw new IllegalArgumentException("模型配置不存在: modelId=" + modelConfigInfo.getModelId() + 
+                    throw new IllegalArgumentException("Model configuration does not exist: modelId=" + modelConfigInfo.getModelId() + 
                         (modelConfigInfo.getParameter("modelName") != null ? ", modelName=" + modelConfigInfo.getParameter("modelName") : ""));
                 }
                 
                 //If the model is found from the ModelManager, update the modelId of modelConfigInfo to the id of the ModelEntity
-                log.info("从 ModelManager 找到模型: id={}, name={}, modelId={}, workspaceId={}", 
+                log.info("from ModelManager find model: id={}, name={}, modelId={}, workspaceId={}", 
                     modelEntity.getId(), modelEntity.getName(), modelEntity.getModelId(), workspaceId);
                 
                 //Update modelId to the id of ModelEntity to ensure that the correct id is used later.
                 modelConfigInfo.setModelId(modelEntity.getId());
             }
         } catch (Exception e) {
-            log.error("解析模型配置失败: modelConfig={}", modelConfig, e);
-            throw new RuntimeException("模型配置解析失败: " + e.getMessage(), e);
+            log.error("Failed to parse model configuration: modelConfig={}", modelConfig, e);
+            throw new RuntimeException("Model configuration parsing failed:" + e.getMessage(), e);
         }
         return modelConfigInfo;
     }
@@ -174,7 +174,7 @@ public class ModelConfigParser {
             
             return resultBuilder.toString();
         } catch (Exception e) {
-            log.warn("变量替换失败，使用原始模板: template={}, variables={}", template, variablesJson, e);
+            log.warn("Variable substitution failed, use original template: template={}, variables={}", template, variablesJson, e);
             return template;
         }
     }
@@ -187,11 +187,11 @@ public class ModelConfigParser {
      */
     public void validateModelConfig(ModelConfigInfo modelConfigInfo) {
         if (modelConfigInfo == null) {
-            throw new IllegalArgumentException("模型配置不能为空");
+            throw new IllegalArgumentException("Model configuration cannot be empty");
         }
         
         if (modelConfigInfo.getModelId() == null) {
-            throw new IllegalArgumentException("模型ID不能为空");
+            throw new IllegalArgumentException("Model ID cannot be empty");
         }
         
         //Only basic data type verification is performed, and the specific parameter range is verified by the model service.
@@ -251,10 +251,10 @@ public class ModelConfigParser {
                 return; //Can be converted to a numeric value
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(
-                        String.format("参数 %s 的值 '%s' 不是有效的数值", parameterName, value));
+                        String.format("The value '%s' for parameter %s is not a valid number", parameterName, value));
             }
         }
         
-        throw new IllegalArgumentException(String.format("参数 %s 的值 '%s' 应该是数值类型", parameterName, value));
+        throw new IllegalArgumentException(String.format("The value '%s' of parameter %s should be of numeric type", parameterName, value));
     }
 }

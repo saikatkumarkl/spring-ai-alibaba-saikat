@@ -11,29 +11,29 @@ public class PromptVersionCreateRequest {
     /**
      * Prompt Key
      */
-    @NotBlank(message = "Prompt Key不能为空")
-    @Size(min = 1, max = 255, message = "Prompt Key长度必须在1-255个字符之间")
-    @Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "Prompt Key只能包含字母、数字、下划线和短横线")
+    @NotBlank(message = "Prompt Key cannot be empty")
+    @Size(min = 1, max = 255, message = "Prompt Key length must be between 1-255 characters")
+    @Pattern(regexp = "^[a-zA-Z0-9_-]+$", message = "Prompt Key can only contain letters, numbers, underscores and dashes")
     private String promptKey;
 
     /**
      * version number
      */
-    @NotBlank(message = "版本号不能为空")
-    @Size(min = 1, max = 32, message = "版本号长度必须在1-32个字符之间")
-    @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "版本号只能包含字母、数字、点、下划线和短横线")
+    @NotBlank(message = "Version number cannot be empty")
+    @Size(min = 1, max = 32, message = "The version number length must be between 1-32 characters")
+    @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "Version numbers can only contain letters, numbers, dots, underscores, and dashes")
     private String version;
 
     /**
      * Version description
      */
-    @Size(max = 255, message = "版本描述不能超过255个字符")
+    @Size(max = 255, message = "Version description cannot exceed 255 characters")
     private String versionDescription;
 
     /**
      * Prompt content
      */
-    @NotBlank(message = "Prompt内容不能为空")
+    @NotBlank(message = "Prompt content cannot be empty")
     private String template;
 
     /**
@@ -49,6 +49,6 @@ public class PromptVersionCreateRequest {
     /**
      * Version status: pre-pre-release version, release-official version
      */
-    @Pattern(regexp = "^(pre|release)$", message = "版本状态必须是pre或release")
+    @Pattern(regexp = "^(pre|release)$", message = "Version status must be pre or release")
     private String status = "pre";
 }

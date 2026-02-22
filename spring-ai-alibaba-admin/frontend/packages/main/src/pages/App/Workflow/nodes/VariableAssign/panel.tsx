@@ -1,6 +1,6 @@
 import $i18n from '@/i18n';
 import { Button, IconFont, Select } from '@spark-ai/design';
-import type { IValueType, IVarItem, IVarTreeItem } from '@spark-ai/flow';
+import type { IValueType, IVarItem, IVarTreeItem } from '@cordondata/flow';
 import {
   uniqueId,
   useNodeDataUpdate,
@@ -10,7 +10,7 @@ import {
   VariableFormComp,
   variableFromLabelRender,
   VariableSelector,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { Flex, Space } from 'antd';
 import { memo, useCallback, useMemo } from 'react';
 import { useWorkflowAppStore } from '../../context/WorkflowAppProvider';

@@ -50,11 +50,11 @@ public class TracingQueryBuilder {
                             .lte(JsonData.of(endMicros)))
                     );
                     boolQueryBuilder.filter(timeRangeQuery);
-                    log.debug("添加时间范围过滤: {} - {} (微秒: {} - {})", 
+                    log.debug("Add time range filter: {} - {} (microseconds: {} - {})", 
                         request.getStartTime(), request.getEndTime(), startTimeMicros, endTimeMicros);
                 }
             } catch (Exception e) {
-                log.error("构建时间范围查询失败", e);
+                log.error("Building time range query failed", e);
             }
         }
 
@@ -155,11 +155,11 @@ public class TracingQueryBuilder {
                     );
                     
                     searchBuilder.query(timeRangeQuery);
-                    log.debug("添加服务查询时间范围过滤: {} - {} (微秒: {} - {})", 
+                    log.debug("Add service query time range filter: {} - {} (microseconds: {} - {})", 
                         request.getStartTime(), request.getEndTime(), startTimeMicros, endTimeMicros);
                 }
             } catch (Exception e) {
-                log.error("构建服务查询时间范围失败", e);
+                log.error("Build service query time range failed", e);
             }
         }
 
@@ -220,11 +220,11 @@ public class TracingQueryBuilder {
                     );
                     
                     searchBuilder.query(timeRangeQuery);
-                    log.debug("添加概览查询时间范围过滤: {} - {} (微秒: {} - {})", 
+                    log.debug("Add overview query time range filter: {} - {} (microseconds: {} - {})", 
                         request.getStartTime(), request.getEndTime(), startTimeMicros, endTimeMicros);
                 }
             } catch (Exception e) {
-                log.error("构建概览查询时间范围失败", e);
+                log.error("Building overview query time range failed", e);
             }
         }
 
@@ -248,7 +248,7 @@ public class TracingQueryBuilder {
                 boolQuery.filter(attrQuery);
             }
         } catch (Exception e) {
-            log.warn("解析属性过滤条件失败: {}", attributesJson, e);
+            log.warn("Failed to parse attribute filter: {}", attributesJson, e);
         }
     }
 
@@ -263,7 +263,7 @@ public class TracingQueryBuilder {
             //Convert to microseconds
             return instant.toEpochMilli() * 1000;
         } catch (Exception e) {
-            log.error("时间转换失败: {}", iso8601Time, e);
+            log.error("Time conversion failed: {}", iso8601Time, e);
             return null;
         }
     }

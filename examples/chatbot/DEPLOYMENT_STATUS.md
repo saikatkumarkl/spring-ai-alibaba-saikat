@@ -185,8 +185,8 @@ cd examples/chatbot
 ### Backend still returning 401
 **Wait 30-60 seconds for Docker rebuild to complete**, then test again:
 ```bash
-docker logs saa-backend --tail=20
-# Look for "Started SaaStudioAdmin"
+docker logs cordondata-backend --tail=20
+# Look for "Started CordonDataAdmin"
 ```
 
 ### Chatbot won't start
@@ -203,7 +203,7 @@ kill -9 <PID>
 docker compose -f docker-compose-arm.yaml exec postgres psql -U admin -d admin -c "SELECT * FROM simple_users;"
 
 # Check backend logs
-docker logs saa-backend --tail=50 | grep chatbot
+docker logs cordondata-backend --tail=50 | grep chatbot
 ```
 
 ## Next Steps

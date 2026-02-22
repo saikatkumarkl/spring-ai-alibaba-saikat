@@ -17,9 +17,9 @@
 package com.alibaba.cloud.ai.studio.runtime.domain.app;
 
 /**
- * Configuration interface for Spring AI Alibaba Studio applications. This interface
+ * Configuration interface for CordonData Studio applications. This interface
  * defines the contract for application configuration settings that can be used to
- * customize the behavior of Spring AI Alibaba Studio applications.
+ * customize the behavior of CordonData Studio applications.
  *
  * @since 1.0.0.3
  */

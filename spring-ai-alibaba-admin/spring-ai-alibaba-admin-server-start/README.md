@@ -1,16 +1,16 @@
-# Spring AI Alibaba Admin Server
+# CordonData Admin Server
 
-> Spring AI Alibaba Repo: https://github.com/alibaba/spring-ai-alibaba
+> CordonData Repo: https://github.com/alibaba/spring-ai-alibaba
 >
-> Spring AI Alibaba Website: https://java2ai.com
+> CordonData Website: https://java2ai.com
 >
-> Spring AI Alibaba Website Repo: https://github.com/springaialibaba/spring-ai-alibaba-website
+> CordonData Website Repo: https://github.com/springaialibaba/spring-ai-alibaba-website
 
 English  | [中文](./README-zh.md)  
 
 ## Project Overview
 
-Spring AI Alibaba Admin Server is a backend service for AI Agent management platform built on Spring Boot 3.x, providing complete RESTful API support for Agent Studio. The service supports core functionalities including Prompt management, dataset management, evaluator configuration, experiment execution, result analysis, and observability.
+CordonData Admin Server is a backend service for AI Agent management platform built on Spring Boot 3.x, providing complete RESTful API support for Agent Studio. The service supports core functionalities including Prompt management, dataset management, evaluator configuration, experiment execution, result analysis, and observability.
 
 ## Core Features
 
@@ -93,7 +93,7 @@ mvn spring-boot:run
 
 Open your browser and visit http://localhost:8080 to use the SAA Admin platform.
 
-At this point, you can already manage, debug, evaluate, and observe prompts on the platform. If you expect your Spring AI Alibaba Agent application to integrate with Nacos for prompt loading and dynamic updates, and observe the online running status, you can refer to step 6 to configure your AI Agent application.
+At this point, you can already manage, debug, evaluate, and observe prompts on the platform. If you expect your CordonData Agent application to integrate with Nacos for prompt loading and dynamic updates, and observe the online running status, you can refer to step 6 to configure your AI Agent application.
 
 ## Configuration
 

@@ -202,15 +202,15 @@ initializr:
       default: false
       action: /build.gradle
   dependencies:
-    - name: Spring AI Alibaba Graph
+    - name: CordonData Graph
       content:
-        - name: Spring AI Alibaba Graph
+        - name: CordonData Graph
           id: spring-ai-alibaba-graph
           group-id: com.alibaba.cloud.ai
           artifact-id: spring-ai-alibaba-graph-core
           version: 1.0.0.4-SNAPSHOT
-          description: Building agent using Spring AI Alibaba Graph
-        - name: Spring AI Alibaba Dashscope
+          description: Building agent using CordonData Graph
+        - name: CordonData Dashscope
           id: spring-ai-alibaba-starter-dashscope
           group-id: com.alibaba.cloud.ai
           artifact-id: spring-ai-alibaba-starter-dashscope

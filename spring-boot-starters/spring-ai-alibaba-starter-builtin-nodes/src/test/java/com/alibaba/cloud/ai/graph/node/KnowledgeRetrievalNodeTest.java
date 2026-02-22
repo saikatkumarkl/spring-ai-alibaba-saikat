@@ -46,20 +46,20 @@
 //	private static final Logger logger = LoggerFactory.getLogger(KnowledgeRetrievalNode.class);
 //
 //	List<Document> documents = List.of(new Document(
-//			"产品说明书:产品名称：智能机器人\n" + "产品描述：智能机器人是一个智能设备，能够自动完成各种任务。\n" + "功能：\n" + "1. 自动导航：机器人能够自动导航到指定位置。\n"
-//					+ "2. 自动抓取：机器人能够自动抓取物品。\n" + "3. 自动放置：机器人能够自动放置物品。\n",
-//			Map.of("type", "instruction", // 文档类型
-//					"year", "2023", // 年份
-//					"month", "06" // 月份
+//"Product manual: Product name: Intelligent robot\n" + "Product description: An intelligent robot is an intelligent device that can automatically complete various tasks.\n" + "Function:\n" + "1. Automatic navigation: The robot can automatically navigate to a designated location.\n"
+//+ "2. Automatic grabbing: the robot can automatically grab items.\n" + "3. Automatic placement: the robot can automatically place items.\n",
+//			Map.of("type", "instruction", // Document type
+//					"year", "2023", // years
+//					"month", "06" // month
 //			)),
 //			new Document(
-//					"产品说明书:产品名称：智能家居控制器\n" + "产品描述：智能家居控制器是一款集成化设备，可远程控制多种智能家电。\n" + "功能：\n"
-//							+ "1. 远程控制：通过手机APP远程控制家电开关和调节。\n" + "2. 定时任务：设置家电定时开启或关闭。\n" + "3. 场景模式：支持多种场景模式一键切换。\n"
-//							+ "4. 能耗统计：实时监控并统计家电能耗数据。\n",
+//"Product manual: Product name: Smart home controller\n" + "Product description: The smart home controller is an integrated device that can remotely control a variety of smart home appliances.\n" + "Function:\n"
+//+ "1. Remote control: Remotely control the switching and adjustment of home appliances through the mobile phone APP.\n" + "2. Scheduled tasks: Set home appliances to be turned on or off at a scheduled time.\n" + "3. Scene mode: Supports one-click switching of multiple scene modes.\n"
+//+ "4. Energy consumption statistics: real-time monitoring and statistics of household appliances energy consumption data.\n",
 //
-//					Map.of("type", "instruction", // 文档类型
-//							"year", "2024", // 年份
-//							"month", "02" // 月份
+//					Map.of("type", "instruction", // Document type
+//							"year", "2024", // years
+//							"month", "02" // month
 //
 //					)));
 //
@@ -82,7 +82,7 @@
 //
 //	Map<String, Object> initStateMap() {
 //		Map<String, Object> modifiableMap = new HashMap<>();
-//		modifiableMap.put("user_prompt", "你将作为一名机器人产品的专家，对于用户的使用需求作出解答");
+//modifiableMap.put("user_prompt", "As a robot product expert, you will answer users' needs");
 //		modifiableMap.put("top_k", 5);
 //		modifiableMap.put("similarity_threshold", 0.1);
 //		modifiableMap.put("filter_expression", filterExpression);
@@ -112,10 +112,10 @@
 //
 //		KnowledgeRetrievalNode node = initNodeBuilder().topK(5).isKeyFirst(false).build();
 //		Map<String, Object> stateMap = initStateMap();
-//		// 修改topk
+////Modify topk
 //		stateMap.put("top_k", 1);
 //		Map<String, Object> newState = node.apply(new OverAllState(stateMap));
-//		logger.info("文档检索结果加入prompt为{}", newState.get("user_prompt"));
+//		logger.info("Document search results addedpromptfor{}", newState.get("user_prompt"));
 //		assertEquals(2, node.documents.size());
 //	}
 //
@@ -127,14 +127,14 @@
 //
 //		KnowledgeRetrievalNode node = initNodeBuilder().build();
 //		Map<String, Object> stateMap = initStateMap();
-//		// 原本topk为5
+////The original topk is 5
 //		Map<String, Object> newState = node.apply(new OverAllState(stateMap));
-//		logger.info("文档检索结果加入prompt为{}", newState.get("user_prompt"));
+//		logger.info("Document search results addedpromptfor{}", newState.get("user_prompt"));
 //		assertEquals(2, node.documents.size());
-//		// 修改topk
+////Modify topk
 //		stateMap.put("top_k", 1);
 //		newState = node.apply(new OverAllState(stateMap));
-//		logger.info("文档检索结果加入prompt为{}", newState.get("user_prompt"));
+//		logger.info("Document search results addedpromptfor{}", newState.get("user_prompt"));
 //		assertEquals(1, node.documents.size());
 //
 //	}
@@ -147,14 +147,14 @@
 //
 //		KnowledgeRetrievalNode node = initNodeBuilder().build();
 //		Map<String, Object> stateMap = initStateMap();
-//		// 原本similarity_threshold为0，1
+//		// originalsimilarity_thresholdfor0，1
 //		Map<String, Object> newState = node.apply(new OverAllState(stateMap));
-//		logger.info("文档检索结果加入prompt为{}", newState.get("user_prompt"));
+//		logger.info("Document search results addedpromptfor{}", newState.get("user_prompt"));
 //		assertEquals(2, node.documents.size());
-//		// 修改为0.5
+////Modify to 0.5
 //		stateMap.put("similarity_threshold", 0.5);
 //		newState = node.apply(new OverAllState(stateMap));
-//		logger.info("文档检索结果加入prompt为{}", newState.get("user_prompt"));
+//		logger.info("Document search results addedpromptfor{}", newState.get("user_prompt"));
 //		assertEquals(1, node.documents.size());
 //
 //	}
@@ -167,14 +167,14 @@
 //
 //		KnowledgeRetrievalNode node = initNodeBuilder().build();
 //		Map<String, Object> stateMap = initStateMap();
-//		// 原本筛选条件是eq("type", "instruction")
+//// The original filtering condition is eq("type", "instruction")
 //		Map<String, Object> newState = node.apply(new OverAllState(stateMap));
-//		logger.info("文档检索结果加入prompt为{}", newState.get("user_prompt"));
+//		logger.info("Document search results addedpromptfor{}", newState.get("user_prompt"));
 //		assertEquals(2, node.documents.size());
-//		// 现修改为eq("type", "book")
+//// Now modified to eq("type", "book")
 //		stateMap.put("filter_expression", new FilterExpressionBuilder().eq("type", "book").build());
 //		newState = node.apply(new OverAllState(stateMap));
-//		logger.info("文档检索结果加入prompt为{}", newState.get("user_prompt"));
+//		logger.info("Document search results addedpromptfor{}", newState.get("user_prompt"));
 //		assertEquals(0, node.documents.size());
 //
 //	}
@@ -188,20 +188,20 @@
 //		KnowledgeRetrievalNode node = initNodeBuilder().build();
 //		Map<String, Object> stateMap = initStateMap();
 //
-//		// rerankOptions原本默认topN为3
+//// rerankOptions originally defaulted to topN as 3
 //		Map<String, Object> newState = node.apply(new OverAllState(stateMap));
-//		logger.info("文档检索结果加入prompt为{}", newState.get("user_prompt"));
+//		logger.info("Document search results addedpromptfor{}", newState.get("user_prompt"));
 //		assertEquals(2, node.documents.size());
-//		// 重设topN数量
+////Reset topN quantity
 //		rerankOptions.setTopN(1);
 //		stateMap.put("rerank_options", rerankOptions);
 //		newState = node.apply(new OverAllState(stateMap));
-//		logger.info("文档检索结果加入prompt为{}", newState.get("user_prompt"));
+//		logger.info("Document search results addedpromptfor{}", newState.get("user_prompt"));
 //		assertEquals(1, node.documents.size());
-//		// 使重排序失效
+//// Disable reordering
 //		stateMap.put("enable_ranker", false);
 //		newState = node.apply(new OverAllState(stateMap));
-//		logger.info("文档检索结果加入prompt为{}", newState.get("user_prompt"));
+//		logger.info("Document search results addedpromptfor{}", newState.get("user_prompt"));
 //		assertEquals(2, node.documents.size());
 //
 //	}

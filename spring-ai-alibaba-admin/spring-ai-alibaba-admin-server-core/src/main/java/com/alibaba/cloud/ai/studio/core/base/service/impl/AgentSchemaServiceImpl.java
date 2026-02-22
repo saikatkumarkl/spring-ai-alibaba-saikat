@@ -58,7 +58,7 @@ public class AgentSchemaServiceImpl extends ServiceImpl<AgentSchemaMapper, Agent
 		List<AgentSchemaEntity> existingAgents = list(duplicateCheck);
 
 		if (!existingAgents.isEmpty()) {
-			throw new IllegalArgumentException("智能体名称已存在，请使用其他名称: " + agentSchemaEntity.getName());
+			throw new IllegalArgumentException("Agent name already exists, please use another name:" + agentSchemaEntity.getName());
 		}
 
 		// Set default values
@@ -104,7 +104,7 @@ public class AgentSchemaServiceImpl extends ServiceImpl<AgentSchemaMapper, Agent
 		List<AgentSchemaEntity> existingAgents = list(duplicateCheck);
 
 		if (!existingAgents.isEmpty()) {
-			throw new IllegalArgumentException("智能体名称已存在，请使用其他名称: " + agentSchemaEntity.getName());
+			throw new IllegalArgumentException("Agent name already exists, please use another name:" + agentSchemaEntity.getName());
 		}
 
 		// Update fields

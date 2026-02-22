@@ -93,7 +93,7 @@ class ToolRetryTest {
 				.build();
 
 		try {
-			Optional<OverAllState> result = agent.invoke("请使用failing_tool工具处理这个请求");
+			Optional<OverAllState> result = agent.invoke("Please use failing_tool tool to handle this request");
 
 			// Assert that the result is present
 			assertTrue(result.isPresent(), "Agent result should be present");
@@ -141,7 +141,7 @@ class ToolRetryTest {
 				.build();
 
 		try {
-			Optional<OverAllState> result = agent.invoke("请使用always_failing_tool工具处理这个请求");
+			Optional<OverAllState> result = agent.invoke("Please use the always_failing_tool tool to handle this request");
 
 			// Assert that the result is present even though tool failed
 			assertTrue(result.isPresent(), "Agent result should be present");
@@ -192,7 +192,7 @@ class ToolRetryTest {
 				.build();
 
 		try {
-			Optional<OverAllState> result = agent.invoke("请使用specific_tool工具处理这个请求");
+			Optional<OverAllState> result = agent.invoke("Please use the specific_tool tool to handle this request");
 
 			// Assert that the result is present
 			assertTrue(result.isPresent(), "Agent result should be present");

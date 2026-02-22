@@ -1,5 +1,5 @@
 import $i18n from '@/i18n';
-import { CodeInput, IValueType } from '@spark-ai/flow';
+import { CodeInput, IValueType } from '@cordondata/flow';
 import { Input, InputNumber, Select } from 'antd';
 import { memo, useMemo } from 'react';
 import { FileInput } from './FileInput';

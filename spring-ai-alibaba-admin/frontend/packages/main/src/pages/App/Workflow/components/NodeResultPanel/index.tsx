@@ -1,6 +1,6 @@
 import { TopExpandBtn } from '@/components/ExpandBtn';
 import $i18n from '@/i18n';
-import { FlowIcon, IWorkFlowNodeResultItem } from '@spark-ai/flow';
+import { FlowIcon, IWorkFlowNodeResultItem } from '@cordondata/flow';
 import { useSetState } from 'ahooks';
 import { Flex, Pagination, Tag } from 'antd';
 import classNames from 'classnames';

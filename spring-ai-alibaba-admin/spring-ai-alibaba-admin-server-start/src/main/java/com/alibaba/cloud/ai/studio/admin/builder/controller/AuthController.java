@@ -55,11 +55,11 @@ public class AuthController {
 	@PostMapping("/login")
 	public Result<TokenResponse> login(@RequestBody LoginRequest loginRequest) {
 		if (StringUtils.isBlank(loginRequest.getUsername())) {
-			throw new BizException(ErrorCode.INVALID_PARAMS.toError("username"));
+			throw new BizException(ErrorCode.MISSING_PARAMS.toError("username"));
 		}
 
 		if (StringUtils.isBlank(loginRequest.getPassword())) {
-			throw new BizException(ErrorCode.INVALID_PARAMS.toError("password"));
+			throw new BizException(ErrorCode.MISSING_PARAMS.toError("password"));
 		}
 
 		TokenResponse response = accountService.login(loginRequest);

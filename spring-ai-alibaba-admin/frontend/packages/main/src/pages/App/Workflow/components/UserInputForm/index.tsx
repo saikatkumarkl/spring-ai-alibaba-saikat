@@ -1,6 +1,6 @@
 import $i18n from '@/i18n';
 import { Button, Form, Input } from '@spark-ai/design';
-import { IUserInputItem, IWorkFlowTaskResultItem } from '@spark-ai/flow';
+import { IUserInputItem, IWorkFlowTaskResultItem } from '@cordondata/flow';
 import { memo, useEffect, useMemo, useState } from 'react';
 import styles from './index.module.less';
 

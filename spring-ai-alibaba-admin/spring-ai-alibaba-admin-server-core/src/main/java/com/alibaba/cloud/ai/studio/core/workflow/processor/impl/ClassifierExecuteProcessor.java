@@ -329,7 +329,7 @@ public class ClassifierExecuteProcessor extends AbstractExecuteProcessor {
 			}
 		}, error -> {
 			nodeResult.setNodeStatus(NodeStatusEnum.FAIL.getCode());
-			nodeResult.setErrorInfo("模型调用失败：" + error.getMessage());
+			nodeResult.setErrorInfo("Model call failed:" + error.getMessage());
 			countDownLatch.countDown();
 		}, () -> {
 			String content = responseBuilder.toString();
@@ -459,7 +459,7 @@ public class ClassifierExecuteProcessor extends AbstractExecuteProcessor {
 	private String extractUserInstruct(NodeParam config, WorkflowContext context) {
 		String instruction = config.getInstruction();
 		if (StringUtils.isBlank(instruction)) {
-			return "暂无";
+			return "None yet";
 		}
 		return replaceTemplateContent(instruction, context);
 	}

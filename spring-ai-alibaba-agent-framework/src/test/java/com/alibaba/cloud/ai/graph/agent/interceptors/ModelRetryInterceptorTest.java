@@ -46,7 +46,7 @@ class ModelRetryInterceptorTest {
 		ModelRequest request = ModelRequest.builder().build();
 		ModelResponse response = interceptor.interceptModel(request, handler);
 
-		assertEquals(1, attemptCount.get(), "应该只调用一次");
+		assertEquals(1, attemptCount.get(), "should only be called once");
 		assertEquals("Success", ((AssistantMessage) response.getMessage()).getText());
 	}
 
@@ -71,7 +71,7 @@ class ModelRetryInterceptorTest {
 		ModelRequest request = ModelRequest.builder().build();
 		ModelResponse response = interceptor.interceptModel(request, handler);
 
-		assertEquals(2, attemptCount.get(), "应该调用两次（首次失败，第二次成功）");
+		assertEquals(2, attemptCount.get(), "Should be called twice (first time fails, second time succeeds)");
 		assertEquals("Success on retry", ((AssistantMessage) response.getMessage()).getText());
 	}
 
@@ -95,7 +95,7 @@ class ModelRetryInterceptorTest {
 			interceptor.interceptModel(request, handler);
 		});
 
-		assertEquals(3, attemptCount.get(), "应该尝试3次");
+		assertEquals(3, attemptCount.get(), "Should try 3 times");
 		assertTrue(exception.getMessage().contains("maximum number of retries reached"));
 	}
 
@@ -119,7 +119,7 @@ class ModelRetryInterceptorTest {
 			interceptor.interceptModel(request, handler);
 		});
 
-		assertEquals(1, attemptCount.get(), "不可重试的异常应该只尝试一次");
+		assertEquals(1, attemptCount.get(), "Non-retryable exceptions should only be tried once");
 		assertTrue(exception.getMessage().contains("non-retryable exception"));
 	}
 
@@ -144,7 +144,7 @@ class ModelRetryInterceptorTest {
 		ModelRequest request = ModelRequest.builder().build();
 		ModelResponse response = interceptor.interceptModel(request, handler);
 
-		assertEquals(3, attemptCount.get(), "应该重试直到成功");
+		assertEquals(3, attemptCount.get(), "Should retry until successful");
 		assertEquals("Success after retry", ((AssistantMessage) response.getMessage()).getText());
 	}
 
@@ -174,8 +174,8 @@ class ModelRetryInterceptorTest {
 
 		assertEquals(3, attemptCount.get());
 		// First retry: 100ms, Second retry: 200ms, Total at least 300ms
-		assertTrue(duration >= 300, "应该有指数退避延迟");
-		assertTrue(duration < 1000, "延迟不应该太长");
+		assertTrue(duration >= 300, "There should be exponential backoff delay");
+		assertTrue(duration < 1000, "The delay should not be too long");
 	}
 
 	@Test
@@ -199,7 +199,7 @@ class ModelRetryInterceptorTest {
 		assertThrows(RuntimeException.class, () -> {
 			interceptor.interceptModel(request, handler1);
 		});
-		assertEquals(3, attemptCount.get(), "自定义可重试异常应该重试");
+		assertEquals(3, attemptCount.get(), "Custom retryable exception should be retried");
 
 		// Test cannot be retried exception
 		attemptCount.set(0);
@@ -211,7 +211,7 @@ class ModelRetryInterceptorTest {
 		assertThrows(RuntimeException.class, () -> {
 			interceptor.interceptModel(request, handler2);
 		});
-		assertEquals(1, attemptCount.get(), "非自定义可重试异常应该不重试");
+		assertEquals(1, attemptCount.get(), "Non-custom retryable exceptions should not be retried");
 	}
 
 	@Test
@@ -240,8 +240,8 @@ class ModelRetryInterceptorTest {
 
 		// First retry: 100ms, Second retry: 150ms (limit), Third retry: 150ms (limit)
 		// Total at least 400ms, but should not exceed 600ms
-		assertTrue(duration >= 400, "应该有延迟");
-		assertTrue(duration < 600, "maxDelay 应该生效");
+		assertTrue(duration >= 400, "There should be a delay");
+		assertTrue(duration < 600, "maxDelay should take effect");
 	}
 
 	@Test
@@ -267,26 +267,26 @@ class ModelRetryInterceptorTest {
 		long duration = System.currentTimeMillis() - startTime;
 
 		assertEquals(3, attemptCount.get());
-		assertTrue(duration < 100, "零延迟应该快速重试");
+		assertTrue(duration < 100, "Zero latency should retry quickly");
 	}
 
 	@Test
 	void testBuilderValidation() {
 		assertThrows(IllegalArgumentException.class, () -> {
 			ModelRetryInterceptor.builder().maxAttempts(0).build();
-		}, "maxAttempts 必须 >= 1");
+		}, "maxAttempts must >= 1");
 
 		assertThrows(IllegalArgumentException.class, () -> {
 			ModelRetryInterceptor.builder().initialDelay(-1).build();
-		}, "initialDelay 必须 >= 0");
+		}, "initialDelay must >= 0");
 
 		assertThrows(IllegalArgumentException.class, () -> {
 			ModelRetryInterceptor.builder().maxDelay(-1).build();
-		}, "maxDelay 必须 >= 0");
+		}, "maxDelay must >= 0");
 
 		assertThrows(IllegalArgumentException.class, () -> {
 			ModelRetryInterceptor.builder().backoffMultiplier(0.5).build();
-		}, "backoffMultiplier 必须 >= 1.0");
+		}, "backoffMultiplier must >= 1.0");
 	}
 }
 

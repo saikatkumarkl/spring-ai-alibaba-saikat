@@ -34,22 +34,22 @@ public class ModelConfigServiceImpl implements ModelConfigService {
     //The write interface is offline: the signature is retained to ensure interface compatibility (the controller is no longer exposed) to avoid misuse
     @Override
     public ModelConfigResponse create(ModelConfigCreateRequest request) throws StudioException {
-        throw new StudioException(StudioException.NO_RIGHT, "不支持通过接口创建模型配置，请使用 model-config.yml");
+        throw new StudioException(StudioException.NO_RIGHT, "Creating model configuration through interface is not supported, please use model-config.yml");
     }
 
     @Override
     public ModelConfigResponse update(ModelConfigUpdateRequest request) throws StudioException {
-        throw new StudioException(StudioException.NO_RIGHT, "不支持通过接口更新模型配置，请使用 model-config.yml");
+        throw new StudioException(StudioException.NO_RIGHT, "Updating model configuration through the interface is not supported, please use model-config.yml");
     }
 
     @Override
     public void delete(Long id) throws StudioException {
-        throw new StudioException(StudioException.NO_RIGHT, "不支持通过接口删除模型配置，请使用 model-config.yml");
+        throw new StudioException(StudioException.NO_RIGHT, "Deleting model configuration through the interface is not supported, please use model-config.yml");
     }
 
     @Override
     public PageResult<ModelConfigResponse> list(ModelConfigQueryRequest request) {
-        log.info("查询模型配置列表: {}", request);
+        log.info("Query model configuration list: {}", request);
 
         int offset = (request.getPage() - 1) * request.getSize();
 
@@ -82,11 +82,11 @@ public class ModelConfigServiceImpl implements ModelConfigService {
 
     @Override
     public ModelConfigResponse getById(Long id) throws StudioException {
-        log.info("获取模型配置详情，ID: {}", id);
+        log.info("Get model configuration details, ID: {}", id);
 
         ModelConfigDO modelConfig = modelConfigRepository.findById(id);
         if (modelConfig == null) {
-            throw new StudioException(StudioException.NOT_FOUND, "模型配置不存在，ID: " + id);
+            throw new StudioException(StudioException.NOT_FOUND, "Model configuration does not exist, ID:" + id);
         }
         
         return convertToResponse(modelConfig);
@@ -94,7 +94,7 @@ public class ModelConfigServiceImpl implements ModelConfigService {
 
     @Override
     public List<ModelConfigResponse> getEnabledConfigs() {
-        log.info("获取启用的模型配置列表");
+        log.info("Get the list of enabled model configurations");
 
         List<ModelConfigDO> list = modelConfigRepository.listEnabled();
         return list.stream()
@@ -140,7 +140,7 @@ public class ModelConfigServiceImpl implements ModelConfigService {
         try {
             return objectMapper.writeValueAsString(obj);
         } catch (Exception e) {
-            log.error("对象转JSON失败", e);
+            log.error("Failed to convert object to JSON", e);
             return null;
         }
     }
@@ -155,7 +155,7 @@ public class ModelConfigServiceImpl implements ModelConfigService {
         try {
             return objectMapper.readValue(json, typeRef);
         } catch (Exception e) {
-            log.error("JSON转对象失败", e);
+            log.error("JSON to object conversion failed", e);
             return null;
         }
     }

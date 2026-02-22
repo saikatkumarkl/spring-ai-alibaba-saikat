@@ -1,0 +1,243 @@
+{
+  "realm": "cordondata",
+  "enabled": true,
+  "displayName": "CordonData",
+  "sslRequired": "none",
+  "registrationAllowed": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 3600,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "offlineSessionIdleTimeout": 2592000,
+  "roles": {
+    "realm": [
+      {
+        "name": "admin",
+        "description": "Administrator role with full access"
+      },
+      {
+        "name": "user",
+        "description": "Standard user role"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "admin-ui",
+      "name": "Admin Dashboard",
+      "description": "React Admin Frontend (SPA)",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "implicitFlowEnabled": false,
+      "protocol": "openid-connect",
+      "rootUrl": "http://localhost:8000",
+      "baseUrl": "/",
+      "redirectUris": [
+        "http://localhost:8000/*",
+        "http://127.0.0.1:8000/*"
+      ],
+      "webOrigins": [
+        "http://localhost:8000",
+        "http://127.0.0.1:8000"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:8000/*"
+      },
+      "defaultClientScopes": [
+        "openid",
+        "profile",
+        "email",
+        "roles"
+      ]
+    },
+    {
+      "clientId": "chatbot",
+      "name": "Knowledge Hub Chatbot",
+      "description": "React Chatbot Frontend (SPA)",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "implicitFlowEnabled": false,
+      "protocol": "openid-connect",
+      "rootUrl": "http://localhost:3000",
+      "baseUrl": "/",
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "http://127.0.0.1:3000/*",
+        "http://localhost:8081/*",
+        "http://127.0.0.1:8081/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8081",
+        "http://127.0.0.1:8081"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3000/*##http://localhost:8081/*"
+      },
+      "defaultClientScopes": [
+        "openid",
+        "profile",
+        "email",
+        "roles"
+      ]
+    }
+  ],
+  "users": [],
+  "clientScopes": [
+    {
+      "name": "openid",
+      "description": "OpenID Connect scope",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": []
+    },
+    {
+      "name": "profile",
+      "description": "OpenID Connect profile scope",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "preferred_username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "username",
+            "claim.name": "preferred_username",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "full_name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-full-name-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "given_name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "firstName",
+            "claim.name": "given_name",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "family_name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "lastName",
+            "claim.name": "family_name",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "email",
+      "description": "OpenID Connect email scope",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "email",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "email",
+            "claim.name": "email",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "email_verified",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "emailVerified",
+            "claim.name": "email_verified",
+            "jsonType.label": "boolean",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "roles",
+      "description": "OpenID Connect scope for roles",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "realm_roles",
+            "jsonType.label": "String",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "defaultDefaultClientScopes": [
+    "openid",
+    "profile",
+    "email",
+    "roles"
+  ]
+}

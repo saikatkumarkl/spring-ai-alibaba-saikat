@@ -426,7 +426,7 @@ public class InterruptionHookTest {
 				.build();
 
 		String threadId = "test-thread-long-running-no-params";
-		String userQuery = "请帮我写一篇100字左右的现代诗，然后总结一下主要内容";
+		String userQuery = "Please help me write a modern poem of about 100 words, and then summarize the main content";
 
 		RunnableConfig config = RunnableConfig.builder()
 				.threadId(threadId)
@@ -520,8 +520,8 @@ public class InterruptionHookTest {
 				.build();
 
 		String threadId = "test-thread-long-running-with-params";
-		String userQuery = "请帮我写一篇100字左右的现代诗，然后总结一下主要内容";
-		String feedbackMessage = "请修改为200字左右的散文";
+		String userQuery = "Please help me write a modern poem of about 100 words, and then summarize the main content";
+		String feedbackMessage = "Please revise it into a prose of about 200 words";
 
 		RunnableConfig config = RunnableConfig.builder()
 				.threadId(threadId)

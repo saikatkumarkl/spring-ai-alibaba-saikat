@@ -1,6 +1,6 @@
 import $i18n from '@/i18n';
 import { Button } from '@spark-ai/design';
-import { useStore } from '@spark-ai/flow';
+import { useStore } from '@cordondata/flow';
 import { Tooltip } from 'antd';
 import { memo, useMemo } from 'react';
 

@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Knowledge Hub</title>
+    <title>CordonData</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
     <style>
 /* ===== CSS Custom Properties ===== */
@@ -543,7 +544,7 @@ body { font-family: var(--font-sans); background: var(--bg-layout); color: var(-
 </head>
 <body>
     <div class="header">
-        <div class="brand"><div class="brand-icon">K</div>Knowledge Hub</div>
+        <div class="brand"><img id="brandLogo" src="/logoWhite.png" alt="Logo" style="height: 28px; object-fit: contain;" /></div>
         <div class="header-center">
             <div class="mode-tabs">
                 <button class="mode-tab active" onclick="switchMode('chat')" data-mode="chat">Ask AI</button>
@@ -1064,6 +1065,8 @@ function updateThemeIcon() {
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     btn.innerHTML = isDark ? '&#x2600;&#xFE0F;' : '&#x1F319;';
     btn.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+    var logo = document.getElementById('brandLogo');
+    if (logo) logo.src = isDark ? '/logoBlack.png' : '/logoWhite.png';
 }
 
 // ============================================================

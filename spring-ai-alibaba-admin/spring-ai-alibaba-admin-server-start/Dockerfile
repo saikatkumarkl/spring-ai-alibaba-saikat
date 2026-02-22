@@ -1,6 +1,6 @@
 # Stage 1: Build the application
 # Note: This Dockerfile should be built from the project root directory
-# Example: docker build -f spring-ai-alibaba-admin-server-start/Dockerfile -t spring-ai-admin-server .
+# Example: docker build -f spring-ai-alibaba-admin-server-start/Dockerfile -t cordondata-admin-server .
 FROM maven:3.9-eclipse-temurin-17 AS builder
 
 WORKDIR /app

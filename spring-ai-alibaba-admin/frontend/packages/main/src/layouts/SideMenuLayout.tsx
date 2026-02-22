@@ -20,6 +20,7 @@ import {
   FileSearchOutlined,
   CloudServerOutlined,
   HddOutlined,
+  TeamOutlined,
 } from '@ant-design/icons';
 import $i18n from '@/i18n';
 import Header from './Header';
@@ -70,6 +71,11 @@ const getSelectedMenuKey = (pathname: string): string => {
   // Audit Log page (must check before generic /setting)
   if (pathname.startsWith('/setting/auditLog')) {
     return '/setting/auditLog';
+  }
+
+  // Users page
+  if (pathname.startsWith('/users')) {
+    return '/users';
   }
 
   // Settings-related pages
@@ -287,6 +293,14 @@ export default function SideMenuLayout({ children }: { children: React.ReactNode
           dm: 'Audit Log',
         }),
         icon: <FileSearchOutlined />,
+      },
+      {
+        key: '/users',
+        label: $i18n.get({
+          id: 'main.pages.Users.title',
+          dm: 'Users',
+        }),
+        icon: <TeamOutlined />,
       },
     ],
     [],

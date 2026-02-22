@@ -1,4 +1,4 @@
-import { Edge, IWorkFlowNode } from '@spark-ai/flow';
+import { Edge, IWorkFlowNode } from '@cordondata/flow';
 import { NODE_SCHEMA_MAP } from '../nodes/nodeSchema';
 import { IBizEdge, IBizFlowData, IBizNode } from '../types/flow';
 

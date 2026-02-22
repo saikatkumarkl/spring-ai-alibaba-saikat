@@ -21,15 +21,15 @@ package com.alibaba.cloud.ai.studio.core.model.llm.domain;
 public enum ModelTag {
 
 	/** Vision capability for image processing */
-	vision("视觉"),
+	vision("Vision"),
 	/** Web search capability for internet access */
-	web_search("联网"),
+	web_search("networking"),
 	/** Embedding capability for vector representations */
-	embedding("嵌入"),
+	embedding("Embed"),
 	/** Reasoning capability for logical thinking */
-	reasoning("推理"),
+	reasoning("reasoning"),
 	/** Function call capability for tool usage */
-	function_call("工具调用");
+	function_call("Tool call");
 
 	/** Display name in Chinese */
 	private final String displayName;

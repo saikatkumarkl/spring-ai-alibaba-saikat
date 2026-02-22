@@ -45,7 +45,7 @@ volumeMounts:
 ```bash
 kubectl create configmap mysql-init-scripts \
   --from-file=admin-schema.sql=docker/middleware/init/mysql/admin-schema.sql \
-  --from-file=agentscope-schema.sql=docker/middleware/init/mysql/agentscope-schema.sql \
+  --from-file=cordondata-schema.sql=docker/middleware/init/mysql/cordondata-schema.sql \
   -n spring-ai-admin \
   --dry-run=client -o yaml | kubectl apply -f -
 ```
@@ -84,7 +84,7 @@ kubectl logs -f deployment/mysql -n spring-ai-admin
 查找类似以下日志：
 ```
 /docker-entrypoint.sh: running /docker-entrypoint-initdb.d/admin-schema.sql
-/docker-entrypoint.sh: running /docker-entrypoint-initdb.d/agentscope-schema.sql
+/docker-entrypoint.sh: running /docker-entrypoint-initdb.d/cordondata-schema.sql
 ```
 
 ### 3. 连接数据库验证
@@ -115,7 +115,7 @@ A: 如果 MySQL 已经初始化完成，需要：
    ```bash
    kubectl create configmap mysql-init-scripts \
      --from-file=admin-schema.sql=docker/middleware/init/mysql/admin-schema.sql \
-     --from-file=agentscope-schema.sql=docker/middleware/init/mysql/agentscope-schema.sql \
+     --from-file=cordondata-schema.sql=docker/middleware/init/mysql/cordondata-schema.sql \
      -n spring-ai-admin
    ```
 

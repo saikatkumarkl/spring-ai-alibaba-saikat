@@ -109,9 +109,9 @@ class ReactAgentDeepSeekTest {
 		ReactAgent agent = ReactAgent.builder().name("single_agent").model(chatModel).saver(new MemorySaver()).build();
 
 		try {
-			Optional<OverAllState> result = agent.invoke("帮我写一篇100字左右散文。");
-			Optional<OverAllState> result2 = agent.invoke(new UserMessage("帮我写一首现代诗歌。"));
-			Optional<OverAllState> result3 = agent.invoke("帮我写一首现代诗歌2。");
+			Optional<OverAllState> result = agent.invoke("Help me write an essay of about 100 words.");
+			Optional<OverAllState> result2 = agent.invoke(new UserMessage("Write me a modern poem."));
+			Optional<OverAllState> result3 = agent.invoke("Help me write a modern poem2.");
 
 			assertTrue(result.isPresent(), "First result should be present");
 			OverAllState state1 = result.get();
@@ -143,7 +143,7 @@ class ReactAgentDeepSeekTest {
 
 		ReactAgent agent = ReactAgent.builder().name("single_agent").model(chatModel).saver(new MemorySaver())
 				.build();
-		AssistantMessage message = agent.call("帮我写一篇100字左右散文。");
+		AssistantMessage message = agent.call("Help me write an essay of about 100 words.");
 		System.out.println(message.getText());
 	}
 
@@ -178,13 +178,13 @@ class ReactAgentDeepSeekTest {
 				.outputSchema(customSchema)
 				.build();
 
-		AssistantMessage message = agent.call("帮我写一首关于春天的诗歌。");
+		AssistantMessage message = agent.call("Help me write a poem about spring.");
 		assertNotNull(message, "Message should not be null");
 		assertNotNull(message.getText(), "Message text should not be null");
 		System.out.println("=== Output with custom schema ===");
 		System.out.println(message.getText());
 
-		assertTrue(message.getText().contains("title") || message.getText().contains("标题"),
+		assertTrue(message.getText().contains("title") || message.getText().contains("title"),
 				"Output should contain title field");
 	}
 
@@ -200,7 +200,7 @@ class ReactAgentDeepSeekTest {
 				.outputType(PoemOutput.class)
 				.build();
 
-		AssistantMessage message = agent.call("帮我写一首关于秋天的现代诗。");
+		AssistantMessage message = agent.call("Help me write a modern poem about autumn.");
 		assertNotNull(message, "Message should not be null");
 		assertNotNull(message.getText(), "Message text should not be null");
 		System.out.println("=== Output with outputType (auto-generated schema) ===");
@@ -244,7 +244,7 @@ class ReactAgentDeepSeekTest {
 				.outputSchema(jsonSchema)
 				.build();
 
-		Optional<OverAllState> result = agent.invoke("分析这句话：春天来了，万物复苏，生机勃勃。");
+		Optional<OverAllState> result = agent.invoke("Analyze this sentence: Spring is here, and everything is revived and full of vitality.");
 
 		assertTrue(result.isPresent(), "Result should be present");
 		System.out.println("=== Full state output ===");
@@ -258,23 +258,23 @@ class ReactAgentDeepSeekTest {
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_agent")
 				.model(chatModel)
-				.description("可以写文章。")
-				.instruction("你是一个知名的作家，擅长写作和创作。请根据用户的提问进行回答。")
+				.description("You can write articles.")
+				.instruction("You are a well-known writer who is good at writing and creating.Please answer based on the user's questions.")
 				.saver(new MemorySaver())
 				.build();
 
 		ReactAgent reviewerAgent = ReactAgent.builder()
 				.name("reviewer_agent")
 				.model(chatModel)
-				.description("可以对文章进行评论和修改。")
-				.instruction("你是一个知名的评论家，擅长对文章进行评论和修改。对于散文类文章，请确保文章中必须包含对于西湖风景的描述。")
+				.description("Articles can be commented and modified.")
+				.instruction("You are a well-known critic who is good at commenting and revising articles.For prose articles, please ensure that the article must include a description of the scenery of West Lake.")
 				.saver(new MemorySaver())
 				.build();
 
 		ReactAgent blogAgent = ReactAgent.builder()
 				.name("blog_agent")
 				.model(chatModel)
-				.instruction("首先，根据用户给定的主题写一篇文章，然后将文章交给评论员进行审核，必要时做出修改。")
+				.instruction("First, write an article based on a topic given by the user, and then submit the article to reviewers for review and modifications if necessary.")
 				.tools(List.of(AgentTool.getFunctionToolCallback(writerAgent),
 						AgentTool.getFunctionToolCallback(reviewerAgent)))
 				.saver(new MemorySaver())
@@ -282,7 +282,7 @@ class ReactAgentDeepSeekTest {
 
 		try {
 			Optional<OverAllState> result = blogAgent
-					.invoke(new UserMessage("帮我写一个100字左右的散文"));
+					.invoke(new UserMessage("Help me write a prose of about 100 words"));
 
 			assertTrue(result.isPresent(), "Result should be present");
 
@@ -306,7 +306,7 @@ class ReactAgentDeepSeekTest {
 	public void testAgentToolWithInputSchema() throws Exception {
 
 
-		// 使用 inputSchema 定义工具的输入格式
+		//Use inputSchema to define the input format of the tool
 		String writerInputSchema = """
 				{
 					"type": "object",
@@ -329,8 +329,8 @@ class ReactAgentDeepSeekTest {
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("structured_writer_agent")
 				.model(chatModel)
-				.description("根据结构化输入写文章")
-				.instruction("你是一个专业作家。请严格按照输入的主题、字数和风格要求创作文章。")
+				.description("Write articles based on structured input")
+				.instruction("You are a professional writer.Please create articles strictly in accordance with the entered topic, word count and style requirements.")
 				.inputSchema(writerInputSchema)
 				.saver(saver)
 				.build();
@@ -338,14 +338,14 @@ class ReactAgentDeepSeekTest {
 		ReactAgent coordinatorAgent = ReactAgent.builder()
 				.name("coordinator_agent")
 				.model(chatModel)
-				.instruction("你需要调用写作工具来完成用户的写作请求。请根据用户需求，使用结构化的参数调用写作工具。")
+				.instruction("You need to call the writing tool to complete the user's writing request.Please use structured parameters to call the writing tool according to user needs.")
 				.tools(List.of(AgentTool.getFunctionToolCallback(writerAgent)))
 				.saver(saver)
 				.build();
 
 		try {
 			Optional<OverAllState> result = coordinatorAgent
-					.invoke("请写一篇关于春天的抒情散文，大约150字，直接写作不要再询问我了");
+					.invoke("Please write a lyrical prose about spring, about 150 words, write directly and don’t ask me again");
 
 			assertTrue(result.isPresent(), "Result should be present");
 			System.out.println("=== Agent Tool with InputSchema Test ===");
@@ -361,7 +361,7 @@ class ReactAgentDeepSeekTest {
 	public void testAgentToolWithOutputSchema() throws Exception {
 
 
-		// 使用 outputSchema 定义工具的输出格式
+		//Use outputSchema to define the output format of the tool
 		String writerOutputSchema = """
 				{
 					"type": "object",
@@ -382,8 +382,8 @@ class ReactAgentDeepSeekTest {
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_with_output_schema")
 				.model(chatModel)
-				.description("写文章并返回结构化输出")
-				.instruction("你是一个专业作家。请创作文章并严格按照指定的JSON格式返回结果。")
+				.description("Write articles and return structured output")
+				.instruction("You are a professional writer.Please create an article and return the results strictly in the specified JSON format.")
 				.outputSchema(writerOutputSchema)
 				.saver(new MemorySaver())
 				.build();
@@ -391,14 +391,14 @@ class ReactAgentDeepSeekTest {
 		ReactAgent coordinatorAgent = ReactAgent.builder()
 				.name("coordinator_output_schema")
 				.model(chatModel)
-				.instruction("调用写作工具完成用户请求，工具会返回结构化的文章数据。")
+				.instruction("Call the writing tool to complete the user request, and the tool will return structured article data.")
 				.tools(List.of(AgentTool.getFunctionToolCallback(writerAgent)))
 				.saver(new MemorySaver())
 				.build();
 
 		try {
 			Optional<OverAllState> result = coordinatorAgent
-					.invoke("写一篇关于冬天的短文");
+					.invoke("Write a short essay about winter");
 
 			assertTrue(result.isPresent(), "Result should be present");
 			System.out.println("=== Agent Tool with OutputSchema Test ===");
@@ -414,12 +414,12 @@ class ReactAgentDeepSeekTest {
 	public void testAgentToolWithOutputType() throws Exception {
 
 
-		// 使用 outputType，框架会自动生成输出 schema
+		//Using outputType, the framework automatically generates the output schema
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_with_output_type")
 				.model(chatModel)
-				.description("写文章并返回类型化输出")
-				.instruction("你是一个专业作家。请创作文章并返回包含 title、content 和 style 的结构化结果。")
+				.description("Write an article and return typed output")
+				.instruction("You are a professional writer.Please create an article and return structured results containing title, content, and style.")
 				.outputType(PoemOutput.class)
 				.saver(new MemorySaver())
 				.build();
@@ -427,14 +427,14 @@ class ReactAgentDeepSeekTest {
 		ReactAgent coordinatorAgent = ReactAgent.builder()
 				.name("coordinator_output_type")
 				.model(chatModel)
-				.instruction("调用写作工具完成用户请求。")
+				.instruction("Call the writing tool to complete the user request.")
 				.tools(List.of(AgentTool.getFunctionToolCallback(writerAgent)))
 				.saver(new MemorySaver())
 				.build();
 
 		try {
 			Optional<OverAllState> result = coordinatorAgent
-					.invoke("写一篇关于夏天的小诗");
+					.invoke("Write a short poem about summer");
 
 			assertTrue(result.isPresent(), "Result should be present");
 			System.out.println("=== Agent Tool with OutputType Test ===");

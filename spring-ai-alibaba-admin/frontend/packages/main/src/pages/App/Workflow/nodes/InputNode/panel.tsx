@@ -3,7 +3,7 @@ import {
   CustomOutputsFormWrap,
   useNodeDataUpdate,
   useNodesReadOnly,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { Flex } from 'antd';
 import { memo } from 'react';
 import InfoIcon from '../../components/InfoIcon';

@@ -30,13 +30,13 @@ public class ExperimentController {
      */
     @PostMapping("/experiment")
     public Result<Experiment> create(@RequestBody ExperimentCreateRequest request) {
-        log.info("创建实验请求: {}", request);
+        log.info("Create experiment request: {}", request);
         try {
             Experiment experiment = experimentService.create(request);
             return Result.success(experiment);
         } catch (Exception e) {
-            log.error("创建实验失败", e);
-            return Result.error("创建实验失败: " + e.getMessage());
+            log.error("Failed to create experiment", e);
+            return Result.error("Failed to create experiment:" + e.getMessage());
         }
     }
 
@@ -45,14 +45,14 @@ public class ExperimentController {
      */
     @GetMapping("/experiments")
     public Result<PageResult<Experiment>> list(ExperimentListRequest request) {
-        log.info("查询实验列表请求: {}", request);
+        log.info("Query experiment list request: {}", request);
         try {
 
             PageResult<Experiment> result = experimentService.list(request);
             return Result.success(result);
         } catch (Exception e) {
-            log.error("查询实验列表失败", e);
-            return Result.error("查询实验列表失败: " + e.getMessage());
+            log.error("Failed to query the experiment list", e);
+            return Result.error("Failed to query the experiment list:" + e.getMessage());
         }
     }
 
@@ -61,16 +61,16 @@ public class ExperimentController {
      */
     @GetMapping("/experiment")
     public Result<Experiment> get(@RequestParam(value = "experimentId") Long experimentId) {
-        log.info("查询实验详情请求: {}", experimentId);
+        log.info("Query experiment details request: {}", experimentId);
         try {
             Experiment experiment = experimentService.getById(experimentId);
             if (experiment == null) {
-                return Result.error(404, "实验不存在");
+                return Result.error(404, "Experiment does not exist");
             }
             return Result.success(experiment);
         } catch (Exception e) {
-            log.error("查询实验详情失败", e);
-            return Result.error("查询实验详情失败: " + e.getMessage());
+            log.error("Failed to query experiment details", e);
+            return Result.error("Failed to query experiment details:" + e.getMessage());
         }
     }
 
@@ -80,14 +80,14 @@ public class ExperimentController {
     @GetMapping("/experiment/results")
     public Result<List<ExperimentEvaluatorResult>> getResults(
             @RequestParam(value = "experimentId") Long experimentId) {
-        log.info("查询实验结果请求: experimentId={}", experimentId);
+        log.info("Query experiment result request: experimentId={}", experimentId);
         try {
 
             List<ExperimentEvaluatorResult> result = experimentService.getResults(experimentId);
             return Result.success(result);
         } catch (Exception e) {
-            log.error("查询实验结果失败", e);
-            return Result.error("查询实验结果失败: " + e.getMessage());
+            log.error("Failed to query experimental results", e);
+            return Result.error("Failed to query experimental results:" + e.getMessage());
         }
     }
 
@@ -97,14 +97,14 @@ public class ExperimentController {
      */
     @GetMapping("/experiment/result")
     public Result<PageResult<ExperimentEvaluatorResultDetail>> getResult(@Validated ExperimentEvaluatorResultDetailListRequest request) {
-        log.info("查询实验结果请求详情: experimentId={}, evaluatorVersionId={}", request.getExperimentId(), request.getEvaluatorVersionId());
+        log.info("Query experiment result request details: experimentId={}, evaluatorVersionId={}", request.getExperimentId(), request.getEvaluatorVersionId());
         try {
 
             PageResult<ExperimentEvaluatorResultDetail> result = experimentService.getResult(request);
             return Result.success(result);
         } catch (Exception e) {
-            log.error("查询实验结果失败", e);
-            return Result.error("查询实验结果失败: " + e.getMessage());
+            log.error("Failed to query experimental results", e);
+            return Result.error("Failed to query experimental results:" + e.getMessage());
         }
     }
 
@@ -114,13 +114,13 @@ public class ExperimentController {
      */
     @PutMapping("/experiment/stop")
     public Result<Experiment> stop(@RequestParam(value = "experimentId") Long experimentId) {
-        log.info("停止实验请求: {}", experimentId);
+        log.info("Stop experiment request: {}", experimentId);
         try {
             Experiment experiment = experimentService.stop(experimentId);
             return Result.success(experiment);
         } catch (Exception e) {
-            log.error("停止实验失败", e);
-            return Result.error("停止实验失败: " + e.getMessage());
+            log.error("Stop experiment failed", e);
+            return Result.error("Stopping experiment failed:" + e.getMessage());
         }
     }
 
@@ -129,13 +129,13 @@ public class ExperimentController {
      */
     @DeleteMapping("/experiment")
     public Result<Void> delete(@RequestParam(value = "experimentId") Long experimentId) {
-        log.info("删除实验请求: {}", experimentId);
+        log.info("Delete experiment request: {}", experimentId);
         try {
             experimentService.deleteById(experimentId);
             return Result.success();
         } catch (Exception e) {
-            log.error("删除实验失败", e);
-            return Result.error("删除实验失败: " + e.getMessage());
+            log.error("Delete experiment failed", e);
+            return Result.error("Delete experiment failed:" + e.getMessage());
         }
     }
 
@@ -144,13 +144,13 @@ public class ExperimentController {
      */
     @PutMapping("/experiment/restart")
     public Result<Void> restart(@RequestParam(value = "experimentId") Long experimentId) {
-        log.info("重启实验: {}", experimentId);
+        log.info("Restart experiment: {}", experimentId);
         try {
             experimentService.restartById(experimentId);
             return Result.success();
         } catch (Exception e) {
-            log.error("重启实验", e);
-            return Result.error("重启实验: " + e.getMessage());
+            log.error("Restart experiment", e);
+            return Result.error("Restart the experiment:" + e.getMessage());
         }
     }
 }

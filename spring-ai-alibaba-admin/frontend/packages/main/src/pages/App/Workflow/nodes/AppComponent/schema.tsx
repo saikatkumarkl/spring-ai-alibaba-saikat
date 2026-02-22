@@ -1,5 +1,5 @@
 import $i18n from '@/i18n';
-import { INodeSchema } from '@spark-ai/flow';
+import { INodeSchema } from '@cordondata/flow';
 import { SHORT_MEMORY_CONFIG_DEFAULT } from '../../constant';
 import { IAppComponentNodeData, IAppComponentNodeParam } from '../../types';
 import { transformInputParams } from '../../utils';

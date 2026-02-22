@@ -30,14 +30,14 @@ public class PoetTool implements BiFunction<String, ToolContext, String> {
 
 	public static ToolCallback createPoetToolCallback() {
 		return FunctionToolCallback.builder("poem", new PoetTool())
-				.description("用来写诗或者散文的工具")
+				.description("A tool used to write poetry or prose")
 				.inputType(String.class)
 				.build();
 	}
 
 	public static ToolCallback createPoetToolCallback(String name, PoetTool poetTool) {
 		return FunctionToolCallback.builder(name, poetTool)
-				.description("用来写诗或者散文的工具")
+				.description("A tool used to write poetry or prose")
 				.inputType(String.class)
 				.build();
 	}
@@ -48,8 +48,8 @@ public class PoetTool implements BiFunction<String, ToolContext, String> {
 			ToolContext toolContext) {
 		count++;
 		System.out.println("Poet tool called : " + originalUserQuery);
-		return "在城市的缝隙里，  \n" + "一束光悄悄发芽，  \n" + "穿过钢筋水泥的沉默，  \n" + "在风中轻轻说话。  \n" + "\n" + "夜色如墨，却不再黑，  \n"
-				+ "星星点亮了每一个角落，  \n" + "我站在时间的边缘，  \n" + "等一朵云，轻轻落下";
+		return "In the gaps of the city, \n" + "A beam of light sprouts quietly, \n" + "Through the silence of reinforced concrete,\n" + "Talk softly in the wind.\n" + "\n" + "The night is like ink, but no longer dark, \n"
+				+ "Stars light up every corner, \n" + "I stand on the edge of time,\n" + "Wait for a cloud to fall gently";
 	}
 
 }

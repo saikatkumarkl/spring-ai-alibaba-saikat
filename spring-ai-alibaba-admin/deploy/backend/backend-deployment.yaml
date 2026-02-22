@@ -53,9 +53,9 @@ spec:
             - name: ROCKETMQ_NAME_SERVER
               value: "rmq-namesrv:9876"
             - name: ROCKETMQ_DOCUMENT_INDEX_TOPIC
-              value: "topic_saa_studio_document_index"
+              value: "topic_cordondata_document_index"
             - name: ROCKETMQ_DOCUMENT_INDEX_GROUP
-              value: "group_saa_studio_document_index"
+              value: "group_cordondata_document_index"
             #LoongCollector (OTLP) configuration
             - name: MANAGEMENT_OTLP_TRACING_EXPORT_ENDPOINT
               value: "http://loongcollector:4318/v1/traces"

@@ -1,6 +1,6 @@
 import $i18n from '@/i18n';
 import { Button, IconFont } from '@spark-ai/design';
-import type { INodeDataInputParamItem } from '@spark-ai/flow';
+import type { INodeDataInputParamItem } from '@cordondata/flow';
 import {
   InputTextArea,
   OutputParamsTree,
@@ -11,7 +11,7 @@ import {
   useNodeDataUpdate,
   useNodesOutputParams,
   useReactFlowStore,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import React, { memo, useCallback, useMemo } from 'react';
 import ShortMemoryForm from '../../components/ShortMemoryForm';
 import { IClassifierNodeData, IClassifierNodeParam } from '../../types/flow';

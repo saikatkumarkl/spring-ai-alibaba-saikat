@@ -93,25 +93,25 @@ class ShortTermMemoryTest {
 				.build();
 
 		// First interaction: introduce name
-		Optional<OverAllState> result1 = agent.invoke("你好！我叫张三。", config);
+		Optional<OverAllState> result1 = agent.invoke("Hello!My name is Zhang San.", config);
 		assertTrue(result1.isPresent(), "First response should be present");
 
 		AssistantMessage response1 = (AssistantMessage) result1.get().value("messages")
 				.map(m -> ((List<Message>) m).get(((List<Message>) m).size() - 1))
 				.orElseThrow();
 		System.out.println("Response 1: " + response1.getText());
-		assertTrue(response1.getText().contains("张三") || response1.getText().contains("你好"),
+		assertTrue(response1.getText().contains("Zhang San") || response1.getText().contains("Hello"),
 				"Agent should acknowledge the greeting");
 
 		// Second interaction: ask for name
-		Optional<OverAllState> result2 = agent.invoke("我叫什么名字？", config);
+		Optional<OverAllState> result2 = agent.invoke("What's my name?", config);
 		assertTrue(result2.isPresent(), "Second response should be present");
 
 		AssistantMessage response2 = (AssistantMessage) result2.get().value("messages")
 				.map(m -> ((List<Message>) m).get(((List<Message>) m).size() - 1))
 				.orElseThrow();
 		System.out.println("Response 2: " + response2.getText());
-		assertTrue(response2.getText().contains("张三"),
+		assertTrue(response2.getText().contains("Zhang San"),
 				"Agent should remember the name from previous interaction");
 	}
 
@@ -131,17 +131,17 @@ class ShortTermMemoryTest {
 				.threadId("thread_alice")
 				.build();
 
-		agent.invoke("你好，我叫 Alice。", config1);
+		agent.invoke("Hello, my name is Alice.", config1);
 
 		// Thread 2: User named Bob
 		RunnableConfig config2 = RunnableConfig.builder()
 				.threadId("thread_bob")
 				.build();
 
-		agent.invoke("你好，我叫 Bob。", config2);
+		agent.invoke("Hello, my name is Bob.", config2);
 
 		// Ask for name in thread 1 - should be Alice
-		Optional<OverAllState> result1 = agent.invoke("我叫什么名字？", config1);
+		Optional<OverAllState> result1 = agent.invoke("What's my name?", config1);
 		AssistantMessage response1 = (AssistantMessage) result1.get().value("messages")
 				.map(m -> ((List<Message>) m).get(((List<Message>) m).size() - 1))
 				.orElseThrow();
@@ -150,7 +150,7 @@ class ShortTermMemoryTest {
 				"Thread 1 should remember Alice");
 
 		// Ask for name in thread 2 - should be Bob
-		Optional<OverAllState> result2 = agent.invoke("我叫什么名字？", config2);
+		Optional<OverAllState> result2 = agent.invoke("What's my name?", config2);
 		AssistantMessage response2 = (AssistantMessage) result2.get().value("messages")
 				.map(m -> ((List<Message>) m).get(((List<Message>) m).size() - 1))
 				.orElseThrow();
@@ -179,13 +179,13 @@ class ShortTermMemoryTest {
 				.build();
 
 		// Have multiple interactions
-		agent.invoke("你好，我叫 Bob", config);
-		agent.invoke("我喜欢猫", config);
-		agent.invoke("我也喜欢狗", config);
-		agent.invoke("给我讲个笑话", config);
+		agent.invoke("Hello, my name is Bob", config);
+		agent.invoke("i like cats", config);
+		agent.invoke("I like dogs too", config);
+		agent.invoke("tell me a joke", config);
 
 		// After multiple interactions, the message count should be trimmed
-		Optional<OverAllState> result = agent.invoke("我叫什么名字？", config);
+		Optional<OverAllState> result = agent.invoke("What's my name?", config);
 		AssistantMessage response = (AssistantMessage) result.get().value("messages")
 				.map(m -> ((List<Message>) m).get(((List<Message>) m).size() - 1))
 				.orElseThrow();
@@ -215,12 +215,12 @@ class ShortTermMemoryTest {
 				.build();
 
 		// Have multiple interactions
-		agent.invoke("记住：密码是 12345", config);
-		agent.invoke("再记住：我的邮箱是 test@example.com", config);
-		agent.invoke("今天天气怎么样？", config);
+		agent.invoke("Remember: the password is 12345", config);
+		agent.invoke("Remember again: my email is test@example.com", config);
+		agent.invoke("How is the weather today?", config);
 
 		// After deletion hook, old messages should be removed
-		Optional<OverAllState> result = agent.invoke("密码是什么？", config);
+		Optional<OverAllState> result = agent.invoke("What's the password?", config);
 		AssistantMessage response = (AssistantMessage) result.get().value("messages")
 				.map(m -> ((List<Message>) m).get(((List<Message>) m).size() - 1))
 				.orElseThrow();
@@ -313,10 +313,10 @@ class ShortTermMemoryTest {
 				.build();
 
 		// First interaction: user provides their location
-		agent.invoke("我住在北京。", config);
+		agent.invoke("I live in Beijing.", config);
 
 		// Second interaction: ask about weather (agent should remember location)
-		Optional<OverAllState> result = agent.invoke("我这里的天气怎么样？", config);
+		Optional<OverAllState> result = agent.invoke("How is the weather here?", config);
 		assertTrue(result.isPresent(), "Response should be present");
 
 		AssistantMessage response = (AssistantMessage) result.get().value("messages")
@@ -347,7 +347,7 @@ class ShortTermMemoryTest {
 				.build();
 
 		// Have a conversation
-		agent1.invoke("你好，我叫李明，今年25岁。", config);
+		agent1.invoke("Hello, my name is Li Ming, I am 25 years old.", config);
 
 		// Create a new agent instance with the same saver and threadId
 		ReactAgent agent2 = ReactAgent.builder()
@@ -357,13 +357,13 @@ class ShortTermMemoryTest {
 				.build();
 
 		// Continue the conversation with new agent instance
-		Optional<OverAllState> result = agent2.invoke("我叫什么名字？多大了？", config);
+		Optional<OverAllState> result = agent2.invoke("What's my name?How old are you?", config);
 		AssistantMessage response = (AssistantMessage) result.get().value("messages")
 				.map(m -> ((List<Message>) m).get(((List<Message>) m).size() - 1))
 				.orElseThrow();
 
 		System.out.println("Resumed conversation response: " + response.getText());
-		assertTrue(response.getText().contains("李明") || response.getText().contains("25"),
+		assertTrue(response.getText().contains("Li Ming") || response.getText().contains("25"),
 				"Agent should remember information from previous conversation");
 	}
 }

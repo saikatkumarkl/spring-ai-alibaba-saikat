@@ -1,6 +1,6 @@
 # ReAct Agent Example
 
-This example showcases basic ReactAgent usage in Spring AI Alibaba.
+This example showcases basic ReactAgent usage in CordonData.
 
 ## Quick Start
 

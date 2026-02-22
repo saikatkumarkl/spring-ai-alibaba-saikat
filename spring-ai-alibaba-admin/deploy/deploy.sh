@@ -22,10 +22,10 @@ kubectl apply -f "$SCRIPT_DIR/namespace.yaml"
 # This must be done BEFORE deploying MySQL, so the init scripts are available on first startup
 if [ -d "$PROJECT_ROOT/docker/middleware/init/mysql" ]; then
     echo -e "${YELLOW}Step 2: Creating MySQL initialization scripts ConfigMap...${NC}"
-    if [ -f "$PROJECT_ROOT/docker/middleware/init/mysql/admin-schema.sql" ] && [ -f "$PROJECT_ROOT/docker/middleware/init/mysql/agentscope-schema.sql" ]; then
+    if [ -f "$PROJECT_ROOT/docker/middleware/init/mysql/admin-schema.sql" ] && [ -f "$PROJECT_ROOT/docker/middleware/init/mysql/cordondata-schema.sql" ]; then
         kubectl create configmap mysql-init-scripts \
             --from-file=admin-schema.sql="$PROJECT_ROOT/docker/middleware/init/mysql/admin-schema.sql" \
-            --from-file=agentscope-schema.sql="$PROJECT_ROOT/docker/middleware/init/mysql/agentscope-schema.sql" \
+            --from-file=cordondata-schema.sql="$PROJECT_ROOT/docker/middleware/init/mysql/cordondata-schema.sql" \
             -n spring-ai-admin \
             --dry-run=client -o yaml | kubectl apply -f -
         echo "  - MySQL init scripts ConfigMap created/updated"

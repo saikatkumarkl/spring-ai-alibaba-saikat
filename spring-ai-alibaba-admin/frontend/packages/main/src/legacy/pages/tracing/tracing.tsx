@@ -309,7 +309,7 @@ function TracingPage() {
     const advancedFilters = formValues.advancedFilters?.filter((f: any) => f && f.key && f.value) || [];
 
     if (formValues.sourceType) {
-      advancedFilters.push({ key: "spring.ai.alibaba.studio.source", value: formValues.sourceType });
+      advancedFilters.push({ key: "cordondata.studio.source", value: formValues.sourceType });
     }
 
     return {
@@ -374,7 +374,7 @@ function TracingPage() {
 
   useEffect(() => {
     const locationState = location.state || {}
-    const promptKey = locationState.adv?.["spring.ai.alibaba.prompt.key"];
+    const promptKey = locationState.adv?.["cordondata.prompt.key"];
     const traceId = locationState.traceId || searchParams.get('traceId');
 
     if (traceId) {
@@ -384,7 +384,7 @@ function TracingPage() {
     if (promptKey) {
       setFilteredPromptName(promptKey);
       const advancedFilters = [];
-      advancedFilters.push({ key: 'spring.ai.alibaba.prompt.key', value: promptKey });
+      advancedFilters.push({ key: 'cordondata.prompt.key', value: promptKey });
 
       form.setFieldsValue({
         advancedFilters: advancedFilters
@@ -592,16 +592,16 @@ function TracingPage() {
     console.log('inputContentValues:', inputContents);
     console.log('outputContentValues:', outputContents);
 
-    // Extract all key-value pairs under spring.ai.alibaba.prompt.variable in otherAttr
+    // Extract all key-value pairs under cordondata.prompt.variable in otherAttr
     const promptVariableValues: Record<string, any> = {};
-    if (otherAttr['spring.ai.alibaba.prompt.variable']) {
+    if (otherAttr['cordondata.prompt.variable']) {
       try {
-        const promptVariables = JSON.parse(otherAttr['spring.ai.alibaba.prompt.variable']);
+        const promptVariables = JSON.parse(otherAttr['cordondata.prompt.variable']);
         Object.keys(promptVariables).forEach(key => {
           promptVariableValues[key] = promptVariables[key];
         });
       } catch (error) {
-        console.error('Failed to parse spring.ai.alibaba.prompt.variable:', error);
+        console.error('Failed to parse cordondata.prompt.variable:', error);
       }
     }
 
@@ -860,7 +860,7 @@ function TracingPage() {
     },
     {
       title: 'Source Type',
-      dataIndex: ['attributes', 'spring.ai.alibaba.studio.source'],
+      dataIndex: ['attributes', 'cordondata.studio.source'],
       key: 'sourceType',
       render: (type: string) => SOURCE_TYPE_MAP[type] || type || "-"
     },
@@ -1511,7 +1511,7 @@ function TracingPage() {
               </Form.Item>
             </Col>
             {
-              serviceName === "spring-ai-alibaba-studio" && (
+              serviceName === "cordondata-studio" && (
                 <Col span={6}>
                   <Form.Item name="sourceType" label="Source Type">
                     <Select placeholder="All" allowClear>

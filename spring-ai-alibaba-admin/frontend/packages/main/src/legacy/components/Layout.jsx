@@ -136,7 +136,7 @@ const Layout = ({ children }) => {
         <div className="p-6" style={{ borderBottom: '1px solid var(--ag-ant-color-border-secondary)' }}>
           <h1 className="text-xl font-bold flex items-center whitespace-nowrap overflow-hidden" style={{ color: 'var(--ag-ant-color-text)' }}>
             <SettingOutlined className="mr-1 text-blue-500" />
-            {!collapsed && "Admin Dashboard"}
+            {!collapsed && "CordonData"}
           </h1>
         </div>
 

@@ -73,7 +73,7 @@ public class ModelConfigInfo {
             return (T) value;
         } catch (ClassCastException e) {
             throw new IllegalArgumentException(
-                String.format("参数 %s 的值 %s 无法转换为类型 %s", 
+                String.format("Value %s of parameter %s cannot be converted to type %s", 
                     parameterName, value, type.getSimpleName()), e);
         }
     }

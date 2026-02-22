@@ -1,5 +1,5 @@
 import $i18n from '@/i18n';
-import { IValueType } from '@spark-ai/flow';
+import { IValueType } from '@cordondata/flow';
 import { Flex, Input } from 'antd';
 import styles from './index.module.less';
 

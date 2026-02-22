@@ -67,8 +67,8 @@ public class FlowAgentHookTest {
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_agent")
 				.model(chatModel)
-				.description("擅长创作各类文章")
-				.instruction("你是一个知名的作家，擅长写诗，20字以内。")
+				.description("Good at writing various articles")
+				.instruction("You are a well-known writer, good at writing poems, within 20 words.")
 				.outputKey("writer_output")
 				.enableLogging(false)
 				.build();
@@ -76,8 +76,8 @@ public class FlowAgentHookTest {
 		ReactAgent translatorAgent = ReactAgent.builder()
 				.name("translator_agent")
 				.model(chatModel)
-				.description("擅长翻译")
-				.instruction("你是一个专业的翻译家，20字以内。")
+				.description("Good at translation")
+				.instruction("You are a professional translator, within 20 words.")
 				.outputKey("translator_output")
 				.enableLogging(false)
 				.build();
@@ -85,32 +85,32 @@ public class FlowAgentHookTest {
 		// Create SupervisorAgent with hook (mainAgent is required)
 		SupervisorAgent supervisorAgent = SupervisorAgent.builder()
 				.name("content_supervisor")
-				.description("内容管理监督者")
+				.description("content management supervisor")
 				.model(chatModel)
 				.mainAgent(ReactAgent.builder()
 						.name("main_agent")
 						.model(chatModel)
-						.description("监督者主Agent，负责路由决策")
+						.description("Supervisor main agent, responsible for routing decisions")
 						.systemPrompt("""
-							你是一个智能的内容处理监督者。
-							可用的子Agent：writer_agent（写作）、translator_agent（翻译）
-							只返回Agent名称或FINISH，不要包含其他解释。
+							You are an intelligent content processing supervisor.
+							Available sub-agents: writer_agent (writing), translator_agent (translation)
+							Only return Agent name or FINISH, do not include any other explanation.
 							""")
-						.instruction("用户的请求是: {input}")
+						.instruction("The user's request is: {input}")
 						.outputKey("final_output")
 						.build())
 				.subAgents(List.of(writerAgent, translatorAgent))
 				.hooks(List.of(HookFactory.createLogAgentHook(), HookFactory.createLogModelHook()))
 				.systemPrompt("""
-					你是一个智能的内容处理监督者。
-					可用的子Agent：writer_agent（写作）、translator_agent（翻译）
-					只返回Agent名称或FINISH，不要包含其他解释。
+					You are an intelligent content processing supervisor.
+					Available sub-agents: writer_agent (writing), translator_agent (translation)
+					Only return Agent name or FINISH, do not include any other explanation.
 					""")
 				.build();
 
 		try {
 			// Execute the agent
-			Optional<OverAllState> result = supervisorAgent.invoke("帮我写一首关于春天的诗");
+			Optional<OverAllState> result = supervisorAgent.invoke("Help me write a poem about spring");
 
 			assertTrue(result.isPresent(), "Result should be present");
 
@@ -136,8 +136,8 @@ public class FlowAgentHookTest {
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_agent")
 				.model(chatModel)
-				.description("专业写作Agent")
-				.instruction("你是一个知名的作家，擅长写诗。请根据用户的提问进行回答：{input}，20字以内。")
+				.description("Professional Writing Agent")
+				.instruction("You are a well-known writer who is good at writing poetry.Please answer according to the user's question: {input}, within 20 words.")
 				.outputKey("article")
 				.enableLogging(false)
 				.build();
@@ -145,8 +145,8 @@ public class FlowAgentHookTest {
 		ReactAgent reviewerAgent = ReactAgent.builder()
 				.name("reviewer_agent")
 				.model(chatModel)
-				.description("专业评审Agent")
-				.instruction("你是一个知名的评论家。待评论诗歌：{article}，20字以内。")
+				.description("Professional Review Agent")
+				.instruction("You are a well-known critic.Poetry to be commented: {article}, within 20 words.")
 				.outputKey("reviewed_article")
 				.enableLogging(false)
 				.build();
@@ -154,14 +154,14 @@ public class FlowAgentHookTest {
 		// Create SequentialAgent with dynamically created hooks
 		SequentialAgent sequentialAgent = SequentialAgent.builder()
 				.name("writing_workflow")
-				.description("写作工作流：先写诗，然后评审")
+				.description("Writing workflow: write the poem first, then review it")
 				.subAgents(List.of(writerAgent, reviewerAgent))
 				.hooks(List.of(HookFactory.createLogAgentHook(), HookFactory.createLogModelHook()))
 				.build();
 
 		try {
 			// Execute the agent
-			Optional<OverAllState> result = sequentialAgent.invoke("写一篇关于春天的诗歌");
+			Optional<OverAllState> result = sequentialAgent.invoke("Write a poem about spring");
 
 			assertTrue(result.isPresent(), "Result should be present");
 
@@ -189,8 +189,8 @@ public class FlowAgentHookTest {
 		ReactAgent processorAgent = ReactAgent.builder()
 				.name("processor_agent")
 				.model(chatModel)
-				.description("数据处理Agent")
-				.instruction("你是一个数据处理专家。请处理：{input}，20字以内。")
+				.description("Data processing agent")
+				.instruction("You are a data processing expert.Please process: {input}, within 20 words.")
 				.outputKey("processed_data")
 				.enableLogging(false)
 				.build();
@@ -198,7 +198,7 @@ public class FlowAgentHookTest {
 		// Create LoopAgent with dynamically created hooks
 		LoopAgent loopAgent = LoopAgent.builder()
 				.name("loop_processor")
-				.description("循环处理工作流")
+				.description("Loop processing workflow")
 				.subAgent(processorAgent)
 				.hooks(List.of(HookFactory.createLogAgentHook(), HookFactory.createLogModelHook()))
 				.loopStrategy(new CountLoopStrategy(2))
@@ -206,7 +206,7 @@ public class FlowAgentHookTest {
 
 		try {
 			// Execute the agent
-			Optional<OverAllState> result = loopAgent.invoke("处理数据");
+			Optional<OverAllState> result = loopAgent.invoke("Process data");
 
 			assertTrue(result.isPresent(), "Result should be present");
 
@@ -233,8 +233,8 @@ public class FlowAgentHookTest {
 		ReactAgent agent1 = ReactAgent.builder()
 				.name("agent_1")
 				.model(chatModel)
-				.description("处理Agent 1")
-				.instruction("你是处理器1。请处理：{input}，20字以内。")
+				.description("Process Agent 1")
+				.instruction("You are processor 1.Please process: {input}, within 20 words.")
 				.outputKey("output_1")
 				.enableLogging(false)
 				.build();
@@ -242,8 +242,8 @@ public class FlowAgentHookTest {
 		ReactAgent agent2 = ReactAgent.builder()
 				.name("agent_2")
 				.model(chatModel)
-				.description("处理Agent 2")
-				.instruction("你是处理器2。请处理：{input}，20字以内。")
+				.description("Process Agent 2")
+				.instruction("You are processor 2.Please process: {input}, within 20 words.")
 				.outputKey("output_2")
 				.enableLogging(false)
 				.build();
@@ -251,8 +251,8 @@ public class FlowAgentHookTest {
 		ReactAgent agent3 = ReactAgent.builder()
 				.name("agent_3")
 				.model(chatModel)
-				.description("处理Agent 3")
-				.instruction("你是处理器3。请处理：{input}，20字以内。")
+				.description("Handling Agent 3")
+				.instruction("You are processor 3.Please process: {input}, within 20 words.")
 				.outputKey("output_3")
 				.enableLogging(false)
 				.build();
@@ -260,7 +260,7 @@ public class FlowAgentHookTest {
 		// Create ParallelAgent with dynamically created hooks
 		ParallelAgent parallelAgent = ParallelAgent.builder()
 				.name("parallel_processor")
-				.description("并行处理工作流")
+				.description("Parallel processing workflows")
 				.subAgents(List.of(agent1, agent2, agent3))
 				.hooks(List.of(HookFactory.createLogAgentHook(), HookFactory.createLogModelHook()))
 				.maxConcurrency(3)
@@ -268,7 +268,7 @@ public class FlowAgentHookTest {
 
 		try {
 			// Execute the agent
-			Optional<OverAllState> result = parallelAgent.invoke("并行处理任务");
+			Optional<OverAllState> result = parallelAgent.invoke("Parallel processing tasks");
 
 			assertTrue(result.isPresent(), "Result should be present");
 			System.out.println("result=" + result.get());
@@ -295,8 +295,8 @@ public class FlowAgentHookTest {
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_agent")
 				.model(chatModel)
-				.description("擅长写作")
-				.instruction("你是一个知名的作家，20字以内。")
+				.description("good at writing")
+				.instruction("You are a well-known writer, 20 words or less.")
 				.outputKey("writer_output")
 				.enableLogging(false)
 				.build();
@@ -304,8 +304,8 @@ public class FlowAgentHookTest {
 		ReactAgent translatorAgent = ReactAgent.builder()
 				.name("translator_agent")
 				.model(chatModel)
-				.description("擅长翻译")
-				.instruction("你是一个专业的翻译家，20字以内。")
+				.description("Good at translation")
+				.instruction("You are a professional translator, within 20 words.")
 				.outputKey("translator_output")
 				.enableLogging(false)
 				.build();
@@ -313,8 +313,8 @@ public class FlowAgentHookTest {
 		ReactAgent reviewerAgent = ReactAgent.builder()
 				.name("reviewer_agent")
 				.model(chatModel)
-				.description("擅长评审")
-				.instruction("你是一个知名的评论家，20字以内。")
+				.description("Good at reviewing")
+				.instruction("You are a well-known critic, 20 words or less.")
 				.outputKey("reviewer_output")
 				.enableLogging(false)
 				.build();
@@ -322,21 +322,21 @@ public class FlowAgentHookTest {
 		// Create LlmRoutingAgent with dynamically created hooks
 		LlmRoutingAgent llmRoutingAgent = LlmRoutingAgent.builder()
 				.name("llm_router")
-				.description("智能路由Agent")
+				.description("Intelligent routing agent")
 				.model(chatModel)
 				.subAgents(List.of(writerAgent, translatorAgent, reviewerAgent))
 				.hooks(List.of(HookFactory.createLogAgentHook(), HookFactory.createLogModelHook()))
 				.fallbackAgent("writer_agent")
 				.systemPrompt("""
-					你是一个智能路由器。
-					可用的Agent：writer_agent（写作）、translator_agent（翻译）、reviewer_agent（评审）
-					只返回Agent名称或FINISH，不要包含其他解释。
+					You are an intelligent router.
+					Available agents: writer_agent (writing), translator_agent (translation), reviewer_agent (review)
+					Only return Agent name or FINISH, do not include any other explanation.
 					""")
 				.build();
 
 		try {
 			// Execute the agent
-			Optional<OverAllState> result = llmRoutingAgent.invoke("帮我写一首诗");
+			Optional<OverAllState> result = llmRoutingAgent.invoke("write me a poem");
 
 			assertTrue(result.isPresent(), "Result should be present");
 			System.out.println("result=" + result.get());
@@ -366,8 +366,8 @@ public class FlowAgentHookTest {
 		ReactAgent agent1 = ReactAgent.builder()
 				.name("agent_1")
 				.model(chatModel)
-				.description("处理Agent 1")
-				.instruction("你是处理器1。请处理：{input}，20字以内。")
+				.description("Process Agent 1")
+				.instruction("You are processor 1.Please process: {input}, within 20 words.")
 				.outputKey("output_1")
 				.enableLogging(false)
 				.build();
@@ -375,8 +375,8 @@ public class FlowAgentHookTest {
 		ReactAgent agent2 = ReactAgent.builder()
 				.name("agent_2")
 				.model(chatModel)
-				.description("处理Agent 2")
-				.instruction("你是处理器2。请处理：{input}，20字以内。")
+				.description("Process Agent 2")
+				.instruction("You are processor 2.Please process: {input}, within 20 words.")
 				.outputKey("output_2")
 				.enableLogging(false)
 				.build();
@@ -384,7 +384,7 @@ public class FlowAgentHookTest {
 		// Create ParallelAgent with BOTH beforeAgent and beforeModel hooks (dynamically created)
 		ParallelAgent parallelAgent = ParallelAgent.builder()
 				.name("parallel_processor")
-				.description("并行处理工作流")
+				.description("Parallel processing workflows")
 				.subAgents(List.of(agent1, agent2))
 				.hooks(List.of(HookFactory.createLogAgentHook(), HookFactory.createLogModelHook()))  // Both hooks present!
 				.maxConcurrency(2)
@@ -392,7 +392,7 @@ public class FlowAgentHookTest {
 
 		try {
 			// Execute the agent
-			Optional<OverAllState> result = parallelAgent.invoke("并行处理任务");
+			Optional<OverAllState> result = parallelAgent.invoke("Parallel processing tasks");
 
 			assertTrue(result.isPresent(), "Result should be present");
 
@@ -420,8 +420,8 @@ public class FlowAgentHookTest {
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_agent")
 				.model(chatModel)
-				.description("擅长写作")
-				.instruction("你是一个知名的作家，20字以内。")
+				.description("good at writing")
+				.instruction("You are a well-known writer, 20 words or less.")
 				.outputKey("writer_output")
 				.enableLogging(false)
 				.build();
@@ -429,8 +429,8 @@ public class FlowAgentHookTest {
 		ReactAgent translatorAgent = ReactAgent.builder()
 				.name("translator_agent")
 				.model(chatModel)
-				.description("擅长翻译")
-				.instruction("你是一个专业的翻译家，20字以内。")
+				.description("Good at translation")
+				.instruction("You are a professional translator, within 20 words.")
 				.outputKey("translator_output")
 				.enableLogging(false)
 				.build();
@@ -438,14 +438,14 @@ public class FlowAgentHookTest {
 		ReactAgent reviewerAgent = ReactAgent.builder()
 				.name("reviewer_agent")
 				.model(chatModel)
-				.description("擅长评审")
-				.instruction("你是一个知名的评论家，20字以内。")
+				.description("Good at reviewing")
+				.instruction("You are a well-known critic, 20 words or less.")
 				.outputKey("reviewer_output")
 				.enableLogging(false)
 				.build();
 
 		// Create conditional flow agent with dynamically created hooks
-		FlowAgent conditionalAgent = new FlowAgent("CONDITIONAL", "条件路由工作流",
+		FlowAgent conditionalAgent = new FlowAgent("CONDITIONAL", "Conditional routing workflow",
 				null, List.of(writerAgent, translatorAgent, reviewerAgent), null, null,
 				List.of(HookFactory.createLogAgentHook(), HookFactory.createLogModelHook())) {
 			@Override
@@ -462,7 +462,7 @@ public class FlowAgentHookTest {
 
 		try {
 			// Execute the agent
-			Optional<OverAllState> result = conditionalAgent.invoke("写一首诗");
+			Optional<OverAllState> result = conditionalAgent.invoke("write a poem");
 
 			assertTrue(result.isPresent(), "Result should be present");
 			System.out.println("result=" + result.get());

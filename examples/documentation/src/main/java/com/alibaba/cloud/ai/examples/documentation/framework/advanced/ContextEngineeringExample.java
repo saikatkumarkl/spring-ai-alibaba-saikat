@@ -44,14 +44,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
- * 上下文工程（Context Engineering）示例
+ * Context Engineering Example
  *
- * 演示如何通过上下文工程提高Agent的可靠性，包括：
- * 1. 模型上下文：系统提示、消息历史、工具、模型选择、响应格式
- * 2. 工具上下文：工具访问和修改状态
- * 3. 生命周期上下文：Hook机制
+ * Demonstrates how to improve Agent reliability through context engineering, including:
+ * 1. Model context: system prompts, message history, tools, model selection, response format
+ * 2. Tool context: tool access and modification status
+ * 3. Life cycle context: Hook mechanism
  *
- * 参考文档: advanced_doc/context-engineering.md
+ * Reference documentation: advanced_doc/context-engineering.md
  */
 public class ContextEngineeringExample {
 
@@ -62,56 +62,56 @@ public class ContextEngineeringExample {
 	}
 
 	/**
-	 * Main方法：运行所有示例
+	 * Main method: run all examples
 	 *
-	 * 注意：需要配置ChatModel实例才能运行
+	 * Note: A ChatModel instance needs to be configured to run
 	 */
 	public static void main(String[] args) {
-		// 创建 DashScope API 实例
+		//Create a DashScope API instance
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
 				.apiKey(System.getenv("AI_DASHSCOPE_API_KEY"))
 				.build();
 
-		// 创建 ChatModel
+		//Create ChatModel
 		ChatModel chatModel = DashScopeChatModel.builder()
 				.dashScopeApi(dashScopeApi)
 				.build();
 
 		if (chatModel == null) {
-			System.err.println("错误：请先配置ChatModel实例");
-			System.err.println("请设置 AI_DASHSCOPE_API_KEY 环境变量");
+			System.err.println("Error: Please configure ChatModel instance first");
+			System.err.println("Please set the AI_DASHSCOPE_API_KEY environment variable");
 			return;
 		}
 
-		// 创建示例实例
+		//Create a sample instance
 		ContextEngineeringExample example = new ContextEngineeringExample(chatModel);
 
-		// 运行所有示例
+		//Run all examples
 		example.runAllExamples();
 	}
 
 	/**
-	 * 示例1：基于状态的动态提示
+	 * Example 1: Dynamic prompts based on status
 	 *
-	 * 根据对话长度调整系统提示
+	 * Adjust system prompts based on conversation length
 	 */
 	public void example1_stateAwarePrompt() throws GraphRunnerException {
-		// 创建一个模型拦截器，根据对话长度调整系统提示
+		//Create a model interceptor that adjusts system prompts based on conversation length
 		class StateAwarePromptInterceptor extends ModelInterceptor {
 			@Override
 			public ModelResponse interceptModel(ModelRequest request, ModelCallHandler handler) {
 				List<Message> messages = request.getMessages();
 				int messageCount = messages.size();
 
-				// 基础提示
-				String basePrompt = "你是一个有用的助手。";
+				//Basic tips
+				String basePrompt = "You are a useful assistant.";
 
-				// 根据消息数量调整提示
+				//Adjust prompts based on number of messages
 				if (messageCount > 10) {
-					basePrompt += "\n这是一个长对话 - 请尽量保持精准简捷。";
+					basePrompt += "\nThis is a long conversation - please try to keep it precise and concise.";
 				}
 
-				// 更新系统消息（参考 TodoListInterceptor 的实现方式）
+				//Update system messages (refer to the implementation of TodoListInterceptor)
 				SystemMessage enhancedSystemMessage;
 				if (request.getSystemMessage() == null) {
 					enhancedSystemMessage = new SystemMessage(basePrompt);
@@ -122,12 +122,12 @@ public class ContextEngineeringExample {
 					);
 				}
 
-				// 创建增强的请求
+				//Create enhanced request
 				ModelRequest enhancedRequest = ModelRequest.builder(request)
 						.systemMessage(enhancedSystemMessage)
 						.build();
 
-				// 调用处理器
+				//call handler
 				return handler.call(enhancedRequest);
 			}
 
@@ -137,25 +137,25 @@ public class ContextEngineeringExample {
 			}
 		}
 
-		// 使用拦截器创建Agent
+		//Create Agent using interceptor
 		ReactAgent agent = ReactAgent.builder()
 				.name("context_aware_agent")
 				.model(chatModel)
 				.interceptors(new StateAwarePromptInterceptor())
 				.build();
 
-		// 测试
-		agent.invoke("你好");
-		System.out.println("基于状态的动态提示示例执行完成");
+		//test
+		agent.invoke("Hello");
+		System.out.println("Status-based dynamic prompt example execution completed");
 	}
 
 	/**
-	 * 示例2：基于存储的个性化提示
+	 * Example 2: Storage-based personalized prompts
 	 *
-	 * 从长期记忆加载用户偏好并生成个性化提示
+	 * Load user preferences from long-term memory and generate personalized prompts
 	 */
 	public void example2_personalizedPrompt() throws GraphRunnerException {
-		// 用户偏好类
+		//User preference class
 		class UserPreferences {
 			private String communicationStyle;
 			private String language;
@@ -180,13 +180,13 @@ public class ContextEngineeringExample {
 			}
 		}
 
-		// 简单的用户偏好存储
+		//Simple user preference storage
 		class UserPreferenceStore {
 			private Map<String, UserPreferences> store = new HashMap<>();
 
 			public UserPreferences getPreferences(String userId) {
 				return store.getOrDefault(userId,
-						new UserPreferences("专业", "中文", List.of()));
+						new UserPreferences("major", "Chinese", List.of()));
 			}
 
 			public void savePreferences(String userId, UserPreferences prefs) {
@@ -196,9 +196,9 @@ public class ContextEngineeringExample {
 
 		UserPreferenceStore store = new UserPreferenceStore();
 		store.savePreferences("user_001",
-				new UserPreferences("友好轻松", "中文", List.of("技术", "阅读")));
+				new UserPreferences("Friendly and relaxed", "Chinese", List.of("technology", "read")));
 
-		// 从长期记忆加载用户偏好
+		//Load user preferences from long-term memory
 		class PersonalizedPromptInterceptor extends ModelInterceptor {
 			private final UserPreferenceStore store;
 
@@ -208,16 +208,16 @@ public class ContextEngineeringExample {
 
 			@Override
 			public ModelResponse interceptModel(ModelRequest request, ModelCallHandler handler) {
-				// 从运行时上下文获取用户ID
+				//Get user ID from runtime context
 				String userId = getUserIdFromContext(request);
 
-				// 从存储加载用户偏好
+				//Load user preferences from storage
 				UserPreferences prefs = store.getPreferences(userId);
 
-				// 构建个性化提示
+				//Build personalized prompts
 				String personalizedPrompt = buildPersonalizedPrompt(prefs);
 
-				// 更新系统消息（参考 TodoListInterceptor 的实现方式）
+				//Update system messages (refer to the implementation of TodoListInterceptor)
 				SystemMessage enhancedSystemMessage;
 				if (request.getSystemMessage() == null) {
 					enhancedSystemMessage = new SystemMessage(personalizedPrompt);
@@ -228,33 +228,33 @@ public class ContextEngineeringExample {
 					);
 				}
 
-				// 创建增强的请求
+				//Create enhanced request
 				ModelRequest enhancedRequest = ModelRequest.builder(request)
 						.systemMessage(enhancedSystemMessage)
 						.build();
 
-				// 调用处理器
+				//call handler
 				return handler.call(enhancedRequest);
 			}
 
 			private String getUserIdFromContext(ModelRequest request) {
-				// 从请求上下文提取用户ID
-				return "user_001"; // 简化示例
+				//Extract user ID from request context
+				return "user_001"; //Simplified example
 			}
 
 			private String buildPersonalizedPrompt(UserPreferences prefs) {
-				StringBuilder prompt = new StringBuilder("你是一个有用的助手。");
+				StringBuilder prompt = new StringBuilder("You are a useful assistant.");
 
 				if (prefs.getCommunicationStyle() != null) {
-					prompt.append("\n沟通风格：").append(prefs.getCommunicationStyle());
+					prompt.append("\nCommunication style:").append(prefs.getCommunicationStyle());
 				}
 
 				if (prefs.getLanguage() != null) {
-					prompt.append("\n使用语言：").append(prefs.getLanguage());
+					prompt.append("\nUse language:").append(prefs.getLanguage());
 				}
 
 				if (!prefs.getInterests().isEmpty()) {
-					prompt.append("\n用户兴趣：").append(String.join(", ", prefs.getInterests()));
+					prompt.append("\nUser interests:").append(String.join(", ", prefs.getInterests()));
 				}
 
 				return prompt.toString();
@@ -272,14 +272,14 @@ public class ContextEngineeringExample {
 				.interceptors(new PersonalizedPromptInterceptor(store))
 				.build();
 
-		agent.invoke("介绍一下最新的AI技术");
-		System.out.println("个性化提示示例执行完成");
+		agent.invoke("Introduce the latest AI technology");
+		System.out.println("Personalized prompt example execution completed");
 	}
 
 	/**
-	 * 示例3：消息过滤
+	 * Example 3: Message filtering
 	 *
-	 * 只保留最近的N条消息，避免上下文过长
+	 * Only keep the most recent N messages to avoid too long context
 	 */
 	public void example3_messageFilter() {
 		class MessageFilterInterceptor extends ModelInterceptor {
@@ -293,17 +293,17 @@ public class ContextEngineeringExample {
 			public ModelResponse interceptModel(ModelRequest request, ModelCallHandler next) {
 				List<Message> messages = request.getMessages();
 
-				// 只保留最近的N条消息
+				//Only keep the latest N messages
 				if (messages.size() > maxMessages) {
 					List<Message> filtered = new ArrayList<>();
 
-					// 添加系统消息
+					//Add system message
 					messages.stream()
 							.filter(m -> m instanceof SystemMessage)
 							.findFirst()
 							.ifPresent(filtered::add);
 
-					// 添加最近的消息
+					//Add recent message
 					int startIndex = Math.max(0, messages.size() - maxMessages + 1);
 					filtered.addAll(messages.subList(startIndex, messages.size()));
 
@@ -329,13 +329,13 @@ public class ContextEngineeringExample {
 				.interceptors(new MessageFilterInterceptor(10))
 				.build();
 
-		System.out.println("消息过滤示例执行完成");
+		System.out.println("Message filtering example execution completed");
 	}
 
 	/**
-	 * 示例4：基于上下文的工具选择
+	 * Example 4: Context-based tool selection
 	 *
-	 * 根据用户角色动态选择可用工具
+	 * Dynamically select available tools based on user role
 	 */
 	public void example4_contextualToolSelection() {
 		class ContextualToolInterceptor extends ModelInterceptor {
@@ -347,25 +347,25 @@ public class ContextEngineeringExample {
 
 			@Override
 			public ModelResponse interceptModel(ModelRequest request, ModelCallHandler next) {
-				// 从上下文获取用户角色
+				//Get user role from context
 				String userRole = getUserRole(request);
 
-				// 根据角色选择工具
+				//Choose tools based on role
 				List<ToolCallback> allowedTools = roleBasedTools.getOrDefault(
 						userRole,
 						Collections.emptyList()
 				);
 
-				// 更新工具选项（注：实际实现需要根据框架API调整）
-				// 这里展示概念性代码
-				System.out.println("为角色 " + userRole + " 选择了 " + allowedTools.size() + " 个工具");
+				//Update tool options (note: the actual implementation needs to be adjusted according to the framework API)
+				//Conceptual code shown here
+				System.out.println("for role" + userRole + "selected" + allowedTools.size() + "tools");
 
 				return next.call(request);
 			}
 
 			private String getUserRole(ModelRequest request) {
-				// 从请求上下文提取用户角色
-				return "user"; // 简化示例
+				//Extract user role from request context
+				return "user"; //Simplified example
 			}
 
 			@Override
@@ -374,7 +374,7 @@ public class ContextEngineeringExample {
 			}
 		}
 
-		// 配置基于角色的工具（示例）
+		//Configuring role-based tools (example)
 		Map<String, List<ToolCallback>> roleTools = Map.of(
 				"admin", List.of(/* readTool, writeTool, deleteTool */),
 				"user", List.of(/* readTool */),
@@ -387,13 +387,13 @@ public class ContextEngineeringExample {
 				.interceptors(new ContextualToolInterceptor(roleTools))
 				.build();
 
-		System.out.println("基于上下文的工具选择示例执行完成");
+		System.out.println("Context-based tool selection example execution completed");
 	}
 
 	/**
-	 * 示例5：日志记录 Hook
+	 * Example 5: Logging Hook
 	 *
-	 * 使用MessagesModelHook在模型调用前后记录日志
+	 * Use MessagesModelHook to log before and after model calls
 	 */
 	public void example5_loggingHook() throws GraphRunnerException {
 		@HookPositions({HookPosition.BEFORE_MODEL, HookPosition.AFTER_MODEL})
@@ -405,37 +405,37 @@ public class ContextEngineeringExample {
 
 			@Override
 			public AgentCommand beforeModel(List<Message> previousMessages, RunnableConfig config) {
-				// 在模型调用前记录
-				System.out.println("模型调用前 - 消息数: " + previousMessages.size());
-				// 不修改消息，返回原始消息
+				//Record before model call
+				System.out.println("Before model call - number of messages:" + previousMessages.size());
+				//Do not modify the message, return the original message
 				return new AgentCommand(previousMessages);
 			}
 
 			@Override
 			public AgentCommand afterModel(List<Message> previousMessages, RunnableConfig config) {
-				// 在模型调用后记录
-				System.out.println("模型调用后 - 响应已生成");
-				// 不修改消息，返回原始消息
+				//Logging after model call
+				System.out.println("After model call - response generated");
+				//Do not modify the message, return the original message
 				return new AgentCommand(previousMessages);
 			}
 		}
 
-		// 使用Hook
+		//Use Hook
 		ReactAgent agent = ReactAgent.builder()
 				.name("logged_agent")
 				.model(chatModel)
 				.hooks(new LoggingHook())
 				.build();
 
-		agent.invoke("测试日志记录");
-		System.out.println("日志记录Hook示例执行完成");
+		agent.invoke("Test logging");
+		System.out.println("Logging Hook example execution completed");
 	}
 
 	/**
-	 * 示例6：消息摘要 Hook
+	 * Example 6: Message Summary Hook
 	 *
-	 * 当对话过长时自动生成摘要
-	 * 使用MessagesModelHook实现
+	 * Automatically generate summaries when conversations are too long
+	 * Implemented using MessagesModelHook
 	 */
 	public void example6_summarizationHook() {
 		@HookPositions({HookPosition.BEFORE_MODEL})
@@ -456,14 +456,14 @@ public class ContextEngineeringExample {
 			@Override
 			public AgentCommand beforeModel(List<Message> previousMessages, RunnableConfig config) {
 				if (previousMessages.size() <= triggerLength) {
-					// 如果消息数量未超过阈值，无需总结
+					//If the number of messages does not exceed the threshold, no summary is needed
 					return new AgentCommand(previousMessages);
 				}
 
-				// 生成对话摘要
+				//Generate conversation summary
 				String summary = generateSummary(previousMessages);
 
-				// 查找是否已存在 SystemMessage
+				//Find if SystemMessage already exists
 				SystemMessage existingSystemMessage = null;
 				for (Message msg : previousMessages) {
 					if (msg instanceof SystemMessage) {
@@ -472,49 +472,49 @@ public class ContextEngineeringExample {
 					}
 				}
 
-				// 创建摘要 SystemMessage
-				String summaryText = "之前对话摘要：" + summary;
+				//Create summary SystemMessage
+				String summaryText = "Summary of previous conversations:" + summary;
 				SystemMessage summarySystemMessage;
 				if (existingSystemMessage != null) {
-					// 如果存在 SystemMessage，追加摘要信息
+					//If SystemMessage exists, append summary information
 					summarySystemMessage = new SystemMessage(
 							existingSystemMessage.getText() + "\n\n" + summaryText
 					);
 				}
 				else {
-					// 如果不存在，创建新的
+					//If it does not exist, create a new one
 					summarySystemMessage = new SystemMessage(summaryText);
 				}
 
-				// 保留最近的几条消息
+				//Keep the most recent messages
 				int recentCount = Math.min(5, previousMessages.size());
 				List<Message> recentMessages = previousMessages.subList(
 						previousMessages.size() - recentCount,
 						previousMessages.size()
 				);
 
-				// 构建新的消息列表
+				//Build a new message list
 				List<Message> newMessages = new ArrayList<>();
 				newMessages.add(summarySystemMessage);
-				// 添加最近的消息，排除旧的 SystemMessage（如果存在）
+				//Add recent messages, excluding old SystemMessage if present
 				for (Message msg : recentMessages) {
 					if (msg != existingSystemMessage) {
 						newMessages.add(msg);
 					}
 				}
 
-				// 使用 REPLACE 策略替换所有消息
+				//Replace all messages using REPLACE policy
 				return new AgentCommand(newMessages, UpdatePolicy.REPLACE);
 			}
 
 			private String generateSummary(List<Message> messages) {
-				// 使用另一个模型生成摘要
+				//Use another model to generate a summary
 				String conversation = messages.stream()
 						.map(Message::getText)
 						.collect(Collectors.joining("\n"));
 
-				// 简化示例：返回固定摘要
-				return "之前讨论了多个主题...";
+				//Simplified example: return fixed summary
+				return "Several topics have been discussed before...";
 			}
 		}
 
@@ -524,43 +524,43 @@ public class ContextEngineeringExample {
 				.hooks(new SummarizationHook(chatModel, 20))
 				.build();
 
-		System.out.println("消息摘要Hook示例执行完成");
+		System.out.println("Message summary Hook example execution completed");
 	}
 
 	/**
-	 * 运行所有示例
+	 * Run all examples
 	 */
 	public void runAllExamples() {
-		System.out.println("=== 上下文工程（Context Engineering）示例 ===\n");
+		System.out.println("=== Context Engineering Example ===\n");
 
 		try {
-			System.out.println("示例1: 基于状态的动态提示");
+			System.out.println("Example 1: Dynamic prompts based on status");
 			example1_stateAwarePrompt();
 			System.out.println();
 
-			System.out.println("示例2: 基于存储的个性化提示");
+			System.out.println("Example 2: Storage-based personalized prompts");
 			example2_personalizedPrompt();
 			System.out.println();
 
-			System.out.println("示例3: 消息过滤");
+			System.out.println("Example 3: Message filtering");
 			example3_messageFilter();
 			System.out.println();
 
-			System.out.println("示例4: 基于上下文的工具选择");
+			System.out.println("Example 4: Context-based tool selection");
 			example4_contextualToolSelection();
 			System.out.println();
 
-			System.out.println("示例5: 日志记录Hook");
+			System.out.println("Example 5: Logging Hook");
 			example5_loggingHook();
 			System.out.println();
 
-			System.out.println("示例6: 消息摘要Hook");
+			System.out.println("Example 6: Message Summary Hook");
 			example6_summarizationHook();
 			System.out.println();
 
 		}
 		catch (Exception e) {
-			System.err.println("执行示例时出错: " + e.getMessage());
+			System.err.println("An error occurred while executing the example:" + e.getMessage());
 			e.printStackTrace();
 		}
 	}

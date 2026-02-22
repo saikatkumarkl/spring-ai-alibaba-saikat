@@ -37,7 +37,7 @@ public class DatasetItemServiceImpl implements DatasetItemService {
     @Override
 
     public List<DatasetItem> create(DatasetItemCreateRequest request) {
-        log.info("创建数据项: {}", request);
+        log.info("Create data item: {}", request);
 
         List<DatasetItem> datasetItemList = request.getDataContent().stream().map(
                 dataContent -> {
@@ -56,7 +56,7 @@ public class DatasetItemServiceImpl implements DatasetItemService {
 
     @Override
     public List<DatasetItem> createFromTrace(DataItemCreateFromTraceRequest request) {
-        log.info("从Trace创建数据项: {}", request);
+        log.info("Create data items from Trace: {}", request);
         List<Long> itemIds = new ArrayList<>(List.of());
 
         List<DatasetItem> datasetItemList = request.getDataContent().stream().map(
@@ -76,7 +76,7 @@ public class DatasetItemServiceImpl implements DatasetItemService {
             //Update the list of data items in a dataset version
             DatasetVersionDO datasetVersionDO = datasetVersionMapper.selectById(request.getDatasetVersionId());
             if (datasetVersionDO == null) {
-                throw new RuntimeException("数据集版本不存在: " + request.getDatasetVersionId());
+                throw new RuntimeException("Dataset version does not exist:" + request.getDatasetVersionId());
             }
 
             List<Long> datasetItems = CommonUtils.parseItemIds(datasetVersionDO.getDatasetItems());
@@ -94,11 +94,11 @@ public class DatasetItemServiceImpl implements DatasetItemService {
 
     @Override
     public PageResult<DatasetItem> list(DatasetItemListRequest request) {
-        log.info("根据数据集版本ID查询数据项列表: datasetVersionId={}, pageNumber={}, pageSize={}", request.getDatasetVersionId(), request.getPageNumber(), request.getPageSize());
+        log.info("Query the list of data items based on the dataset version ID: datasetVersionId={}, pageNumber={}, pageSize={}", request.getDatasetVersionId(), request.getPageNumber(), request.getPageSize());
 
         DatasetVersionDO datasetVersion = datasetVersionMapper.selectById(request.getDatasetVersionId());
         if (datasetVersion == null) {
-            throw new RuntimeException("数据集版本不存在: " + request.getDatasetVersionId());
+            throw new RuntimeException("Dataset version does not exist:" + request.getDatasetVersionId());
         }
 
         List<Long> itemIds = CommonUtils.parseItemIds(datasetVersion.getDatasetItems());
@@ -129,7 +129,7 @@ public class DatasetItemServiceImpl implements DatasetItemService {
 
     @Override
     public DatasetItem getById(Long id) {
-        log.info("查询数据项详情: {}", id);
+        log.info("Query data item details: {}", id);
         DatasetItemDO datasetItemDO = datasetItemMapper.selectById(id);
         return DatasetItem.fromDO(datasetItemDO);
     }
@@ -137,13 +137,13 @@ public class DatasetItemServiceImpl implements DatasetItemService {
     @Override
 
     public DatasetItem update(DatasetItemUpdateRequest request) {
-        log.info("更新数据项: {}", request);
+        log.info("Update data item: {}", request);
         
         //Check if the data item exists
         DatasetItemDO existingData = datasetItemMapper.selectById(request.getId());
 
         if(Objects.isNull(existingData)){
-            log.warn("尝试更新不存在的数据项: {}", request.getId());
+            log.warn("Attempt to update a non-existent data item: {}", request.getId());
         }
 
 
@@ -155,37 +155,37 @@ public class DatasetItemServiceImpl implements DatasetItemService {
     @Override
 
     public void deleteById(Long id) {
-        log.info("删除数据项: {}", id);
+        log.info("Delete data item: {}", id);
         
         //Data validation
         if (id == null || id <= 0) {
-            throw new IllegalArgumentException("数据项ID不能为空且必须大于0");
+            throw new IllegalArgumentException("Data item ID cannot be empty and must be greater than 0");
         }
         
         //Check if the data item exists
         DatasetItemDO existingItem = datasetItemMapper.selectById(id);
         if (existingItem == null) {
-            log.warn("尝试删除不存在的数据项: {}", id);
-            throw new RuntimeException("数据项不存在: " + id);
+            log.warn("Attempt to delete a non-existent data item: {}", id);
+            throw new RuntimeException("Data item does not exist:" + id);
         }
         
 
         int result = datasetItemMapper.deleteById(id);
         if (result <= 0) {
-            log.error("数据项删除失败: {}", id);
-            throw new RuntimeException("数据项删除失败: " + id);
+            log.error("Data item deletion failed: {}", id);
+            throw new RuntimeException("Data item deletion failed:" + id);
         }
         
-        log.info("数据项删除成功: {}", id);
+        log.info("Data item deleted successfully: {}", id);
     }
 
     @Override
     public void batchDelete(List<Long> ids) {
-        log.info("批量删除数据项: {}", JSONObject.toJSONString(ids));
+        log.info("Delete data items in batches: {}", JSONObject.toJSONString(ids));
 
         datasetItemMapper.batchDeleteByIds(ids);
 
-        log.info("批量删除数据项完成");
+        log.info("Batch deletion of data items completed");
     }
 
 

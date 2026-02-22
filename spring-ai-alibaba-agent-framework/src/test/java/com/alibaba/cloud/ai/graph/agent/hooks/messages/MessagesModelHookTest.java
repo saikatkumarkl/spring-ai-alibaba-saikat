@@ -78,19 +78,19 @@ public class MessagesModelHookTest {
 
 		ReactAgent agent = createAgentWithMessagesHook(hook, "test-agent-loaded");
 
-		System.out.println("\n=== 测试 MessagesModelHook 被正确加载且执行 ===");
+		System.out.println("\n=== Test that MessagesModelHook is loaded and executed correctly ===");
 
 		List<Message> messages = new ArrayList<>();
-		messages.add(new UserMessage("你好，请简单介绍一下自己。"));
+		messages.add(new UserMessage("Hello, please introduce yourself briefly."));
 
 		Optional<OverAllState> result = agent.invoke(messages);
 
-		assertTrue(result.isPresent(), "结果应该存在");
-		assertTrue(beforeModelCallCount.get() > 0, "beforeModel 应该被调用");
-		assertTrue(afterModelCallCount.get() > 0, "afterModel 应该被调用");
+		assertTrue(result.isPresent(), "The result should exist");
+		assertTrue(beforeModelCallCount.get() > 0, "beforeModel should be called");
+		assertTrue(afterModelCallCount.get() > 0, "afterModel should be called");
 
-		System.out.println("✓ beforeModel 调用次数: " + beforeModelCallCount.get());
-		System.out.println("✓ afterModel 调用次数: " + afterModelCallCount.get());
+		System.out.println("✓ Number of beforeModel calls:" + beforeModelCallCount.get());
+		System.out.println("✓ Number of afterModel calls:" + afterModelCallCount.get());
 	}
 
 	/**
@@ -102,23 +102,23 @@ public class MessagesModelHookTest {
 
 		ReactAgent agent = createAgentWithMessagesHook(hook, "test-agent-replace");
 
-		System.out.println("\n=== 测试 REPLACE 策略 ===");
+		System.out.println("\n=== Testing the REPLACE strategy ===");
 
 		List<Message> messages = new ArrayList<>();
-		messages.add(new UserMessage("原始消息1"));
-		messages.add(new UserMessage("原始消息2"));
+		messages.add(new UserMessage("Original message 1"));
+		messages.add(new UserMessage("Original message 2"));
 
 		Optional<OverAllState> result = agent.invoke(messages);
 
-		assertTrue(result.isPresent(), "结果应该存在");
+		assertTrue(result.isPresent(), "The result should exist");
 		Object messagesObj = result.get().value("messages").get();
-		assertNotNull(messagesObj, "消息应该存在于结果中");
+		assertNotNull(messagesObj, "The message should be present in the result");
 
 		if (messagesObj instanceof List) {
 			List<Message> resultMessages = (List<Message>) messagesObj;
-			System.out.println("返回消息数量: " + resultMessages.size());
+			System.out.println("Number of messages returned:" + resultMessages.size());
 
-			// 验证消息被替换：应该包含替换后的系统消息，且不包含原始消息
+			//Verify that the message is replaced: it should contain the replaced system message and not the original message
 			boolean foundSystemMessage = false;
 			boolean foundOriginalMessage1 = false;
 			boolean foundOriginalMessage2 = false;
@@ -126,26 +126,26 @@ public class MessagesModelHookTest {
 			for (Message message : resultMessages) {
 				if (message instanceof SystemMessage) {
 					String content = message.getText();
-					if (content.contains("这是替换后的系统消息")) {
+					if (content.contains("This is the system message after replacement")) {
 						foundSystemMessage = true;
 					}
 				} else if (message instanceof UserMessage) {
 					String content = message.getText();
-					if (content.equals("原始消息1")) {
+					if (content.equals("Original message 1")) {
 						foundOriginalMessage1 = true;
 					}
-					if (content.equals("原始消息2")) {
+					if (content.equals("Original message 2")) {
 						foundOriginalMessage2 = true;
 					}
 				}
 			}
 
-			assertTrue(foundSystemMessage, "应该找到替换后的系统消息");
-			assertTrue(foundOriginalMessage2, "应该找到最后一条用户原始消息2");
-			assertFalse(foundOriginalMessage1, "不应该找到第一条用户原始消息1");
-			// 由于 REPLACE 策略，原始消息可能被替换，但 agent 执行过程中可能会添加新的消息
-			// 所以我们主要验证替换后的系统消息存在
-			System.out.println("✓ 成功验证 REPLACE 策略：替换后的系统消息存在");
+			assertTrue(foundSystemMessage, "The replaced system message should be found");
+			assertTrue(foundOriginalMessage2, "The last user original message 2 should be found");
+			assertFalse(foundOriginalMessage1, "The first user original message 1 should not be found");
+			//Due to the REPLACE policy, the original message may be replaced, but new messages may be added during agent execution.
+			//So we mainly verify that the replaced system message exists
+			System.out.println("✓ Successful verification of REPLACE policy: replaced system message exists");
 		}
 	}
 
@@ -158,38 +158,38 @@ public class MessagesModelHookTest {
 
 		ReactAgent agent = createAgentWithMessagesHook(hook, "test-agent-append");
 
-		System.out.println("\n=== 测试 APPEND 策略 ===");
+		System.out.println("\n=== Test APPEND strategy ===");
 
 		List<Message> messages = new ArrayList<>();
-		messages.add(new UserMessage("原始用户消息"));
+		messages.add(new UserMessage("Original user message"));
 
 		Optional<OverAllState> result = agent.invoke(messages);
 
-		assertTrue(result.isPresent(), "结果应该存在");
+		assertTrue(result.isPresent(), "The result should exist");
 		Object messagesObj = result.get().value("messages").get();
-		assertNotNull(messagesObj, "消息应该存在于结果中");
+		assertNotNull(messagesObj, "The message should be present in the result");
 
 		if (messagesObj instanceof List) {
 			List<Message> resultMessages = (List<Message>) messagesObj;
-			System.out.println("返回消息数量: " + resultMessages.size());
+			System.out.println("Number of messages returned:" + resultMessages.size());
 
-			// 验证消息被追加而不是替换
+			//Verification message is appended instead of replaced
 			boolean foundOriginalMessage = false;
 			boolean foundAppendedMessage = false;
 			for (Message message : resultMessages) {
 				if (message instanceof UserMessage) {
 					String content = message.getText();
-					if (content.equals("原始用户消息")) {
+					if (content.equals("Original user message")) {
 						foundOriginalMessage = true;
 					}
-					if (content.equals("这是追加的消息")) {
+					if (content.equals("This is an additional message")) {
 						foundAppendedMessage = true;
 					}
 				}
 			}
-			assertTrue(foundOriginalMessage, "应该保留原始消息");
-			assertTrue(foundAppendedMessage, "应该找到追加的消息");
-			System.out.println("✓ 成功验证 APPEND 策略：消息被追加而不是替换");
+			assertTrue(foundOriginalMessage, "The original message should be preserved");
+			assertTrue(foundAppendedMessage, "The appended message should be found");
+			System.out.println("✓ Successful validation of APPEND policy: message is appended instead of replaced");
 		}
 	}
 
@@ -222,32 +222,32 @@ public class MessagesModelHookTest {
 				.saver(new MemorySaver())
 				.build();
 
-		System.out.println("\n=== 测试 JumpTo End 功能 ===");
+		System.out.println("\n=== Test JumpTo End function ===");
 
 		List<Message> messages = new ArrayList<>();
-		messages.add(new UserMessage("你好，请简单介绍一下自己。"));
+		messages.add(new UserMessage("Hello, please introduce yourself briefly."));
 
 		Optional<OverAllState> result = agent.invoke(messages);
 
-		assertTrue(result.isPresent(), "结果应该存在");
+		assertTrue(result.isPresent(), "The result should exist");
 
 		// First hook should be called
-		assertTrue(firstHookBeforeCount.get() > 0, "第一个 hook 的 beforeModel 应该被调用");
-		assertTrue(firstHookAfterCount.get() == 0, "第一个 hook 的 afterModel 不应该被调用（因为跳转到 end）");
+		assertTrue(firstHookBeforeCount.get() > 0, "beforeModel of the first hook should be called");
+		assertTrue(firstHookAfterCount.get() == 0, "The first hook's afterModel should not be called (because it jumps to end)");
 
 		// Second and third hooks should be skipped
-		assertEquals(0, secondHookBeforeCount.get(), "第二个 hook 的 beforeModel 不应该被调用（被跳过）");
-		assertEquals(0, secondHookAfterCount.get(), "第二个 hook 的 afterModel 不应该被调用（被跳过）");
-		assertEquals(0, thirdHookBeforeCount.get(), "第三个 hook 的 beforeModel 不应该被调用（被跳过）");
-		assertEquals(0, thirdHookAfterCount.get(), "第三个 hook 的 afterModel 不应该被调用（被跳过）");
+		assertEquals(0, secondHookBeforeCount.get(), "beforeModel of the second hook should not be called (is skipped)");
+		assertEquals(0, secondHookAfterCount.get(), "The second hook's afterModel should not be called (is skipped)");
+		assertEquals(0, thirdHookBeforeCount.get(), "The beforeModel of the third hook should not be called (skipped)");
+		assertEquals(0, thirdHookAfterCount.get(), "The third hook's afterModel should not be called (skipped)");
 
-		System.out.println("✓ 第一个 hook beforeModel 调用次数: " + firstHookBeforeCount.get());
-		System.out.println("✓ 第一个 hook afterModel 调用次数: " + firstHookAfterCount.get());
-		System.out.println("✓ 第二个 hook beforeModel 调用次数: " + secondHookBeforeCount.get());
-		System.out.println("✓ 第二个 hook afterModel 调用次数: " + secondHookAfterCount.get());
-		System.out.println("✓ 第三个 hook beforeModel 调用次数: " + thirdHookBeforeCount.get());
-		System.out.println("✓ 第三个 hook afterModel 调用次数: " + thirdHookAfterCount.get());
-		System.out.println("✓ 成功验证 JumpTo End：后续 hooks 被正确跳过");
+		System.out.println("✓ Number of first hook beforeModel calls:" + firstHookBeforeCount.get());
+		System.out.println("✓ Number of first hook afterModel calls:" + firstHookAfterCount.get());
+		System.out.println("✓ Number of second hook beforeModel calls:" + secondHookBeforeCount.get());
+		System.out.println("✓ Number of second hook afterModel calls:" + secondHookAfterCount.get());
+		System.out.println("✓ Number of third hook beforeModel calls:" + thirdHookBeforeCount.get());
+		System.out.println("✓ Number of third hook afterModel calls:" + thirdHookAfterCount.get());
+		System.out.println("✓ Successful verification of JumpTo End: subsequent hooks are correctly skipped");
 	}
 
 	/**
@@ -279,31 +279,31 @@ public class MessagesModelHookTest {
 				.saver(new MemorySaver())
 				.build();
 
-		System.out.println("\n=== 测试 JumpTo End 功能（混合 MessagesModelHook 和 ModelHook）===");
+		System.out.println("\n=== test JumpTo End function (mixed MessagesModelHook and ModelHook）===");
 
 		List<Message> messages = new ArrayList<>();
-		messages.add(new UserMessage("你好，请简单介绍一下自己。"));
+		messages.add(new UserMessage("Hello, please introduce yourself briefly."));
 
 		Optional<OverAllState> result = agent.invoke(messages);
 
-		assertTrue(result.isPresent(), "结果应该存在");
+		assertTrue(result.isPresent(), "The result should exist");
 
 		// First MessagesModelHook should be called
-		assertTrue(messagesHookBeforeCount.get() > 0, "第一个 MessagesModelHook 的 beforeModel 应该被调用");
-		assertEquals(0, messagesHookAfterCount.get(), "第一个 MessagesModelHook 的 afterModel 不应该被调用");
+		assertTrue(messagesHookBeforeCount.get() > 0, "beforeModel of the first MessagesModelHook should be called");
+		assertEquals(0, messagesHookAfterCount.get(), "afterModel of the first MessagesModelHook should not be called");
 
 		// ModelHook should be skipped
-		assertEquals(0, modelHookBeforeCount.get(), "ModelHook 的 beforeModel 不应该被调用（被跳过）");
-		assertEquals(0, modelHookAfterCount.get(), "ModelHook 的 afterModel 不应该被调用（被跳过）");
+		assertEquals(0, modelHookBeforeCount.get(), "ModelHook's beforeModel should not be called (skipped)");
+		assertEquals(0, modelHookAfterCount.get(), "ModelHook's afterModel should not be called (is skipped)");
 
 		// Second MessagesModelHook should be skipped
-		assertEquals(0, secondMessagesHookBeforeCount.get(), "第二个 MessagesModelHook 的 beforeModel 不应该被调用（被跳过）");
-		assertEquals(0, secondMessagesHookAfterCount.get(), "第二个 MessagesModelHook 的 afterModel 不应该被调用（被跳过）");
+		assertEquals(0, secondMessagesHookBeforeCount.get(), "The beforeModel of the second MessagesModelHook should not be called (is skipped)");
+		assertEquals(0, secondMessagesHookAfterCount.get(), "The afterModel of the second MessagesModelHook should not be called (is skipped)");
 
-		System.out.println("✓ 第一个 MessagesModelHook beforeModel 调用次数: " + messagesHookBeforeCount.get());
-		System.out.println("✓ ModelHook beforeModel 调用次数: " + modelHookBeforeCount.get());
-		System.out.println("✓ 第二个 MessagesModelHook beforeModel 调用次数: " + secondMessagesHookBeforeCount.get());
-		System.out.println("✓ 成功验证 JumpTo End（混合 hooks）：后续 hooks 被正确跳过");
+		System.out.println("✓ Number of first MessagesModelHook beforeModel calls:" + messagesHookBeforeCount.get());
+		System.out.println("✓ ModelHook beforeModel Number of calls: " + modelHookBeforeCount.get());
+		System.out.println("✓ Number of second MessagesModelHook beforeModel calls:" + secondMessagesHookBeforeCount.get());
+		System.out.println("✓ Successfully verified JumpTo End (mixed hooks): subsequent hooks are correctly skipped");
 	}
 
 	/**
@@ -328,24 +328,24 @@ public class MessagesModelHookTest {
 				.saver(new MemorySaver())
 				.build();
 
-		System.out.println("\n=== 测试 MessagesModelHook 和 ModelHook 同时使用 ===");
+		System.out.println("\n=== test MessagesModelHook and ModelHook Use at the same time ===");
 
 		List<Message> messages = new ArrayList<>();
-		messages.add(new UserMessage("你好，请简单介绍一下自己。"));
+		messages.add(new UserMessage("Hello, please introduce yourself briefly."));
 
 		Optional<OverAllState> result = agent.invoke(messages);
 
-		assertTrue(result.isPresent(), "结果应该存在");
-		assertTrue(messagesHookBeforeCount.get() > 0, "MessagesModelHook beforeModel 应该被调用");
-		assertTrue(messagesHookAfterCount.get() > 0, "MessagesModelHook afterModel 应该被调用");
-		assertTrue(modelHookBeforeCount.get() > 0, "ModelHook beforeModel 应该被调用");
-		assertTrue(modelHookAfterCount.get() > 0, "ModelHook afterModel 应该被调用");
+		assertTrue(result.isPresent(), "The result should exist");
+		assertTrue(messagesHookBeforeCount.get() > 0, "MessagesModelHook beforeModel should be called");
+		assertTrue(messagesHookAfterCount.get() > 0, "MessagesModelHook afterModel should be called");
+		assertTrue(modelHookBeforeCount.get() > 0, "ModelHook beforeModel should be called");
+		assertTrue(modelHookAfterCount.get() > 0, "ModelHook afterModel should be called");
 
-		System.out.println("✓ MessagesModelHook beforeModel 调用次数: " + messagesHookBeforeCount.get());
-		System.out.println("✓ MessagesModelHook afterModel 调用次数: " + messagesHookAfterCount.get());
-		System.out.println("✓ ModelHook beforeModel 调用次数: " + modelHookBeforeCount.get());
-		System.out.println("✓ ModelHook afterModel 调用次数: " + modelHookAfterCount.get());
-		System.out.println("✓ 两个 Hook 可以同时正常运行");
+		System.out.println("✓ MessagesModelHook beforeModel Number of calls: " + messagesHookBeforeCount.get());
+		System.out.println("✓ MessagesModelHook afterModel Number of calls: " + messagesHookAfterCount.get());
+		System.out.println("✓ ModelHook beforeModel Number of calls: " + modelHookBeforeCount.get());
+		System.out.println("✓ ModelHook afterModel Number of calls: " + modelHookAfterCount.get());
+		System.out.println("✓ Two Hooks can run normally at the same time");
 	}
 
 	private ReactAgent createAgentWithMessagesHook(MessagesModelHook hook, String name) throws GraphStateException {
@@ -408,7 +408,7 @@ public class MessagesModelHookTest {
 			// Replace all messages with a new system message and keep the last user message
 			// This ensures agent can still function while demonstrating REPLACE policy
 			List<Message> newMessages = new ArrayList<>();
-			newMessages.add(new SystemMessage("这是替换后的系统消息"));
+			newMessages.add(new SystemMessage("This is the system message after replacement"));
 			// Keep the last user message so agent can still respond
 			if (!previousMessages.isEmpty()) {
 				Message lastMessage = previousMessages.get(previousMessages.size() - 1);
@@ -434,7 +434,7 @@ public class MessagesModelHookTest {
 		public AgentCommand beforeModel(List<Message> previousMessages, RunnableConfig config) {
 			// Append a new message to existing messages
 			List<Message> newMessages = new ArrayList<>();
-			newMessages.add(new UserMessage("这是追加的消息"));
+			newMessages.add(new UserMessage("This is an additional message"));
 			return new AgentCommand(newMessages, UpdatePolicy.APPEND);
 		}
 	}
@@ -567,22 +567,22 @@ public class MessagesModelHookTest {
 				.saver(new MemorySaver())
 				.build();
 
-		System.out.println("\n=== 测试 afterModel 中的 JumpTo.end（配置了工具）===");
+		System.out.println("\n=== Test JumpTo.end in afterModel (tool configured) ===");
 
 		List<Message> messages = new ArrayList<>();
-		messages.add(new UserMessage("你好，请简单介绍一下自己。"));
+		messages.add(new UserMessage("Hello, please introduce yourself briefly."));
 
 		Optional<OverAllState> result = agent.invoke(messages);
 
-		assertTrue(result.isPresent(), "结果应该存在");
-		assertTrue(afterModelCallCount.get() > 0, "afterModel 应该被调用");
+		assertTrue(result.isPresent(), "The result should exist");
+		assertTrue(afterModelCallCount.get() > 0, "afterModel should be called");
 
 		// Key verification: tool should NOT be called because JumpTo.end should skip it
-		assertEquals(0, toolCallCount.get(), "工具不应该被调用（因为 JumpTo.end 直接结束了）");
+		assertEquals(0, toolCallCount.get(), "The tool should not be called (because JumpTo.end ends directly)");
 
-		System.out.println("afterModel 调用次数: " + afterModelCallCount.get());
-		System.out.println("工具调用次数: " + toolCallCount.get());
-		System.out.println("成功验证 afterModel 中的 JumpTo.end 在有工具配置时正常工作");
+		System.out.println("afterModel call times:" + afterModelCallCount.get());
+		System.out.println("Number of tool calls:" + toolCallCount.get());
+		System.out.println("Successfully verified that JumpTo.end in afterModel works correctly when configured with tools");
 	}
 
 	/**
@@ -658,22 +658,22 @@ public class MessagesModelHookTest {
 				.saver(new MemorySaver())
 				.build();
 
-		System.out.println("\n=== 测试 afterModel 中的 JumpTo.model ===");
+		System.out.println("\n=== test afterModel in JumpTo.model ===");
 
 		List<Message> messages = new ArrayList<>();
-		messages.add(new UserMessage("你好"));
+		messages.add(new UserMessage("Hello"));
 
 		Optional<OverAllState> result = agent.invoke(messages);
 
-		assertTrue(result.isPresent(), "结果应该存在");
-		assertEquals(2, afterModelCallCount.get(), "afterModel 应该被调用 2 次（第一次跳回模型，第二次结束）");
-		assertEquals(2, modelCallCount.get(), "模型应该被调用 2 次（第一次正常，第二次因为 JumpTo.model）");
+		assertTrue(result.isPresent(), "The result should exist");
+		assertEquals(2, afterModelCallCount.get(), "afterModel should be called 2 times (the first time jumps back to the model, the second time ends)");
+		assertEquals(2, modelCallCount.get(), "The model should be called 2 times (first time normally, second time because of JumpTo.model)");
 		// Tools should not be called because JumpTo redirects flow before tool execution
-		assertEquals(0, toolCallCount.get(), "工具不应该被调用（因为 JumpTo 直接跳转了）");
+		assertEquals(0, toolCallCount.get(), "The tool should not be called (because JumpTo jumps directly)");
 
-		System.out.println("afterModel 调用次数: " + afterModelCallCount.get());
-		System.out.println("模型调用次数: " + modelCallCount.get());
-		System.out.println("工具调用次数: " + toolCallCount.get());
-		System.out.println("成功验证 afterModel 中的 JumpTo.model 在有工具配置时正常工作");
+		System.out.println("afterModel call times:" + afterModelCallCount.get());
+		System.out.println("Number of model calls:" + modelCallCount.get());
+		System.out.println("Number of tool calls:" + toolCallCount.get());
+		System.out.println("Successfully verified that JumpTo.model in afterModel works properly when tool configuration is available");
 	}
 }

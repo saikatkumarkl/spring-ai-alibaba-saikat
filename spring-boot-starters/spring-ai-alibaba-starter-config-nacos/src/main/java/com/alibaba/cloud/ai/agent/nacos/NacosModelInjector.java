@@ -60,16 +60,16 @@ public class NacosModelInjector {
 		field.setAccessible(true);
 
 		try {
-			// Java 8及以下版本的方式
+			//Ways for Java 8 and below
 			Field modifiersField = Field.class.getDeclaredField("modifiers");
 			modifiersField.setAccessible(true);
 			modifiersField.setInt(field, field.getModifiers() & ~java.lang.reflect.Modifier.FINAL);
 			field.set(targetObject, newValue);
 		}
 		catch (NoSuchFieldException e) {
-			// Java 9及以上版本的方式
+			//Java 9 and above way
 			try {
-				// 使用反射修改final字段
+				//Use reflection to modify final fields
 				Field[] fields = field.getClass().getDeclaredFields();
 				for (Field f : fields) {
 					if ("modifiers".equals(f.getName())) {
@@ -81,14 +81,14 @@ public class NacosModelInjector {
 				field.set(targetObject, newValue);
 			}
 			catch (Exception ex) {
-				// 如果上述方式都不行，尝试使用Unsafe（不推荐但有时有效）
+				//If none of the above works, try using Unsafe (not recommended but sometimes works)
 				modifyFinalFieldWithUnsafe(field, targetObject, newValue);
 			}
 		}
 	}
 
 	/**
-	 * 使用Unsafe修改final字段（适用于Java 12+）
+	 * Modify final fields using Unsafe (for Java 12+)
 	 */
 	private static void modifyFinalFieldWithUnsafe(Field field, Object targetObject, Object newValue) throws Exception {
 		try {
@@ -104,7 +104,7 @@ public class NacosModelInjector {
 			putObjectMethod.invoke(unsafeInstance, targetObject, offset, newValue);
 		}
 		catch (Exception e) {
-			throw new RuntimeException("无法修改final字段: " + field.getName(), e);
+			throw new RuntimeException("Final fields cannot be modified:" + field.getName(), e);
 		}
 	}
 }

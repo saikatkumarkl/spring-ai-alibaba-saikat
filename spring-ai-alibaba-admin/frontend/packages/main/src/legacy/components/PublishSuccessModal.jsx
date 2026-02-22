@@ -31,21 +31,21 @@ const PublishSuccessModal = ({ prompt, version, onClose }) => {
 
   const integrationCode1 = `<dependency>
   <groupId>com.alibaba.cloud.ai</groupId>
-  <artifactId>spring-ai-alibaba-agent-nacos</artifactId>
-  <version>{spring.ai.alibaba.version}</version>
+  <artifactId>cordondata-agent-nacos</artifactId>
+  <version>{cordondata.version}</version>
 </dependency>
 `
 
 
-  const integrationCode2 = `spring.ai.alibaba.agent.proxy.nacos.serverAddr={ Replace with nacos address, e.g.: 127.0.0.1:8848}
-spring.ai.alibaba.agent.proxy.nacos.username={ Replace with nacos username, e.g.: nacos}
-spring.ai.alibaba.agent.proxy.nacos.password={ Replace with nacos password, e.g.: nacos}
-spring.ai.alibaba.agent.proxy.nacos.promptKey={ Replace with promptKey, e.g.: mse-nacos-helper }`;
+  const integrationCode2 = `cordondata.agent.proxy.nacos.serverAddr={ Replace with nacos address, e.g.: 127.0.0.1:8848}
+cordondata.agent.proxy.nacos.username={ Replace with nacos username, e.g.: nacos}
+cordondata.agent.proxy.nacos.password={ Replace with nacos password, e.g.: nacos}
+cordondata.agent.proxy.nacos.promptKey={ Replace with promptKey, e.g.: mse-nacos-helper }`;
 
   const integrationCode3 = `<dependency>
 	<groupId>com.alibaba.cloud.ai</groupId>
-	<artifactId>spring-ai-alibaba-autoconfigure-arms-observation</artifactId>
-	<version>{spring.ai.alibaba.version}</version>
+	<artifactId>cordondata-autoconfigure-arms-observation</artifactId>
+	<version>{cordondata.version}</version>
 </dependency>
 
 
@@ -90,10 +90,10 @@ spring.ai.chat.observations.log-prompt=true
 spring.ai.chat.observations.log-completion=true
 spring.ai.image.observations.log-prompt=true
 spring.ai.vectorstore.observations.log-query-response=true
-spring.ai.alibaba.arms.enabled=true
-spring.ai.alibaba.arms.tool.enabled=true
-spring.ai.alibaba.arms.model.capture-input=true
-spring.ai.alibaba.arms.model.capture-output=true`;
+cordondata.arms.enabled=true
+cordondata.arms.tool.enabled=true
+cordondata.arms.model.capture-input=true
+cordondata.arms.model.capture-output=true`;
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -223,7 +223,7 @@ spring.ai.alibaba.arms.model.capture-output=true`;
               </Title>
               <div>
                 <span className='text-red-600'>*</span>
-                For spring.ai.alibaba.version, please refer to the spring-ai-alibaba official website
+                For cordondata.version, please refer to the CordonData official website
               </div>
               <Card
                 title={

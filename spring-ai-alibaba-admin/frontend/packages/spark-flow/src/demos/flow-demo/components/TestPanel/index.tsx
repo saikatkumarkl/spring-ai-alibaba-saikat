@@ -1,5 +1,5 @@
 import $i18n from '@/i18n';
-import { DragPanel, PanelContainer } from '@spark-ai/flow';
+import { DragPanel, PanelContainer } from '@cordondata/flow';
 import React, { memo } from 'react';
 
 export default memo(function TestPanel(props: {

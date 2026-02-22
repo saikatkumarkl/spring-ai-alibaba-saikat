@@ -1,4 +1,4 @@
-import { IValueType, IVarTreeItem } from '@spark-ai/flow';
+import { IValueType, IVarTreeItem } from '@cordondata/flow';
 import { createStore } from 'zustand';
 
 export interface IWorkflowDebugInputParamItem {

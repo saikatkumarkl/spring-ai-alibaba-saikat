@@ -28,7 +28,7 @@ import org.springframework.util.MultiValueMap;
 public class ApiUtils {
 
 	/** SDK identifier used in user agent string */
-	private static final String SDK_FLAG = "agentscope";
+	private static final String SDK_FLAG = "cordondata";
 
 	/**
 	 * Generates a user agent string containing SDK version and system information.

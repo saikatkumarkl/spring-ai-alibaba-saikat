@@ -64,7 +64,7 @@ public class ShellToolAgentTest {
 		try {
 
 			ShellTool.Builder shellToolBuilder = ShellTool.builder(tempWorkspace.toString())
-				.withCommandTimeout(30000)  // 30秒超时
+				.withCommandTimeout(30000)  //30 seconds timeout
 				.withMaxOutputLines(500);
 
 			if (System.getProperty("os.name").toLowerCase().contains("windows")) {
@@ -94,30 +94,30 @@ public class ShellToolAgentTest {
 
 			List<Message> messages = new ArrayList<>();
 			String testCommand = System.getProperty("os.name").toLowerCase().contains("windows") ?
-				"请帮我创建一个名为 test.txt 的文件，内容为 'Hello from ShellTool!'，然后列出当前目录的文件，最后显示 test.txt 文件的内容。请使用Windows PowerShell兼容的命令。" :
-				"请帮我完成以下任务：\n" +
-				"1. 创建一个名为 test.txt 的文件，内容为 'Hello from ShellTool!'\n" +
-				"2. 列出当前目录的文件\n" +
-				"3. 显示 test.txt 文件的内容\n" +
-				"请按步骤执行，每步执行完告诉我结果。";
+				"Please help me create a file named test.txt with the content 'Hello from ShellTool!', then list the files in the current directory, and finally display the contents of the test.txt file.Please use Windows PowerShell compatible commands." :
+				"Please help me with the following tasks:\n" +
+				"1. Create a file named test.txt with the content 'Hello from ShellTool!'\n" +
+				"2. List files in the current directory\n" +
+				"3. Display the contents of the test.txt file\n" +
+				"Please follow the steps and tell me the results after each step.";
 
 			messages.add(new UserMessage(testCommand));
 
-			// 执行 Agent
-			System.out.println("开始执行 Agent...");
+			//Execute Agent
+			System.out.println("Start executing Agent...");
 			Optional<OverAllState> result = agent.invoke(messages);
 
-			assertTrue(result.isPresent(), "Agent 应该返回结果");
+			assertTrue(result.isPresent(), "Agent should return results");
 			Object messagesObj = result.get().value("messages").get();
-			assertNotNull(messagesObj, "返回的消息不应该为 null");
+			assertNotNull(messagesObj, "The returned message should not be null");
 
-			System.out.println("Agent 执行成功，返回消息数量: " +
-				(messagesObj instanceof List ? ((List<?>) messagesObj).size() : "未知"));
-			System.out.println("Agent 结果: " + messagesObj);
-			System.out.println("✓ ShellTool 与 ShellToolAgentHook 集成测试执行成功");
+			System.out.println("The Agent executes successfully and returns the number of messages:" +
+				(messagesObj instanceof List ? ((List<?>) messagesObj).size() : "unknown"));
+			System.out.println("Agent results:" + messagesObj);
+			System.out.println("✓ ShellTool and ShellToolAgentHook integration test executed successfully");
 		}
 		finally {
-			// 清理临时目录
+			//Clean up temporary directory
 			deleteDirectory(tempWorkspace);
 		}
 	}

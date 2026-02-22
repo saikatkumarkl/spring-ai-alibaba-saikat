@@ -6,7 +6,7 @@ import {
   useNodeDataUpdate,
   useNodesOutputParams,
   useReactFlowStore,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import React, { memo, useCallback, useMemo } from 'react';
 import ErrorCatchForm from '../../components/ErrorCatchForm';
 import ModelConfigForm from '../../components/ModelConfigForm';

@@ -2,7 +2,7 @@ import $i18n from '@/i18n';
 import {
   INodeDataInputParamItem,
   INodeDataOutputParamItem,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import {
   IRetryConfig,
   ISelectedModelParams,

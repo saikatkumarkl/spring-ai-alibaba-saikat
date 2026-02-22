@@ -3,7 +3,7 @@ import type {
   INodeDataInputParamItem,
   INodeDataOutputParamItem,
   INodeSchema,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { RETRY_CONFIG_DEFAULT, TRY_CATCH_CONFIG_DEFAULT } from '../../constant';
 import { IApiNodeData, IApiNodeParam } from '../../types';
 import { getVariablesFromText, transformInputParams } from '../../utils';

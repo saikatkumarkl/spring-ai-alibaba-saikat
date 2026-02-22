@@ -11,13 +11,13 @@ public class DatasetItemUpdateRequest {
     /**
      * Data item ID
      */
-    @NotNull(message = "数据项ID不能为空")
+    @NotNull(message = "Data item ID cannot be empty")
     private Long id;
 
     /**
      * Data content (JSON format)
      */
-    @NotBlank(message = "数据内容不能为空")
+    @NotBlank(message = "Data content cannot be empty")
     private String dataContent;
 
 } 

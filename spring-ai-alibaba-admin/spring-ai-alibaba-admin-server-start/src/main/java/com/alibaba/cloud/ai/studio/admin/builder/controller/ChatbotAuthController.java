@@ -15,6 +15,7 @@
  */
 package com.alibaba.cloud.ai.studio.admin.builder.controller;
 
+import com.alibaba.cloud.ai.studio.admin.config.KeycloakJwtValidator;
 import com.alibaba.cloud.ai.studio.runtime.domain.RequestContext;
 import com.alibaba.cloud.ai.studio.runtime.domain.Result;
 import com.alibaba.cloud.ai.studio.runtime.domain.agent.AgentRequest;
@@ -87,6 +88,8 @@ public class ChatbotAuthController {
 
 	private final KnowledgeSyncService knowledgeSyncService;
 
+	private final KeycloakJwtValidator keycloakJwtValidator;
+
 	private final long jwtExpiration = 24 * 60 * 60 * 1000; // 24 hours
 
 	/** Default account ID used for chatbot agent requests (admin account) */
@@ -98,12 +101,14 @@ public class ChatbotAuthController {
 	public ChatbotAuthController(JdbcTemplate jdbcTemplate, AgentService agentService,
 			RestClient openSearchRestClient, ObjectMapper objectMapper,
 			KnowledgeSyncService knowledgeSyncService,
+			KeycloakJwtValidator keycloakJwtValidator,
 @Value("${chatbot.jwt.secret:my-super-secret-key-change-in-production}") String jwtSecret) {
 		this.jdbcTemplate = jdbcTemplate;
 		this.agentService = agentService;
 		this.openSearchRestClient = openSearchRestClient;
 		this.objectMapper = objectMapper;
 		this.knowledgeSyncService = knowledgeSyncService;
+		this.keycloakJwtValidator = keycloakJwtValidator;
 		this.passwordEncoder = new BCryptPasswordEncoder();
 		this.secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
 	}
@@ -210,6 +215,65 @@ request.getEmail());
 		response.setApps(apps);
 
 		log.info("User {} logged in successfully with access to {} apps", request.getEmail(), apps.size());
+		return Result.success(response);
+	}
+
+	/**
+	 * Token-based login for Keycloak SSO. Accepts a Keycloak access token,
+	 * validates it, auto-provisions the user in simple_users if needed,
+	 * and returns the user's accessible apps (authorization).
+	 */
+	@Operation(summary = "Login with Keycloak token")
+	@PostMapping("/token-login")
+	public Result<LoginResponse> tokenLogin(@RequestBody Map<String, String> body) {
+		String accessToken = body.get("access_token");
+		if (accessToken == null || accessToken.isBlank()) {
+			return Result.error(400, "Missing access_token");
+		}
+
+		if (!keycloakJwtValidator.isEnabled()) {
+			return Result.error(503, "Keycloak SSO is not enabled");
+		}
+
+		com.nimbusds.jwt.JWTClaimsSet claims = keycloakJwtValidator.validateToken(accessToken);
+		if (claims == null) {
+			return Result.error(401, "Invalid or expired Keycloak token");
+		}
+
+		Map<String, String> userInfo = keycloakJwtValidator.extractUserInfo(claims);
+		String username = userInfo.getOrDefault("username", "");
+		String email = userInfo.getOrDefault("email", username);
+		String fullName = userInfo.getOrDefault("name", username);
+
+		if (username.isBlank()) {
+			return Result.error(401, "Could not extract username from token");
+		}
+
+		// Auto-provision user in simple_users if not exists
+		String userIdentifier = username; // Use username as the primary key (matches Keycloak username)
+		List<Map<String, Object>> existingUsers = jdbcTemplate.queryForList(
+				"SELECT email FROM simple_users WHERE email = ?", userIdentifier);
+		if (existingUsers.isEmpty()) {
+			log.info("Auto-provisioning Keycloak user: {} ({})", userIdentifier, fullName);
+			String placeholderHash = passwordEncoder.encode("keycloak-sso-user");
+			jdbcTemplate.update(
+				"INSERT INTO simple_users (email, password_hash, full_name) VALUES (?, ?, ?) ON CONFLICT (email) DO NOTHING",
+				userIdentifier, placeholderHash, fullName != null ? fullName : username);
+		}
+		jdbcTemplate.update("UPDATE simple_users SET last_login = NOW() WHERE email = ?", userIdentifier);
+
+		// Get user accessible apps (authorization)
+		List<Map<String, Object>> apps = jdbcTemplate.queryForList(
+"SELECT a.app_id, a.name, a.description, a.type FROM application a INNER JOIN app_user_access aua ON a.app_id = aua.app_id WHERE aua.user_email = ?",
+userIdentifier);
+
+		LoginResponse response = new LoginResponse();
+		response.setToken(accessToken); // Return the Keycloak token itself
+		response.setEmail(email);
+		response.setFullName(fullName);
+		response.setApps(apps);
+
+		log.info("Keycloak token-login successful for user={} with {} apps", userIdentifier, apps.size());
 		return Result.success(response);
 	}
 

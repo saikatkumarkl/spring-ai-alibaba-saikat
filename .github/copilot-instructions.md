@@ -1,8 +1,8 @@
-# Copilot Instructions for Spring AI Alibaba
+# Copilot Instructions for CordonData
 
 ## Project Overview
 
-Spring AI Alibaba is a **production-ready multi-agent framework** built on Spring AI. It provides agent orchestration, workflow management, and context engineering for AI-powered Java applications.
+CordonData is a **production-ready multi-agent framework** built on Spring AI. It provides agent orchestration, workflow management, and context engineering for AI-powered Java applications.
 
 ## Architecture (Key Modules)
 
@@ -512,7 +512,7 @@ The following admin backend files were also removed (vendor-specific REST API ap
 
 ## Debugging
 
-- **Spring AI Alibaba Studio:** Embedded UI at `/studio` endpoint for visualizing agent execution
+- **CordonData Studio:** Embedded UI at `/studio` endpoint for visualizing agent execution
 - **Admin Platform:** Full-featured visual debugging at `http://localhost:8080` (default)
 - **Graph visualization:** Export workflows to PlantUML/Mermaid for architecture review
 - **Checkpointing:** Use savers for debugging state transitions and resuming failed workflows

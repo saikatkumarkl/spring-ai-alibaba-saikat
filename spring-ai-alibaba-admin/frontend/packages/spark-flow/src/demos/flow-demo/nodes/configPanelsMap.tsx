@@ -1,5 +1,5 @@
 import $i18n from '@/i18n';
-import type { IWorkFlowNode } from '@spark-ai/flow';
+import type { IWorkFlowNode } from '@cordondata/flow';
 import React, { ReactElement } from 'react';
 import {
   IApiNodeData,

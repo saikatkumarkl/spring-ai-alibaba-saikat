@@ -6,7 +6,7 @@ import {
   VariableTreeSelect,
   useNodeDataUpdate,
   useStore,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { useSetState } from 'ahooks';
 import React, { memo, useCallback } from 'react';
 import ExtractParamEditModal from '../../components/ExtractParamEditModal';

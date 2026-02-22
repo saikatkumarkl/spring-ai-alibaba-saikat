@@ -1,7 +1,7 @@
 import type {
   INodeDataInputParamItem,
   INodeDataOutputParamItem,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 
 export interface IBizNode {
   id: string;

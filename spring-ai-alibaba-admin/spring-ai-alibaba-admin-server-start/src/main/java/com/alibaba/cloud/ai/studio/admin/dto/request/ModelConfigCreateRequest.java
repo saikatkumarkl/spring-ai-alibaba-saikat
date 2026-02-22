@@ -14,36 +14,36 @@ public class ModelConfigCreateRequest {
     /**
      * Model name
      */
-    @NotBlank(message = "模型名称不能为空")
-    @Size(max = 100, message = "模型名称不能超过100个字符")
+    @NotBlank(message = "Model name cannot be empty")
+    @Size(max = 100, message = "Model name cannot exceed 100 characters")
     private String name;
 
     /**
      * provider
      */
-    @NotBlank(message = "提供商不能为空")
-    @Size(max = 50, message = "提供商不能超过50个字符")
+    @NotBlank(message = "Provider cannot be empty")
+    @Size(max = 50, message = "Provider cannot exceed 50 characters")
     private String provider;
 
     /**
      * model identifier
      */
-    @NotBlank(message = "模型标识符不能为空")
-    @Size(max = 100, message = "模型标识符不能超过100个字符")
+    @NotBlank(message = "Model identifier cannot be empty")
+    @Size(max = 100, message = "Model identifier cannot exceed 100 characters")
     private String modelName;
 
     /**
      * Model service address
      */
-    @NotBlank(message = "模型服务地址不能为空")
-    @Size(max = 500, message = "模型服务地址不能超过500个字符")
+    @NotBlank(message = "Model service address cannot be empty")
+    @Size(max = 500, message = "The model service address cannot exceed 500 characters")
     private String baseUrl;
 
     /**
      * API key
      */
-    @NotBlank(message = "API密钥不能为空")
-    @Size(max = 500, message = "API密钥不能超过500个字符")
+    @NotBlank(message = "API key cannot be empty")
+    @Size(max = 500, message = "API keys cannot exceed 500 characters")
     private String apiKey;
 
     /**

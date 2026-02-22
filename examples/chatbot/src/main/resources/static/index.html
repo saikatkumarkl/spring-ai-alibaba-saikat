@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot Login</title>
+    <title>CordonData</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
     <style>
         * {
             margin: 0;
@@ -210,8 +211,7 @@
 </head>
 <body>
     <div class="login-container">
-        <div class="login-icon">🤖</div>
-        <h1>Knowledge Hub</h1>
+        <img src="/logoWhite.png" alt="Logo" style="height: 48px; object-fit: contain; margin: 0 auto 20px; display: block;" />
         <p class="subtitle">Sign in to access AI-powered conversations</p>
         
         <form id="loginForm">
@@ -246,6 +246,23 @@
             
             <div class="error" id="error"></div>
         </form>
+
+        <!-- Enterprise SSO Login — single button that goes to Keycloak login page -->
+        <div id="sso-section" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 12px; margin: 20px 0 16px;">
+                <div style="flex: 1; height: 0.5px; background: rgba(0,0,0,0.12);"></div>
+                <span style="font-size: 11px; color: rgba(0,0,0,0.35); letter-spacing: 0.5px; text-transform: uppercase; font-weight: 500;">or</span>
+                <div style="flex: 1; height: 0.5px; background: rgba(0,0,0,0.12);"></div>
+            </div>
+            <button type="button" id="ssoBtn" onclick="handleSsoLogin()" style="
+                width: 100%; padding: 12px 20px; border-radius: 10px; border: 0.5px solid rgba(0,0,0,0.12);
+                background: rgba(255,255,255,0.7); color: #1d1d1f; font-size: 14px; font-weight: 500;
+                cursor: pointer; transition: all 0.2s; letter-spacing: -0.01em;
+                display: flex; align-items: center; justify-content: center; gap: 8px;
+            ">
+                🔐 Login via Enterprise SSO
+            </button>
+        </div>
         
         <div class="info">
             <strong>Getting Started</strong>
@@ -254,7 +271,10 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/keycloak-js@24.0.5/dist/keycloak.min.js"></script>
     <script>
+        let keycloakInstance = null;
+
         const form = document.getElementById('loginForm');
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
@@ -279,6 +299,82 @@
             } else {
                 btnText.textContent = 'Sign In';
             }
+        }
+
+        // Provider icon/label mapping for well-known IdPs
+        // (kept for potential future per-IdP shortcuts)
+
+        // Check if Keycloak is enabled and show the Enterprise SSO button
+        async function checkSsoAvailability() {
+            try {
+                const configRes = await fetch('/api/auth/keycloak-config');
+                const config = await configRes.json();
+                if (!config || !config.enabled) return;
+
+                // Store config for later use
+                window._keycloakConfig = config;
+
+                // Show the Enterprise SSO button
+                document.getElementById('sso-section').style.display = 'block';
+            } catch (e) {
+                // Keycloak not available — SSO button stays hidden
+            }
+        }
+
+        // Handle SSO login — redirect to Keycloak login page (handles LDAP, Azure AD, Google, etc.)
+        async function handleSsoLogin() {
+            const btn = document.getElementById('ssoBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Redirecting...';
+
+            try {
+                const config = window._keycloakConfig;
+                if (!config) {
+                    showError('SSO configuration not available');
+                    btn.disabled = false;
+                    btn.innerHTML = '🔐 Login via Enterprise SSO';
+                    return;
+                }
+
+                keycloakInstance = new Keycloak({
+                    url: config.url,
+                    realm: config.realm,
+                    clientId: config.clientId
+                });
+
+                // Initialize without auto-login
+                const authenticated = await keycloakInstance.init({
+                    checkLoginIframe: false,
+                    pkceMethod: 'S256'
+                });
+
+                if (authenticated && keycloakInstance.token) {
+                    // Already authenticated (returning from Keycloak redirect)
+                    const response = await fetch('/api/auth/sso-login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ access_token: keycloakInstance.token })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        console.log('SSO login successful for:', data.data.email || data.data.username);
+                        window.location.href = '/chat.html';
+                    } else {
+                        showError(data.message || 'SSO login failed');
+                    }
+                } else {
+                    // Not authenticated — redirect to Keycloak login page (no idpHint)
+                    keycloakInstance.login();
+                    return; // Will redirect
+                }
+            } catch (err) {
+                console.error('SSO error:', err);
+                showError('SSO login failed');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '🔐 Login via Enterprise SSO';
         }
 
         form.addEventListener('submit', async (e) => {
@@ -321,6 +417,9 @@
             emailInput.value = 'afc-it-user';
             passwordInput.value = 'afc12345';
         }
+
+        // Check if SSO is available
+        checkSsoAvailability();
     </script>
 </body>
 </html>

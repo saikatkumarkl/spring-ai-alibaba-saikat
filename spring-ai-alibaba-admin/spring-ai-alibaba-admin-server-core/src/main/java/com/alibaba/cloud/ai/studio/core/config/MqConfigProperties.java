@@ -49,9 +49,9 @@ public class MqConfigProperties {
 	private int consumptionThreadCount = 20;
 
 	/** Topic for document indexing */
-	private String documentIndexTopic = "topic_saa_studio_document_index";
+	private String documentIndexTopic = "topic_cordondata_document_index";
 
 	/** Consumer group for document indexing */
-	private String documentIndexGroup = "group_saa_studio_document_index";
+	private String documentIndexGroup = "group_cordondata_document_index";
 
 }

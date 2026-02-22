@@ -1,5 +1,5 @@
 import { IBizEdge, IBizFlowData, IBizNode } from '@/types/workflow';
-import { Edge, IWorkFlowNode } from '@spark-ai/flow';
+import { Edge, IWorkFlowNode } from '@cordondata/flow';
 import { NODE_SCHEMA_MAP } from '../nodes/nodeSchemaMap';
 
 export const transformToFlowNode = (node: IBizNode) => {

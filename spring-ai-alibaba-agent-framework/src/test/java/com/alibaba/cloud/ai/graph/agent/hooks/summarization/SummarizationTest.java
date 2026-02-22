@@ -57,32 +57,32 @@ public class SummarizationTest {
 
         SummarizationHook hook = SummarizationHook.builder()
                 .model(chatModel)
-                .maxTokensBeforeSummary(200) // 设置较低的阈值以便触发总结
-                .messagesToKeep(10) // 保留最近10条消息
+                .maxTokensBeforeSummary(200) //Set a lower threshold to trigger summarization
+                .messagesToKeep(10) //Keep the last 10 messages
                 .build();
 
         ReactAgent agent = createAgent(hook, "test-summarization-agent", chatModel);
 
-        System.out.println("=== 测试带有总结功能的对话 ===");
-        System.out.println("初始消息数量: " + longConversation.size());
+        System.out.println("=== Testing dialogue with summary function ===");
+        System.out.println("Initial number of messages:" + longConversation.size());
         
-        // 调用 agent，应该触发总结
+        //Calling agent should trigger summary
         Optional<OverAllState> result = agent.invoke(longConversation);
 
-        // 验证结果
-        assertTrue(result.isPresent(), "结果应该存在");
+        //Verification results
+        assertTrue(result.isPresent(), "The result should exist");
         Object messagesObj = result.get().value("messages").get();
-        assertNotNull(messagesObj, "消息应该存在于结果中");
+        assertNotNull(messagesObj, "The message should be present in the result");
 
         if (messagesObj instanceof List) {
             List<Message> messages = (List<Message>) messagesObj;
-            System.out.println("总结后消息数量: " + messages.size());
+            System.out.println("Number of messages after summary:" + messages.size());
 
             if (!messages.isEmpty()) {
                 Message firstMessage = messages.get(0);
                 if (firstMessage.getText().contains("summary of the conversation")) {
-                    System.out.println("总结功能");
-                    System.out.println("总结消息预览: " + firstMessage.getText().substring(0, 
+                    System.out.println("Summary function");
+                    System.out.println("Summary message preview:" + firstMessage.getText().substring(0, 
                         Math.min(100, firstMessage.getText().length())) + "...");
                 }
             }
@@ -100,53 +100,53 @@ public class SummarizationTest {
                 .saver(new MemorySaver())
                 .build();
 
-        System.out.println("\n=== 测试不带总结功能的对话 ===");
-        System.out.println("初始消息数量: " + shortConversation.size());
+        System.out.println("\n=== Test dialogue without summary function ===");
+        System.out.println("Initial number of messages:" + shortConversation.size());
 
-        // 调用 agent
+        //call agent
         Optional<OverAllState> result = agent.invoke(shortConversation);
 
-        // 验证结果
-        assertTrue(result.isPresent(), "结果应该存在");
+        //Verification results
+        assertTrue(result.isPresent(), "The result should exist");
         Object messagesObj = result.get().value("messages").get();
-        assertNotNull(messagesObj, "消息应该存在于结果中");
+        assertNotNull(messagesObj, "The message should be present in the result");
         
         if (messagesObj instanceof List) {
             List<Message> messages = (List<Message>) messagesObj;
-            System.out.println("处理后消息数量: " + messages.size());
-            System.out.println("✓ 正常对话流程，未触发总结");
+            System.out.println("Number of messages processed:" + messages.size());
+            System.out.println("✓ Normal dialogue flow, no summary triggered");
         }
     }
 
     private List<Message> createLongConversation(int messageCount) {
         List<Message> messages = new ArrayList<>();
-        // 添加初始系统消息
-        messages.add(new UserMessage("我们开始一个长对话来测试总结功能。"));
-        messages.add(new AssistantMessage("好的，我明白了。我们来进行一个长对话测试。"));
+        //Add initial system message
+        messages.add(new UserMessage("Let's start a long conversation to test the summary feature."));
+        messages.add(new AssistantMessage("OK, I understand.Let's run a long conversation test."));
         
-        // 添加大量交替的用户和助手消息
+        //Added a large number of alternating user and assistant messages
         for (int i = 0; i < messageCount; i++) {
             if (i % 2 == 0) {
-                messages.add(new UserMessage("用户消息 " + i + "：这是对话中的一条用户消息，包含一些内容用于增加token数量，我们需要足够多的文字来确保能够触发总结功能。"));
+                messages.add(new UserMessage("User messages" + i + ": This is a user message in the conversation, containing some content to increase the number of tokens. We need enough text to ensure that the summary function can be triggered."));
             } else {
-                messages.add(new AssistantMessage("助手消息 " + i + "：这是对话中的一条助手回复，也包含一些内容用于增加token数量，我们需要足够多的文字来确保能够触发总结功能。"));
+                messages.add(new AssistantMessage("Assistant message" + i + ": This is an assistant reply in the conversation, and it also contains some content to increase the number of tokens. We need enough text to ensure that the summary function can be triggered."));
             }
         }
         
-        // 添加最后几条消息
-        messages.add(new UserMessage("这是倒数第二条消息。"));
-        messages.add(new AssistantMessage("我收到了你的消息。"));
-        messages.add(new UserMessage("这是最后一条消息，请总结以上对话。"));
+        //Add last few messages
+        messages.add(new UserMessage("This is the second to last message."));
+        messages.add(new AssistantMessage("I received your message."));
+        messages.add(new UserMessage("This is the last message, please summarize the above conversation."));
         return messages;
     }
 
     private List<Message> createShortConversation() {
         List<Message> messages = new ArrayList<>();
-        messages.add(new UserMessage("你好"));
-        messages.add(new AssistantMessage("你好！有什么我可以帮助你的吗？"));
-        messages.add(new UserMessage("我想了解总结功能是如何工作的"));
-        messages.add(new AssistantMessage("总结功能会在对话变得很长时自动总结早期内容，以避免超出token限制。"));
-        messages.add(new UserMessage("谢谢你的解释"));
+        messages.add(new UserMessage("Hello"));
+        messages.add(new AssistantMessage("Hello!Is there anything I can do to help you?"));
+        messages.add(new UserMessage("I want to understand how the summary function works"));
+        messages.add(new AssistantMessage("The summary feature automatically summarizes earlier content when a conversation becomes long to avoid exceeding the token limit."));
+        messages.add(new UserMessage("thank you for your explanation"));
         return messages;
     }
 
@@ -163,14 +163,14 @@ public class SummarizationTest {
     public void testSystemMessagePreservation() throws Exception {
         List<Message> conversation = new ArrayList<>();
         
-        String firstUserPrompt = "我需要你帮我分析一个复杂的技术问题。";
+        String firstUserPrompt = "I need your help analyzing a complex technical problem.";
         conversation.add(new UserMessage(firstUserPrompt));
-        conversation.add(new AssistantMessage("好的，我很乐意帮助你。请详细描述你的问题。"));
+        conversation.add(new AssistantMessage("OK, I'll be happy to help you.Please describe your problem in detail."));
         for (int i = 0; i < 50; i++) {
-            conversation.add(new UserMessage("用户消息 " + i + "：这是一条测试消息，内容足够长以便触发摘要功能。"));
-            conversation.add(new AssistantMessage("助手消息 " + i + "：这是一条回复消息，同样包含足够的内容。"));
+            conversation.add(new UserMessage("User messages" + i + ": This is a test message that is long enough to trigger the summary feature."));
+            conversation.add(new AssistantMessage("Assistant message" + i + ": This is a reply message and also contains sufficient content."));
         }
-        conversation.add(new UserMessage("最后一条消息：请告诉我第一条用户消息的内容。"));
+        conversation.add(new UserMessage("Last message: Please tell me the content of the first user message."));
 
         SummarizationHook hook = SummarizationHook.builder()
                 .model(chatModel)
@@ -182,31 +182,31 @@ public class SummarizationTest {
         Optional<OverAllState> result = agent.invoke(conversation);
 
 
-        assertTrue(result.isPresent(), "结果应该存在");
+        assertTrue(result.isPresent(), "The result should exist");
         Object messagesObj = result.get().value("messages").get();
-        assertNotNull(messagesObj, "消息应该存在于结果中");
+        assertNotNull(messagesObj, "The message should be present in the result");
 
         @SuppressWarnings("unchecked")
         List<Message> resultMessages = (List<Message>) messagesObj;
-        System.out.println("摘要后消息数量: " + resultMessages.size());
+        System.out.println("Number of messages after digest:" + resultMessages.size());
 
-        assertFalse(resultMessages.isEmpty(), "结果消息不应为空");
+        assertFalse(resultMessages.isEmpty(), "Result message should not be empty");
         Message firstMessage = resultMessages.get(0);
-        assertTrue(firstMessage instanceof UserMessage, "第一条消息应该是 UserMessage");
+        assertTrue(firstMessage instanceof UserMessage, "The first message should be UserMessage");
 
         UserMessage firstUserMessage = (UserMessage) firstMessage;
         
-        assertTrue(resultMessages.size() >= 2, "至少应该有两条消息");
+        assertTrue(resultMessages.size() >= 2, "There should be at least two messages");
         Message secondMessage = resultMessages.get(1);
-        assertTrue(secondMessage instanceof SystemMessage, "第二条消息应该是 SystemMessage（摘要消息）");
+        assertTrue(secondMessage instanceof SystemMessage, "The second message should be SystemMessage (summary message)");
         
         SystemMessage summaryMessage = (SystemMessage) secondMessage;
 
         assertEquals(firstUserPrompt, firstUserMessage.getText(), 
-            "第一条用户消息应该完全保留");
+            "The first user message should be completely preserved");
         assertTrue(summaryMessage.getText().contains("Previous conversation summary") || 
                    summaryMessage.getText().contains("summary"), 
-            "第二条消息应该是包含摘要的系统消息");
+            "The second message should be a system message containing a summary");
     }
 
     

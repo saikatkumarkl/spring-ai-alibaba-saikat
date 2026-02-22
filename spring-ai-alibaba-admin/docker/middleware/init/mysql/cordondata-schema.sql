@@ -288,7 +288,7 @@ CREATE TABLE `document`
     COMMENT ='document info';
 
 /******************************************/
-/*   DatabaseName = agentscope   */
+/*   DatabaseName = cordondata   */
 /*   TableName = application_component   */
 /******************************************/
 DROP TABLE IF EXISTS `application_component`;
@@ -369,7 +369,7 @@ CREATE TABLE `mcp_server`
     COMMENT ='mcp server info';
 
 /******************************************/
-/*   DatabaseName = agentscope   */
+/*   DatabaseName = cordondata   */
 /*   TableName = provider   */
 /******************************************/
 CREATE TABLE `provider`
@@ -398,7 +398,7 @@ CREATE TABLE `provider`
 
 
 /******************************************/
-/*   DatabaseName = agentscope   */
+/*   DatabaseName = cordondata   */
 /*   TableName = model   */
 /******************************************/
 CREATE TABLE `model`
@@ -428,8 +428,8 @@ CREATE TABLE `model`
 #init account
 INSERT INTO account (account_id, username, email, mobile, password, type, status, gmt_create,
                      gmt_modified, creator, modifier)
-VALUES ('10000', 'saa', 'ken.lj.hz@gmail.com', null,
-        '$argon2id$v=19$m=66536,t=2,p=1$KSDQowfZxDjKLqBtxFNRng$znU0oQFQs2shR9la4S11n7d0LpGApmSBXvDOXuhbR40', 'admin', 1,
+VALUES ('10000', 'admin', null, null,
+        '$argon2id$v=19$m=66536,t=2,p=1$3d3wB/SrjQDxFjmR4tBCWg$ztusHuM78/acX2xI74aajhum/loHDiiXioUTkDeSNss', 'admin', 1,
         now(), now(), '10000', '10000');
 
 #init workspace

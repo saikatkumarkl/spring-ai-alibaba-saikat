@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>spring-ai-alibaba-admin-server-runtime</artifactId>
-    <name>Spring AI Alibaba Admin Server Runtime</name>
+    <name>CordonData Admin Server Runtime</name>
     <description>Runtime for running apps developed on admin server admin.</description>
     <url>https://github.com/alibaba/spring-ai-alibaba</url>
     <scm>

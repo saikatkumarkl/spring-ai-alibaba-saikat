@@ -60,35 +60,35 @@ public class QuestionClassifierNodeTest {
 
 	@Test
 	public void testBase() throws Exception {
-		QuestionClassifierNode node = createNode(Map.of("1", "正面评价", "2", "负面评价", "3", "中立评价"),
-				List.of("请根据输入的评价内容，给出评价的分类结果。"));
-		Map<String, Object> apply = node.apply(createState(Map.of("input", "你们的服务做的真好！")));
+		QuestionClassifierNode node = createNode(Map.of("1", "positive review", "2", "Negative review", "3", "Neutral evaluation"),
+				List.of("Please provide the classification results of the evaluation based on the entered evaluation content."));
+		Map<String, Object> apply = node.apply(createState(Map.of("input", "Your service is great!")));
 		System.out.println(apply);
 		assertEquals("1", apply.get("output"));
-		Map<String, Object> apply1 = node.apply(createState(Map.of("input", "你们服务做的真差！")));
+		Map<String, Object> apply1 = node.apply(createState(Map.of("input", "Your service is really bad!")));
 		System.out.println(apply1);
 		assertEquals("2", apply1.get("output"));
 	}
 
 	@Test
 	public void testVariableCategories() throws Exception {
-		QuestionClassifierNode node = createNode(Map.of("1", "{category1}评价", "2", "{category2}评价"),
-				List.of("请根据输入的评价内容，给出评价的分类结果。"));
+		QuestionClassifierNode node = createNode(Map.of("1", "{category1} Reviews", "2", "{category2} Reviews"),
+				List.of("Please provide the classification results of the evaluation based on the entered evaluation content."));
 		Map<String, Object> apply = node
-			.apply(createState(Map.of("input", "你们的服务做的真好！", "category1", "正面", "category2", "负面")));
+			.apply(createState(Map.of("input", "Your service is great!", "category1", "front", "category2", "Negative")));
 		System.out.println(apply);
 		assertEquals("1", apply.get("output"));
 		Map<String, Object> apply1 = node
-			.apply(createState(Map.of("input", "你们服务做的真差！", "category2", "正面", "category1", "负面")));
+			.apply(createState(Map.of("input", "Your service is really bad!", "category2", "front", "category1", "Negative")));
 		System.out.println(apply1);
 		assertEquals("1", apply1.get("output"));
 	}
 
 	@Test
 	public void testVariableInstructions() throws Exception {
-		QuestionClassifierNode node = createNode(Map.of("1", "正面评价", "2", "负面评价"), List.of("{instruction}"));
+		QuestionClassifierNode node = createNode(Map.of("1", "positive review", "2", "Negative review"), List.of("{instruction}"));
 		Map<String, Object> apply = node
-			.apply(createState(Map.of("input", "你们的服务做的真差！", "instruction", "请根据输入的评价内容，给出评价的分类结果。")));
+			.apply(createState(Map.of("input", "Your service is really bad!", "instruction", "Please provide the classification results of the evaluation based on the entered evaluation content.")));
 		System.out.println(apply);
 		assertEquals("2", apply.get("output"));
 	}

@@ -1,5 +1,5 @@
-import type { IWorkFlowNode } from '@spark-ai/flow';
-import { BaseNode, SourceHandle } from '@spark-ai/flow';
+import type { IWorkFlowNode } from '@cordondata/flow';
+import { BaseNode, SourceHandle } from '@cordondata/flow';
 import { NodeProps } from '@xyflow/react';
 import React, { memo } from 'react';
 import { IJudgeNodeParam } from '../../types/flow';

@@ -50,9 +50,9 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 
 	public static final String END_TIME_STR = "9999-12-31 23:59:59";
 
-	public static final String DATE_SMALL_STR_SHOW = "yyyy年MM月dd号HH点mm分";
+	public static final String DATE_SMALL_STR_SHOW = "yyyy year MM month dd number HH hours mm minutes";
 
-	public static final String DATE_MONTH_DAY_STR_SHOW = "MM月dd号";
+	public static final String DATE_MONTH_DAY_STR_SHOW = "MM month dd number";
 
 	// Supported date parse patterns
 	private static final String[] parsePatterns = { "yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM",

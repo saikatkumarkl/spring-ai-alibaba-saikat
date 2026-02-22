@@ -9,7 +9,7 @@ import {
   useNodesOutputParams,
   useNodesReadOnly,
   useReactFlowStore,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { Flex } from 'antd';
 import { memo, useCallback, useMemo } from 'react';
 import ErrorCatchForm from '../../components/ErrorCatchForm';

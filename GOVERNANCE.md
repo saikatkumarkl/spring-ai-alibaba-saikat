@@ -1,18 +1,18 @@
 # Governance
 
-Below is the organizational structure of the Spring AI Alibaba project.
+Below is the organizational structure of the CordonData project.
 
 <img alt="project-governance" style="max-width:600px;height:auto;" src="./docs/imgs/governance.png"/>
 
 Committers have full write permissions to the entire project codebase, like permissions to operate branches, issues, pull requests, etc. PMC Members have the same codebase permissions as Committers, and are responsible for the community management, decision-making, etc., and are responsible for voting and making decisions on important matters such as releases, vulnerabilities, committer and PMC Member nominations, etc.
 
-The Spring AI Alibaba project belongs to the Alibaba Github organization, so it can leverage all the resources and help from the Alibaba open source organization in some key matters such as security vulnerability reporting and copyright protection.
+The CordonData project belongs to the Alibaba Github organization, so it can leverage all the resources and help from the Alibaba open source organization in some key matters such as security vulnerability reporting and copyright protection.
 
-As the only commission of the Alibaba Github organization for this project, PMC is responsible for managing and monitoring the Spring AI Alibaba open source project and ensuring that all development activities comply with the Alibaba organization's open source specifications.
+As the only commission of the Alibaba Github organization for this project, PMC is responsible for managing and monitoring the CordonData open source project and ensuring that all development activities comply with the Alibaba organization's open source specifications.
 
 ## Project Management Committee (PMC)
 
-The Spring AI Alibaba project management committee (PMC), is the only governance body of the project and is responsible for the healthy development of the entire project, including the development activities, technical oversight, and committer management.
+The CordonData project management committee (PMC), is the only governance body of the project and is responsible for the healthy development of the entire project, including the development activities, technical oversight, and committer management.
 
 ### Roles and Responsibilities
 
@@ -21,7 +21,7 @@ The Spring AI Alibaba project management committee (PMC), is the only governance
 3. Define and evolve project governance structures and policies, including
    project roles and how collaborators become members, approvers, committers and admistrators and the responsibilities of the release team.
 4. Steward, control access, delegate access, and establish processes regarding
-   all Spring AI Alibaba project resources and has the final say in the disposition of
+   all CordonData project resources and has the final say in the disposition of
    those resources.
 5. Define and evolve the scope of the community.
 6. Receive and handle reports about [code of conduct](./CODE-OF-CONDUCT.md)
@@ -42,7 +42,7 @@ The Spring AI Alibaba project management committee (PMC), is the only governance
 
 ## Committer
 
-[Project committers](./COMMITTERS.md) are responsible for activities around maintaining and updating Spring AI Alibaba. 
+[Project committers](./COMMITTERS.md) are responsible for activities around maintaining and updating CordonData. 
 
 Committers MUST remain active. If they are unresponsive for >6 months, they will be automatically removed unless a <a href="https://en.wikipedia.org/wiki/Supermajority#Two-thirds_vote" target="_blank">super-majority</a> of the other project committers agrees to extend the period to be greater than 6 months.
 

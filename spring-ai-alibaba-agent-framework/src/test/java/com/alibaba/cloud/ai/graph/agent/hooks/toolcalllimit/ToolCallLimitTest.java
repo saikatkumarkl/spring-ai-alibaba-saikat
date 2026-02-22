@@ -47,7 +47,7 @@ public class ToolCallLimitTest {
 
     @Test
     public void testThreadLimitWithErrorBehavior() throws Exception {
-        // 限制 1 次
+        //Limit 1 time
         ToolCallLimitHook hook = ToolCallLimitHook.builder()
                 .threadLimit(2)
                 .exitBehavior(ToolCallLimitHook.ExitBehavior.ERROR)
@@ -55,14 +55,14 @@ public class ToolCallLimitTest {
 
         ReactAgent agent = createAgent(hook, "test-agent", chatModel);
 
-        // 第一次调用，执行第二次工具时报错
+        //When calling the tool for the first time, an error occurs when executing the tool for the second time.
         assertThrows(ToolCallLimitExceededException.class, () -> {
-            agent.invoke("你好，帮我分别调用几次weather工具，查询北京、上海、杭州的天气");
-        }, "第一次调用应该抛出ModelCallLimitExceededException异常");
+            agent.invoke("Hello, help me call the weather tool several times to check the weather in Beijing, Shanghai, and Hangzhou.");
+        }, "The first call should throw a ModelCallLimitExceededException exception");
 
-        // 第二次调用，正常执行，不受之前影响
-        Optional<OverAllState> result2 = agent.invoke("帮我查询成都天气");
-        assertTrue(result2.isPresent(), "第二次调用应该返回结果而不是抛出异常");
+        //The second call is executed normally and is not affected by the previous call.
+        Optional<OverAllState> result2 = agent.invoke("Help me check the weather in Chengdu");
+        assertTrue(result2.isPresent(), "The second call should return a result instead of throwing an exception");
     }
 
     @Test
@@ -74,18 +74,18 @@ public class ToolCallLimitTest {
 
         ReactAgent agent = createAgent(hook, "test-agent", chatModel);
 
-        // 第一次调用，正常执行，不受之前影响
-        Optional<OverAllState> result1 = agent.invoke("你好");
-        assertTrue(result1.isPresent(), "第一次调用应该返回结果而不是抛出异常");
+        //The first call will execute normally and will not be affected by the previous call.
+        Optional<OverAllState> result1 = agent.invoke("Hello");
+        assertTrue(result1.isPresent(), "The first call should return a result rather than throwing an exception");
 
-        // 第二次调用，正常执行，不会导致异常
+        //The second call will execute normally and will not cause an exception.
         assertDoesNotThrow(() -> {
-            agent.invoke("你好，调用weather工具，查询北京的天气");
+            agent.invoke("Hello, call the weather tool to check the weather in Beijing");
         });
 
-        // 第三次调用，正常执行，不会导致异常
+        //The third call will execute normally and will not cause an exception.
         assertDoesNotThrow(() -> {
-            agent.invoke("你好，调用weather工具，查询上海的天气");
+            agent.invoke("Hello, call the weather tool to check the weather in Shanghai");
         });
     }
 

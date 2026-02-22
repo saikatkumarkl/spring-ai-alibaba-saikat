@@ -37,16 +37,16 @@ import static com.alibaba.cloud.ai.graph.StateGraph.START;
 import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
 
 /**
- * 持久化示例
- * 演示如何使用 Checkpointer 实现工作流状态持久化
+ * Persistence Example
+ * Demonstrates how to use Checkpointer for workflow state persistence
  */
 public class PersistenceExample {
 
 	/**
-	 * 示例 1: 基本持久化配置
+	 * Example 1: Basic Persistence Configuration
 	 */
 	public static void basicPersistenceExample() throws GraphStateException {
-		// 定义状态策略
+		// Define state strategies
 		KeyStrategyFactory keyStrategyFactory = () -> {
 			Map<String, KeyStrategy> keyStrategyMap = new HashMap<>();
 			keyStrategyMap.put("foo", new ReplaceStrategy());
@@ -54,7 +54,7 @@ public class PersistenceExample {
 			return keyStrategyMap;
 		};
 
-		// 定义节点操作
+		// Define node actions
 		var nodeA = node_async(state -> {
 			return Map.of("foo", "a", "bar", List.of("a"));
 		});
@@ -63,7 +63,7 @@ public class PersistenceExample {
 			return Map.of("foo", "b", "bar", List.of("b"));
 		});
 
-		// 创建图
+		// Create graph
 		StateGraph stateGraph = new StateGraph(keyStrategyFactory)
 				.addNode("node_a", nodeA)
 				.addNode("node_b", nodeB)
@@ -71,19 +71,19 @@ public class PersistenceExample {
 				.addEdge("node_a", "node_b")
 				.addEdge("node_b", END);
 
-		// 配置检查点
+		// Configure checkpoint
 		SaverConfig saverConfig = SaverConfig.builder()
 				.register(new MemorySaver())
 				.build();
 
-		// 编译图
+		// Compile graph
 		CompiledGraph graph = stateGraph.compile(
 				CompileConfig.builder()
 						.saverConfig(saverConfig)
 						.build()
 		);
 
-		// 运行图
+		// Run graph
 		RunnableConfig config = RunnableConfig.builder()
 				.threadId("1")
 				.build();
@@ -96,19 +96,19 @@ public class PersistenceExample {
 	}
 
 	/**
-	 * 示例 2: 获取状态
+	 * Example 2: Getting State
 	 */
 	public static void getStateExample(CompiledGraph graph) {
 		RunnableConfig config = RunnableConfig.builder()
 				.threadId("1")
 				.build();
 
-		// 获取最新的状态快照
+		// Get the latest state snapshot
 		StateSnapshot stateSnapshot = graph.getState(config);
 		System.out.println("Current state: " + stateSnapshot.state());
 		System.out.println("Current node: " + stateSnapshot.node());
 
-		// 获取特定 checkpoint_id 的状态快照
+		// Get state snapshot for a specific checkpoint_id
 		RunnableConfig configWithCheckpoint = RunnableConfig.builder()
 				.threadId("1")
 				.checkPointId("1ef663ba-28fe-6528-8002-5a559208592c")
@@ -118,7 +118,7 @@ public class PersistenceExample {
 	}
 
 	/**
-	 * 示例 3: 获取状态历史
+	 * Example 3: Getting State History
 	 */
 	public static void getStateHistoryExample(CompiledGraph graph) {
 		RunnableConfig config = RunnableConfig.builder()
@@ -136,13 +136,13 @@ public class PersistenceExample {
 	}
 
 	/**
-	 * 示例 4: 更新状态
+	 * Example 4: Updating State
 	 */
 	public static void updateStateExample(CompiledGraph graph) throws Exception {
 		KeyStrategyFactory keyStrategyFactory = () -> {
 			Map<String, KeyStrategy> keyStrategyMap = new HashMap<>();
-			keyStrategyMap.put("foo", new ReplaceStrategy());  // 替换策略
-			keyStrategyMap.put("bar", new AppendStrategy());   // 追加策略
+			keyStrategyMap.put("foo", new ReplaceStrategy());  // Replace strategy
+			keyStrategyMap.put("bar", new AppendStrategy());   // Append strategy
 			return keyStrategyMap;
 		};
 
@@ -159,7 +159,7 @@ public class PersistenceExample {
 	}
 
 	/**
-	 * 示例 5: 重放（Replay）
+	 * Example 5: Replay
 	 */
 	public static void replayExample(CompiledGraph graph) {
 		RunnableConfig config = RunnableConfig.builder()
@@ -172,15 +172,15 @@ public class PersistenceExample {
 	}
 
 	public static void main(String[] args) {
-		System.out.println("=== 持久化示例 ===\n");
+		System.out.println("=== Persistence Examples ===\n");
 
 		try {
-			// 示例 1: 基本持久化配置
-			System.out.println("示例 1: 基本持久化配置");
+			// Example 1: Basic Persistence Configuration
+			System.out.println("Example 1: Basic Persistence Configuration");
 			basicPersistenceExample();
 			System.out.println();
 
-			// 创建图用于后续示例
+			// Create graph for subsequent examples
 			KeyStrategyFactory keyStrategyFactory = () -> {
 				Map<String, KeyStrategy> keyStrategyMap = new HashMap<>();
 				keyStrategyMap.put("foo", new ReplaceStrategy());
@@ -213,31 +213,31 @@ public class PersistenceExample {
 			input.put("foo", "");
 			graph.invoke(input, config);
 
-			// 示例 2: 获取状态
-			System.out.println("示例 2: 获取状态");
+			// Example 2: Getting State
+			System.out.println("Example 2: Getting State");
 			getStateExample(graph);
 			System.out.println();
 
-			// 示例 3: 获取状态历史
-			System.out.println("示例 3: 获取状态历史");
+			// Example 3: Getting State History
+			System.out.println("Example 3: Getting State History");
 			getStateHistoryExample(graph);
 			System.out.println();
 
-			// 示例 4: 更新状态
-			System.out.println("示例 4: 更新状态");
+			// Example 4: Updating State
+			System.out.println("Example 4: Updating State");
 			updateStateExample(graph);
 			System.out.println();
 
-			// 示例 5: 重放（需要有效的 checkpointId）
-			System.out.println("示例 5: 重放（需要有效的 checkpointId）");
-			System.out.println("注意: 此示例需要有效的 checkpointId，跳过执行");
+			// Example 5: Replay (requires valid checkpointId)
+			System.out.println("Example 5: Replay (requires valid checkpointId)");
+			System.out.println("Note: This example requires a valid checkpointId, skipping execution");
 			// replayExample(graph);
 			System.out.println();
 
-			System.out.println("所有示例执行完成");
+			System.out.println("All examples executed successfully");
 		}
 		catch (Exception e) {
-			System.err.println("执行示例时出错: " + e.getMessage());
+			System.err.println("Error executing example: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}

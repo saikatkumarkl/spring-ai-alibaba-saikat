@@ -88,7 +88,7 @@ class ToolEmulatorTest {
 				.build();
 
 		try {
-			Optional<OverAllState> result = agent.invoke("今天杭州的天气怎么样？");
+			Optional<OverAllState> result = agent.invoke("How is the weather in Hangzhou today?");
 
 			// Assert that the result is present
 			assertTrue(result.isPresent(), "Agent result should be present");
@@ -140,7 +140,7 @@ class ToolEmulatorTest {
 				.build();
 
 		try {
-			Optional<OverAllState> result = agent.invoke("上海的天气如何？");
+			Optional<OverAllState> result = agent.invoke("How is the weather in Shanghai?");
 
 			// Assert that the result is present
 			assertTrue(result.isPresent(), "Agent result should be present");
@@ -178,7 +178,7 @@ class ToolEmulatorTest {
 				.build();
 
 		try {
-			Optional<OverAllState> result = agent.invoke("深圳今天天气怎样？");
+			Optional<OverAllState> result = agent.invoke("What is the weather like today in Shenzhen?");
 
 			// Assert that the result is present
 			assertTrue(result.isPresent(), "Agent result should be present");

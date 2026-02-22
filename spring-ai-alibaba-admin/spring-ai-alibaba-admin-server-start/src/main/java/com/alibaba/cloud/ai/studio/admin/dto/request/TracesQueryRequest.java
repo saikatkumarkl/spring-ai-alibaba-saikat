@@ -14,17 +14,17 @@ public class TracesQueryRequest {
 
     private String spanName;
 
-    @NotBlank(message = "开始时间不能为空")
+    @NotBlank(message = "Start time cannot be empty")
     private String startTime;
 
-    @NotBlank(message = "结束时间不能为空")
+    @NotBlank(message = "End time cannot be empty")
     private String endTime;
 
-    @Min(value = 1, message = "页码最小值为1")
+    @Min(value = 1, message = "The minimum page number is 1")
     private Integer pageNumber = 1;
 
-    @Min(value = 1, message = "每页大小最小值为1")
-    @Max(value = 200, message = "每页大小最大值为200")
+    @Min(value = 1, message = "The minimum size per page is 1")
+    @Max(value = 200, message = "Maximum size per page is 200")
     private Integer pageSize = 50;
 
     private String attributes;

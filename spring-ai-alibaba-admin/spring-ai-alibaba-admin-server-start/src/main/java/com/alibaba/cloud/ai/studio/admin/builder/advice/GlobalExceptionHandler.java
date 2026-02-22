@@ -97,13 +97,13 @@ public class GlobalExceptionHandler {
 		}
 		else if (ex instanceof HttpMessageNotReadableException hmne) {
 			// Enhanced error message extraction for JSON parsing errors
-			String message = "请求参数格式错误，请检查JSON格式是否正确";
+			String message = "The request parameter format is wrong. Please check whether the JSON format is correct.";
 			if (hmne.getMessage() != null) {
 				if (hmne.getMessage().contains("JSON parse error")) {
-					message = "JSON格式错误，请检查参数格式";
+					message = "JSON format error, please check the parameter format";
 				}
 				else if (hmne.getMessage().contains("Required request body is missing")) {
-					message = "请求体不能为空";
+					message = "The request body cannot be empty";
 				}
 			}
 			// Create Error object directly with custom message

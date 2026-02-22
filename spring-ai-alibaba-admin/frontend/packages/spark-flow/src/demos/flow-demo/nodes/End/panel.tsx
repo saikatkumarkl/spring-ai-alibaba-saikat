@@ -7,7 +7,7 @@ import {
   useNodesReadOnly,
   useReactFlowStore,
   VarInputTextArea,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { Switch } from 'antd';
 import React, { memo, useCallback, useMemo } from 'react';
 import InfoIcon from '../../components/InfoIcon';

@@ -8,7 +8,7 @@ import {
   useNodesOutputParams,
   useNodesReadOnly,
   useReactFlowStore,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { useSetState } from 'ahooks';
 import { Flex, Spin, Switch, Typography } from 'antd';
 import classNames from 'classnames';

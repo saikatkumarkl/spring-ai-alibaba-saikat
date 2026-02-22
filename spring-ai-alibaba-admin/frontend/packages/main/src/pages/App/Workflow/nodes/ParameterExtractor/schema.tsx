@@ -1,5 +1,5 @@
 import $i18n from '@/i18n';
-import { INodeSchema } from '@spark-ai/flow';
+import { INodeSchema } from '@cordondata/flow';
 import {
   SELECTED_MODEL_PARAMS_DEFAULT,
   SHORT_MEMORY_CONFIG_DEFAULT,

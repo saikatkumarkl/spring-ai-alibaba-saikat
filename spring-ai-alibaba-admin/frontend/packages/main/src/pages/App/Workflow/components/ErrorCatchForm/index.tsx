@@ -1,10 +1,10 @@
 import $i18n from '@/i18n';
-import type { INodeDataInputParamItem } from '@spark-ai/flow';
+import type { INodeDataInputParamItem } from '@cordondata/flow';
 import {
   SelectWithDesc,
   useEdgesInteraction,
   VariableBaseInput,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { Flex, Switch } from 'antd';
 import React, { memo } from 'react';
 import { ITryCatchConfig } from '../../types';

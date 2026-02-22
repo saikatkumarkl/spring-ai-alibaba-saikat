@@ -51,7 +51,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
                 .template(template).variables(variables).modelConfig(modelConfigInfo).createTime(currentTime)
                 .lastUpdateTime(currentTime).mockTools(mockTools).build();
         sessionStore.put(sessionId, session);
-        log.info("创建新会话: {}", sessionId);
+        log.info("Create new session: {}", sessionId);
         return session;
     }
     
@@ -74,13 +74,13 @@ public class ChatSessionServiceImpl implements ChatSessionService {
         
         ChatSession session = sessionStore.get(sessionId);
         if (session == null) {
-            log.warn("会话不存在: {}", sessionId);
+            log.warn("Session does not exist: {}", sessionId);
             return null;
         }
         
         //Check if the session has expired
         if (isSessionExpired(session)) {
-            log.info("会话已过期，删除: {}", sessionId);
+            log.info("Session has expired, delete: {}", sessionId);
             sessionStore.remove(sessionId);
             return null;
         }
@@ -93,7 +93,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
         if (session != null && session.getSessionId() != null) {
             session.setLastUpdateTime(System.currentTimeMillis());
             sessionStore.put(session.getSessionId(), session);
-            log.debug("更新会话: {}", session.getSessionId());
+            log.debug("Update session: {}", session.getSessionId());
         }
     }
     
@@ -102,7 +102,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
         if (sessionId != null) {
             sessionStore.remove(sessionId);
             sessionClients.remove(sessionId);
-            log.info("删除会话及其ModelClient: {}", sessionId);
+            log.info("Delete the session and its ModelClient: {}", sessionId);
         }
     }
     
@@ -114,7 +114,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
         sessionStore.entrySet().removeIf(entry -> {
             ChatSession session = entry.getValue();
             if (isSessionExpired(session)) {
-                log.debug("清理过期会话: {}", entry.getKey());
+                log.debug("Clean up expired sessions: {}", entry.getKey());
                 cleanedCount[0]++;
                 return true;
             }
@@ -122,7 +122,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
         });
         
         if (cleanedCount[0] > 0) {
-            log.info("清理了 {} 个过期会话", cleanedCount[0]);
+            log.info("Cleaned {} expired sessions", cleanedCount[0]);
         }
     }
     
@@ -137,7 +137,7 @@ public class ChatSessionServiceImpl implements ChatSessionService {
         return sessionClients.computeIfAbsent(sessionId, key -> {
             ChatSession session = getSession(sessionId);
             if (session == null) {
-                throw new RuntimeException("会话不存在: " + sessionId);
+                throw new RuntimeException("Session does not exist:" + sessionId);
             }
             return chatClientFactoryDelegate.createChatClient(session.getModelConfig().getModelId(),
                     session.getModelConfig().getParameters(), observationMetadata);

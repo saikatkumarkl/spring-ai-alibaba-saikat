@@ -43,35 +43,35 @@ import static com.alibaba.cloud.ai.graph.StateGraph.START;
 import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
 
 /**
- * 内存管理示例
- * 演示短期和长期内存管理
+ * Memory Management Example
+ * Demonstrates short-term and long-term memory management
  */
 public class MemoryExample {
 
 	/**
-	 * 示例 1: 添加短期内存
+	 * Example 1: Adding Short-term Memory
 	 */
 	public static void addShortTermMemory(ChatClient.Builder chatClientBuilder) throws GraphStateException {
-		// 创建内存检查点器
+		// Create memory checkpointer
 		MemorySaver checkpointer = new MemorySaver();
 
 		SaverConfig saverConfig = SaverConfig.builder()
 				.register(checkpointer)
 				.build();
 
-		// 定义状态策略
+		// Define state strategies
 		KeyStrategyFactory keyStrategyFactory = () -> {
 			Map<String, KeyStrategy> keyStrategyMap = new HashMap<>();
 			keyStrategyMap.put("messages", new AppendStrategy());
 			return keyStrategyMap;
 		};
 
-		// 创建聊天节点
+		// Create chat node
 		var chatNode = node_async(state -> {
 			List<Map<String, String>> messages =
 					(List<Map<String, String>>) state.value("messages").orElse(List.of());
 
-			// 使用 ChatClient 调用 AI 模型
+			// Use ChatClient to call AI model
 			ChatClient chatClient = chatClientBuilder.build();
 			String response = chatClient.prompt()
 					.user(messages.get(messages.size() - 1).get("content"))
@@ -83,41 +83,41 @@ public class MemoryExample {
 			));
 		});
 
-		// 构建图
+		// Build graph
 		StateGraph stateGraph = new StateGraph(keyStrategyFactory)
 				.addNode("chat", chatNode)
 				.addEdge(START, "chat")
 				.addEdge("chat", END);
 
-		// 编译图
+		// Compile graph
 		CompiledGraph graph = stateGraph.compile(
 				CompileConfig.builder()
 						.saverConfig(saverConfig)
 						.build()
 		);
 
-		// 第一轮对话
+		// First round of conversation
 		RunnableConfig config = RunnableConfig.builder()
 				.threadId("conversation-1")
 				.build();
 
 		graph.invoke(Map.of("messages", List.of(
-				Map.of("role", "user", "content", "你好！我是 Bob")
+				Map.of("role", "user", "content", "Hello! I am Bob")
 		)), config);
 
-		// 第二轮对话（使用相同的 threadId）
+		// Second round of conversation (using same threadId)
 		graph.invoke(Map.of("messages", List.of(
-				Map.of("role", "user", "content", "我的名字是什么？")
+				Map.of("role", "user", "content", "What is my name?")
 		)), config);
-		// AI 将能够记住之前的对话，回答 "Bob"
+		// AI will be able to remember the previous conversation, answering "Bob"
 		System.out.println("Short-term memory example executed");
 	}
 
 	/**
-	 * 示例 2: 使用 Store 实现长期内存
+	 * Example 2: Using Store for Long-term Memory
 	 */
 	public static void longTermMemoryWithDatabase() throws GraphStateException {
-		// 在节点中使用 Store 存储用户信息
+		// Use Store in nodes to store user information
 		var userProfileNode = com.alibaba.cloud.ai.graph.action.AsyncNodeActionWithConfig.node_async((state, config) -> {
 			String userId = (String) state.value("userId").orElse("");
 
@@ -125,7 +125,7 @@ public class MemoryExample {
 				return Map.of("userProfile", Map.of("name", "Unknown", "preferences", "default"));
 			}
 
-			// 从 Store 获取用户配置
+			// Get user profile from Store
 			Store store = config.store();
 			if (store != null) {
 				Optional<StoreItem> itemOpt = store.getItem(List.of("user_profiles"), userId);
@@ -135,12 +135,12 @@ public class MemoryExample {
 				}
 			}
 
-			// 如果未找到，返回默认值
+			// If not found, return default values
 			Map<String, Object> userProfile = Map.of("name", "User", "preferences", "default");
 			return Map.of("userProfile", userProfile);
 		});
 
-		// 创建图
+		// Create graph
 		KeyStrategyFactory keyStrategyFactory = () -> {
 			Map<String, KeyStrategy> keyStrategyMap = new HashMap<>();
 			keyStrategyMap.put("userId", new ReplaceStrategy());
@@ -155,15 +155,15 @@ public class MemoryExample {
 
 		CompiledGraph graph = stateGraph.compile(CompileConfig.builder().build());
 
-		// 创建长期记忆存储并预填充数据
+		// Create long-term memory store and pre-populate data
 		MemoryStore memoryStore = new MemoryStore();
 		Map<String, Object> profileData = new HashMap<>();
-		profileData.put("name", "张三");
-		profileData.put("preferences", "喜欢编程");
+		profileData.put("name", "Zhang San");
+		profileData.put("preferences", "Likes programming");
 		StoreItem profileItem = StoreItem.of(List.of("user_profiles"), "user_001", profileData);
 		memoryStore.putItem(profileItem);
 
-		// 运行图
+		// Run graph
 		RunnableConfig config = RunnableConfig.builder()
 				.threadId("profile_thread")
 				.store(memoryStore)
@@ -171,13 +171,13 @@ public class MemoryExample {
 
 		Optional<OverAllState> stateOptiona = graph.invoke(Map.of("userId", "user_001"), config);
 		Map<String, Object> result = stateOptiona.get().data();
-		System.out.println("加载的用户配置: " + result.get("userProfile"));
+		System.out.println("Loaded user profile: " + result.get("userProfile"));
 
 		System.out.println("Long-term memory with Store example executed");
 	}
 
 	/**
-	 * 示例 3: 使用 Store 缓存实现长期内存
+	 * Example 3: Using Store Cache for Long-term Memory
 	 */
 	public static void longTermMemoryWithRedis() throws GraphStateException {
 		var cacheNode = com.alibaba.cloud.ai.graph.action.AsyncNodeActionWithConfig.node_async((state, config) -> {
@@ -187,21 +187,21 @@ public class MemoryExample {
 				return Map.of("result", "no_key");
 			}
 
-			// 从 Store 获取缓存数据
+			// Get cached data from Store
 			Store store = config.store();
 			if (store != null) {
 				Optional<StoreItem> itemOpt = store.getItem(List.of("cache"), key);
 				if (itemOpt.isPresent()) {
-					// 缓存命中
+					// Cache hit
 					Map<String, Object> cachedData = itemOpt.get().getValue();
 					return Map.of("result", cachedData.get("value"));
 				}
 			}
 
-			// 缓存未命中，执行计算或查询
+			// Cache miss, executing computation or query
 			Object computedData = performExpensiveOperation(key);
 
-			// 存储到 Store
+			// Store to Store
 			if (store != null) {
 				Map<String, Object> cacheValue = new HashMap<>();
 				cacheValue.put("value", computedData);
@@ -212,7 +212,7 @@ public class MemoryExample {
 			return Map.of("result", computedData);
 		});
 
-		// 创建图
+		// Create graph
 		KeyStrategyFactory keyStrategyFactory = () -> {
 			Map<String, KeyStrategy> keyStrategyMap = new HashMap<>();
 			keyStrategyMap.put("cacheKey", new ReplaceStrategy());
@@ -227,10 +227,10 @@ public class MemoryExample {
 
 		CompiledGraph graph = stateGraph.compile(CompileConfig.builder().build());
 
-		// 创建长期记忆存储
+		// Create long-term memory store
 		MemoryStore memoryStore = new MemoryStore();
 
-		// 第一次调用（缓存未命中）
+		// First call (cache miss)
 		RunnableConfig config = RunnableConfig.builder()
 				.threadId("cache_thread")
 				.store(memoryStore)
@@ -238,27 +238,27 @@ public class MemoryExample {
 
 		Optional<OverAllState> stateOptional = graph.invoke(Map.of("cacheKey", "expensive_key"), config);
 		Map<String, Object> result1 = stateOptional.get().data();
-		System.out.println("第一次调用结果: " + result1.get("result"));
+		System.out.println("First call result: " + result1.get("result"));
 
-		// 第二次调用（缓存命中）
+		// Second call (cache hit)
 		Optional<OverAllState> stateOptiona = graph.invoke(Map.of("cacheKey", "expensive_key"), config);
 		Map<String, Object> result2 = stateOptional.get().data();
-		System.out.println("第二次调用结果（从缓存）: " + result2.get("result"));
+		System.out.println("Second call result (from cache): " + result2.get("result"));
 
 		System.out.println("Long-term memory with Store cache example executed");
 	}
 
-	// 模拟耗时操作
+	// Simulate expensive operation
 	private static Object performExpensiveOperation(String key) {
-		// 模拟耗时计算
+		// Simulate expensive computation
 		return "computed_result_for_" + key;
 	}
 
 	/**
-	 * 示例 4: 结合短期和长期内存
+	 * Example 4: Combining Short-term and Long-term Memory
 	 */
 	public static void combinedMemoryExample(ChatClient.Builder chatClientBuilder) throws GraphStateException {
-		// 定义状态
+		// Define state
 		KeyStrategyFactory keyStrategyFactory = () -> {
 			Map<String, KeyStrategy> keyStrategyMap = new HashMap<>();
 			keyStrategyMap.put("userId", new ReplaceStrategy());
@@ -267,7 +267,7 @@ public class MemoryExample {
 			return keyStrategyMap;
 		};
 
-		// 加载用户偏好（长期内存）
+		// Load user preferences (long-term memory)
 		var loadUserPreferences = com.alibaba.cloud.ai.graph.action.AsyncNodeActionWithConfig.node_async((state, config) -> {
 			String userId = (String) state.value("userId").orElse("");
 
@@ -275,7 +275,7 @@ public class MemoryExample {
 				return Map.of("userPreferences", Map.of("theme", "default", "language", "zh"));
 			}
 
-			// 从 Store 加载用户偏好
+			// Load user preferences from Store
 			Store store = config.store();
 			if (store != null) {
 				Optional<StoreItem> itemOpt = store.getItem(List.of("user_preferences"), userId);
@@ -285,23 +285,23 @@ public class MemoryExample {
 				}
 			}
 
-			// 如果未找到，返回默认偏好
+			// If not found, return default preferences
 			Map<String, Object> preferences = Map.of("theme", "dark", "language", "zh");
 			return Map.of("userPreferences", preferences);
 		});
 
-		// 聊天节点（使用短期和长期内存）
+		// Chat node (using short-term and long-term memory)
 		var chatNode = node_async(state -> {
 			List<Map<String, String>> messages =
 					(List<Map<String, String>>) state.value("messages").orElse(List.of());
 			Map<String, Object> preferences =
 					(Map<String, Object>) state.value("userPreferences").orElse(Map.of());
 
-			// 构建包含用户偏好的提示
+			// Build prompt including user preferences
 			String userPrompt = messages.get(messages.size() - 1).get("content");
-			String enhancedPrompt = "用户偏好: " + preferences + "\n用户问题: " + userPrompt;
+			String enhancedPrompt = "User preferences: " + preferences + "\nUser question: " + userPrompt;
 
-			// 调用 AI
+			// Call AI
 			ChatClient chatClient = chatClientBuilder.build();
 			String response = chatClient.prompt()
 					.user(enhancedPrompt)
@@ -313,7 +313,7 @@ public class MemoryExample {
 			));
 		});
 
-		// 构建图
+		// Build graph
 		StateGraph stateGraph = new StateGraph(keyStrategyFactory)
 				.addNode("load_preferences", loadUserPreferences)
 				.addNode("chat", chatNode)
@@ -321,19 +321,19 @@ public class MemoryExample {
 				.addEdge("load_preferences", "chat")
 				.addEdge("chat", END);
 
-		// 配置检查点（短期内存）
+		// Configure checkpoint (short-term memory)
 		SaverConfig saverConfig = SaverConfig.builder()
 				.register(new MemorySaver())
 				.build();
 
-		// 编译图
+		// Compile graph
 		CompiledGraph graph = stateGraph.compile(
 				CompileConfig.builder()
 						.saverConfig(saverConfig)
 						.build()
 		);
 
-		// 创建长期记忆存储并预填充用户偏好
+		// Create long-term memory store and pre-populate user preferences
 		MemoryStore memoryStore = new MemoryStore();
 		Map<String, Object> preferencesData = new HashMap<>();
 		preferencesData.put("theme", "dark");
@@ -342,57 +342,57 @@ public class MemoryExample {
 		StoreItem preferencesItem = StoreItem.of(List.of("user_preferences"), "user_002", preferencesData);
 		memoryStore.putItem(preferencesItem);
 
-		// 运行图
+		// Run graph
 		RunnableConfig config = RunnableConfig.builder()
 				.threadId("combined_thread")
 				.store(memoryStore)
 				.build();
 
-		// 第一轮对话（加载偏好并开始对话）
+		// First round (load preferences and start conversation)
 		graph.invoke(Map.of(
 				"userId", "user_002",
-				"messages", List.of(Map.of("role", "user", "content", "你好"))
+				"messages", List.of(Map.of("role", "user", "content", "Hello"))
 		), config);
 
-		// 第二轮对话（使用短期和长期记忆）
+		// Second round (using short-term and long-term memory)
 		graph.invoke(Map.of(
 				"userId", "user_002",
-				"messages", List.of(Map.of("role", "user", "content", "根据我的偏好给我一些建议"))
+				"messages", List.of(Map.of("role", "user", "content", "Give me some suggestions based on my preferences"))
 		), config);
 
 		System.out.println("Combined memory example created");
 	}
 
 	public static void main(String[] args) {
-		System.out.println("=== 内存管理示例 ===\n");
+		System.out.println("=== Memory Management Examples ===\n");
 
 		try {
-			// 示例 1: 添加短期内存（需要 ChatClient）
-			System.out.println("示例 1: 添加短期内存");
-			System.out.println("注意: 此示例需要 ChatClient，跳过执行");
+			// Example 1: Adding Short-term Memory (requires ChatClient)
+			System.out.println("Example 1: Adding Short-term Memory");
+			System.out.println("Note: This example requires ChatClient, skipping execution");
 			// addShortTermMemory(ChatClient.builder(...));
 			System.out.println();
 
-			// 示例 2: 使用 Store 实现长期内存
-			System.out.println("示例 2: 使用 Store 实现长期内存");
+			// Example 2: Using Store for Long-term Memory
+			System.out.println("Example 2: Using Store for Long-term Memory");
 			longTermMemoryWithDatabase();
 			System.out.println();
 
-			// 示例 3: 使用 Store 缓存实现长期内存
-			System.out.println("示例 3: 使用 Store 缓存实现长期内存");
+			// Example 3: Using Store Cache for Long-term Memory
+			System.out.println("Example 3: Using Store Cache for Long-term Memory");
 			longTermMemoryWithRedis();
 			System.out.println();
 
-			// 示例 4: 结合短期和长期内存（需要 ChatClient）
-			System.out.println("示例 4: 结合短期和长期内存");
-			System.out.println("注意: 此示例需要 ChatClient，跳过执行");
+			// Example 4: Combining Short-term and Long-term Memory (requires ChatClient)
+			System.out.println("Example 4: Combining Short-term and Long-term Memory");
+			System.out.println("Note: This example requires ChatClient, skipping execution");
 			// combinedMemoryExample(ChatClient.builder(...));
 			System.out.println();
 
-			System.out.println("所有示例执行完成");
+			System.out.println("All examples executed successfully");
 		}
 		catch (Exception e) {
-			System.err.println("执行示例时出错: " + e.getMessage());
+			System.err.println("Error executing example: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}

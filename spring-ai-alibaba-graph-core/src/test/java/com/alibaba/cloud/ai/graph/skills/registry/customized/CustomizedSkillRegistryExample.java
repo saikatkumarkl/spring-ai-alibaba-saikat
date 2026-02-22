@@ -91,13 +91,13 @@ public class CustomizedSkillRegistryExample extends AbstractSkillRegistry {
 	 *   "message": "success",
 	 *   "data": {
 	 *     "name": "my_skill",
-	 *     "description": "技能描述",
-	 *     "fullContent": "详细的 Agent 指令...",
+	 *     "description": "Skill description",
+	 *     "fullContent": "Detailed Agent instructions...",
 	 *     "resource": {
 	 *       "references/split-script.py": {
 	 *         "name": "split-script.py",
 	 *         "type": "reference",
-	 *         "content": "资源内容..."
+	 *         "content": "Resource content..."
 	 *       }
 	 *     }
 	 *   }
@@ -116,8 +116,8 @@ public class CustomizedSkillRegistryExample extends AbstractSkillRegistry {
 						"  \"message\": \"success\",\n" +
 						"  \"data\": {\n" +
 						"    \"name\": \"%s\",\n" +
-						"    \"description\": \"技能描述 for %s\",\n" +
-						"    \"fullContent\": \"# %s\\n\\n详细的 Agent 指令内容...\",\n" +
+						"    \"description\": \"Skill description for %s\",\n" +
+						"    \"fullContent\": \"# %s\\n\\nDetailed Agent Command content...\",\n" +
 						"    \"resource\": {\n" +
 						"      \"references/split-script.py\": {\n" +
 						"        \"name\": \"split-script.py\",\n" +

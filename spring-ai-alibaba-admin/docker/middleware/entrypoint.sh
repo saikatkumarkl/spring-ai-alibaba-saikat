@@ -4,11 +4,11 @@
 
 set -e
 
-STORAGE_DIR="/home/spring/saa/storage"
+STORAGE_DIR="/home/spring/cordondata/storage"
 LOG_DIR="/home/spring/logs"
 
 # Fix ownership of mounted volumes (runs as root at this point)
-chown -R spring:spring "$STORAGE_DIR" "$LOG_DIR" /home/spring/saa 2>/dev/null || true
+chown -R spring:spring "$STORAGE_DIR" "$LOG_DIR" /home/spring/cordondata 2>/dev/null || true
 
 # Ensure /tmp is writable by spring (Tomcat needs it for temp dir)
 chmod 1777 /tmp 2>/dev/null || true

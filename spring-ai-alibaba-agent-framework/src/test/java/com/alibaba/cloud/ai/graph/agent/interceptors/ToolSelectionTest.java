@@ -95,7 +95,7 @@ class ToolSelectionTest {
 				.build();
 
 		try {
-			Optional<OverAllState> result = agent.invoke("帮我查询北京天气，预订一张去北京的车票？");
+			Optional<OverAllState> result = agent.invoke("Help me check the weather in Beijing and book a ticket to Beijing?");
 
 			// Assert that the result is present
 			assertTrue(result.isPresent(), "Agent result should be present");
@@ -147,7 +147,7 @@ class ToolSelectionTest {
 				.build();
 
 		try {
-			Optional<OverAllState> result = agent.invoke("帮我预订一张去上海的车票");
+			Optional<OverAllState> result = agent.invoke("Help me book a ticket to Shanghai");
 
 			// Assert that the result is present
 			assertTrue(result.isPresent(), "Agent result should be present");
@@ -198,7 +198,7 @@ class ToolSelectionTest {
 
 		try {
 			// Query that requires ticket and hotel but not weather
-			Optional<OverAllState> result = agent.invoke("帮我预订12月30日去北京的车票和酒店");
+			Optional<OverAllState> result = agent.invoke("Help me book tickets and hotels to Beijing on December 30th");
 
 			// Assert that the result is present
 			assertTrue(result.isPresent(), "Agent result should be present");
@@ -252,7 +252,7 @@ class ToolSelectionTest {
 				.build();
 
 		try {
-			Optional<OverAllState> result = agent.invoke("今天深圳的天气如何？");
+			Optional<OverAllState> result = agent.invoke("How is the weather in Shenzhen today?");
 
 			// Assert that the result is present
 			assertTrue(result.isPresent(), "Agent result should be present");

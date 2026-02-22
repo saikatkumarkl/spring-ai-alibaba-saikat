@@ -33,13 +33,13 @@ public class DatasetController {
      */
     @PostMapping("/dataset")
     public Result<Dataset> createDataSet(@Validated @RequestBody DatasetCreateRequest datasetCreateRequest) {
-        log.info("创建测评集请求: {}", datasetCreateRequest);
+        log.info("Create assessment set request: {}", datasetCreateRequest);
         try {
             Dataset dataset = datasetService.create(datasetCreateRequest);
             return Result.success(dataset);
         } catch (Exception e) {
-            log.error("创建测评集失败", e);
-            return Result.error("创建测评集失败: " + e.getMessage());
+            log.error("Failed to create assessment set", e);
+            return Result.error("Failed to create assessment set:" + e.getMessage());
         }
     }
 
@@ -49,13 +49,13 @@ public class DatasetController {
      */
     @PostMapping("/datasetVersion")
     public Result<DatasetVersion> createDatasetVersion(@Validated @RequestBody DatasetVersionCreateRequest datasetVersionCreateRequest) {
-        log.info("创建测评集新版本请求: {}", datasetVersionCreateRequest);
+        log.info("Create a new version of the assessment set request: {}", datasetVersionCreateRequest);
         try {
             DatasetVersion dataset = datasetVersionService.create(datasetVersionCreateRequest);
             return Result.success(dataset);
         } catch (Exception e) {
-            log.error("创建测评集新版本失败", e);
-            return Result.error("创建测评集新版本失败: " + e.getMessage());
+            log.error("Failed to create new version of evaluation set", e);
+            return Result.error("Failed to create new version of evaluation set:" + e.getMessage());
         }
     }
 
@@ -64,13 +64,13 @@ public class DatasetController {
      */
     @GetMapping("/datasets")
     public Result<PageResult<Dataset>> listDataSet(@Validated  DatasetListRequest request) {
-        log.info("查询测评集列表请求: {}", request);
+        log.info("Query evaluation set list request: {}", request);
         try {
             PageResult<Dataset> result = datasetService.list(request);
             return Result.success(result);
         } catch (Exception e) {
-            log.error("查询测评集列表失败", e);
-            return Result.error("查询测评集列表失败: " + e.getMessage());
+            log.error("Failed to query the evaluation set list", e);
+            return Result.error("Failed to query the evaluation set list:" + e.getMessage());
         }
     }
 
@@ -80,13 +80,13 @@ public class DatasetController {
      */
     @GetMapping("/dataset")
     public Result<Dataset> getDataSet(@RequestParam Long datasetId) {
-        log.info("查询测评集详情请求: {}", datasetId);
+        log.info("Request for querying evaluation set details: {}", datasetId);
         try {
             Dataset dataset = datasetService.getById(datasetId);
             return Result.success(dataset);
         } catch (Exception e) {
-            log.error("查询测评集详情失败", e);
-            return Result.error("查询测评集详情失败: " + e.getMessage());
+            log.error("Failed to query evaluation set details", e);
+            return Result.error("Failed to query evaluation set details:" + e.getMessage());
         }
     }
 
@@ -95,14 +95,14 @@ public class DatasetController {
      */
     @PutMapping("/dataset")
     public Result<Dataset> updateDataSet(@Validated @RequestBody DatasetUpdateRequest datasetUpdateRequest) {
-        log.info("更新测评集请求: {}", datasetUpdateRequest);
+        log.info("Update review set request: {}", datasetUpdateRequest);
         try {
             //todo gets dataset from requests
             Dataset updatedDataset = datasetService.update(datasetUpdateRequest);
             return Result.success(updatedDataset);
         } catch (Exception e) {
-            log.error("更新测评集失败", e);
-            return Result.error("更新测评集失败: " + e.getMessage());
+            log.error("Failed to update evaluation set", e);
+            return Result.error("Failed to update evaluation set:" + e.getMessage());
         }
     }
 
@@ -111,13 +111,13 @@ public class DatasetController {
      */
     @DeleteMapping("/dataset")
     public Result<Void> delete(@RequestParam Long datasetId) {
-        log.info("删除测评集请求: {}", datasetId);
+        log.info("Review set deletion request: {}", datasetId);
         try {
             datasetService.deleteById(datasetId);
             return Result.success();
         } catch (Exception e) {
-            log.error("删除测评集失败", e);
-            return Result.error("删除测评集失败: " + e.getMessage());
+            log.error("Failed to delete evaluation set", e);
+            return Result.error("Failed to delete evaluation set:" + e.getMessage());
         }
     }
 
@@ -128,13 +128,13 @@ public class DatasetController {
      */
     @PostMapping("/dataItem")
     public Result<List<DatasetItem>> createItem(@Validated @RequestBody DatasetItemCreateRequest datasetItemCreateRequest ) {
-        log.info("创建数据项请求: {}", datasetItemCreateRequest);
+        log.info("Create data item request: {}", datasetItemCreateRequest);
         try {
             List<DatasetItem> dataItem = datasetItemService.create(datasetItemCreateRequest);
             return Result.success(dataItem);
         } catch (Exception e) {
-            log.error("创建数据项失败", e);
-            return Result.error("创建数据项失败: " + e.getMessage());
+            log.error("Failed to create data item", e);
+            return Result.error("Failed to create data item:" + e.getMessage());
         }
     }
 
@@ -143,13 +143,13 @@ public class DatasetController {
      */
     @GetMapping("/dataItems")
     public Result<PageResult<DatasetItem>> listItems(@Validated  DatasetItemListRequest request) {
-        log.info("查询数据项列表请求: {}", request);
+        log.info("Query data item list request: {}", request);
         try {
             PageResult<DatasetItem> result = datasetItemService.list(request);
             return Result.success(result);
         } catch (Exception e) {
-            log.error("查询数据项列表失败", e);
-            return Result.error("查询数据项列表失败: " + e.getMessage());
+            log.error("Failed to query data item list", e);
+            return Result.error("Failed to query the list of data items:" + e.getMessage());
         }
     }
 
@@ -158,13 +158,13 @@ public class DatasetController {
      */
     @GetMapping("/dataItem")
     public Result<DatasetItem> getItem(@PathVariable Long id) {
-        log.info("查询数据项详情请求: {}", id);
+        log.info("Query data item details request: {}", id);
         try {
             DatasetItem dataItem = datasetItemService.getById(id);
             return Result.success(dataItem);
         } catch (Exception e) {
-            log.error("查询数据项详情失败", e);
-            return Result.error("查询数据项详情失败: " + e.getMessage());
+            log.error("Failed to query data item details", e);
+            return Result.error("Failed to query data item details:" + e.getMessage());
         }
     }
 
@@ -173,13 +173,13 @@ public class DatasetController {
      */
     @PutMapping("/dataItem")
     public Result<DatasetItem> updateItem(@RequestBody  DatasetItemUpdateRequest request) {
-        log.info("更新数据项请求: {}", request);
+        log.info("Update data item request: {}", request);
         try {
             DatasetItem updatedDataItem = datasetItemService.update(request);
             return Result.success(updatedDataItem);
         } catch (Exception e) {
-            log.error("更新数据项失败", e);
-            return Result.error("更新数据项失败: " + e.getMessage());
+            log.error("Failed to update data item", e);
+            return Result.error("Failed to update data item:" + e.getMessage());
         }
     }
 
@@ -188,13 +188,13 @@ public class DatasetController {
      */
     @DeleteMapping("/dataItem")
     public Result<Void> deleteItem(@RequestParam Long id) {
-        log.info("删除数据项请求: {}", id);
+        log.info("Delete data item request: {}", id);
         try {
             datasetItemService.deleteById(id);
             return Result.success();
         } catch (Exception e) {
-            log.error("删除数据项失败", e);
-            return Result.error("删除数据项失败: " + e.getMessage());
+            log.error("Failed to delete data item", e);
+            return Result.error("Failed to delete data item:" + e.getMessage());
         }
     }
 
@@ -205,13 +205,13 @@ public class DatasetController {
      */
     @GetMapping("/datasetVersions")
     public Result<PageResult<DatasetVersion>> listDataSetVersion(@Validated  DatasetVersionListRequest request) {
-        log.info("查询测评集列表请求: {}", request);
+        log.info("Query evaluation set list request: {}", request);
         try {
             PageResult<DatasetVersion> result = datasetVersionService.list(request);
             return Result.success(result);
         } catch (Exception e) {
-            log.error("查询测评集列表失败", e);
-            return Result.error("查询测评集列表失败: " + e.getMessage());
+            log.error("Failed to query the evaluation set list", e);
+            return Result.error("Failed to query the evaluation set list:" + e.getMessage());
         }
     }
 
@@ -220,13 +220,13 @@ public class DatasetController {
      */
     @PutMapping("/datasetVersion")
     public Result<DatasetVersion> updateDataSetVersion(@Validated @RequestBody DatasetVersionUpdateRequest datasetVersionUpdateRequest) {
-        log.info("更新测评集请求: {}", datasetVersionUpdateRequest);
+        log.info("Update review set request: {}", datasetVersionUpdateRequest);
         try {
             DatasetVersion updatedDataset = datasetVersionService.update(datasetVersionUpdateRequest);
             return Result.success(updatedDataset);
         } catch (Exception e) {
-            log.error("更新测评集失败", e);
-            return Result.error("更新测评集失败: " + e.getMessage());
+            log.error("Failed to update evaluation set", e);
+            return Result.error("Failed to update evaluation set:" + e.getMessage());
         }
     }
 
@@ -235,13 +235,13 @@ public class DatasetController {
      */
     @GetMapping("/experiments")
     public Result<PageResult<Experiment>> getExperiments(DatasetExperimentsListRequest datasetExperimentsListRequest) {
-        log.info("获取数据集关联的实验: {}", datasetExperimentsListRequest);
+        log.info("Get the experiments associated with the dataset: {}", datasetExperimentsListRequest);
         try {
             PageResult<Experiment> experiments = datasetVersionService.getExperiments(datasetExperimentsListRequest);
             return Result.success(experiments);
         } catch (Exception e) {
-            log.error("更新测评集失败", e);
-            return Result.error("更新测评集失败: " + e.getMessage());
+            log.error("Failed to update evaluation set", e);
+            return Result.error("Failed to update evaluation set:" + e.getMessage());
         }
     }
 
@@ -252,13 +252,13 @@ public class DatasetController {
      */
     @PostMapping("/dataItemFromTrace")
     public Result<List<DatasetItem>> createItem(@Validated @RequestBody DataItemCreateFromTraceRequest dataItemCreateFromTraceRequest ) {
-        log.info("从trace创建数据项: {}", dataItemCreateFromTraceRequest);
+        log.info("Create data items from trace: {}", dataItemCreateFromTraceRequest);
         try {
             List<DatasetItem> dataItem = datasetItemService.createFromTrace(dataItemCreateFromTraceRequest);
             return Result.success(dataItem);
         } catch (Exception e) {
-            log.error("创建数据项失败", e);
-            return Result.error("创建数据项失败: " + e.getMessage());
+            log.error("Failed to create data item", e);
+            return Result.error("Failed to create data item:" + e.getMessage());
         }
     }
 

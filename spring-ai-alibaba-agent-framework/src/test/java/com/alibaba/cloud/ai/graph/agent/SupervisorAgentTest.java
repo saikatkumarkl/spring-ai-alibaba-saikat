@@ -58,40 +58,40 @@ class SupervisorAgentTest {
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_agent")
 				.model(chatModel)
-				.description("擅长创作各类文章，包括散文、诗歌等文学作品")
-				.instruction("你是一个知名的作家，擅长写作和创作。请根据用户的提问进行回答。")
+				.description("Good at writing all kinds of articles, including prose, poetry and other literary works")
+				.instruction("You are a well-known writer who is good at writing and creating.Please answer based on the user's questions.")
 				.outputKey("writer_output")
 				.build();
 
 		ReactAgent translatorAgent = ReactAgent.builder()
 				.name("translator_agent")
 				.model(chatModel)
-				.description("擅长将文章翻译成各种语言")
-				.instruction("你是一个专业的翻译家，能够准确地将文章翻译成目标语言。")
+				.description("Good at translating articles into various languages")
+				.instruction("You are a professional translator who can accurately translate articles into the target language.")
 				.outputKey("translator_output")
 				.build();
 
 		// Create SupervisorAgent (mainAgent is required)
 		SupervisorAgent supervisorAgent = SupervisorAgent.builder()
 				.name("content_supervisor")
-				.description("内容管理监督者，负责协调写作、翻译等任务")
+				.description("Content management supervisor, responsible for coordinating writing, translation and other tasks")
 				.model(chatModel)
 				.mainAgent(ReactAgent.builder()
 						.name("main_agent")
 						.model(chatModel)
-						.description("监督者主Agent，负责路由决策")
+						.description("Supervisor main agent, responsible for routing decisions")
 						.systemPrompt("""
-							你是一个智能的内容处理监督者。
-							可用的子Agent：writer_agent（写作）、translator_agent（翻译）
+							You are an intelligent content processing supervisor.
+							Available sub-agents: writer_agent (writing), translator_agent (translation)
 
-							## 路由决策输出格式（仅在选择子Agent时适用）
-							当且仅当需要做出路由决策（选择下一个要调用的子Agent或结束任务）时，请以 JSON 数组格式输出，供系统解析路由；此格式仅用于本次路由，不影响你在其他场景下的主要任务输出格式。
-							- 选择单个子Agent 时输出: ["writer_agent"] 或 ["translator_agent"]
-							- 选择多个子Agent 并行时输出: ["writer_agent", "translator_agent"]
-							- 任务全部完成时输出: [] 或 ["FINISH"]
-							合法元素仅限: writer_agent、translator_agent、FINISH。做路由决策时只输出上述 JSON 数组，不要包含其他解释。
+							## Routing Decision Output Format (only applicable when selecting a sub-agent)
+							When and only when a routing decision is needed (selecting the next sub-agent to invoke or finishing the task), output in JSON array format for the system to parse the routing; this format is only used for this routing decision and does not affect your main task output format in other scenarios.
+							- To select a single sub-agent, output: ["writer_agent"] or ["translator_agent"]
+							- To select multiple sub-agents in parallel, output: ["writer_agent", "translator_agent"]
+							- When all tasks are completed, output: [] or ["FINISH"]
+							Valid elements are limited to: writer_agent, translator_agent, FINISH. When making routing decisions, only output the above JSON array without any other explanation.
 							""")
-						.instruction("用户的请求是: {input}")
+						.instruction("The user's request is: {input}")
 						.outputKey("final_output")
 						.build())
 				.subAgents(List.of(writerAgent, translatorAgent))
@@ -99,14 +99,14 @@ class SupervisorAgentTest {
 
 		try {
 			// Test 1: Simple writing task
-			Optional<OverAllState> result1 = supervisorAgent.invoke("帮我写一篇关于春天的短文");
+			Optional<OverAllState> result1 = supervisorAgent.invoke("Help me write a short essay about spring");
 
 			assertTrue(result1.isPresent(), "Result should be present");
 			OverAllState state1 = result1.get();
 
 			// Verify input is preserved
 			assertTrue(state1.value("input").isPresent(), "Input should be present in state");
-			assertEquals("帮我写一篇关于春天的短文", state1.value("input").get(), "Input should match the request");
+			assertEquals("Help me write a short essay about spring", state1.value("input").get(), "Input should match the request");
 
 			// Verify writer agent output exists
 			assertTrue(state1.value("writer_output").isPresent(), "Writer output should be present");
@@ -115,7 +115,7 @@ class SupervisorAgentTest {
 			assertTrue(writerContent.getText().length() > 0, "Writer content should not be empty");
 
 			// Test 2: Translation task
-			Optional<OverAllState> result2 = supervisorAgent.invoke("请将以下内容翻译成英文：春暖花开");
+			Optional<OverAllState> result2 = supervisorAgent.invoke("Please translate the following content into English: Spring is warm and flowers are blooming");
 
 			assertTrue(result2.isPresent(), "Translation result should be present");
 			OverAllState state2 = result2.get();
@@ -141,8 +141,8 @@ class SupervisorAgentTest {
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_agent")
 				.model(chatModel)
-				.description("擅长创作各类文章，包括散文、诗歌等文学作品")
-				.instruction("你是一个知名的作家，擅长写作和创作。请根据用户的提问进行回答。")
+				.description("Good at writing all kinds of articles, including prose, poetry and other literary works")
+				.instruction("You are a well-known writer who is good at writing and creating.Please answer based on the user's questions.")
 				.outputKey("writer_output")
 				.build();
 
@@ -150,87 +150,87 @@ class SupervisorAgentTest {
 		ReactAgent articleWriterAgent = ReactAgent.builder()
 				.name("article_writer")
 				.model(chatModel)
-				.description("专业写作Agent")
-				.instruction("你是一个知名的作家，擅长写作和创作。请根据用户的提问进行回答：{input}。")
+				.description("Professional Writing Agent")
+				.instruction("You are a well-known writer who is good at writing and creating.Please answer based on the user's question: {input}.")
 				.outputKey("article")
 				.build();
 
 		ReactAgent reviewerAgent = ReactAgent.builder()
 				.name("reviewer")
 				.model(chatModel)
-				.description("专业评审Agent")
-				.instruction("你是一个知名的评论家，擅长对文章进行评论和修改。" +
-						"对于散文类文章，请确保文章中必须包含对于西湖风景的描述。待评论文章：\n\n {article}" +
-						"最终只返回修改后的文章，不要包含任何评论信息。")
+				.description("Professional Review Agent")
+				.instruction("You are a well-known critic who is good at commenting and revising articles." +
+						"For prose articles, please ensure that the article must include a description of the scenery of West Lake.Articles awaiting comment:\n\n {article}" +
+						"Finally, only the revised article will be returned without any comment information.")
 				.outputKey("reviewed_article")
 				.build();
 
 		// Create nested SequentialAgent
 		SequentialAgent writingWorkflowAgent = SequentialAgent.builder()
 				.name("writing_workflow_agent")
-				.description("完整的写作工作流：先写文章，然后进行评审和修改")
+				.description("Complete writing workflow: write the article first, then review and revise it")
 				.subAgents(List.of(articleWriterAgent, reviewerAgent))
 				.build();
 
 		// Define professional supervisor instruction
 		final String SUPERVISOR_SYSTEM_PROMPT = """
-				你是一个智能的内容管理监督者，负责协调和管理多个专业Agent来完成用户的内容处理需求。
+				You are an intelligent content management supervisor responsible for coordinating and managing multiple specialized agents to fulfill users' content processing needs.
 
-				## 你的职责
-				1. 分析用户需求，将其分解为合适的子任务
-				2. 根据任务特性，选择合适的Agent进行处理
-				3. 监控任务执行状态，决定是否需要继续处理或完成任务
-				4. 当所有任务完成时，返回FINISH结束流程
+				## Your Responsibilities
+				1. Analyze user requirements and break them down into appropriate sub-tasks
+				2. Select the appropriate agent based on task characteristics
+				3. Monitor task execution status and decide whether to continue processing or complete the task
+				4. When all tasks are completed, return FINISH to end the workflow
 
-				## 可用的子Agent及其职责
+				## Available Sub-Agents and Their Responsibilities
 
 				### writer_agent
-				- **功能**: 擅长创作各类文章，包括散文、诗歌等文学作品
-				- **适用场景**: 
-				  * 用户需要创作新文章、散文、诗歌等原创内容
-				  * 简单的写作任务，不需要后续评审或修改
-				- **输出**: writer_output
+				- **Function**: Excels at creating various articles, including prose, poetry, and other literary works
+				- **Applicable Scenarios**: 
+				  * User needs to create new articles, prose, poetry, or other original content
+				  * Simple writing tasks that do not require subsequent review or revision
+				- **Output**: writer_output
 
 				### writing_workflow_agent
-				- **功能**: 完整的写作工作流，包含两个步骤：先写文章，然后进行评审和修改
-				- **适用场景**:
-				  * 用户需要高质量的文章，要求经过评审和修改
-				  * 任务明确要求"确保质量"、"需要评审"、"需要修改"等
-				  * 需要多步骤处理的复杂写作任务
-				- **工作流程**: 
-				  1. article_writer: 根据用户需求创作文章
-				  2. reviewer: 对文章进行评审和修改，确保质量
-				- **输出**: reviewed_article
+				- **Function**: Complete writing workflow with two steps: write the article first, then review and revise it
+				- **Applicable Scenarios**:
+				  * User needs high-quality articles that require review and revision
+				  * Task explicitly requires "ensure quality", "Need review", "Need to modify", etc.
+				  * Complex writing tasks requiring multi-step processing
+				- **Workflow**: 
+				  1. article_writer: Creates articles based on user requirements
+				  2. reviewer: Reviews and revises the article to ensure quality
+				- **Output**: reviewed_article
 
-				## 决策规则
+				## Decision Rules
 
-				1. **单一任务判断**:
-				   - 如果用户只需要简单写作，选择 writer_agent
-				   - 如果用户需要高质量文章或明确要求评审，选择 writing_workflow_agent
+				1. **Single Task Judgment**:
+				   - If the user only needs simple writing, select writer_agent
+				   - If the user needs high-quality articles or explicitly requires review, select writing_workflow_agent
 
-				2. **任务完成判断**:
-				   - 当用户的所有需求都已满足时，返回FINISH
-				   - 如果还有未完成的任务，继续路由到相应的Agent
+				2. **Task Completion Judgment**:
+				   - When all user requirements are fulfilled, return FINISH
+				   - If there are still unfinished tasks, continue routing to the appropriate agent
 
-				## 路由决策输出格式（仅在选择子Agent时适用）
-				当且仅当需要做出路由决策（选择下一个要调用的子Agent或结束任务）时，请以 JSON 数组格式输出，供系统解析路由；此格式仅用于本次路由，不影响你在其他场景下的主要任务输出格式。
-				- 选择单个子Agent 时输出: ["writer_agent"] 或 ["writing_workflow_agent"]
-				- 选择多个子Agent 并行时输出: ["writer_agent", "writing_workflow_agent"]
-				- 任务全部完成时输出: [] 或 ["FINISH"]
-				合法元素仅限: writer_agent、writing_workflow_agent、FINISH。做路由决策时只输出上述 JSON 数组，不要包含其他解释。
+				## Routing Decision Output Format (only applicable when selecting a sub-agent)
+				When and only when a routing decision is needed (selecting the next sub-agent to invoke or finishing the task), output in JSON array format for the system to parse the routing; this format is only used for this routing decision and does not affect your main task output format in other scenarios.
+				- To select a single sub-agent, output: ["writer_agent"] or ["writing_workflow_agent"]
+				- To select multiple sub-agents in parallel, output: ["writer_agent", "writing_workflow_agent"]
+				- When all tasks are completed, output: [] or ["FINISH"]
+				Valid elements are limited to: writer_agent, writing_workflow_agent, FINISH. When making routing decisions, only output the above JSON array without any other explanation.
 				""";
 
 		// Create SupervisorAgent with nested SequentialAgent (mainAgent is required)
 		SupervisorAgent supervisorAgent = SupervisorAgent.builder()
 				.name("content_supervisor")
-				.description("内容管理监督者，负责协调写作和完整写作工作流等任务")
+				.description("Content management supervisor responsible for tasks such as coordinating writing and the complete writing workflow")
 				.model(chatModel)
 				.mainAgent(ReactAgent.builder()
 						.name("main_agent")
 						.model(chatModel)
-						.description("监督者主Agent，负责路由决策")
+						.description("Supervisor main agent, responsible for routing decisions")
 						.systemPrompt(SUPERVISOR_SYSTEM_PROMPT)
-						.instruction("用户的请求是: {input}")
+						.instruction("The user's request is: {input}")
 						.outputKey("final_output")
 						.build())
 				.subAgents(List.of(writerAgent, writingWorkflowAgent))
@@ -238,14 +238,14 @@ class SupervisorAgentTest {
 
 		try {
 			// Test: Task requiring quality (should route to writing_workflow_agent)
-			Optional<OverAllState> result = supervisorAgent.invoke("帮我写一篇关于西湖的散文，并确保质量");
+			Optional<OverAllState> result = supervisorAgent.invoke("Help me write an essay about West Lake and ensure the quality");
 
 			assertTrue(result.isPresent(), "Result should be present");
 			OverAllState state = result.get();
 
 			// Verify input is preserved
 			assertTrue(state.value("input").isPresent(), "Input should be present in state");
-			assertEquals("帮我写一篇关于西湖的散文，并确保质量", state.value("input").get(), "Input should match the request");
+			assertEquals("Help me write an essay about West Lake and ensure the quality", state.value("input").get(), "Input should match the request");
 
 			// Verify nested SequentialAgent output exists (reviewed_article from writing_workflow_agent)
 			assertTrue(state.value("reviewed_article").isPresent(),
@@ -271,40 +271,40 @@ class SupervisorAgentTest {
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_agent")
 				.model(chatModel)
-				.description("擅长创作各类文章")
-				.instruction("你是一个知名的作家。")
+				.description("Good at writing various articles")
+				.instruction("You are a well-known author.")
 				.outputKey("writer_output")
 				.build();
 
 		ReactAgent translatorAgent = ReactAgent.builder()
 				.name("translator_agent")
 				.model(chatModel)
-				.description("擅长将文章翻译成各种语言")
-				.instruction("你是一个专业的翻译家。")
+				.description("Good at translating articles into various languages")
+				.instruction("You are a professional translator.")
 				.outputKey("translator_output")
 				.build();
 
 		// Create SupervisorAgent (mainAgent is required)
 		SupervisorAgent supervisorAgent = SupervisorAgent.builder()
 				.name("content_supervisor")
-				.description("内容管理监督者")
+				.description("content management supervisor")
 				.model(chatModel)
 				.mainAgent(ReactAgent.builder()
 						.name("main_agent")
 						.model(chatModel)
-						.description("监督者主Agent，负责路由决策")
+						.description("Supervisor main agent, responsible for routing decisions")
 						.systemPrompt("""
-							你是一个智能的内容处理监督者。
-							可用的子Agent：writer_agent（写作）、translator_agent（翻译）
+							You are an intelligent content processing supervisor.
+							Available sub-agents: writer_agent (writing), translator_agent (translation)
 
-							## 路由决策输出格式（仅在选择子Agent时适用）
-							当且仅当需要做出路由决策（选择下一个要调用的子Agent或结束任务）时，请以 JSON 数组格式输出，供系统解析路由；此格式仅用于本次路由，不影响你在其他场景下的主要任务输出格式。
-							- 选择单个子Agent 时输出: ["writer_agent"] 或 ["translator_agent"]
-							- 选择多个子Agent 并行时输出: ["writer_agent", "translator_agent"]
-							- 任务全部完成时输出: [] 或 ["FINISH"]
-							合法元素仅限: writer_agent、translator_agent、FINISH。做路由决策时只输出上述 JSON 数组，不要包含其他解释。
+							## Routing Decision Output Format (only applicable when selecting a sub-agent)
+							When and only when a routing decision is needed (selecting the next sub-agent to invoke or finishing the task), output in JSON array format for the system to parse the routing; this format is only used for this routing decision and does not affect your main task output format in other scenarios.
+							- To select a single sub-agent, output: ["writer_agent"] or ["translator_agent"]
+							- To select multiple sub-agents in parallel, output: ["writer_agent", "translator_agent"]
+							- When all tasks are completed, output: [] or ["FINISH"]
+							Valid elements are limited to: writer_agent, translator_agent, FINISH. When making routing decisions, only output the above JSON array without any other explanation.
 							""")
-						.instruction("用户的请求是: {input}")
+						.instruction("The user's request is: {input}")
 						.outputKey("final_output")
 						.build())
 				.subAgents(List.of(writerAgent, translatorAgent))
@@ -339,63 +339,63 @@ class SupervisorAgentTest {
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_agent")
 				.model(chatModel)
-				.description("擅长创作各类文章，包括散文、诗歌等文学作品")
-				.instruction("你是一个知名的作家，擅长写作和创作。请根据用户的提问进行回答：\n\n {input}。")
+				.description("Good at writing all kinds of articles, including prose, poetry and other literary works")
+				.instruction("You are a well-known writer who is good at writing and creating.Please answer based on the user's question: \n\n {input}.")
 				.outputKey("writer_output")
 				.build();
 
 		ReactAgent translatorAgent = ReactAgent.builder()
 				.name("translator_agent")
 				.model(chatModel)
-				.description("擅长将文章翻译成各种语言")
-				.instruction("你是一个专业的翻译家，能够准确地将文章翻译成目标语言。待翻译文章：\n\n {writer_output}。")
+				.description("Good at translating articles into various languages")
+				.instruction("You are a professional translator who can accurately translate articles into the target language.Articles to be translated:\n\n {writer_output}.")
 				.outputKey("translator_output")
 				.build();
 
 		// Define supervisor instruction for multi-step tasks
 		final String SUPERVISOR_SYSTEM_PROMPT = """
-				你是一个智能的内容管理监督者。
+				You are an intelligent content management supervisor.
 				
-				## 可用的子Agent及其职责
+				## Available Sub-Agents and Their Responsibilities
 				
 				### writer_agent
-				- **功能**: 擅长创作各类文章，包括散文、诗歌等文学作品
-				- **输出**: writer_output
+				- **Function**: Excels at creating various articles, including prose, poetry, and other literary works
+				- **Output**: writer_output
 				
 				### translator_agent
-				- **功能**: 擅长将文章翻译成各种语言
-				- **输出**: translator_output
+				- **Function**: Excels at translating articles into various languages
+				- **Output**: translator_output
 				
-				## 决策规则
+				## Decision Rules
 				
-				1. **多步骤任务处理**:
-				   - 如果用户需求包含多个步骤（如"先写文章，然后翻译"），需要分步处理
-				   - 先路由到第一个合适的Agent，等待其完成
-				   - 完成后，根据剩余需求继续路由到下一个Agent
-				   - 直到所有步骤完成，返回FINISH
+				1. **Multi-step Task Processing**:
+				   - If the user's request involves multiple steps (e.g., "Write the article first, then translate it"), process them step by step
+				   - Route to the first appropriate agent and wait for completion
+				   - After completion, continue routing to the next agent based on remaining requirements
+				   - Return FINISH when all steps are completed
 				
-				2. **任务完成判断**:
-				   - 当用户的所有需求都已满足时，返回FINISH
+				2. **Task Completion Judgment**:
+				   - When all user requirements are fulfilled, return FINISH
 				
-				## 路由决策输出格式（仅在选择子Agent时适用）
-				当且仅当需要做出路由决策（选择下一个要调用的子Agent或结束任务）时，请以 JSON 数组格式输出，供系统解析路由；此格式仅用于本次路由，不影响你在其他场景下的主要任务输出格式。
-				- 选择单个子Agent 时输出: ["writer_agent"] 或 ["translator_agent"]
-				- 选择多个子Agent 并行时输出: ["writer_agent", "translator_agent"]
-				- 任务全部完成时输出: [] 或 ["FINISH"]
-				合法元素仅限: writer_agent、translator_agent、FINISH。做路由决策时只输出上述 JSON 数组，不要包含其他解释。
+				## Routing Decision Output Format (only applicable when selecting a sub-agent)
+				When and only when a routing decision is needed (selecting the next sub-agent to invoke or finishing the task), output in JSON array format for the system to parse the routing; this format is only used for this routing decision and does not affect your main task output format in other scenarios.
+				- To select a single sub-agent, output: ["writer_agent"] or ["translator_agent"]
+				- To select multiple sub-agents in parallel, output: ["writer_agent", "translator_agent"]
+				- When all tasks are completed, output: [] or ["FINISH"]
+				Valid elements are limited to: writer_agent, translator_agent, FINISH. When making routing decisions, only output the above JSON array without any other explanation.
 				""";
 
 		// Create SupervisorAgent (mainAgent is required)
 		SupervisorAgent supervisorAgent = SupervisorAgent.builder()
 				.name("content_supervisor")
-				.description("内容管理监督者，负责协调写作和翻译任务")
+				.description("Content management supervisor, responsible for coordinating writing and translation tasks")
 				.model(chatModel)
 				.mainAgent(ReactAgent.builder()
 						.name("main_agent")
 						.model(chatModel)
-						.description("监督者主Agent，负责路由决策")
+						.description("Supervisor main agent, responsible for routing decisions")
 						.systemPrompt(SUPERVISOR_SYSTEM_PROMPT)
-						.instruction("用户的请求是: {input}")
+						.instruction("The user's request is: {input}")
 						.outputKey("final_output")
 						.build())
 				.subAgents(List.of(writerAgent, translatorAgent))
@@ -411,7 +411,7 @@ class SupervisorAgentTest {
 
 		try {
 			// Test multi-step task: write first, then translate
-			Optional<OverAllState> result = supervisorAgent.invoke("先帮我写一篇关于春天的文章，然后翻译成英文");
+			Optional<OverAllState> result = supervisorAgent.invoke("First help me write an article about spring and then translate it into English");
 
 			assertTrue(result.isPresent(), "Result should be present");
 			OverAllState state = result.get();
@@ -453,8 +453,8 @@ class SupervisorAgentTest {
 		ReactAgent articleWriterAgent = ReactAgent.builder()
 				.name("article_writer")
 				.model(chatModel)
-				.description("专业写作Agent，负责创作文章")
-				.instruction("你是一个知名的作家，擅长写作和创作。请根据用户的提问进行回答：{input}。")
+				.description("Professional writing agent, responsible for creating articles")
+				.instruction("You are a well-known writer who is good at writing and creating.Please answer based on the user's question: {input}.")
 				.outputKey("article_content")
 				.build();
 
@@ -462,17 +462,17 @@ class SupervisorAgentTest {
 		ReactAgent translatorAgent = ReactAgent.builder()
 				.name("translator_agent")
 				.model(chatModel)
-				.description("擅长将文章翻译成各种语言")
-				.instruction("你是一个专业的翻译家，能够准确地将文章翻译成目标语言。待翻译文章：\n\n {article_content}。")
+				.description("Good at translating articles into various languages")
+				.instruction("You are a professional translator who can accurately translate articles into the target language.Article to be translated:\n\n {article_content}.")
 				.outputKey("translator_output")
 				.build();
 
 		ReactAgent reviewerAgent = ReactAgent.builder()
 				.name("reviewer_agent")
 				.model(chatModel)
-				.description("擅长对文章进行评审和修改")
-				.instruction("你是一个知名的评论家，擅长对文章进行评论和修改。待评审文章：\n\n {article_content}。"
-						+ "请对文章进行评审，指出优点和需要改进的地方，并返回评审后的改进版本。")
+				.description("Good at reviewing and revising articles")
+				.instruction("You are a well-known critic who is good at commenting and revising articles.Articles to be reviewed:\n\n {article_content}."
+						+ "Please review the article, point out the strengths and areas for improvement, and return an improved version after review.")
 				.outputKey("reviewer_output")
 				.build();
 
@@ -480,57 +480,57 @@ class SupervisorAgentTest {
 		// The instruction contains {article_content} placeholder which will be replaced
 		// with the output from the first ReactAgent in SequentialAgent
 		final String SUPERVISOR_INSTRUCTION = """
-				你是一个智能的内容处理监督者，你可以看到前序Agent的聊天历史与任务处理记录。当前，你收到了以下文章内容：
+				You are an intelligent content processing supervisor who can see the chat history and task processing records of preceding Agents. Currently, you have received the following article content:
 
 				{article_content}
 
-				请根据文章内容的特点，决定是进行翻译还是评审：
-				- 如果文章是中文且需要翻译，选择 translator_agent
-				- 如果文章需要评审和改进，选择 reviewer_agent
-				- 如果任务完成，返回 FINISH
+				Based on the characteristics of the article content, decide whether to translate or review it:
+				- If the article is in Chinese and needs translation, choose translator_agent
+				- If the article needs review and improvement, choose reviewer_agent
+				- If the task is complete, return FINISH
 				""";
 
 		final String SUPERVISOR_SYSTEM_PROMPT = """
-				你是一个智能的内容处理监督者，负责协调翻译和评审任务。
+				You are an intelligent content processing supervisor responsible for coordinating translation and review tasks.
 
-				## 可用的子Agent及其职责
+				## Available Sub-Agents and Their Responsibilities
 
 				### translator_agent
-				- **功能**: 擅长将文章翻译成各种语言
-				- **适用场景**: 当文章需要翻译成其他语言时
-				- **输出**: translator_output
+				- **Function**: Skilled at translating articles into various languages
+				- **Use Case**: When articles need to be translated into other languages
+				- **Output**: translator_output
 
 				### reviewer_agent
-				- **功能**: 擅长对文章进行评审和修改
-				- **适用场景**: 当文章需要评审、改进或优化时
-				- **输出**: reviewer_output
+				- **Function**: Skilled at reviewing and revising articles
+				- **Use Case**: When articles need review, improvement, or optimization
+				- **Output**: reviewer_output
 
-				## 决策规则
+				## Decision Rules
 
-				1. **根据文章内容判断**:
-				   - 如果文章是中文且用户要求翻译，选择 translator_agent
-				   - 如果文章需要评审、改进或优化，选择 reviewer_agent
+				1. **Judge based on article content**:
+				   - If the article is in Chinese and the user requests translation, choose translator_agent
+				   - If the article needs review, improvement, or optimization, choose reviewer_agent
 
-				2. **任务完成判断**:
-				   - 当所有任务完成时，返回 FINISH
+				2. **Task completion judgment**:
+				   - When all tasks are completed, return FINISH
 
-				## 路由决策输出格式（仅在选择子Agent时适用）
-				当且仅当需要做出路由决策（选择下一个要调用的子Agent或结束任务）时，请以 JSON 数组格式输出，供系统解析路由；此格式仅用于本次路由，不影响你在其他场景下的主要任务输出格式。
-				- 选择单个子Agent 时输出: ["translator_agent"] 或 ["reviewer_agent"]
-				- 选择多个子Agent 并行时输出: ["translator_agent", "reviewer_agent"]
-				- 任务全部完成时输出: [] 或 ["FINISH"]
-				合法元素仅限: translator_agent、reviewer_agent、FINISH。做路由决策时只输出上述 JSON 数组，不要包含其他解释。
+				## Routing Decision Output Format (only applicable when selecting sub-Agents)
+				When and only when a routing decision needs to be made (selecting the next sub-Agent to invoke or ending the task), output in JSON array format for system routing parsing; this format is only for routing and does not affect your primary task output format in other scenarios.
+				- When selecting a single sub-Agent, output: ["translator_agent"] or ["reviewer_agent"]
+				- When selecting multiple sub-Agents in parallel, output: ["translator_agent", "reviewer_agent"]
+				- When all tasks are completed, output: [] or ["FINISH"]
+				Valid elements are limited to: translator_agent, reviewer_agent, FINISH. When making routing decisions, only output the above JSON array without any additional explanation.
 				""";
 
 		// Create SupervisorAgent with instruction that uses placeholder (mainAgent is required)
 		SupervisorAgent supervisorAgent = SupervisorAgent.builder()
 				.name("content_supervisor")
-				.description("内容处理监督者，根据前序Agent的输出决定翻译或评审")
+				.description("The content processing supervisor determines translation or review based on the output of the pre-order Agent.")
 				.model(chatModel)
 				.mainAgent(ReactAgent.builder()
 						.name("main_agent")
 						.model(chatModel)
-						.description("监督者主Agent，负责路由决策")
+						.description("Supervisor main agent, responsible for routing decisions")
 						.systemPrompt(SUPERVISOR_SYSTEM_PROMPT)
 						.instruction(SUPERVISOR_INSTRUCTION) // This instruction contains {article_content} placeholder
 						.outputKey("final_output")
@@ -541,20 +541,20 @@ class SupervisorAgentTest {
 		// Create SequentialAgent with articleWriterAgent first, then supervisorAgent
 		SequentialAgent sequentialAgent = SequentialAgent.builder()
 				.name("content_processing_workflow")
-				.description("内容处理工作流：先写文章，然后根据文章内容决定翻译或评审")
+				.description("Content processing workflow: write the article first, then decide on translation or review based on the content of the article")
 				.subAgents(List.of(articleWriterAgent, supervisorAgent))
 				.build();
 
 		try {
 			// Test: Write an article first, then supervisor decides to translate it
-			Optional<OverAllState> result = sequentialAgent.invoke("帮我写一篇关于春天的短文");
+			Optional<OverAllState> result = sequentialAgent.invoke("Help me write a short essay about spring");
 
 			assertTrue(result.isPresent(), "Result should be present");
 			OverAllState state = result.get();
 
 			// Verify input is preserved
 			assertTrue(state.value("input").isPresent(), "Input should be present in state");
-			assertEquals("帮我写一篇关于春天的短文", state.value("input").get(),
+			assertEquals("Help me write a short essay about spring", state.value("input").get(),
 					"Input should match the request");
 
 			// Verify first agent output exists (article_content)
@@ -601,8 +601,8 @@ class SupervisorAgentTest {
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_agent")
 				.model(chatModel)
-				.description("擅长创作各类文章")
-				.instruction("你是一个知名的作家，擅长写作和创作。请根据用户的提问进行回答: {input}")
+				.description("Good at writing various articles")
+				.instruction("You are a well-known writer who is good at writing and creating.Please answer according to the user's question: {input}")
 				.includeContents(false)
 				.returnReasoningContents(false)
 				.outputKey("writer_output")
@@ -613,8 +613,8 @@ class SupervisorAgentTest {
 				.model(chatModel)
 				.includeContents(false)
 				.returnReasoningContents(false)
-				.description("对文章内容进行评论")
-				.instruction("你是一个知名的作家，擅长写作和创作。请对用户文章进行评论: {writer_output}")
+				.description("Comment on article content")
+				.instruction("You are a well-known writer who is good at writing and creating.Please comment on user articles: {writer_output}")
 				.outputKey("review_output")
 				.build();
 
@@ -622,51 +622,51 @@ class SupervisorAgentTest {
 		AgentHook logHook = HookFactory.createLogAgentHook();
 
 		final String SUPERVISOR_SYSTEM_PROMPT = """
-				你是一个智能的内容处理监督者，负责协调协作和评审任务。
+				You are an intelligent content processing supervisor responsible for coordinating writing and review tasks.
 
-				## 可用的子Agent及其职责
+				## Available Sub-Agents and Their Responsibilities
 
 				### writer_agent
-				- **功能**: 擅长各种文章与诗歌的写作
-				- **适用场景**: 当有写作需求时
-				- **输出**: writer_output
+				- **Function**: Skilled at writing various articles and poems
+				- **Use Case**: When there is a writing requirement
+				- **Output**: writer_output
 
 				### review_agent
-				- **功能**: 擅长对文章进行评审和修改
-				- **适用场景**: 当文章需要评审、改进或优化时
-				- **输出**: review_output
+				- **Function**: Skilled at reviewing and revising articles
+				- **Use Case**: When articles need review, improvement, or optimization
+				- **Output**: review_output
 
-				## 决策规则
+				## Decision Rules
 
-				1. **根据当前要完成的任务判断**:
-				   - 如果需要写文章或者诗词时，选择 writer_agent
-				   - 如果文章需要评审、改进或优化，选择 review_agent
+				1. **Judge based on the current task to be completed**:
+				   - If an article or poem needs to be written, choose writer_agent
+				   - If the article needs review, improvement, or optimization, choose review_agent
 
-				2. **任务完成判断**:
-				   - 当所有任务完成时，返回空数组或 FINISH
+				2. **Task completion judgment**:
+				   - When all tasks are completed, return an empty array or FINISH
 				
-				3. **注意**:
-				   - 如果需要的话，可以同时选择多个子Agent来并行的处理任务
+				3. **Note**:
+				   - If needed, multiple sub-Agents can be selected simultaneously for parallel task processing
 
-				## 路由决策输出格式（仅在选择子Agent时适用）
-				当且仅当需要做出路由决策（选择下一个要调用的子Agent或结束任务）时，请以 JSON 数组格式输出，供系统解析路由；此格式仅用于本次路由，不影响你在其他场景下的主要任务输出格式。
-				- 选择单个子Agent 时输出: ["writer_agent"] 或 ["review_agent"]
-				- 选择多个子Agent 并行时输出: ["writer_agent", "review_agent"]
-				- 任务全部完成时输出: [] 或 ["FINISH"]
-				合法元素仅限: writer_agent、review_agent、FINISH。做路由决策时只输出上述 JSON 数组，不要包含其他解释。
+				## Routing Decision Output Format (only applicable when selecting sub-Agents)
+				When and only when a routing decision needs to be made (selecting the next sub-Agent to invoke or ending the task), output in JSON array format for system routing parsing; this format is only for routing and does not affect your primary task output format in other scenarios.
+				- When selecting a single sub-Agent, output: ["writer_agent"] or ["review_agent"]
+				- When selecting multiple sub-Agents in parallel, output: ["writer_agent", "review_agent"]
+				- When all tasks are completed, output: [] or ["FINISH"]
+				Valid elements are limited to: writer_agent, review_agent, FINISH. When making routing decisions, only output the above JSON array without any additional explanation.
 				""";
 
 		// Create SupervisorAgent with the hook (mainAgent is assembled from systemPrompt, instruction, model, hooks)
 		SupervisorAgent supervisorAgent = SupervisorAgent.builder()
 				.name("content_supervisor")
-				.description("内容管理监督者，负责协调写作")
+				.description("Content Management Supervisor, responsible for coordinating writing")
 				.model(chatModel)
 				.mainAgent(ReactAgent.builder()
 						.name("main_agent")
 						.model(chatModel)
-						.description("监督者主Agent，负责路由决策")
+						.description("Supervisor main agent, responsible for routing decisions")
 						.systemPrompt(SUPERVISOR_SYSTEM_PROMPT)
-						.instruction("用户的写作需求是: {input}")
+						.instruction("The user’s writing requirement is: {input}")
 						.outputKey("final_output")
 						.build())
 				.subAgents(List.of(writerAgent, reviewAgent))
@@ -680,14 +680,14 @@ class SupervisorAgentTest {
 			System.out.println("\n========== Starting SupervisorAgent with HookFactory Test ==========\n");
 
 			// Execute the agent
-			Optional<OverAllState> result = supervisorAgent.invoke("帮我写一篇关于春天的短文");
+			Optional<OverAllState> result = supervisorAgent.invoke("Help me write a short essay about spring");
 
 			assertTrue(result.isPresent(), "Result should be present");
 			OverAllState state = result.get();
 
 			// Verify input is preserved
 			assertTrue(state.value("input").isPresent(), "Input should be present in state");
-			assertEquals("帮我写一篇关于春天的短文", state.value("input").get(), "Input should match the request");
+			assertEquals("Help me write a short essay about spring", state.value("input").get(), "Input should match the request");
 
 			// Verify at least one agent output exists
 			boolean hasWriterOutput = state.value("writer_output").isPresent();
@@ -714,8 +714,8 @@ class SupervisorAgentTest {
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_agent")
 				.model(chatModel)
-				.description("擅长创作各类文章")
-				.instruction("你是一个知名的作家，擅长写作和创作。请根据用户的提问进行回答: {input}")
+				.description("Good at writing various articles")
+				.instruction("You are a well-known writer who is good at writing and creating.Please answer according to the user's question: {input}")
 				.includeContents(false)
 				.returnReasoningContents(false)
 				.outputKey("writer_output")
@@ -726,58 +726,58 @@ class SupervisorAgentTest {
 				.model(chatModel)
 				.includeContents(false)
 				.returnReasoningContents(false)
-				.description("对文章内容进行评论")
-				.instruction("你是一个知名的作家，擅长写作和创作。请对用户文章进行评论: {writer_output}")
+				.description("Comment on article content")
+				.instruction("You are a well-known writer who is good at writing and creating.Please comment on user articles: {writer_output}")
 				.outputKey("review_output")
 				.build();
 
 		AgentHook logHook = HookFactory.createLogAgentHook();
 
 		final String SUPERVISOR_SYSTEM_PROMPT = """
-				你是一个智能的内容处理监督者，负责协调协作和评审任务。
+				You are an intelligent content processing supervisor responsible for coordinating writing and review tasks.
 
-				## 可用的子Agent及其职责
+				## Available Sub-Agents and Their Responsibilities
 
 				### writer_agent
-				- **功能**: 擅长各种文章与诗歌的写作
-				- **适用场景**: 当有写作需求时
-				- **输出**: writer_output
+				- **Function**: Skilled at writing various articles and poems
+				- **Use Case**: When there is a writing requirement
+				- **Output**: writer_output
 
 				### review_agent
-				- **功能**: 擅长对文章进行评审和修改
-				- **适用场景**: 当文章需要评审、改进或优化时
-				- **输出**: review_output
+				- **Function**: Skilled at reviewing and revising articles
+				- **Use Case**: When articles need review, improvement, or optimization
+				- **Output**: review_output
 
-				## 决策规则
+				## Decision Rules
 
-				1. **根据当前要完成的任务判断**:
-				   - 如果需要写文章或者诗词时，选择 writer_agent
-				   - 如果文章需要评审、改进或优化，选择 review_agent
+				1. **Judge based on the current task to be completed**:
+				   - If an article or poem needs to be written, choose writer_agent
+				   - If the article needs review, improvement, or optimization, choose review_agent
 
-				2. **任务完成判断**:
-				   - 当所有任务完成时，返回空数组或 FINISH
+				2. **Task completion judgment**:
+				   - When all tasks are completed, return an empty array or FINISH
 
-				3. **注意**:
-				   - 如果需要的话，可以同时选择多个子Agent来并行的处理任务
+				3. **Note**:
+				   - If needed, multiple sub-Agents can be selected simultaneously for parallel task processing
 
-				## 路由决策输出格式（仅在选择子Agent时适用）
-				当且仅当需要做出路由决策（选择下一个要调用的子Agent或结束任务）时，请以 JSON 数组格式输出，供系统解析路由；此格式仅用于本次路由，不影响你在其他场景下的主要任务输出格式。
-				- 选择单个子Agent 时输出: ["writer_agent"] 或 ["review_agent"]
-				- 选择多个子Agent 并行时输出: ["writer_agent", "review_agent"]
-				- 任务全部完成时输出: [] 或 ["FINISH"]
-				合法元素仅限: writer_agent、review_agent、FINISH。做路由决策时只输出上述 JSON 数组，不要包含其他解释。
+				## Routing Decision Output Format (only applicable when selecting sub-Agents)
+				When and only when a routing decision needs to be made (selecting the next sub-Agent to invoke or ending the task), output in JSON array format for system routing parsing; this format is only for routing and does not affect your primary task output format in other scenarios.
+				- When selecting a single sub-Agent, output: ["writer_agent"] or ["review_agent"]
+				- When selecting multiple sub-Agents in parallel, output: ["writer_agent", "review_agent"]
+				- When all tasks are completed, output: [] or ["FINISH"]
+				Valid elements are limited to: writer_agent, review_agent, FINISH. When making routing decisions, only output the above JSON array without any additional explanation.
 				""";
 
 		SupervisorAgent supervisorAgent = SupervisorAgent.builder()
 				.name("content_supervisor")
-				.description("内容管理监督者，负责协调写作")
+				.description("Content Management Supervisor, responsible for coordinating writing")
 				.model(chatModel)
 				.mainAgent(ReactAgent.builder()
 						.name("main_agent")
 						.model(chatModel)
-						.description("监督者主Agent，负责路由决策")
+						.description("Supervisor main agent, responsible for routing decisions")
 						.systemPrompt(SUPERVISOR_SYSTEM_PROMPT)
-						.instruction("用户的写作需求是: {input}")
+						.instruction("The user’s writing requirement is: {input}")
 						.outputKey("final_output")
 						.build())
 				.subAgents(List.of(writerAgent, reviewAgent))
@@ -789,7 +789,7 @@ class SupervisorAgentTest {
 			System.out.println("\n========== SupervisorAgent with HookFactory Stream Test ==========\n");
 
 			List<NodeOutput> outputs = new ArrayList<>();
-			Flux<NodeOutput> stream = supervisorAgent.stream("帮我写一篇关于春天的短文");
+			Flux<NodeOutput> stream = supervisorAgent.stream("Help me write a short essay about spring");
 
 			stream.doOnNext(output -> {
 				String agentName = output.agent() != null ? output.agent() : "(no agent)";

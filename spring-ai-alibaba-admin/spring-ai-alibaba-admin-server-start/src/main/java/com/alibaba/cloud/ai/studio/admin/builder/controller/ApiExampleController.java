@@ -56,11 +56,11 @@ public class ApiExampleController {
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("orderId", "100001");
-		result.put("description", "订单详情为尤尼克斯羽毛球拍");
+		result.put("description", "Order details for Yonex badminton rackets");
 
 		Map<String, Object> data = new HashMap<>();
-		data.put("company", "顺丰快递");
-		data.put("city", "苏州");
+		data.put("company", "SF Express");
+		data.put("city", "suzhou");
 		result.put("data", data);
 
 		return result;
@@ -90,18 +90,18 @@ public class ApiExampleController {
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("orderId", orderId);
-		result.put("description", "订单详情为尤尼克斯羽毛球拍");
+		result.put("description", "Order details for Yonex badminton rackets");
 
 		List<Map<String, Object>> items = new ArrayList<>();
 		Map<String, Object> item = new HashMap<>();
 		item.put("itemId", "2001");
-		item.put("itemName", "羽毛球拍");
+		item.put("itemName", "badminton racket");
 		item.put("price", 199.5);
 		items.add(item);
 
 		Map<String, Object> item2 = new HashMap<>();
 		item.put("itemId", "2002");
-		item.put("itemName", "亚狮龙7号");
+		item.put("itemName", "Asia Lion No. 7");
 		item.put("price", 99.5);
 		items.add(item);
 
@@ -131,12 +131,12 @@ public class ApiExampleController {
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("orderId", orderId);
-		result.put("description", "订单详情为尤尼克斯羽毛球拍");
+		result.put("description", "Order details for Yonex badminton rackets");
 
 		List<Map<String, Object>> items = new ArrayList<>();
 		Map<String, Object> item = new HashMap<>();
 		item.put("itemId", "2001");
-		item.put("itemName", "羽毛球拍");
+		item.put("itemName", "badminton racket");
 		item.put("price", 199.5);
 		items.add(item);
 

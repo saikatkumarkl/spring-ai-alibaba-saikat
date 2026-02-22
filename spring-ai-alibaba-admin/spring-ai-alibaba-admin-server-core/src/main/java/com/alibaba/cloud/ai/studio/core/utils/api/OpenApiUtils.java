@@ -749,7 +749,7 @@ public class OpenApiUtils {
 			inputParams.forEach(item -> {
 				String description = item.getDescription();
 				if (StringUtils.isNotBlank(item.getDefaultValue()) && !description.contains(DEFAULT_VALUE_WORD)) {
-					item.setDescription(description + DEFAULT_VALUE_WORD + "，请使用" + item.getDefaultValue());
+					item.setDescription(description + DEFAULT_VALUE_WORD + ", please use" + item.getDefaultValue());
 				}
 
 				if (NO_BODY_PARAMS_LOCATION.contains(item.getLocation())) {
@@ -859,7 +859,7 @@ public class OpenApiUtils {
 			responseMedia.setSchema(responseSchema);
 			contentRes.put("application/json", responseMedia);
 			apiResponse.setContent(contentRes);
-			apiResponse.setDescription("查询成功");
+			apiResponse.setDescription("Query successful");
 			ApiResponses apiResponses = new ApiResponses();
 			apiResponses.put("200", apiResponse);
 			post.setResponses(apiResponses);

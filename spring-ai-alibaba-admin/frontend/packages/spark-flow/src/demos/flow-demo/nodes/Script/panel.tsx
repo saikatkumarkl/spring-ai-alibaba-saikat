@@ -1,11 +1,11 @@
 import $i18n from '@/i18n';
 import { Button, IconFont } from '@spark-ai/design';
-import type { INodeDataOutputParamItem } from '@spark-ai/flow';
+import type { INodeDataOutputParamItem } from '@cordondata/flow';
 import {
   CustomInputsControl,
   CustomOutputsFormWrap,
   useNodeDataUpdate,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import React, { memo, useCallback } from 'react';
 import ErrorCatchForm from '../../components/ErrorCatchForm';

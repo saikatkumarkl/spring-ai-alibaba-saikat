@@ -1,5 +1,5 @@
 import { IAppType } from '@/services/appComponent';
-import { IValueType } from '@spark-ai/flow';
+import { IValueType } from '@cordondata/flow';
 
 // Interface for application component list item
 export interface IAppComponentListItem {

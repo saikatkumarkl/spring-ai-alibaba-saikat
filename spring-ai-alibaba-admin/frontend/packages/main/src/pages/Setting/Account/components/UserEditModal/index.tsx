@@ -1,12 +1,13 @@
 import $i18n from '@/i18n';
 import { createAccount, updateAccount } from '@/services/account';
-import { Button, Form, Input, message, Modal } from '@spark-ai/design';
+import { Button, Form, Input, message, Modal, Select } from '@spark-ai/design';
 import React, { useEffect, useState } from 'react';
 import styles from './index.module.less';
 
 export interface UserEditData {
   key?: string;
   name: string;
+  type?: 'admin' | 'user';
 }
 
 interface UserFormValues extends UserEditData {
@@ -53,18 +54,20 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
       setLoading(true);
 
       if (isEditMode) {
+        const updateData: any = {
+          nickname: values.name,
+          type: values.type,
+        };
         if (values.newPassword) {
-          await updateAccount(initialValues?.key as string, {
-            nickname: values.name,
-            password: values.newPassword,
-          });
-          message.success(
-            $i18n.get({
-              id: 'main.pages.Setting.Account.components.UserEditModal.index.updateSuccess',
-              dm: 'Updated successfully',
-            }),
-          );
+          updateData.password = values.newPassword;
         }
+        await updateAccount(initialValues?.key as string, updateData);
+        message.success(
+          $i18n.get({
+            id: 'main.pages.Setting.Account.components.UserEditModal.index.updateSuccess',
+            dm: 'Updated successfully',
+          }),
+        );
       } else {
         await createAccount({
           username: values.name,
@@ -147,6 +150,31 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
             disabled={isEditMode}
           />
         </Form.Item>
+
+        {isEditMode && (
+          <Form.Item
+            name="type"
+            label={$i18n.get({
+              id: 'main.pages.Setting.Account.components.UserEditModal.index.role',
+              dm: 'Role',
+            })}
+          >
+            <Select>
+              <Select.Option value="admin">
+                {$i18n.get({
+                  id: 'main.types.account.administrator',
+                  dm: 'Administrator',
+                })}
+              </Select.Option>
+              <Select.Option value="user">
+                {$i18n.get({
+                  id: 'main.types.account.normalUser',
+                  dm: 'Normal User',
+                })}
+              </Select.Option>
+            </Select>
+          </Form.Item>
+        )}
 
         <div className={styles['section-title']}>
           {isEditMode

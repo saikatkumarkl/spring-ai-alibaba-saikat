@@ -12,7 +12,7 @@ import {
   useFlowDebugInteraction,
   useFlowInteraction,
   useStore,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { useSetState, useUnmount } from 'ahooks';
 import { Flex, Segmented, Tabs } from 'antd';
 import classNames from 'classnames';

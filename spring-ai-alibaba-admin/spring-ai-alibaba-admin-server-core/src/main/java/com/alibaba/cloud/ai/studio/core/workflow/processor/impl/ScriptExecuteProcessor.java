@@ -58,7 +58,7 @@ import java.util.Map;
  * workflow context 6. Validates script content and parameters 7. Processes script
  * execution results 8. Manages script execution environment
  *
- * @author Spring AI Alibaba Team
+ * @author CordonData Team
  * @version 1.0.0-M1
  */
 @Component("ScriptExecuteProcessor")

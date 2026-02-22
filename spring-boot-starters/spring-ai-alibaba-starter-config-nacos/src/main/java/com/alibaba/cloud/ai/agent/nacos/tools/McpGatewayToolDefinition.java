@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.ai.tool.definition.ToolDefinition;
 
 /**
- * MCP Gateway 工具定义抽象类
+ * MCP Gateway tool definition abstract class
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class McpGatewayToolDefinition implements ToolDefinition {

@@ -300,6 +300,9 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, AccountEntity
 			entity.setPassword(PasswordCryptUtils.encode(account.getPassword()));
 		}
 
+		if (account.getType() != null) {
+			entity.setType(account.getType());
+		}
 		entity.setNickname(account.getNickname());
 		entity.setIcon(account.getIcon());
 		entity.setEmail(account.getEmail());

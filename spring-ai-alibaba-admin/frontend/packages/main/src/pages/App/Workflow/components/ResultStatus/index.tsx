@@ -1,5 +1,5 @@
 import { Dropdown, IconFont, Tag } from '@spark-ai/design';
-import type { IWorkFlowNodeResultItem, IWorkFlowStatus } from '@spark-ai/flow';
+import type { IWorkFlowNodeResultItem, IWorkFlowStatus } from '@cordondata/flow';
 import classNames from 'classnames';
 import { memo, useMemo } from 'react';
 import styles from './index.module.less';

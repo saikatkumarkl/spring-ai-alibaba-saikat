@@ -8,7 +8,7 @@
 #2. Or use the kubectl create command (recommended, it can be automatically created from a file):
 #    kubectl create configmap mysql-init-scripts \
 #      --from-file=admin-schema.sql=docker/middleware/init/mysql/admin-schema.sql \
-#      --from-file=agentscope-schema.sql=docker/middleware/init/mysql/agentscope-schema.sql \
+#      --from-file=cordondata-schema.sql=docker/middleware/init/mysql/cordondata-schema.sql \
 #      -n spring-ai-admin \
 #      --dry-run=client -o yaml | kubectl apply -f -
 #
@@ -27,6 +27,6 @@ data:
   admin-schema.sql: |
     #Please use the kubectl create command to create from a file instead of using this YAML directly
     #Or paste the contents of docker/middleware/init/mysql/admin-schema.sql here
-  agentscope-schema.sql: |
+  cordondata-schema.sql: |
     #Please use the kubectl create command to create from a file instead of using this YAML directly
-    #Or paste the contents of docker/middleware/init/mysql/agentscope-schema.sql here
+    #Or paste the contents of docker/middleware/init/mysql/cordondata-schema.sql here

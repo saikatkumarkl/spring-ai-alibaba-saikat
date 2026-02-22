@@ -22,7 +22,7 @@
 
     <packaging>pom</packaging>
 
-    <name>Spring AI Alibaba</name>
+    <name>CordonData</name>
     <description>Building AI applications with Spring Boot</description>
     <url>https://github.com/alibaba/spring-ai-alibaba</url>
 
@@ -54,7 +54,7 @@
         <module>spring-ai-alibaba-studio</module>
         <module>spring-ai-alibaba-sandbox</module>
 
-        <!-- Spring AI Alibaba Spring Boot Starters -->
+        <!-- CordonData Spring Boot Starters -->
         <module>spring-boot-starters/spring-ai-alibaba-starter-a2a-nacos</module>
         <module>spring-boot-starters/spring-ai-alibaba-starter-config-nacos</module>
         <module>spring-boot-starters/spring-ai-alibaba-starter-graph-observation</module>
@@ -84,7 +84,7 @@
 
     <properties>
 
-        <!-- Spring AI Alibaba Version -->
+        <!-- CordonData Version -->
         <revision>1.1.3.0-SNAPSHOT</revision>
 
         <!-- Maven project basic config -->

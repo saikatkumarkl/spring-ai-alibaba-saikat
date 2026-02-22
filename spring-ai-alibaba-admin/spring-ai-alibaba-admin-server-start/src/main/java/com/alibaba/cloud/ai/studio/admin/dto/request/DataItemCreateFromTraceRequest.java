@@ -11,11 +11,11 @@ public class DataItemCreateFromTraceRequest {
     /**
      * Evaluation set ID
      */
-    @NotNull(message = "测评集ID不能为空")
+    @NotNull(message = "Evaluation set ID cannot be empty")
     private Long datasetId;
 
 
-    @NotNull(message = "测评集版本ID不能为空")
+    @NotNull(message = "Evaluation set version ID cannot be empty")
     private Long datasetVersionId;
 
     private List<String> dataContent;

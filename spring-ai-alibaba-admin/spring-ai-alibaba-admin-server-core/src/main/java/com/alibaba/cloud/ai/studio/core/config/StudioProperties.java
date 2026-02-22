@@ -20,7 +20,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Configuration properties for SAA Studio application.
+ * Configuration properties for CordonData Studio application.
  *
  * @since 1.0.0.3
  */
@@ -30,7 +30,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class StudioProperties {
 
 	/** Configuration prefix for studio properties */
-	public static final String CONFIG_PREFIX = "spring.ai.alibaba.studio";
+	public static final String CONFIG_PREFIX = "cordondata.studio";
 
 	/** Storage path for studio data */
 	private String storagePath;
@@ -68,7 +68,7 @@ public class StudioProperties {
 	 */
 	public String getStoragePath() {
 		if (storagePath == null) {
-			storagePath = System.getProperty("user.home") + "/saa/storage";
+			storagePath = System.getProperty("user.home") + "/cordondata/storage";
 		}
 
 		return storagePath;

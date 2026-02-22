@@ -1,7 +1,7 @@
 {
-  "name": "@spark-i18n/core",
+  "name": "@cordondata/i18n",
   "version": "1.0.0",
-  "description": "Spark I18n core library",
+  "description": "CordonData I18n core library",
   "keywords": [
     "i18n",
     "internationalization",

@@ -20,8 +20,8 @@ import lombok.Getter;
 @Getter
 public enum NodeStatusEnum {
 
-	SUCCESS("success", "成功"), FAIL("fail", "失败"), SKIP("skip", "跳过"), EXECUTING("executing", "执行中"),
-	PAUSE("pause", "暂停"), STOP("stop", "停止"),;
+	SUCCESS("success", "success"), FAIL("fail", "fail"), SKIP("skip", "jump over"), EXECUTING("executing", "Executing"),
+	PAUSE("pause", "pause"), STOP("stop", "stop"),;
 
 	NodeStatusEnum(String code, String desc) {
 		this.code = code;

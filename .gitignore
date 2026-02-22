@@ -70,3 +70,4 @@ modified_mcp_config.json
 
 .checkstyle
 /spring-ai-alibaba-admin/docker/middleware/postgres/data
+spring-ai-alibaba-admin/docker/middleware/chatbot/chatbot.jar

@@ -1,7 +1,7 @@
 {
-  "name": "agentscope-frontend",
+  "name": "cordondata-frontend",
   "version": "0.0.1",
-  "description": "agentscope-frontend",
+  "description": "cordondata-frontend",
   "keywords": [],
   "author": "",
   "workspaces": [

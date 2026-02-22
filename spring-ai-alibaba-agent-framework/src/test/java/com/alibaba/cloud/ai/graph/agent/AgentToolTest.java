@@ -145,28 +145,28 @@ class AgentToolTest {
 		ReactAgent writerAgent = ReactAgent.builder()
 			.name("writer_agent")
 			.model(chatModel)
-			.description("可以写文章。")
-			.instruction("你是一个知名的作家，擅长写作和创作。请根据用户的提问进行回答。")
+			.description("You can write articles.")
+			.instruction("You are a well-known writer who is good at writing and creating.Please answer based on the user's questions.")
 			.build();
 
 		ReactAgent reviewerAgent = ReactAgent.builder()
 			.name("reviewer_agent")
 			.model(chatModel)
-			.description("可以对文章进行评论和修改。")
-			.instruction("你是一个知名的评论家，擅长对文章进行评论和修改。对于散文类文章，请确保文章中必须包含对于西湖风景的描述。")
+			.description("Articles can be commented and modified.")
+			.instruction("You are a well-known critic who is good at commenting and revising articles.For prose articles, please ensure that the article must include a description of the scenery of West Lake.")
 			.build();
 
 		ReactAgent blogAgent = ReactAgent.builder()
 			.name("blog_agent")
 			.model(chatModel)
-			.instruction("首先，根据用户给定的主题写一篇文章，然后将文章交给评论员进行审核，必要时做出修改。")
+			.instruction("First, write an article based on a topic given by the user, and then submit the article to reviewers for review and modifications if necessary.")
 			.tools(List.of(AgentTool.getFunctionToolCallback(writerAgent),
 					AgentTool.getFunctionToolCallback(reviewerAgent)))
 			.build();
 
 		try {
 			Optional<OverAllState> result = blogAgent
-				.invoke(new UserMessage("帮我写一个100字左右的散文"));
+				.invoke(new UserMessage("Help me write a prose of about 100 words"));
 
 			assertTrue(result.isPresent(), "Result should be present");
 
@@ -188,7 +188,7 @@ class AgentToolTest {
 
 	@Test
 	public void testAgentToolWithInputSchema() throws Exception {
-		// 使用 inputSchema 定义工具的输入格式
+		//Use inputSchema to define the input format of the tool
 		String writerInputSchema = """
 				{
 					"type": "object",
@@ -210,21 +210,21 @@ class AgentToolTest {
 		ReactAgent writerAgent = ReactAgent.builder()
 			.name("structured_writer_agent")
 			.model(chatModel)
-			.description("根据结构化输入写文章")
-			.instruction("你是一个专业作家。请严格按照输入的主题、字数和风格要求创作文章。")
+			.description("Write articles based on structured input")
+			.instruction("You are a professional writer.Please create articles strictly in accordance with the entered topic, word count and style requirements.")
 			.inputSchema(writerInputSchema)
 			.build();
 
 		ReactAgent coordinatorAgent = ReactAgent.builder()
 			.name("coordinator_agent")
 			.model(chatModel)
-			.instruction("你需要调用写作工具来完成用户的写作请求。请根据用户需求，使用结构化的参数调用写作工具。")
+			.instruction("You need to call the writing tool to complete the user's writing request.Please use structured parameters to call the writing tool according to user needs.")
 			.tools(List.of(AgentTool.getFunctionToolCallback(writerAgent)))
 			.build();
 
 		try {
 			Optional<OverAllState> result = coordinatorAgent
-				.invoke("请写一篇关于春天的散文，大约150字");
+				.invoke("Please write a prose about spring, about 150 words");
 
 			assertTrue(result.isPresent(), "Result should be present");
 			System.out.println("=== Agent Tool with InputSchema Test ===");
@@ -238,25 +238,25 @@ class AgentToolTest {
 
 	@Test
 	public void testAgentToolWithInputType() throws Exception {
-		// 使用 inputType，框架会自动生成 JSON Schema
+		//Using inputType, the framework automatically generates JSON Schema
 		ReactAgent writerAgent = ReactAgent.builder()
 			.name("typed_writer_agent")
 			.model(chatModel)
-			.description("根据类型化输入写文章")
-			.instruction("你是一个专业作家。请严格按照输入的 topic（主题）、wordCount（字数）和 style（风格）要求创作文章。")
+			.description("Write articles based on typed input")
+			.instruction("You are a professional writer.Please strictly follow the entered topic, wordCount and style requirements to create the article.")
 			.inputType(ArticleRequest.class)
 			.build();
 
 		ReactAgent coordinatorAgent = ReactAgent.builder()
 			.name("coordinator_with_type_agent")
 			.model(chatModel)
-			.instruction("你需要调用写作工具来完成用户的写作请求。工具接收 JSON 格式的参数。")
+			.instruction("You need to call the writing tool to complete the user's writing request.The tool accepts parameters in JSON format.")
 			.tools(List.of(AgentTool.getFunctionToolCallback(writerAgent)))
 			.build();
 
 		try {
 			Optional<OverAllState> result = coordinatorAgent
-				.invoke("请写一篇关于秋天的现代诗，大约100字");
+				.invoke("Please write a modern poem about autumn, about 100 words");
 
 			assertTrue(result.isPresent(), "Result should be present");
 			System.out.println("=== Agent Tool with InputType Test ===");
@@ -270,7 +270,7 @@ class AgentToolTest {
 
 	@Test
 	public void testAgentToolWithOutputSchema() throws Exception {
-		// 使用 outputSchema 定义工具的输出格式
+		//Use outputSchema to define the output format of the tool
 		String writerOutputSchema = """
 				{
 					"$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -293,22 +293,22 @@ class AgentToolTest {
 		ReactAgent writerAgent = ReactAgent.builder()
 			.name("writer_with_output_schema")
 			.model(chatModel)
-			.description("写文章并返回结构化输出")
-			.instruction("你是一个专业作家。请创作文章并严格按照指定的JSON格式返回结果。")
+			.description("Write articles and return structured output")
+			.instruction("You are a professional writer.Please create an article and return the results strictly in the specified JSON format.")
 			.outputSchema(writerOutputSchema)
 			.build();
 
 		ReactAgent coordinatorAgent = ReactAgent.builder()
 			.name("coordinator_output_schema")
 			.model(chatModel)
-			.instruction("调用写作工具完成用户请求，工具会返回结构化的文章数据。")
+			.instruction("Call the writing tool to complete the user request, and the tool will return structured article data.")
 			.tools(List.of(AgentTool.getFunctionToolCallback(writerAgent)))
 			.outputType(ArticleOutput.class)
 			.build();
 
 		try {
 			Optional<OverAllState> result = coordinatorAgent
-				.invoke("写一篇关于冬天的短文");
+				.invoke("Write a short essay about winter");
 
 			assertTrue(result.isPresent(), "Result should be present");
 			System.out.println("=== Agent Tool with OutputSchema Test ===");
@@ -322,25 +322,25 @@ class AgentToolTest {
 
 	@Test
 	public void testAgentToolWithOutputType() throws Exception {
-		// 使用 outputType，框架会自动生成输出 schema
+		//Using outputType, the framework automatically generates the output schema
 		ReactAgent writerAgent = ReactAgent.builder()
 			.name("writer_with_output_type")
 			.model(chatModel)
-			.description("写文章并返回类型化输出")
-			.instruction("你是一个专业作家。请创作文章并返回包含 title、content 和 characterCount 的结构化结果。")
+			.description("Write an article and return typed output")
+			.instruction("You are a professional writer.Please create an article and return structured results containing title, content, and characterCount.")
 			.outputType(ArticleOutput.class)
 			.build();
 
 		ReactAgent coordinatorAgent = ReactAgent.builder()
 			.name("coordinator_output_type")
 			.model(chatModel)
-			.instruction("调用写作工具完成用户请求。")
+			.instruction("Call the writing tool to complete the user request.")
 			.tools(List.of(AgentTool.getFunctionToolCallback(writerAgent)))
 			.build();
 
 		try {
 			Optional<OverAllState> result = coordinatorAgent
-				.invoke("写一篇关于夏天的小诗");
+				.invoke("Write a short poem about summer");
 
 			assertTrue(result.isPresent(), "Result should be present");
 			System.out.println("=== Agent Tool with OutputType Test ===");
@@ -354,12 +354,12 @@ class AgentToolTest {
 
 	@Test
 	public void testAgentToolWithAllSchemaTypes() throws Exception {
-		// 综合测试：同时使用 inputType 和 outputType
+		//Comprehensive test: using both inputType and outputType
 		ReactAgent writerAgent = ReactAgent.builder()
 			.name("full_typed_writer")
 			.model(chatModel)
-			.description("完整类型化的写作工具")
-			.instruction("根据结构化输入（topic、wordCount、style）创作文章，并返回结构化输出（title、content、characterCount）。")
+			.description("Completely typed writing tool")
+			.instruction("Create articles based on structured input (topic, wordCount, style) and return structured output (title, content, characterCount).")
 			.inputType(ArticleRequest.class)
 			.outputType(ArticleOutput.class)
 			.build();
@@ -367,15 +367,15 @@ class AgentToolTest {
 		ReactAgent reviewerAgent = ReactAgent.builder()
 			.name("typed_reviewer")
 			.model(chatModel)
-			.description("完整类型化的评审工具")
-			.instruction("对文章进行评审，返回评审意见（comment、approved、suggestions）。")
+			.description("Completely typed review tool")
+			.instruction("Review the article and return review comments (comments, approved, suggestions).")
 			.outputType(ReviewOutput.class)
 			.build();
 
 		ReactAgent orchestratorAgent = ReactAgent.builder()
 			.name("orchestrator")
 			.model(chatModel)
-			.instruction("协调写作和评审流程。先调用写作工具创作文章，然后调用评审工具进行评审。")
+			.instruction("Coordinate the writing and review process.First call the writing tool to create the article, and then call the review tool for review.")
 			.tools(List.of(
 					AgentTool.getFunctionToolCallback(writerAgent),
 					AgentTool.getFunctionToolCallback(reviewerAgent)))
@@ -383,7 +383,7 @@ class AgentToolTest {
 
 		try {
 			Optional<OverAllState> result = orchestratorAgent
-				.invoke("请写一篇关于友谊的散文，约200字，需要评审");
+				.invoke("Please write an essay about friendship, about 200 words, needs to be reviewed");
 
 			assertTrue(result.isPresent(), "Result should be present");
 			System.out.println("=== Agent Tool with All Schema Types Test ===");
@@ -397,7 +397,7 @@ class AgentToolTest {
 
 	@Test
 	public void testAgentToolWithMixedSchemas() throws Exception {
-		// 混合使用：inputSchema + outputType
+		// Mixed use:inputSchema + outputType
 		String customInputSchema = """
 				{
 					"type": "object",
@@ -416,8 +416,8 @@ class AgentToolTest {
 		ReactAgent reviewerAgent = ReactAgent.builder()
 			.name("mixed_schema_reviewer")
 			.model(chatModel)
-			.description("使用混合 schema 的评审工具")
-			.instruction("根据给定的文章内容和评审标准进行评审，返回结构化的评审结果。")
+			.description("Review tools using mixed schemas")
+			.instruction("Conduct reviews based on given article content and review criteria, and return structured review results.")
 			.inputSchema(customInputSchema)
 			.outputType(ReviewOutput.class)
 			.build();
@@ -425,13 +425,13 @@ class AgentToolTest {
 		ReactAgent mainAgent = ReactAgent.builder()
 			.name("main_agent")
 			.model(chatModel)
-			.instruction("使用评审工具对用户提供的内容进行评审。")
+			.instruction("Use review tools to review user-contributed content.")
 			.tools(List.of(AgentTool.getFunctionToolCallback(reviewerAgent)))
 			.build();
 
 		try {
 			Optional<OverAllState> result = mainAgent
-				.invoke("请评审这段话：春天来了，花儿开了。评审标准：文采和表达力");
+				.invoke("Please review this passage: Spring is here and the flowers are blooming.Judging criteria: Literary talent and expressiveness");
 
 			assertTrue(result.isPresent(), "Result should be present");
 			System.out.println("=== Agent Tool with Mixed Schemas Test ===");

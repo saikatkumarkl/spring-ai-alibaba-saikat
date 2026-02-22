@@ -33,7 +33,7 @@ import {
   useFlowInteraction,
   useStore,
   WorkflowContextProvider,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { useMount, useSetState } from 'ahooks';
 import { Flex, message, Space, Tooltip, Typography } from 'antd';
 import dayjs from 'dayjs';
@@ -83,13 +83,13 @@ interface IProps {
 interface IFlowBaseProps extends Omit<IProps, 'setActiveTab' | 'onSave'> {
   actionLoading: boolean;
   handlePublish: () => void;
-  handleExportSAA: () => void;
+  handleExportProject: () => void;
 }
 
 const lang = $i18n.getCurrentLanguage();
 
 export const FlowBase = memo((props: IFlowBaseProps) => {
-  const { actionLoading, init, appDetail, handlePublish, handleExportSAA } = props;
+  const { actionLoading, init, appDetail, handlePublish, handleExportProject } = props;
   const setShowTest = useWorkflowAppStore((state) => state.setShowTest);
   const { initDebug } = useInitDebug();
   const portal = useInnerLayout();
@@ -197,7 +197,7 @@ export const FlowBase = memo((props: IFlowBaseProps) => {
               {/* Add "Export Project Code" button */}
               <Button
                 disabled={actionLoading}
-                onClick={handleExportSAA}
+                onClick={handleExportProject}
               >
                 Export Project Code
               </Button>
@@ -284,7 +284,7 @@ export const FlowEditor = memo((props: IProps) => {
       });
   }, []);
 
-  const handleExportSAA = useCallback(async () => {
+  const handleExportProject = useCallback(async () => {
     if (!props.appDetail) return;
 
     console.log(props.appDetail);
@@ -293,7 +293,7 @@ export const FlowEditor = memo((props: IProps) => {
     try {
       // Prepare request parameters
       const params = {
-        dependencies: 'spring-ai-alibaba-graph,web,spring-ai-starter-model-ollama,spring-ai-starter-mcp-client',
+        dependencies: 'cordondata-graph,web,spring-ai-starter-model-ollama,spring-ai-starter-mcp-client',
         appMode: 'workflow',
         dslDialectType: 'studio',
         type: 'maven-project',
@@ -472,7 +472,7 @@ export const FlowEditor = memo((props: IProps) => {
           appDetail={props.appDetail}
           actionLoading={actionLoading}
           handlePublish={handlePublish}
-          handleExportSAA={handleExportSAA}
+          handleExportProject={handleExportProject}
           init={props.init}
         />
 

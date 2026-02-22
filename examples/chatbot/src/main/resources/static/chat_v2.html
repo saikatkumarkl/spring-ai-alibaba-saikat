@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Assistant</title>
+<link rel="icon" type="image/png" href="/favicon.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <style>
 /* ===== CSS Custom Properties ===== */
@@ -379,7 +380,7 @@ input, select, textarea { font-family: inherit; }
 <!-- ===== Header ===== -->
 <div class="header">
   <div class="header-brand">
-    <span class="logo">🤖</span>
+    <img id="brandLogo" src="/logoWhite.png" alt="Logo" style="height: 28px; object-fit: contain; margin-right: 8px;" />
     <span>AI Assistant</span>
   </div>
   <div class="header-center">
@@ -563,6 +564,8 @@ function toggleTheme() {
 function updateThemeIcon() {
   const theme = document.documentElement.getAttribute('data-theme');
   document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
+  const logo = document.getElementById('brandLogo');
+  if (logo) logo.src = theme === 'dark' ? '/logoBlack.png' : '/logoWhite.png';
 }
 
 /* ===== Utilities ===== */

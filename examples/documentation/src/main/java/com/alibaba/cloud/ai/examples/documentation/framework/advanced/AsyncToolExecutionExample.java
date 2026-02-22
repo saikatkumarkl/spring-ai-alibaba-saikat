@@ -52,19 +52,19 @@ import static com.alibaba.cloud.ai.graph.agent.tools.ToolContextConstants.AGENT_
 import static com.alibaba.cloud.ai.graph.agent.tools.ToolContextConstants.AGENT_STATE_FOR_UPDATE_CONTEXT_KEY;
 
 /**
- * 异步工具执行示例 (Async Tool Execution Example)
+ * Async Tool Execution Example
  *
- * <p>本示例展示 Issue #3988 引入的异步工具支持功能，包括：</p>
+ * <p>This example demonstrates the asynchronous tool support introduced in Issue #3988, including:</p>
  * <ul>
- *   <li>AsyncToolCallback - 基础异步工具接口</li>
- *   <li>CancellableAsyncToolCallback - 支持取消的异步工具接口</li>
- *   <li>CancellationToken - 协作取消机制</li>
- *   <li>StateAwareToolCallback - 状态感知工具</li>
- *   <li>ToolStateCollector - 并行执行时的状态收集与合并</li>
- *   <li>AgentToolNode - 并行工具执行配置</li>
+ *   <li>AsyncToolCallback - basic asynchronous tool interface</li>
+ *   <li>CancellableAsyncToolCallback - an asynchronous tool interface that supports cancellation</li>
+ *   <li>CancellationToken - Collaboration cancellation mechanism</li>
+ *   <li>StateAwareToolCallback - State awareness tools</li>
+ *   <li>ToolStateCollector - state collection and merging during parallel execution</li>
+ *   <li>AgentToolNode - Parallel tool execution configuration</li>
  * </ul>
  *
- * <p>参考文档: Issue #3988 - Async Tool Support</p>
+ * <p>Reference documentation: Issue #3988 - Async Tool Support</p>
  *
  * @author disaster
  * @since 1.0.0
@@ -78,143 +78,143 @@ public class AsyncToolExecutionExample {
 	}
 
 	/**
-	 * Main 方法：运行所有示例
+	 * Main method: run all examples
 	 *
-	 * <p>注意：需要设置 AI_DASHSCOPE_API_KEY 环境变量</p>
+	 * <p>Note: The AI_DASHSCOPE_API_KEY environment variable needs to be set</p>
 	 */
 	public static void main(String[] args) {
-		// 创建 DashScope API 实例
+		//Create a DashScope API instance
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
 			.apiKey(System.getenv("AI_DASHSCOPE_API_KEY"))
 			.build();
 
-		// 创建 ChatModel
+		//Create ChatModel
 		ChatModel chatModel = DashScopeChatModel.builder()
 			.dashScopeApi(dashScopeApi)
 			.build();
 
 		if (chatModel == null) {
-			System.err.println("错误：请先配置 ChatModel 实例");
-			System.err.println("请设置 AI_DASHSCOPE_API_KEY 环境变量");
+			System.err.println("Error: Please configure ChatModel instance first");
+			System.err.println("Please set the AI_DASHSCOPE_API_KEY environment variable");
 			return;
 		}
 
-		// 创建示例实例
+		//Create a sample instance
 		AsyncToolExecutionExample example = new AsyncToolExecutionExample(chatModel);
 
-		// 运行所有示例
+		//Run all examples
 		example.runAllExamples();
 	}
 
-	// ==================== 示例 1：基础异步工具 ====================
+	//==================== Example 1: Basic asynchronous tools ====================
 
 	/**
-	 * 示例 1：基础异步工具 (AsyncToolCallback)
+	 * Example 1: Basic asynchronous tool (AsyncToolCallback)
 	 *
-	 * <p>AsyncToolCallback 接口允许工具异步执行，返回 CompletableFuture。
-	 * 这对于需要执行 I/O 操作或长时间运行的任务非常有用。</p>
+	 * <p>The AsyncToolCallback interface allows tools to execute asynchronously and returns a CompletableFuture.
+	 * This is useful for tasks that require I/O operations or long-running tasks.</p>
 	 *
-	 * <p>关键特性：</p>
+	 * <p>Key features:</p>
 	 * <ul>
-	 *   <li>callAsync() 返回 CompletableFuture&lt;String&gt;</li>
-	 *   <li>可自定义超时时间 (默认 5 分钟)</li>
-	 *   <li>自动处理同步调用的回退 (call 方法会阻塞等待结果)</li>
+	 *   <li>callAsync() return CompletableFuture&lt;String&gt;</li>
+	 *   <li>Customizable timeout (default 5 minutes)</li>
+	 *   <li>Automatically handle the rollback of synchronous calls (the call method will block waiting for the result)</li>
 	 * </ul>
 	 */
 	public void example1_basicAsyncTool() {
-		System.out.println("=== 示例 1：基础异步工具 (AsyncToolCallback) ===\n");
+		System.out.println("=== Example 1: Basic Async Tool (AsyncToolCallback) ===\n");
 
-		// 创建简单的异步工具
+		//Create simple asynchronous tools
 		AsyncToolCallback asyncWeatherTool = new AsyncToolCallback() {
 			@Override
 			public ToolDefinition getToolDefinition() {
 				return DefaultToolDefinition.builder()
 					.name("async_weather")
-					.description("异步获取天气信息")
+					.description("Get weather information asynchronously")
 					.inputSchema("{\"type\":\"object\",\"properties\":{\"city\":{\"type\":\"string\"}}}")
 					.build();
 			}
 
 			@Override
 			public CompletableFuture<String> callAsync(String arguments, ToolContext context) {
-				// 使用 CompletableFuture.supplyAsync 异步执行
+				//Use CompletableFuture.supplyAsync to execute asynchronously
 				return CompletableFuture.supplyAsync(() -> {
-					System.out.println("  [异步执行] 开始获取天气数据...");
+					System.out.println("[Asynchronous execution] Start getting weather data...");
 
-					// 模拟异步 I/O 操作（如 HTTP 请求）
+					//Simulate asynchronous I/O operations (such as HTTP requests)
 					try {
-						Thread.sleep(1000); // 模拟网络延迟
+						Thread.sleep(1000); //Simulate network latency
 					}
 					catch (InterruptedException e) {
 						Thread.currentThread().interrupt();
-						throw new RuntimeException("获取天气数据被中断", e);
+						throw new RuntimeException("Obtaining weather data was interrupted", e);
 					}
 
-					System.out.println("  [异步执行] 天气数据获取完成");
-					return "{\"temperature\": 25, \"condition\": \"sunny\", \"city\": \"北京\"}";
+					System.out.println("[Asynchronous execution] Weather data acquisition completed");
+					return "{\"temperature\": 25, \"condition\": \"sunny\", \"city\": \"Beijing\"}";
 				});
 			}
 
 			@Override
 			public Duration getTimeout() {
-				// 自定义超时时间为 30 秒
+				//Custom timeout is 30 seconds
 				return Duration.ofSeconds(30);
 			}
 
 			@Override
 			public String call(String toolInput) {
-				// 同步调用时，阻塞等待异步结果
+				//When calling synchronously, block waiting for asynchronous results.
 				return callAsync(toolInput, new ToolContext(Map.of())).join();
 			}
 		};
 
-		// 测试异步工具
-		System.out.println("测试异步调用:");
-		CompletableFuture<String> future = asyncWeatherTool.callAsync("{\"city\":\"北京\"}", new ToolContext(Map.of()));
+		//Testing asynchronous tools
+		System.out.println("Test asynchronous calls:");
+		CompletableFuture<String> future = asyncWeatherTool.callAsync("{\"city\":\"Beijing\"}", new ToolContext(Map.of()));
 
-		// 非阻塞：可以做其他事情
-		System.out.println("  异步调用已提交，等待结果...");
+		//Non-blocking: can do other things
+		System.out.println("Asynchronous call submitted, waiting for result...");
 
-		// 获取结果
+		//Get results
 		String result = future.join();
-		System.out.println("  结果: " + result);
+		System.out.println("result:" + result);
 
-		System.out.println("\n测试同步调用 (自动阻塞等待):");
-		String syncResult = asyncWeatherTool.call("{\"city\":\"上海\"}");
-		System.out.println("  结果: " + syncResult);
+		System.out.println("\nTest synchronous call (automatic blocking wait):");
+		String syncResult = asyncWeatherTool.call("{\"city\":\"Shanghai\"}");
+		System.out.println("result:" + syncResult);
 
 		System.out.println();
 	}
 
-	// ==================== 示例 2：可取消的异步工具 ====================
+	//==================== Example 2: Cancelable asynchronous tools ====================
 
 	/**
-	 * 示例 2：可取消的异步工具 (CancellableAsyncToolCallback)
+	 * Example 2: CancellableAsyncToolCallback
 	 *
-	 * <p>CancellableAsyncToolCallback 扩展了 AsyncToolCallback，支持协作取消。
-	 * 当工具执行超时或需要提前终止时，可以通过 CancellationToken 通知工具优雅停止。</p>
+	 * <p>CancellableAsyncToolCallback expanded AsyncToolCallback, supports collaborative cancellation.
+	 * When the tool execution times out or needs to be terminated early, the tool can be notified to stop gracefully through CancellationToken.</p>
 	 *
-	 * <p>关键特性：</p>
+	 * <p>Key features:</p>
 	 * <ul>
-	 *   <li>接收 CancellationToken 参数</li>
-	 *   <li>支持 isCancelled() 检查</li>
-	 *   <li>支持 throwIfCancelled() 抛出异常</li>
-	 *   <li>支持 onCancel() 注册清理回调</li>
+	 *   <li>take over CancellationToken parameter</li>
+	 *   <li>support isCancelled() examine</li>
+	 *   <li>Support throwIfCancelled() to throw exception</li>
+	 *   <li>Support onCancel() to register cleanup callback</li>
 	 * </ul>
 	 */
 	public void example2_cancellableAsyncTool() {
-		System.out.println("=== 示例 2：可取消的异步工具 (CancellableAsyncToolCallback) ===\n");
+		System.out.println("=== Example 2: CancellableAsyncToolCallback ===\n");
 
-		// 模拟的资源管理器（用于演示取消回调）
+		//Simulated resource manager (used to demonstrate cancellation callbacks)
 		AtomicInteger resourcesAllocated = new AtomicInteger(0);
 
-		// 创建支持取消的异步工具
+		//Create an asynchronous tool that supports cancellation
 		CancellableAsyncToolCallback cancellableSearchTool = new CancellableAsyncToolCallback() {
 			@Override
 			public ToolDefinition getToolDefinition() {
 				return DefaultToolDefinition.builder()
 					.name("cancellable_search")
-					.description("可取消的搜索工具，支持优雅停止")
+					.description("Cancelable search tool with graceful stopping")
 					.inputSchema("{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"}}}")
 					.build();
 			}
@@ -223,50 +223,50 @@ public class AsyncToolExecutionExample {
 			public CompletableFuture<String> callAsync(String arguments, ToolContext context,
 					CancellationToken cancellationToken) {
 				return CompletableFuture.supplyAsync(() -> {
-					System.out.println("  [可取消工具] 开始搜索...");
+					System.out.println("[Cancellable Tool] Start Search...");
 
-					// 注册取消回调 - 用于资源清理
+					//Register cancellation callback - for resource cleanup
 					cancellationToken.onCancel(() -> {
-						System.out.println("  [取消回调] 清理已分配的资源...");
+						System.out.println("[Cancel callback] Clean up allocated resources...");
 						resourcesAllocated.set(0);
 					});
 
 					StringBuilder results = new StringBuilder();
 
-					// 模拟分页搜索，每页检查取消状态
+					//Simulate paging search and check cancellation status on each page
 					for (int page = 1; page <= 10; page++) {
-						// 方式1：使用 isCancelled() 检查并提前返回
+						//Method 1: Use isCancelled() to check and return early
 						if (cancellationToken.isCancelled()) {
-							System.out.println("  [可取消工具] 检测到取消请求，优雅退出 (第 " + page + " 页)");
-							return results + "\n[搜索在第 " + page + " 页被取消]";
+							System.out.println("[Cancellable Tool] Cancel request detected, exit gracefully (section" + page + "Page)");
+							return results + "\n[Search in" + page + "page canceled]";
 						}
 
-						// 模拟资源分配和页面处理
+						//Simulate resource allocation and page processing
 						resourcesAllocated.incrementAndGet();
-						System.out.println("  [可取消工具] 正在处理第 " + page + " 页...");
+						System.out.println("[Cancellable Tool] Processing No." + page + "Page...");
 
 						try {
-							Thread.sleep(200); // 模拟处理时间
+							Thread.sleep(200); //Simulation processing time
 						}
 						catch (InterruptedException e) {
 							Thread.currentThread().interrupt();
-							throw new RuntimeException("搜索被中断", e);
+							throw new RuntimeException("Search interrupted", e);
 						}
 
 						results.append("Page ").append(page).append(" results; ");
 
-						// 方式2：使用 throwIfCancelled() 抛出异常
+						//Method 2: Use throwIfCancelled() to throw an exception
 						// cancellationToken.throwIfCancelled();
 					}
 
-					System.out.println("  [可取消工具] 搜索完成");
+					System.out.println("[Cancellable Tool] Search completed");
 					return results.toString();
 				});
 			}
 
 			@Override
 			public Duration getTimeout() {
-				return Duration.ofSeconds(5); // 短超时用于演示
+				return Duration.ofSeconds(5); //Short timeout for demonstration purposes
 			}
 
 			@Override
@@ -275,20 +275,20 @@ public class AsyncToolExecutionExample {
 			}
 		};
 
-		// 测试1：正常完成
-		System.out.println("测试1：正常执行（不取消）");
+		//Test 1: Completed normally
+		System.out.println("Test 1: Normal execution (no cancellation)");
 		CompletableFuture<String> future1 = cancellableSearchTool.callAsync("{\"query\":\"AI\"}", new ToolContext(Map.of()),
 				CancellationToken.NONE);
-		System.out.println("  结果: " + future1.join().substring(0, Math.min(50, future1.join().length())) + "...");
+		System.out.println("result:" + future1.join().substring(0, Math.min(50, future1.join().length())) + "...");
 
-		// 测试2：主动取消
-		System.out.println("\n测试2：主动取消执行");
+		//Test 2: Active cancellation
+		System.out.println("\nTest 2: Actively cancel execution");
 		DefaultCancellationToken cancelToken = new DefaultCancellationToken();
 
 		CompletableFuture<String> future2 = cancellableSearchTool.callAsync("{\"query\":\"Spring\"}", new ToolContext(Map.of()),
 				cancelToken);
 
-		// 延迟 500ms 后取消
+		//Cancel after 500ms delay
 		CompletableFuture.runAsync(() -> {
 			try {
 				Thread.sleep(500);
@@ -296,42 +296,42 @@ public class AsyncToolExecutionExample {
 			catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 			}
-			System.out.println("  [主线程] 请求取消...");
+			System.out.println("[Main thread] Request to cancel...");
 			cancelToken.cancel();
 		});
 
 		String cancelledResult = future2.join();
-		System.out.println("  结果: " + cancelledResult);
+		System.out.println("result:" + cancelledResult);
 
 		System.out.println();
 	}
 
-	// ==================== 示例 3：状态感知异步工具 ====================
+	//==================== Example 3: State-aware asynchronous tools ====================
 
 	/**
-	 * 示例 3：状态感知工具 (StateAwareToolCallback)
+	 * Example 3: StateAwareToolCallback
 	 *
-	 * <p>StateAwareToolCallback 是一个标记接口，实现此接口的工具将自动接收
-	 * Agent 状态注入。工具可以读取当前状态并写入更新。</p>
+	 * <p>StateAwareToolCallback is a marker interface, and tools that implement this interface will automatically receive
+	 * Agent state injection.Tools can read the current state and write updates.</p>
 	 *
-	 * <p>注入的上下文键：</p>
+	 * <p>Injected context key:</p>
 	 * <ul>
-	 *   <li>AGENT_STATE_CONTEXT_KEY - 当前 OverAllState（只读）</li>
-	 *   <li>AGENT_CONFIG_CONTEXT_KEY - RunnableConfig 配置</li>
-	 *   <li>AGENT_STATE_FOR_UPDATE_CONTEXT_KEY - 状态更新 Map（可写）</li>
+	 *   <li>AGENT_STATE_CONTEXT_KEY - current OverAllState(read only)</li>
+	 *   <li>AGENT_CONFIG_CONTEXT_KEY - RunnableConfig Configuration</li>
+	 *   <li>AGENT_STATE_FOR_UPDATE_CONTEXT_KEY - status update Map(writable)</li>
 	 * </ul>
 	 */
 	public void example3_stateAwareAsyncTool() {
-		System.out.println("=== 示例 3：状态感知工具 (StateAwareToolCallback) ===\n");
+		System.out.println("=== Example 3: StateAwareToolCallback ===\n");
 
-		// 创建状态感知的异步工具
-		// 注意：AsyncToolCallback 继承自 StateAwareToolCallback
+		//Create state-aware asynchronous tools
+		// Notice:AsyncToolCallback Inherited from StateAwareToolCallback
 		AsyncToolCallback stateAwareCalculator = new AsyncToolCallback() {
 			@Override
 			public ToolDefinition getToolDefinition() {
 				return DefaultToolDefinition.builder()
 					.name("state_aware_calculator")
-					.description("状态感知计算器，可以读取和更新 Agent 状态")
+					.description("State-aware calculator that can read and update Agent state")
 					.inputSchema("{\"type\":\"object\",\"properties\":{\"operation\":{\"type\":\"string\"},\"value\":{\"type\":\"number\"}}}")
 					.build();
 			}
@@ -340,44 +340,44 @@ public class AsyncToolExecutionExample {
 			@SuppressWarnings("unchecked")
 			public CompletableFuture<String> callAsync(String arguments, ToolContext context) {
 				return CompletableFuture.supplyAsync(() -> {
-					// 从 context 中获取注入的状态
+					//Get injected state from context
 					Map<String, Object> contextMap = context.getContext();
 
-					// 1. 读取当前 Agent 状态
+					//1. Read the current Agent status
 					OverAllState state = (OverAllState) contextMap.get(AGENT_STATE_CONTEXT_KEY);
 					if (state != null) {
-						System.out.println("  [状态读取] 当前状态: " + state.data());
+						System.out.println("[Status reading] Current status:" + state.data());
 					}
 
-					// 2. 读取 RunnableConfig
+					// 2. read RunnableConfig
 					RunnableConfig config = (RunnableConfig) contextMap.get(AGENT_CONFIG_CONTEXT_KEY);
 					if (config != null) {
-						System.out.println("  [配置读取] ThreadId: " + config.threadId().orElse("default"));
+						System.out.println("[Configuration reading] ThreadId:" + config.threadId().orElse("default"));
 					}
 
-					// 3. 获取状态更新 Map（用于写入更新）
+					//3. Get the status update Map (for writing updates)
 					Map<String, Object> updateMap = (Map<String, Object>) contextMap.get(AGENT_STATE_FOR_UPDATE_CONTEXT_KEY);
 
-					// 模拟计算
+					//Simulation calculation
 					int currentTotal = 0;
 					if (state != null) {
 						Object totalObj = state.value("runningTotal").orElse(0);
 						currentTotal = totalObj instanceof Integer ? (Integer) totalObj : 0;
 					}
 
-					// 假设输入是 {"operation": "add", "value": 10}
-					int newValue = 10; // 简化示例
+					// Assume the input is {"operation": "add", "value": 10}
+					int newValue = 10; //Simplified example
 					int newTotal = currentTotal + newValue;
 
-					// 4. 写入状态更新
+					//4. Write status updates
 					if (updateMap != null) {
 						updateMap.put("runningTotal", newTotal);
 						updateMap.put("lastOperation", "add");
 						updateMap.put("lastValue", newValue);
-						System.out.println("  [状态更新] 写入 runningTotal=" + newTotal);
+						System.out.println("[Status Update] Write runningTotal=" + newTotal);
 					}
 
-					return "计算完成: " + currentTotal + " + " + newValue + " = " + newTotal;
+					return "Calculation completed:" + currentTotal + " + " + newValue + " = " + newTotal;
 				});
 			}
 
@@ -387,12 +387,12 @@ public class AsyncToolExecutionExample {
 			}
 		};
 
-		// 演示状态感知工具的使用
-		System.out.println("演示状态感知工具（模拟 Agent 上下文）:");
+		//Demonstrate the use of state awareness tools
+		System.out.println("Demo state awareness tool (simulated Agent context):");
 
-		// 模拟 Agent 注入的上下文
+		//Simulate Agent injected context
 		Map<String, Object> simulatedContext = new ConcurrentHashMap<>();
-		// 模拟状态（实际由 AgentToolNode 注入）
+		//Simulated state (actually injected by AgentToolNode)
 		// simulatedContext.put(AGENT_STATE_CONTEXT_KEY, state);
 		// simulatedContext.put(AGENT_CONFIG_CONTEXT_KEY, config);
 		Map<String, Object> updateMap = new ConcurrentHashMap<>();
@@ -401,62 +401,62 @@ public class AsyncToolExecutionExample {
 		String result = stateAwareCalculator.callAsync("{\"operation\":\"add\",\"value\":10}", new ToolContext(simulatedContext))
 			.join();
 
-		System.out.println("  工具返回: " + result);
-		System.out.println("  状态更新 Map: " + updateMap);
+		System.out.println("Tool returns:" + result);
+		System.out.println("Status Update Map:" + updateMap);
 
 		System.out.println();
 	}
 
-	// ==================== 示例 4：并行工具执行配置 ====================
+	//==================== Example 4: Parallel Tool Execution Configuration ====================
 
 	/**
-	 * 示例 4：并行工具执行配置 (AgentToolNode)
+	 * Example 4: Parallel tool execution configuration (AgentToolNode)
 	 *
-	 * <p>AgentToolNode 支持并行执行多个工具调用。通过 Builder 可以配置：</p>
+	 * <p>AgentToolNode supports executing multiple tool calls in parallel.Configurable through Builder:</p>
 	 * <ul>
-	 *   <li>parallelToolExecution(true) - 启用并行执行</li>
-	 *   <li>maxParallelTools(n) - 最大并行数量</li>
-	 *   <li>toolExecutionTimeout(duration) - 执行超时时间</li>
+	 *   <li>parallelToolExecution(true) - Enable parallel execution</li>
+	 *   <li>maxParallelTools(n) - maximum number of parallels</li>
+	 *   <li>toolExecutionTimeout(duration) - Execution timeout</li>
 	 * </ul>
 	 */
 	public void example4_parallelExecutionConfiguration() {
-		System.out.println("=== 示例 4：并行工具执行配置 (AgentToolNode) ===\n");
+		System.out.println("=== Example 4: Parallel Tool Execution Configuration (AgentToolNode) ===\n");
 
-		// 创建多个异步工具
-		AsyncToolCallback tool1 = createSimpleAsyncTool("async_tool_1", "异步工具 1", 500);
-		AsyncToolCallback tool2 = createSimpleAsyncTool("async_tool_2", "异步工具 2", 800);
-		AsyncToolCallback tool3 = createSimpleAsyncTool("async_tool_3", "异步工具 3", 300);
+		//Create multiple asynchronous tools
+		AsyncToolCallback tool1 = createSimpleAsyncTool("async_tool_1", "Asynchronous Tools 1", 500);
+		AsyncToolCallback tool2 = createSimpleAsyncTool("async_tool_2", "Async Tools 2", 800);
+		AsyncToolCallback tool3 = createSimpleAsyncTool("async_tool_3", "Asynchronous Tools 3", 300);
 
-		// 配置 AgentToolNode 支持并行执行
+		//Configure AgentToolNode to support parallel execution
 		AgentToolNode parallelNode = AgentToolNode.builder()
 			.agentName("parallel_agent")
-			// 启用并行执行
+			//Enable parallel execution
 			.parallelToolExecution(true)
-			// 最多同时执行 5 个工具
+			//Run up to 5 tools simultaneously
 			.maxParallelTools(5)
-			// 每个工具最长执行 2 分钟
+			//Maximum execution time of each tool is 2 minutes
 			.toolExecutionTimeout(Duration.ofMinutes(2))
-			// 注册工具
+			//Registration tool
 			.toolCallbacks(List.of(tool1, tool2, tool3))
-			// 异常处理器
+			//exception handler
 			.toolExecutionExceptionProcessor(DefaultToolExecutionExceptionProcessor.builder()
 				.alwaysThrow(false)
 				.build())
 			.build();
 
-		System.out.println("AgentToolNode 配置:");
-		System.out.println("  - 并行执行: 已启用");
-		System.out.println("  - 最大并行数: 5");
-		System.out.println("  - 执行超时: 2 分钟");
-		System.out.println("  - 注册工具数: 3");
-		System.out.println("  - 工具列表: " + parallelNode.getToolCallbacks().stream()
+		System.out.println("AgentToolNode Configuration:");
+		System.out.println("- Parallel execution: enabled");
+		System.out.println("- Maximum number of parallels: 5");
+		System.out.println("- Execution timeout: 2 minutes");
+		System.out.println("- Number of registered tools: 3");
+		System.out.println("- Tool list:" + parallelNode.getToolCallbacks().stream()
 			.map(t -> t.getToolDefinition().name())
 			.toList());
 
-		// 顺序执行配置示例
+		//Sequential execution configuration example
 		AgentToolNode sequentialNode = AgentToolNode.builder()
 			.agentName("sequential_agent")
-			// 禁用并行执行（默认行为）
+			//Disable parallel execution (default behavior)
 			.parallelToolExecution(false)
 			.toolCallbacks(List.of(tool1, tool2, tool3))
 			.toolExecutionTimeout(Duration.ofMinutes(5))
@@ -465,46 +465,46 @@ public class AsyncToolExecutionExample {
 				.build())
 			.build();
 
-		System.out.println("\n顺序执行 AgentToolNode 配置:");
-		System.out.println("  - 并行执行: 已禁用");
-		System.out.println("  - 工具将按顺序执行");
+		System.out.println("\nExecute AgentToolNode configuration in sequence:");
+		System.out.println("- Parallel execution: disabled");
+		System.out.println("- Tools will be executed sequentially");
 
 		System.out.println();
 	}
 
-	// ==================== 示例 5：在 ReactAgent 中使用异步工具 ====================
+	// ==================== Example 5:exist ReactAgent Using asynchronous tools in ====================
 
 	/**
-	 * 示例 5：在 ReactAgent 中使用异步工具
+	 * Example 5: Using async tools with ReactAgent
 	 *
-	 * <p>ReactAgent 支持异步工具。当 Agent 需要调用多个工具时，
-	 * 可以配置并行执行以提高效率。</p>
+	 * <p>ReactAgent supports asynchronous tools.When the Agent needs to call multiple tools,
+	 * Parallel execution can be configured for increased efficiency.</p>
 	 */
 	public void example5_asyncToolsInReactAgent() throws GraphRunnerException {
-		System.out.println("=== 示例 5：在 ReactAgent 中使用异步工具 ===\n");
+		System.out.println("=== Example 5: Using asynchronous tools with ReactAgent ===\n");
 
-		// 创建异步天气查询工具
+		//Create an asynchronous weather query tool
 		AsyncToolCallback asyncWeatherTool = new AsyncToolCallback() {
 			@Override
 			public ToolDefinition getToolDefinition() {
 				return DefaultToolDefinition.builder()
 					.name("async_get_weather")
-					.description("异步获取指定城市的天气信息")
-					.inputSchema("{\"type\":\"object\",\"properties\":{\"city\":{\"type\":\"string\",\"description\":\"城市名称\"}},\"required\":[\"city\"]}")
+					.description("Asynchronously obtain weather information for a specified city")
+					.inputSchema("{\"type\":\"object\",\"properties\":{\"city\":{\"type\":\"string\",\"description\":\"city ​​name\"}},\"required\":[\"city\"]}")
 					.build();
 			}
 
 			@Override
 			public CompletableFuture<String> callAsync(String arguments, ToolContext context) {
 				return CompletableFuture.supplyAsync(() -> {
-					System.out.println("    [异步工具] 查询天气中...");
+					System.out.println("[Asynchronous tool] Querying weather...");
 					try {
-						Thread.sleep(500); // 模拟 API 调用
+						Thread.sleep(500); //Simulate API calls
 					}
 					catch (InterruptedException e) {
 						Thread.currentThread().interrupt();
 					}
-					return "{\"city\": \"北京\", \"temperature\": 25, \"condition\": \"晴朗\"}";
+					return "{\"city\": \"Beijing\", \"temperature\": 25, \"condition\": \"sunny\"}";
 				});
 			}
 
@@ -514,23 +514,23 @@ public class AsyncToolExecutionExample {
 			}
 		};
 
-		// 创建异步股票查询工具
+		//Create an asynchronous stock query tool
 		AsyncToolCallback asyncStockTool = new AsyncToolCallback() {
 			@Override
 			public ToolDefinition getToolDefinition() {
 				return DefaultToolDefinition.builder()
 					.name("async_get_stock")
-					.description("异步获取股票价格")
-					.inputSchema("{\"type\":\"object\",\"properties\":{\"symbol\":{\"type\":\"string\",\"description\":\"股票代码\"}},\"required\":[\"symbol\"]}")
+					.description("Get stock price asynchronously")
+					.inputSchema("{\"type\":\"object\",\"properties\":{\"symbol\":{\"type\":\"string\",\"description\":\"Stock code\"}},\"required\":[\"symbol\"]}")
 					.build();
 			}
 
 			@Override
 			public CompletableFuture<String> callAsync(String arguments, ToolContext context) {
 				return CompletableFuture.supplyAsync(() -> {
-					System.out.println("    [异步工具] 查询股票中...");
+					System.out.println("[Asynchronous tool] Querying stocks...");
 					try {
-						Thread.sleep(700); // 模拟 API 调用
+						Thread.sleep(700); //Simulate API calls
 					}
 					catch (InterruptedException e) {
 						Thread.currentThread().interrupt();
@@ -545,85 +545,85 @@ public class AsyncToolExecutionExample {
 			}
 		};
 
-		// 创建 ReactAgent 并配置异步工具
+		//Create ReactAgent and configure asynchronous tools
 		ReactAgent agent = ReactAgent.builder()
 			.name("async_tools_agent")
 			.model(chatModel)
-			.description("一个配置了异步工具的智能助手")
-			.instruction("你是一个智能助手，可以异步查询天气和股票信息。当用户询问时，使用相应的工具。")
-			// 添加异步工具
+			.description("A smart assistant configured with asynchronous tools")
+			.instruction("You are an intelligent assistant that can query weather and stock information asynchronously.When the user asks, use the appropriate tool.")
+			//Add async tools
 			.tools(asyncWeatherTool, asyncStockTool)
-			// 配置记忆
+			//Configuration memory
 			.saver(new MemorySaver())
 			.build();
 
-		System.out.println("ReactAgent 配置完成:");
-		System.out.println("  - 异步工具数: 2");
-		System.out.println("  - 说明: ReactAgent 自动处理异步工具的执行");
+		System.out.println("ReactAgent configuration completed:");
+		System.out.println("- Number of asynchronous tools: 2");
+		System.out.println("- Description: ReactAgent automatically handles the execution of asynchronous tools");
 
-		// 调用 Agent
+		//Call Agent
 		RunnableConfig config = RunnableConfig.builder()
 			.threadId("async_tools_session")
 			.build();
 
-		System.out.println("\n调用 Agent (查询天气)...");
-		Optional<OverAllState> result = agent.invoke("北京今天天气怎么样？", config);
+		System.out.println("\nCalling Agent (query weather)...");
+		Optional<OverAllState> result = agent.invoke("How is the weather in Beijing today?", config);
 
 		if (result.isPresent()) {
-			System.out.println("  Agent 执行成功");
+			System.out.println("Agent execution successful");
 		}
 
 		System.out.println();
 	}
 
-	// ==================== 示例 6：取消令牌高级用法 ====================
+	//==================== Example 6: Advanced usage of cancellation token ====================
 
 	/**
-	 * 示例 6：取消令牌高级用法 (CancellationToken)
+	 * Example 6: Advanced usage of cancellation token (CancellationToken)
 	 *
-	 * <p>CancellationToken 提供了灵活的取消机制：</p>
+	 * <p>CancellationToken provides a flexible cancellation mechanism:</p>
 	 * <ul>
-	 *   <li>DefaultCancellationToken.linkedTo() - 链接到 CompletableFuture</li>
-	 *   <li>onCancel() - 注册多个取消回调</li>
-	 *   <li>回调的幂等性 - 每个回调只执行一次</li>
+	 *   <li>DefaultCancellationToken.linkedTo() - Link to CompletableFuture</li>
+	 *   <li>onCancel() - Register multiple cancellation callbacks</li>
+	 *   <li>Impotence of callbacks - each callback is executed only once</li>
 	 * </ul>
 	 */
 	public void example6_cancellationTokenAdvanced() {
-		System.out.println("=== 示例 6：取消令牌高级用法 (CancellationToken) ===\n");
+		System.out.println("=== Example 6: Advanced usage of cancellation token (CancellationToken) ===\n");
 
-		// 6.1 基本用法
-		System.out.println("6.1 基本取消令牌用法:");
+		//6.1 Basic usage
+		System.out.println("6.1 Basic cancellation token usage:");
 		DefaultCancellationToken basicToken = new DefaultCancellationToken();
 
-		System.out.println("  初始状态 - isCancelled: " + basicToken.isCancelled());
+		System.out.println("Initial state - isCancelled:" + basicToken.isCancelled());
 
-		// 注册回调
-		basicToken.onCancel(() -> System.out.println("  [回调1] 取消回调被触发"));
-		basicToken.onCancel(() -> System.out.println("  [回调2] 清理资源"));
+		//Register callback
+		basicToken.onCancel(() -> System.out.println("[Callback 1] Cancel callback is triggered"));
+		basicToken.onCancel(() -> System.out.println("[Callback 2] Clean up resources"));
 
-		// 触发取消
+		//trigger cancel
 		basicToken.cancel();
-		System.out.println("  取消后 - isCancelled: " + basicToken.isCancelled());
+		System.out.println("After cancellation - isCancelled:" + basicToken.isCancelled());
 
-		// 重复取消是幂等的
-		basicToken.cancel(); // 不会重复触发回调
+		//Repeat cancellation is idempotent
+		basicToken.cancel(); //The callback will not be triggered repeatedly
 
-		// 6.2 链接到 CompletableFuture
-		System.out.println("\n6.2 链接到 CompletableFuture:");
+		// 6.2 Link to CompletableFuture
+		System.out.println("\n6.2 Link to CompletableFuture:");
 
 		CompletableFuture<String> longRunningTask = new CompletableFuture<>();
 
-		// 创建链接到 Future 的取消令牌
+		//Create a cancellation token linked to a Future
 		DefaultCancellationToken linkedToken = DefaultCancellationToken.linkedTo(longRunningTask);
 
-		linkedToken.onCancel(() -> System.out.println("  [链接令牌] Future 被取消，触发清理"));
+		linkedToken.onCancel(() -> System.out.println("[Link Token] Future is canceled, triggering cleanup"));
 
-		System.out.println("  Future 取消前 - token.isCancelled: " + linkedToken.isCancelled());
+		System.out.println("  Future Before cancellation - token.isCancelled: " + linkedToken.isCancelled());
 
-		// 取消 Future 会自动触发令牌
+		//Canceling the Future will automatically trigger the token
 		longRunningTask.cancel(true);
 
-		// 需要短暂等待异步回调执行
+		//Need to wait briefly for the asynchronous callback to execute
 		try {
 			Thread.sleep(100);
 		}
@@ -631,24 +631,24 @@ public class AsyncToolExecutionExample {
 			Thread.currentThread().interrupt();
 		}
 
-		System.out.println("  Future 取消后 - token.isCancelled: " + linkedToken.isCancelled());
+		System.out.println("  Future after cancellation - token.isCancelled: " + linkedToken.isCancelled());
 
-		// 6.3 在取消后注册回调
-		System.out.println("\n6.3 在取消后注册回调:");
+		//6.3 Register callback after cancellation
+		System.out.println("\n6.3 Register callback after cancellation:");
 		DefaultCancellationToken alreadyCancelled = new DefaultCancellationToken();
 		alreadyCancelled.cancel();
 
-		// 取消后注册的回调会立即执行
-		alreadyCancelled.onCancel(() -> System.out.println("  [延迟注册] 回调立即执行（因为已取消）"));
+		//The registered callback will be executed immediately after cancellation
+		alreadyCancelled.onCancel(() -> System.out.println("[Delayed Registration] The callback is executed immediately (because it has been cancelled)"));
 
-		// 6.4 CancellationToken.NONE - 永不取消的令牌
+		//6.4 CancellationToken.NONE - A token that never cancels
 		System.out.println("\n6.4 CancellationToken.NONE:");
 		CancellationToken noneToken = CancellationToken.NONE;
-		System.out.println("  NONE.isCancelled: " + noneToken.isCancelled()); // 永远是 false
-		noneToken.onCancel(() -> System.out.println("  这个回调永远不会执行")); // 无操作
+		System.out.println("  NONE.isCancelled: " + noneToken.isCancelled()); //always false
+		noneToken.onCancel(() -> System.out.println("This callback never executes")); //No action
 
-		// 6.5 throwIfCancelled 用法
-		System.out.println("\n6.5 throwIfCancelled 用法:");
+		// 6.5 throwIfCancelled usage
+		System.out.println("\n6.5 throwIfCancelled usage:");
 		DefaultCancellationToken throwToken = new DefaultCancellationToken();
 		throwToken.cancel();
 
@@ -656,105 +656,105 @@ public class AsyncToolExecutionExample {
 			throwToken.throwIfCancelled();
 		}
 		catch (ToolCancelledException e) {
-			System.out.println("  捕获到 ToolCancelledException: " + e.getMessage());
+			System.out.println("  captured ToolCancelledException: " + e.getMessage());
 		}
 
 		System.out.println();
 	}
 
-	// ==================== 示例 7：ToolStateCollector 高级用法 ====================
+	// ==================== Example 7：ToolStateCollector Advanced usage ====================
 
 	/**
-	 * 示例 7：ToolStateCollector 高级用法
+	 * Example 7: Advanced usage of ToolStateCollector
 	 *
-	 * <p>ToolStateCollector 用于并行工具执行时收集和合并状态更新。
-	 * 每个工具获得隔离的更新 Map，避免并发冲突。</p>
+	 * <p>ToolStateCollector is used to collect and merge state updates during parallel tool execution.
+	 * Each tool gets an isolated update map to avoid concurrency conflicts.</p>
 	 *
-	 * <p>关键特性：</p>
+	 * <p>Key features:</p>
 	 * <ul>
-	 *   <li>createToolUpdateMap() - 为工具创建隔离的更新 Map</li>
-	 *   <li>discardToolUpdateMap() - 丢弃超时工具的更新</li>
-	 *   <li>mergeAll() - 按索引顺序合并所有更新</li>
+	 *   <li>createToolUpdateMap() - Creates an isolated update map for a tool</li>
+	 *   <li>discardToolUpdateMap() - discards updates to timeout tools</li>
+	 *   <li>mergeAll() - merge all updates in index order</li>
 	 * </ul>
 	 */
 	public void example7_toolStateCollector() {
-		System.out.println("=== 示例 7：ToolStateCollector 高级用法 ===\n");
+		System.out.println("=== Example 7: Advanced usage of ToolStateCollector ===\n");
 
-		// 定义 KeyStrategy（合并策略）
+		//Define KeyStrategy (merge strategy)
 		Map<String, KeyStrategy> keyStrategies = Map.of(
-			"counter", KeyStrategy.APPEND,  // 追加策略
-			"lastUpdated", KeyStrategy.REPLACE  // 替换策略（默认）
+			"counter", KeyStrategy.APPEND,  //Additional strategy
+			"lastUpdated", KeyStrategy.REPLACE  //Replacement strategy (default)
 		);
 
-		// 创建 ToolStateCollector（3 个工具）
+		//Create ToolStateCollector (3 tools)
 		ToolStateCollector collector = new ToolStateCollector(3, keyStrategies);
 
-		System.out.println("7.1 创建隔离的更新 Map:");
+		System.out.println("7.1 Create an isolated update map:");
 
-		// 为每个工具创建隔离的更新 Map
+		//Create an isolated update map for each tool
 		Map<String, Object> tool0Updates = collector.createToolUpdateMap(0);
 		Map<String, Object> tool1Updates = collector.createToolUpdateMap(1);
 		Map<String, Object> tool2Updates = collector.createToolUpdateMap(2);
 
-		// 模拟并行工具写入更新（每个工具写入自己的 Map）
-		System.out.println("  工具 0 写入: counter=A, result=tool0_done");
+		//Simulate parallel tool writing updates (each tool writes its own Map)
+		System.out.println("  tool 0 write: counter=A, result=tool0_done");
 		tool0Updates.put("counter", "A");
 		tool0Updates.put("result", "tool0_done");
 		tool0Updates.put("lastUpdated", "tool0");
 
-		System.out.println("  工具 1 写入: counter=B, data=from_tool1");
+		System.out.println("  tool 1 write: counter=B, data=from_tool1");
 		tool1Updates.put("counter", "B");
 		tool1Updates.put("data", "from_tool1");
 		tool1Updates.put("lastUpdated", "tool1");
 
-		System.out.println("  工具 2 写入: counter=C, extra=info");
+		System.out.println("  tool 2 write: counter=C, extra=info");
 		tool2Updates.put("counter", "C");
 		tool2Updates.put("extra", "info");
 		tool2Updates.put("lastUpdated", "tool2");
 
-		System.out.println("\n7.2 检查状态:");
-		System.out.println("  已完成工具数: " + collector.getCompletedCount());
-		System.out.println("  是否已合并: " + collector.isMerged());
+		System.out.println("\n7.2 Check status:");
+		System.out.println("Number of tools completed:" + collector.getCompletedCount());
+		System.out.println("Has it been merged:" + collector.isMerged());
 
-		// 合并所有更新
-		System.out.println("\n7.3 合并所有更新 (mergeAll):");
+		//Merge all updates
+		System.out.println("\n7.3 Merge all updates (mergeAll):");
 		Map<String, Object> merged = collector.mergeAll();
-		System.out.println("  合并结果: " + merged);
+		System.out.println("Combined results:" + merged);
 		System.out.println("  - counter (APPEND): " + merged.get("counter")); // [A, B, C]
-		System.out.println("  - lastUpdated (REPLACE): " + merged.get("lastUpdated")); // tool2（最后）
+		System.out.println("  - lastUpdated (REPLACE): " + merged.get("lastUpdated")); //tool2 (last)
 
-		System.out.println("\n7.4 丢弃超时工具的更新:");
+		System.out.println("\n7.4 Updates to the discard timeout tool:");
 
-		// 创建新的 Collector 演示丢弃
+		//Create a new Collector to demonstrate discarding
 		ToolStateCollector collector2 = new ToolStateCollector(2, null);
 		Map<String, Object> goodTool = collector2.createToolUpdateMap(0);
 		Map<String, Object> timeoutTool = collector2.createToolUpdateMap(1);
 
 		goodTool.put("status", "success");
-		timeoutTool.put("status", "partial"); // 假设这个工具超时了
+		timeoutTool.put("status", "partial"); //Suppose the tool times out
 
-		// 丢弃超时工具的更新
+		//Updates to the discard timeout tool
 		collector2.discardToolUpdateMap(1);
-		System.out.println("  丢弃工具 1 的更新");
+		System.out.println("Updates to Drop Tool 1");
 
 		Map<String, Object> merged2 = collector2.mergeAll();
-		System.out.println("  合并结果（排除超时工具）: " + merged2);
+		System.out.println("Combined results (excluding timeout tools):" + merged2);
 
-		System.out.println("\n7.5 mergeAll 只能调用一次:");
+		System.out.println("\n7.5 mergeAll can only be called once:");
 		try {
-			collector.mergeAll(); // 再次调用会抛异常
+			collector.mergeAll(); //Calling again will throw an exception
 		}
 		catch (IllegalStateException e) {
-			System.out.println("  捕获到异常: " + e.getMessage());
+			System.out.println("Exception caught:" + e.getMessage());
 		}
 
 		System.out.println();
 	}
 
-	// ==================== 辅助方法 ====================
+	// ==================== Helper methods ====================
 
 	/**
-	 * 创建简单的异步工具（用于示例）
+	 * Create simple asynchronous tools (for example)
 	 */
 	private AsyncToolCallback createSimpleAsyncTool(String name, String description, int delayMs) {
 		return new AsyncToolCallback() {
@@ -776,7 +776,7 @@ public class AsyncToolExecutionExample {
 					catch (InterruptedException e) {
 						Thread.currentThread().interrupt();
 					}
-					return name + " 执行完成 (耗时 " + delayMs + "ms)";
+					return name + "Execution completed (time consuming" + delayMs + "ms)";
 				});
 			}
 
@@ -788,42 +788,42 @@ public class AsyncToolExecutionExample {
 	}
 
 	/**
-	 * 运行所有示例
+	 * Run all examples
 	 */
 	public void runAllExamples() {
-		System.out.println("=== 异步工具执行示例 (Async Tool Execution Examples) ===\n");
-		System.out.println("Issue #3988 - 异步工具支持功能演示\n");
+		System.out.println("=== Async Tool Execution Examples ===\n");
+		System.out.println("Issue #3988 - Asynchronous tool support feature demonstration\n");
 		System.out.println("================================================\n");
 
 		try {
-			// 示例 1：基础异步工具
+			//Example 1: Basic asynchronous tools
 			example1_basicAsyncTool();
 
-			// 示例 2：可取消的异步工具
+			//Example 2: Cancellable asynchronous tools
 			example2_cancellableAsyncTool();
 
-			// 示例 3：状态感知异步工具
+			//Example 3: State-aware asynchronous tools
 			example3_stateAwareAsyncTool();
 
-			// 示例 4：并行工具执行配置
+			//Example 4: Parallel tool execution configuration
 			example4_parallelExecutionConfiguration();
 
-			// 示例 5：在 ReactAgent 中使用异步工具
+			//Example 5: Using async tools with ReactAgent
 			example5_asyncToolsInReactAgent();
 
-			// 示例 6：取消令牌高级用法
+			//Example 6: Advanced cancellation token usage
 			example6_cancellationTokenAdvanced();
 
-			// 示例 7：ToolStateCollector 高级用法
+			//Example 7: Advanced usage of ToolStateCollector
 			example7_toolStateCollector();
 
 			System.out.println("================================================");
-			System.out.println("所有示例执行完成！");
+			System.out.println("All examples are executed!");
 			System.out.println("================================================");
 
 		}
 		catch (Exception e) {
-			System.err.println("执行示例时出错: " + e.getMessage());
+			System.err.println("An error occurred while executing the example:" + e.getMessage());
 			e.printStackTrace();
 		}
 	}

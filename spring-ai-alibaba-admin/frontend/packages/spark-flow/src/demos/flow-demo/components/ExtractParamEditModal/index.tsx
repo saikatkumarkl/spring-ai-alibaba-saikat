@@ -1,6 +1,6 @@
 import $i18n from '@/i18n';
 import { Input, Modal, Select } from '@spark-ai/design';
-import { VALUE_TYPE_OPTIONS } from '@spark-ai/flow';
+import { VALUE_TYPE_OPTIONS } from '@cordondata/flow';
 import { Form, Switch } from 'antd';
 import React from 'react';
 import { IParameterExtractorNodeParam } from '../../types/flow';

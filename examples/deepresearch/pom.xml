@@ -12,7 +12,7 @@
 	<artifactId>deepresearch</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Examples::DeepResearch</name>
-	<description>DeepResearch example for Spring AI Alibaba Agent Framework.</description>
+	<description>DeepResearch example for CordonData Agent Framework.</description>
 	<url/>
 	<licenses>
 		<license/>

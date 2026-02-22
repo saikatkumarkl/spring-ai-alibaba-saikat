@@ -63,7 +63,7 @@ class SaaStTemplateRendererTest {
 
 	@Test
 	void testJsonContentWithStringDelimiter() {
-		// 测试使用多字符 delimiter 来避免与 JSON 内容冲突
+		//Test using multi-character delimiter to avoid conflicts with JSON content
 		SaaStTemplateRenderer renderer = SaaStTemplateRenderer.builder()
 				.startDelimiter("{{")
 				.endDelimiter("}}")
@@ -71,29 +71,29 @@ class SaaStTemplateRendererTest {
 				.build();
 
 		String template = """
-				请处理以下 JSON 数据：{"name": "test", "value": 123}
-				用户信息：{{userName}}
-				数据内容：{{jsonData}}
+				Please process the following JSON data: {"name": "test", "value": 123}
+				User information: {{userName}}
+				Data content: {{jsonData}}
 				""";
 
 		Map<String, Object> variables = Map.of(
-				"userName", "张三",
+				"userName", "Zhang San",
 				"jsonData", "{\"key\": \"value\"}"
 		);
 
 		String result = renderer.apply(template, variables);
 
-		// 验证 JSON 中的 {} 没有被替换
+		//Verify that {} in JSON has not been replaced
 		assertTrue(result.contains("{\"name\": \"test\", \"value\": 123}"));
-		// 验证模板变量被正确替换
-		assertTrue(result.contains("用户信息：张三"));
-		assertTrue(result.contains("数据内容：{\"key\": \"value\"}"));
+		//Verify template variables are replaced correctly
+		assertTrue(result.contains("User information: Zhang San"));
+		assertTrue(result.contains("Data content: {\"key\": \"value\"}"));
 	}
 
 	@Test
 	void testJsonContentConflictWithSingleCharDelimiter() {
-		// 测试单字符 delimiter 与 JSON 内容冲突的情况
-		// 实现应该能够自动识别并保护 JSON 内容，避免与模板变量冲突
+		//Test for single-character delimiter conflicts with JSON content
+		//Implementations should be able to automatically identify and protect JSON content to avoid conflicts with template variables
 		SaaStTemplateRenderer renderer = SaaStTemplateRenderer.builder()
 				.startDelimiterToken('{')
 				.endDelimiterToken('}')
@@ -101,24 +101,24 @@ class SaaStTemplateRendererTest {
 				.build();
 
 		String template = """
-				请处理以下 JSON 数据：{"name": "test", "value": 123}
-				用户信息：{userName}
+				Please process the following JSON data: {"name": "test", "value": 123}
+				User information: {userName}
 				""";
 
-		Map<String, Object> variables = Map.of("userName", "张三");
+		Map<String, Object> variables = Map.of("userName", "Zhang San");
 
-		// 实现应该能够识别 JSON 内容并保护它，同时正确替换模板变量
+		//Implementations should be able to recognize JSON content and protect it while properly replacing template variables
 		String result = renderer.apply(template, variables);
 
-		// 验证 JSON 内容被保护（没有被误替换）
+		//Verify that the JSON content is protected (not replaced by mistake)
 		assertTrue(result.contains("{\"name\": \"test\", \"value\": 123}"));
-		// 验证模板变量被正确替换
-		assertTrue(result.contains("用户信息：张三"));
+		//Verify template variables are replaced correctly
+		assertTrue(result.contains("User information: Zhang San"));
 	}
 
 	@Test
 	void testComplexJsonWithStringDelimiter() {
-		// 测试复杂的 JSON 内容与模板变量混合
+		//Test complex JSON content mixed with template variables
 		SaaStTemplateRenderer renderer = SaaStTemplateRenderer.builder()
 				.startDelimiter("{{")
 				.endDelimiter("}}")
@@ -144,17 +144,17 @@ class SaaStTemplateRendererTest {
 
 		String result = renderer.apply(template, variables);
 
-		// 验证变量被正确替换
+		//Verify variables are replaced correctly
 		assertTrue(result.contains("\"user\": \"Alice\""));
 		assertTrue(result.contains("\"count\": 42"));
 		assertTrue(result.contains("\"response\": \"Success\""));
-		// 验证 JSON 结构中的普通 {} 没有被误替换
+		//Verify that ordinary {} in the JSON structure has not been replaced by mistake
 		assertTrue(result.contains("\"metadata\": {\"type\": \"test\""));
 	}
 
 	@Test
 	void testNestedDelimiters() {
-		// 测试嵌套的 delimiter
+		//Test nested delimiters
 		SaaStTemplateRenderer renderer = SaaStTemplateRenderer.builder()
 				.startDelimiter("{{")
 				.endDelimiter("}}")
@@ -174,7 +174,7 @@ class SaaStTemplateRendererTest {
 
 	@Test
 	void testPropertyAccess() {
-		// 测试属性访问
+		//Test property access
 		SaaStTemplateRenderer renderer = SaaStTemplateRenderer.builder()
 				.startDelimiter("{{")
 				.endDelimiter("}}")
@@ -259,7 +259,7 @@ class SaaStTemplateRendererTest {
 
 	@Test
 	void testJsonArrayWithStringDelimiter() {
-		// 测试包含 JSON 数组的情况
+		//Testing a case containing a JSON array
 		SaaStTemplateRenderer renderer = SaaStTemplateRenderer.builder()
 				.startDelimiter("{{")
 				.endDelimiter("}}")
@@ -281,16 +281,16 @@ class SaaStTemplateRendererTest {
 
 		String result = renderer.apply(template, variables);
 
-		// 验证 JSON 数组中的 {} 没有被误替换
+		//Verify that {} in the JSON array has not been replaced by mistake
 		assertTrue(result.contains("\"items\": [{\"id\": 1"));
-		// 验证模板变量被正确替换
+		//Verify template variables are replaced correctly
 		assertTrue(result.contains("\"user\": \"Bob\""));
 		assertTrue(result.contains("\"count\": 10"));
 	}
 
 	@Test
 	void testMixedContent() {
-		// 测试混合内容：既有 JSON，又有普通文本和模板变量
+		//Test mixed content: both JSON, normal text, and template variables
 		SaaStTemplateRenderer renderer = SaaStTemplateRenderer.builder()
 				.startDelimiter("{{")
 				.endDelimiter("}}")
@@ -298,10 +298,10 @@ class SaaStTemplateRendererTest {
 				.build();
 
 		String template = """
-				用户 {{userName}} 提交了以下数据：
+				User {{userName}} submitted the following data:
 				{"type": "request", "data": {"key": "value"}}
-				处理结果：{{result}}
-				时间：{{timestamp}}
+				Processing result: {{result}}
+				Time: {{timestamp}}
 				""";
 
 		Map<String, Object> variables = Map.of(
@@ -312,17 +312,17 @@ class SaaStTemplateRendererTest {
 
 		String result = renderer.apply(template, variables);
 
-		// 验证所有变量都被替换
-		assertTrue(result.contains("用户 Charlie 提交了以下数据："));
-		assertTrue(result.contains("处理结果：Success"));
-		assertTrue(result.contains("时间：2024-01-01"));
-		// 验证 JSON 内容保持不变
+		//Verify that all variables are replaced
+		assertTrue(result.contains("User Charlie submitted the following data:"));
+		assertTrue(result.contains("Processing result: Success"));
+		assertTrue(result.contains("Time: 2024-01-01"));
+		//Verify that the JSON content remains unchanged
 		assertTrue(result.contains("{\"type\": \"request\""));
 	}
 
 	@Test
 	void testBuilderWithCharDelimiters() {
-		// 测试 Builder 使用 char delimiter
+		// test Builder use char delimiter
 		SaaStTemplateRenderer renderer = SaaStTemplateRenderer.builder()
 				.startDelimiterToken('<')
 				.endDelimiterToken('>')
@@ -338,7 +338,7 @@ class SaaStTemplateRendererTest {
 
 	@Test
 	void testBuilderWithStringDelimiters() {
-		// 测试 Builder 使用 String delimiter
+		// test Builder use String delimiter
 		SaaStTemplateRenderer renderer = SaaStTemplateRenderer.builder()
 				.startDelimiter("<<")
 				.endDelimiter(">>")
@@ -385,7 +385,7 @@ class SaaStTemplateRendererTest {
 
 	@Test
 	void testComplexNestedJson() {
-		// 测试复杂的嵌套 JSON 结构
+		//Test complex nested JSON structures
 		SaaStTemplateRenderer renderer = SaaStTemplateRenderer.builder()
 				.startDelimiter("{{")
 				.endDelimiter("}}")
@@ -413,10 +413,10 @@ class SaaStTemplateRendererTest {
 
 		String result = renderer.apply(template, variables);
 
-		// 验证深层嵌套的变量被替换
+		//Verify that deeply nested variables are replaced
 		assertTrue(result.contains("\"value\": \"test\""));
 		assertTrue(result.contains("\"user\": \"User\""));
-		// 验证 JSON 结构完整
+		//Verify that the JSON structure is complete
 		assertTrue(result.contains("\"level3\": {"));
 		assertTrue(result.contains("\"items\": [{\"a\": 1}"));
 	}

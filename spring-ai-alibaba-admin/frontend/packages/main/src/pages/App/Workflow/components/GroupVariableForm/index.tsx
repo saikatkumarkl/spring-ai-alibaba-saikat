@@ -1,12 +1,12 @@
 import $i18n from '@/i18n';
 import { Button, IconFont, Input, message } from '@spark-ai/design';
-import type { IValueType, IVarTreeItem } from '@spark-ai/flow';
+import type { IValueType, IVarTreeItem } from '@cordondata/flow';
 import {
   DraggableWithHandle,
   filterVarItemsByType,
   uniqueId,
   VariableSelector,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { useSetState } from 'ahooks';
 import { Typography } from 'antd';
 import classNames from 'classnames';

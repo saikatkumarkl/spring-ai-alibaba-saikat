@@ -1,4 +1,4 @@
-# Spring AI Alibaba A2A 一体化演示（注册 -> 发现 -> 调用）
+# CordonData A2A 一体化演示（注册 -> 发现 -> 调用）
 
 本示例演示如何在一个应用中完成：
 - 本地 ReactAgent 的创建与对外暴露（A2A Server 自动导出）
@@ -50,8 +50,8 @@ spring:
             name: data_analysis_agent
             description: 专门用于数据分析和统计计算的本地智能体
             provider:
-              name: Spring AI Alibaba Documentation
-              organization: Spring AI Alibaba
+              name: CordonData Documentation
+              organization: CordonData
 ```
 
 **重要**：

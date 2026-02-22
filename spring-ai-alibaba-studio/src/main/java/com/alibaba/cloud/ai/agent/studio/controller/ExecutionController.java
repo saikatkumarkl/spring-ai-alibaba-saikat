@@ -86,7 +86,7 @@ public class ExecutionController {
 //			BaseAgent agent = agentLoader.loadAgent(request.appName);
 //			RunnableConfig runnableConfig = RunnableConfig.builder().threadId(request.threadId)
 //					.addMetadata("user_id", request.userId).build();
-//			// request.stateDelta 目前用不到
+//// request.stateDelta is currently not used
 //			Optional<NodeOutput> state = agent.invokeAndGetOutput(request.newMessage, runnableConfig);
 //
 //			return state.orElseThrow(() -> {
@@ -128,7 +128,7 @@ public class ExecutionController {
 //					.threadId(request.threadId)
 //					.addMetadata("user_id", request.userId)
 //					.build();
-//			// request.stateDelta 目前用不到
+//// request.stateDelta is currently not used
 //			Flux<NodeOutput> agentStream = agent.stream(request.newMessage, runnableConfig);
 //
 //			// Create a heartbeat Flux to keep connection alive (emit every 15 seconds)

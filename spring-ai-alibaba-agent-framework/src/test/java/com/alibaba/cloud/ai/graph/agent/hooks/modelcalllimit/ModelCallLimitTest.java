@@ -57,14 +57,14 @@ public class ModelCallLimitTest {
 
         ReactAgent agent = createAgent(hook, "test-agent", chatModel);
 
-        // 第一次调用，执行第二次推理时报错
+        //When called for the first time, an error occurs during the second inference.
         assertThrows(ModelCallLimitExceededException.class, () -> {
-            agent.invoke("你好，帮我分两次调用weather工具，查询北京和上海的天气");
-        }, "第一次调用应该抛出ModelCallLimitExceededException异常");
+            agent.invoke("Hello, help me call the weather tool twice to check the weather in Beijing and Shanghai.");
+        }, "The first call should throw a ModelCallLimitExceededException exception");
 
-        // 第二次调用，正常执行，不受之前影响
-        Optional<OverAllState> result2 = agent.invoke("你好");
-        assertTrue(result2.isPresent(), "第二次调用应该返回结果而不是抛出异常");
+        //The second call is executed normally and is not affected by the previous call.
+        Optional<OverAllState> result2 = agent.invoke("Hello");
+        assertTrue(result2.isPresent(), "The second call should return a result instead of throwing an exception");
     }
 
     @Test
@@ -76,19 +76,19 @@ public class ModelCallLimitTest {
 
         ReactAgent agent = createAgent(hook, "test-agent", chatModel);
 
-        // END 之前实现是添加 AssistantMessage 提示模型去中止, 此处用例不验证
-        // 第一次调用，正常执行，不受之前影响
-        Optional<OverAllState> result1 = agent.invoke("你好");
-        assertTrue(result1.isPresent(), "第一次调用应该返回结果而不是抛出异常");
+        //The previous implementation of END was to add the AssistantMessage prompt model to terminate. The use case here is not verified.
+        //The first call will execute normally and will not be affected by the previous call.
+        Optional<OverAllState> result1 = agent.invoke("Hello");
+        assertTrue(result1.isPresent(), "The first call should return a result rather than throwing an exception");
 
-        // 第二次调用，正常执行，不会导致异常
+        //The second call will execute normally and will not cause an exception.
         assertDoesNotThrow(() -> {
-            agent.invoke("你好，调用weather工具，查询北京的天气");
+            agent.invoke("Hello, call the weather tool to check the weather in Beijing");
         });
 
-        // 第三次调用，正常执行，不会导致异常
+        //The third call will execute normally and will not cause an exception.
         assertDoesNotThrow(() -> {
-            agent.invoke("你好，调用weather工具，查询上海的天气");
+            agent.invoke("Hello, call the weather tool to check the weather in Shanghai");
         });
     }
 

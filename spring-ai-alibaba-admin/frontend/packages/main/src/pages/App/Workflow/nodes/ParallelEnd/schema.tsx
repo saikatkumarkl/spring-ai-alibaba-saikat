@@ -1,5 +1,5 @@
 import $i18n from '@/i18n';
-import { INodeSchema } from '@spark-ai/flow';
+import { INodeSchema } from '@cordondata/flow';
 
 export const ParallelEndSchema: INodeSchema = {
   type: 'ParallelEnd',

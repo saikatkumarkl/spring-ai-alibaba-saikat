@@ -23,6 +23,7 @@ export interface IUpdateAccountParams {
   nickname: string;
   email?: string;
   password?: string;
+  type?: 'admin' | 'user';
 }
 
 // Parameters for changing password

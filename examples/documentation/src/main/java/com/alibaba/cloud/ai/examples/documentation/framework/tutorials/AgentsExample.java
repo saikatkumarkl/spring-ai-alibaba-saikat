@@ -65,23 +65,23 @@ import reactor.core.publisher.Flux;
  */
 public class AgentsExample {
 
-	// ==================== 基础模型配置 ====================
+	// ==================== Basic Model Configuration ====================
 
 	/**
-	 * 示例1：基础模型配置
+	 * Example 1: Basic Model Configuration
 	 */
 	public static void basicModelConfiguration() {
-		// 创建 DashScope API 实例
+		// Create DashScope API instance
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
 				.apiKey(System.getenv("AI_DASHSCOPE_API_KEY"))
 				.build();
 
-		// 创建 ChatModel
+		// Create ChatModel
 		ChatModel chatModel = DashScopeChatModel.builder()
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		// 创建 Agent
+		// Create Agent
 		ReactAgent agent = ReactAgent.builder()
 				.name("my_agent")
 				.model(chatModel)
@@ -89,7 +89,7 @@ public class AgentsExample {
 	}
 
 	/**
-	 * 示例2：高级模型配置
+	 * Example 2: Advanced Model Configuration
 	 */
 	public static void advancedModelConfiguration() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -99,15 +99,15 @@ public class AgentsExample {
 		ChatModel chatModel = DashScopeChatModel.builder()
 				.dashScopeApi(dashScopeApi)
 				.defaultOptions(DashScopeChatOptions.builder()
-						.temperature(0.7)      // 控制随机性
-						.maxToken(2000)       // 最大输出长度
-						.topP(0.9)            // 核采样参数
+						.temperature(0.7)      // Controls randomness
+						.maxToken(2000)       // Maximum output length
+						.topP(0.9)            // Nucleus sampling parameter
 						.enableThinking(true)
 						.build())
 				.build();
 	}
 
-	// ==================== 工具定义 ====================
+	// ==================== Tool Definitions ====================
 
 	public static void toolUsage() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -118,14 +118,14 @@ public class AgentsExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		// 创建工具回调
+		// Create tool callback
 		ToolCallback searchTool = FunctionToolCallback
 				.builder("search", new SearchTool())
-				.description("搜索信息的工具")
+				.description("Tool for searching information")
 				.inputType(String.class)
 				.build();
 
-		// 使用多个工具
+		// Use multiple tools
 		ReactAgent agent = ReactAgent.builder()
 				.name("my_agent")
 				.model(chatModel)
@@ -134,7 +134,7 @@ public class AgentsExample {
 	}
 
 	/**
-	 * 示例5：基础 System Prompt
+	 * Example 5: Basic System Prompt
 	 */
 	public static void basicSystemPrompt() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -148,12 +148,12 @@ public class AgentsExample {
 		ReactAgent agent = ReactAgent.builder()
 				.name("my_agent")
 				.model(chatModel)
-				.systemPrompt("你是一个专业的技术助手。请准确、简洁地回答问题。")
+				.systemPrompt("You are a professional technical assistant. Please answer questions accurately and concisely.")
 				.build();
 	}
 
 	/**
-	 * 示例6：使用 instruction
+	 * Example 6: Using instruction
 	 */
 	public static void instructionUsage() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -165,15 +165,15 @@ public class AgentsExample {
 				.build();
 
 		String instruction = """
-				你是一个经验丰富的软件架构师。
+				You are an experienced software architect.
 				
-				在回答问题时，请：
-				1. 首先理解用户的核心需求
-				2. 分析可能的技术方案
-				3. 提供清晰的建议和理由
-				4. 如果需要更多信息，主动询问
+				When answering questions, please:
+				1. First understand the user's core requirements
+				2. Analyze possible technical solutions
+				3. Provide clear recommendations with reasoning
+				4. If more information is needed, proactively ask
 				
-				保持专业、友好的语气。
+				Maintain a professional and friendly tone.
 				""";
 
 		ReactAgent agent = ReactAgent.builder()
@@ -186,10 +186,10 @@ public class AgentsExample {
 	// ==================== System Prompt ====================
 
 	/**
-	 * 示例6.5：使用自定义 TemplateRenderer 定制占位符分隔符
+	 * Example 6.5: Using custom TemplateRenderer with custom placeholder delimiters
 	 *
-	 * 展示如何使用 StringTemplateRenderer.builder() 来定制占位符的起始和结束分隔符。
-	 * 默认使用 {variable}，这里演示使用 {{variable}} 作为占位符。
+	 * Demonstrates how to use StringTemplateRenderer.builder() to customize the start and end delimiters for placeholders.
+	 * Default uses {variable}, here we demonstrate using {{variable}} as placeholders.
 	 */
 	public static void customTemplateRendererExample() throws GraphRunnerException {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -200,27 +200,27 @@ public class AgentsExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		// 使用 StringTemplateRenderer.builder() 创建自定义分隔符的 TemplateRenderer
-		// 使用 {{ 和 }} 作为占位符分隔符
+		// Use StringTemplateRenderer.builder() to create a TemplateRenderer with custom delimiters
+		// Use {{ and }} as placeholder delimiters
 		TemplateRenderer customRenderer = SaaStTemplateRenderer.builder()
 				.startDelimiter("{{")
 				.endDelimiter("}}")
 				.build();
 
-		// 使用自定义分隔符的 systemPrompt
+		// systemPrompt with custom delimiters
 		String systemPrompt = """
-				你是一个专业的{{role}}助手。
-				你的专业领域是{{domain}}。
-				请用{{language}}语言回答用户的问题。
+				You are a professional {{role}} assistant.
+				Your area of expertise is {{domain}}.
+				Please answer the user's questions in {{language}}.
 				""";
 
-		// 使用自定义分隔符的 instruction
+		// instruction with custom delimiters
 		String instruction = """
-				用户询问的主题是：{{topic}}
-				请根据以下要求回答：
-				1. 保持专业性
-				2. 提供具体示例
-				3. 语言要{{style}}
+				The user's inquiry topic is: {{topic}}
+				Please answer according to the following requirements:
+				1. Maintain professionalism
+				2. Provide specific examples
+				3. Language should be {{style}}
 				""";
 
 		ReactAgent agent = ReactAgent.builder()
@@ -231,14 +231,14 @@ public class AgentsExample {
 				.templateRenderer(customRenderer)
 				.build();
 
-		// 使用时，状态中的变量会自动替换 {{ }} 包裹的占位符
+		// When used, variables in the state will automatically replace the {{ }} wrapped placeholders
 		Map<String, Object> inputs = Map.of(
-				"input", "请介绍一下Spring框架的核心特性",
-				"role", "技术专家",
-				"domain", "Java企业级开发",
-				"language", "中文",
-				"topic", "Spring框架",
-				"style", "简洁易懂"
+				"input", "Please introduce the core features of the Spring framework",
+				"role", "Technical Expert",
+				"domain", "Java Enterprise Development",
+				"language", "English",
+				"topic", "Spring Framework",
+				"style", "concise and easy to understand"
 		);
 
 		Optional<OverAllState> result = agent.invoke(inputs);
@@ -246,14 +246,14 @@ public class AgentsExample {
 			List<Message> messages = (List<Message>) result.get().value("messages").orElse(List.of());
 			for (Message message : messages) {
 				if (message instanceof AssistantMessage) {
-					System.out.println("Agent回复: " + ((AssistantMessage) message).getText());
+					System.out.println("Agent reply: " + ((AssistantMessage) message).getText());
 				}
 			}
 		}
 	}
 
 	/**
-	 * 示例7：动态 System Prompt
+	 * Example 7: Dynamic System Prompt
 	 */
 	public static void dynamicSystemPrompt() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -272,7 +272,7 @@ public class AgentsExample {
 	}
 
 	/**
-	 * 示例8：基础调用
+	 * Example 8: Basic Invocation
 	 */
 	public static void basicInvocation() throws GraphRunnerException {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -288,24 +288,24 @@ public class AgentsExample {
 				.model(chatModel)
 				.build();
 
-		// 字符串输入
-		AssistantMessage response = agent.call("杭州的天气怎么样？");
+		// String input
+		AssistantMessage response = agent.call("What's the weather like in Hangzhou?");
 		System.out.println(response.getText());
 
-		// UserMessage 输入
-		UserMessage userMessage = new UserMessage("帮我分析这个问题");
+		// UserMessage input
+		UserMessage userMessage = new UserMessage("Help me analyze this problem");
 		AssistantMessage response2 = agent.call(userMessage);
 
-		// 多个消息
+		// Multiple messages
 		List<Message> messages = List.of(
-				new UserMessage("我想了解 Java 多线程"),
-				new UserMessage("特别是线程池的使用")
+				new UserMessage("I want to learn about Java multithreading"),
+				new UserMessage("Especially the usage of thread pools")
 		);
 		AssistantMessage response3 = agent.call(messages);
 	}
 
 	/**
-	 * 示例9：获取完整状态
+	 * Example 9: Get Full State
 	 */
 	public static void getFullState() throws GraphRunnerException {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -321,24 +321,24 @@ public class AgentsExample {
 				.model(chatModel)
 				.build();
 
-		Optional<OverAllState> result = agent.invoke("帮我写一首诗");
+		Optional<OverAllState> result = agent.invoke("Write me a poem");
 
 		if (result.isPresent()) {
 			OverAllState state = result.get();
 
-			// 访问消息历史
+			// Access message history
 			Optional<Object> messages = state.value("messages");
 			List<Message> messageList = (List<Message>) messages.get();
 
-			// 访问自定义状态
+			// Access custom state
 			Optional<Object> customData = state.value("custom_key");
 
-			System.out.println("完整状态：" + state);
+			System.out.println("Full state: " + state);
 		}
 	}
 
 	/**
-	 * 示例10：使用配置
+	 * Example 10: Using Configuration
 	 */
 	public static void useConfiguration() throws GraphRunnerException {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -360,13 +360,13 @@ public class AgentsExample {
 				.addMetadata("key", "value")
 				.build();
 
-		AssistantMessage response = agent.call("你的问题", runnableConfig);
+		AssistantMessage response = agent.call("Your question", runnableConfig);
 	}
 
-	// ==================== 调用 Agent ====================
+	// ==================== Invoking Agent ====================
 
 	/**
-	 * 示例10.1：流式调用 - 基础用法
+	 * Example 10.1: Stream Invocation - Basic Usage
 	 */
 	public static void basicStreamInvocation() throws GraphRunnerException {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -382,25 +382,25 @@ public class AgentsExample {
 				.model(chatModel)
 				.build();
 
-		// 流式输出
-		Flux<NodeOutput> stream = agent.stream("帮我写一首关于春天的诗");
+		// Stream output
+		Flux<NodeOutput> stream = agent.stream("Write me a poem about spring");
 
 		stream.subscribe(
 				output -> {
-					// 处理每个节点输出
-					System.out.println("节点: " + output.node());
+					// Process each node output
+					System.out.println("Node: " + output.node());
 					System.out.println("Agent: " + output.agent());
 					if (output.tokenUsage() != null) {
-						System.out.println("Token使用: " + output.tokenUsage());
+						System.out.println("Token usage: " + output.tokenUsage());
 					}
 				},
-				error -> System.err.println("错误: " + error.getMessage()),
-				() -> System.out.println("流式输出完成")
+				error -> System.err.println("Error: " + error.getMessage()),
+				() -> System.out.println("Stream output completed")
 		);
 	}
 
 	/**
-	 * 示例10.2：流式调用 - 高级用法
+	 * Example 10.2: Stream Invocation - Advanced Usage
 	 */
 	public static void advancedStreamInvocation() throws GraphRunnerException {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -421,23 +421,23 @@ public class AgentsExample {
 				.threadId("stream_thread_1")
 				.build();
 
-		// 使用配置的流式调用
-		Flux<NodeOutput> stream = agent.stream(new UserMessage("解释一下量子计算"), config);
+		// Stream invocation with configuration
+		Flux<NodeOutput> stream = agent.stream(new UserMessage("Explain quantum computing"), config);
 
-		// 使用 doOnNext 处理中间输出
+		// Use doOnNext to handle intermediate outputs
 		stream.doOnNext(output -> {
 					if (!output.isSTART() && !output.isEND()) {
-						System.out.println("处理中...");
-						System.out.println("当前节点: " + output.node());
+						System.out.println("Processing...");
+						System.out.println("Current node: " + output.node());
 					}
 				})
-				.doOnComplete(() -> System.out.println("所有节点处理完成"))
-				.doOnError(e -> System.err.println("流处理错误: " + e.getMessage()))
-				.blockLast(); // 阻塞等待完成
+				.doOnComplete(() -> System.out.println("All nodes processed"))
+				.doOnError(e -> System.err.println("Stream processing error: " + e.getMessage()))
+				.blockLast(); // Block until complete
 	}
 
 	/**
-	 * 示例10.3：流式调用 - 收集所有输出
+	 * Example 10.3: Stream Invocation - Collect All Outputs
 	 */
 	public static void collectStreamOutputs() throws GraphRunnerException {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -453,25 +453,25 @@ public class AgentsExample {
 				.model(chatModel)
 				.build();
 
-		Flux<NodeOutput> stream = agent.stream("分析机器学习的应用场景");
+		Flux<NodeOutput> stream = agent.stream("Analyze the applications of machine learning");
 
-		// 收集所有输出
+		// Collect all outputs
 		List<NodeOutput> outputs = stream.collectList().block();
 
 		if (outputs != null) {
-			System.out.println("总共收到 " + outputs.size() + " 个节点输出");
+			System.out.println("Total received " + outputs.size() + " node outputs");
 
-			// 获取最终输出
+			// Get final output
 			NodeOutput lastOutput = outputs.get(outputs.size() - 1);
-			System.out.println("最终状态: " + lastOutput.state());
+			System.out.println("Final state: " + lastOutput.state());
 
-			// 获取消息
+			// Get messages
 			Optional<Object> messages = lastOutput.state().value("messages");
 			if (messages.isPresent()) {
 				List<Message> messageList = (List<Message>) messages.get();
 				Message lastMessage = messageList.get(messageList.size() - 1);
 				if (lastMessage instanceof AssistantMessage assistantMsg) {
-					System.out.println("最终回复: " + assistantMsg.getText());
+					System.out.println("Final reply: " + assistantMsg.getText());
 				}
 			}
 		}
@@ -493,13 +493,13 @@ public class AgentsExample {
 				.saver(new MemorySaver())
 				.build();
 
-		AssistantMessage response = agent.call("写一首关于春天的诗");
-		// 输出会遵循 PoemOutput 的结构
+		AssistantMessage response = agent.call("Write a poem about spring");
+		// Output will follow the PoemOutput structure
 		System.out.println(response.getText());
 	}
 
 	/**
-	 * 示例12：使用 outputSchema
+	 * Example 12: Using outputSchema
 	 */
 	public static void structuredOutputWithSchema() throws GraphRunnerException {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -521,11 +521,11 @@ public class AgentsExample {
 				.saver(new MemorySaver())
 				.build();
 
-		AssistantMessage response = agent.call("分析这段文本：春天来了，万物复苏。");
+		AssistantMessage response = agent.call("Analyze this text: Spring has come, everything is reviving.");
 	}
 
 	/**
-	 * 示例13：配置记忆
+	 * Example 13: Configure Memory
 	 */
 	public static void configureMemory() throws GraphRunnerException {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -536,100 +536,100 @@ public class AgentsExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		// 配置内存存储
+		// Configure in-memory storage
 		ReactAgent agent = ReactAgent.builder()
 				.name("chat_agent")
 				.model(chatModel)
 				.saver(new MemorySaver())
 				.build();
 
-		// 使用 thread_id 维护对话上下文
+		// Use thread_id to maintain conversation context
 		RunnableConfig config = RunnableConfig.builder()
 				.threadId("user_123")
 				.build();
 
-		agent.call("我叫张三", config);
-		agent.call("我叫什么名字？", config);  // 输出: "你叫张三"
+		agent.call("My name is Zhang San", config);
+		agent.call("What is my name?", config);  // Output: "Your name is Zhang San"
 	}
 
-	// ==================== 结构化输出 ====================
+	// ==================== Structured Output ====================
 
 	public static void main(String[] args) {
 		System.out.println("=== Agents Tutorial Examples ===");
-		System.out.println("注意：需要设置 AI_DASHSCOPE_API_KEY 环境变量\n");
+		System.out.println("Note: AI_DASHSCOPE_API_KEY environment variable must be set\n");
 
 		try {
-			System.out.println("\n--- 示例1：基础模型配置 ---");
+			System.out.println("\n--- Example 1: Basic Model Configuration ---");
 			basicModelConfiguration();
 
-			System.out.println("\n--- 示例2：高级模型配置 ---");
+			System.out.println("\n--- Example 2: Advanced Model Configuration ---");
 			advancedModelConfiguration();
 
-			System.out.println("\n--- 示例3：工具使用 ---");
+			System.out.println("\n--- Example 3: Tool Usage ---");
 			toolUsage();
 
-			System.out.println("\n--- 示例5：基础 System Prompt ---");
+			System.out.println("\n--- Example 5: Basic System Prompt ---");
 			basicSystemPrompt();
 
-			System.out.println("\n--- 示例6：使用 instruction ---");
+			System.out.println("\n--- Example 6: Using instruction ---");
 			instructionUsage();
 
-			System.out.println("\n--- 示例7：动态 System Prompt ---");
+			System.out.println("\n--- Example 7: Dynamic System Prompt ---");
 			dynamicSystemPrompt();
 
-			System.out.println("\n--- 示例8：基础调用 ---");
+			System.out.println("\n--- Example 8: Basic Invocation ---");
 			basicInvocation();
 
-			System.out.println("\n--- 示例9：获取完整状态 ---");
+			System.out.println("\n--- Example 9: Get Full State ---");
 			getFullState();
 
-			System.out.println("\n--- 示例10：使用配置 ---");
+			System.out.println("\n--- Example 10: Using Configuration ---");
 			useConfiguration();
 
-			System.out.println("\n--- 示例10.1：流式调用 - 基础用法 ---");
+			System.out.println("\n--- Example 10.1: Stream Invocation - Basic Usage ---");
 			basicStreamInvocation();
 
-			System.out.println("\n--- 示例10.2：流式调用 - 高级用法 ---");
+			System.out.println("\n--- Example 10.2: Stream Invocation - Advanced Usage ---");
 			advancedStreamInvocation();
 
-			System.out.println("\n--- 示例10.3：流式调用 - 收集所有输出 ---");
+			System.out.println("\n--- Example 10.3: Stream Invocation - Collect All Outputs ---");
 			collectStreamOutputs();
 
-			System.out.println("\n--- 示例11：使用 outputType ---");
+			System.out.println("\n--- Example 11: Using outputType ---");
 			structuredOutputWithType();
 
-			System.out.println("\n--- 示例12：使用 outputSchema ---");
+			System.out.println("\n--- Example 12: Using outputSchema ---");
 			structuredOutputWithSchema();
 
-			System.out.println("\n--- 示例13：配置记忆 ---");
+			System.out.println("\n--- Example 13: Configure Memory ---");
 			configureMemory();
 
-			System.out.println("\n=== 所有示例执行完成 ===");
+			System.out.println("\n=== All examples completed ===");
 		}
 		catch (GraphRunnerException e) {
-			System.err.println("执行示例时发生错误: " + e.getMessage());
+			System.err.println("Error occurred while running examples: " + e.getMessage());
 			e.printStackTrace();
 		}
 		catch (Exception e) {
-			System.err.println("发生未预期的错误: " + e.getMessage());
+			System.err.println("Unexpected error occurred: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
 
 	/**
-	 * 示例3：定义和使用工具
+	 * Example 3: Define and Use Tools
 	 */
 	public static class SearchTool implements BiFunction<String, ToolContext, String> {
 		@Override
 		public String apply(
-				@ToolParam(description = "搜索关键词") String query,
+				@ToolParam(description = "Search keyword") String query,
 				ToolContext toolContext) {
-			return "搜索结果：" + query;
+			return "Search result: " + query;
 		}
 	}
 
 	/**
-	 * 示例4：工具错误处理
+	 * Example 4: Tool Error Handling
 	 */
 	public static class ToolErrorInterceptor extends ToolInterceptor {
 		@Override
@@ -652,18 +652,18 @@ public class AgentsExample {
 	// ==================== Memory ====================
 
 	/**
-	 * 示例7：动态 System Prompt
+	 * Example 7: Dynamic System Prompt
 	 */
 	public static class DynamicPromptInterceptor extends ModelInterceptor {
 		@Override
 		public ModelResponse interceptModel(ModelRequest request, ModelCallHandler handler) {
-			// 基于上下文动态调整 system prompt
+			// Dynamically adjust system prompt based on context
 			Map<String, Object> context = request.getContext();
 
-			// 根据上下文构建动态提示词
+			// Build dynamic prompt based on context
 			String dynamicPrompt = buildDynamicPrompt(context);
 
-			// 增强 system message
+			// Enhance system message
 			SystemMessage enhancedSystemMessage;
 			if (request.getSystemMessage() == null) {
 				enhancedSystemMessage = new SystemMessage(dynamicPrompt);
@@ -674,7 +674,7 @@ public class AgentsExample {
 				);
 			}
 
-			// 创建增强的请求
+			// Create enhanced request
 			ModelRequest modifiedRequest = ModelRequest.builder(request)
 					.systemMessage(enhancedSystemMessage)
 					.build();
@@ -683,26 +683,26 @@ public class AgentsExample {
 		}
 
 		private String buildDynamicPrompt(Map<String, Object> context) {
-			// 示例：根据用户角色动态生成提示词
+			// Example: dynamically generate prompts based on user role
 			String userRole = (String) context.getOrDefault("user_role", "default");
 
 			return switch (userRole) {
 				case "expert" -> """
-						你正在与技术专家对话。
-						- 使用专业术语
-						- 深入技术细节
-						- 提供高级建议
+						You are speaking with a technical expert.
+						- Use professional terminology
+						- Go into technical details
+						- Provide advanced recommendations
 						""";
 				case "beginner" -> """
-						你正在与初学者对话。
-						- 使用简单易懂的语言
-						- 详细解释概念
-						- 提供入门级建议
+						You are speaking with a beginner.
+						- Use simple and easy-to-understand language
+						- Explain concepts in detail
+						- Provide beginner-level recommendations
 						""";
 				default -> """
-						你是一个专业的助手。
-						- 根据问题复杂度调整回答
-						- 保持友好和专业
+						You are a professional assistant.
+						- Adjust answers based on question complexity
+						- Maintain a friendly and professional tone
 						""";
 			};
 		}
@@ -716,7 +716,7 @@ public class AgentsExample {
 	// ==================== Hooks ====================
 
 	/**
-	 * 示例11：使用 outputType
+	 * Example 11: Using outputType
 	 */
 	public static class PoemOutput {
 		private String title;
@@ -750,7 +750,7 @@ public class AgentsExample {
 	}
 
 	/**
-	 * 示例12：文本分析结果输出类
+	 * Example 12: Text Analysis Result Output Class
 	 */
 	public static class TextAnalysisResult {
 		private String summary;
@@ -793,7 +793,7 @@ public class AgentsExample {
 	}
 
 	/**
-	 * 示例14：AgentHook - 在 Agent 开始/结束时执行
+	 * Example 14: AgentHook - Execute at Agent start/end
 	 */
 	public static class LoggingHook extends AgentHook {
 		@Override
@@ -811,13 +811,13 @@ public class AgentsExample {
 
 		@Override
 		public CompletableFuture<Map<String, Object>> beforeAgent(OverAllState state, RunnableConfig config) {
-			System.out.println("Agent 开始执行");
+			System.out.println("Agent execution started");
 			return CompletableFuture.completedFuture(Map.of());
 		}
 
 		@Override
 		public CompletableFuture<Map<String, Object>> afterAgent(OverAllState state, RunnableConfig config) {
-			System.out.println("Agent 执行完成");
+			System.out.println("Agent execution completed");
 			return CompletableFuture.completedFuture(Map.of());
 		}
 	}
@@ -825,8 +825,8 @@ public class AgentsExample {
 	// ==================== Interceptors ====================
 
 	/**
-	 * 示例15：MessagesModelHook - 在模型调用前修剪消息
-	 * 使用 MessagesModelHook 实现，在模型调用前修剪消息列表，只保留最后 MAX_MESSAGES 条消息
+	 * Example 15: MessagesModelHook - Trim messages before model call
+	 * Uses MessagesModelHook implementation to trim the message list before model calls, keeping only the last MAX_MESSAGES messages
 	 */
 	@HookPositions({HookPosition.BEFORE_MODEL})
 	public static class MessageTrimmingHook extends MessagesModelHook {
@@ -839,45 +839,45 @@ public class AgentsExample {
 
 		@Override
 		public AgentCommand beforeModel(List<Message> previousMessages, RunnableConfig config) {
-			// 如果消息数量超过限制，只保留最后 MAX_MESSAGES 条消息
+			// If message count exceeds the limit, keep only the last MAX_MESSAGES messages
 			if (previousMessages.size() > MAX_MESSAGES) {
 				List<Message> trimmedMessages = previousMessages.subList(
 						previousMessages.size() - MAX_MESSAGES,
 						previousMessages.size()
 				);
-				// 使用 REPLACE 策略替换所有消息
+				// Use REPLACE strategy to replace all messages
 				return new AgentCommand(trimmedMessages, UpdatePolicy.REPLACE);
 			}
-			// 如果消息数量未超过限制，返回原始消息（不进行修改）
+			// If message count does not exceed the limit, return original messages (no modification)
 			return new AgentCommand(previousMessages);
 		}
 	}
 
 	/**
-	 * 示例16：ModelInterceptor - 内容安全检查
+	 * Example 16: ModelInterceptor - Content Safety Check
 	 */
 	public static class GuardrailInterceptor extends ModelInterceptor {
 		@Override
 		public ModelResponse interceptModel(ModelRequest request, ModelCallHandler handler) {
-			// 前置：检查输入
+			// Pre-check: validate input
 			if (containsSensitiveContent(request.getMessages())) {
-				return ModelResponse.of(new AssistantMessage("检测到不适当的内容"));
+				return ModelResponse.of(new AssistantMessage("Inappropriate content detected"));
 			}
 
-			// 执行调用
+			// Execute the call
 			ModelResponse response = handler.call(request);
 
-			// 后置：检查输出
+			// Post-check: validate output
 			return sanitizeIfNeeded(response);
 		}
 
 		private boolean containsSensitiveContent(List<Message> messages) {
-			// 实现敏感内容检测逻辑
+			// Implement sensitive content detection logic
 			return false;
 		}
 
 		private ModelResponse sanitizeIfNeeded(ModelResponse response) {
-			// 实现响应清理逻辑
+			// Implement response sanitization logic
 			return response;
 		}
 
@@ -887,10 +887,10 @@ public class AgentsExample {
 		}
 	}
 
-	// ==================== Main 方法 ====================
+	// ==================== Main Method ====================
 
 	/**
-	 * 示例17：ToolInterceptor - 监控和错误处理
+	 * Example 17: ToolInterceptor - Monitoring and Error Handling
 	 */
 	public static class ToolMonitoringInterceptor extends ToolInterceptor {
 		@Override
@@ -904,7 +904,7 @@ public class AgentsExample {
 			catch (Exception e) {
 				logError(request, e, System.currentTimeMillis() - startTime);
 				return ToolCallResponse.of(request.getToolCallId(), request.getToolName(),
-						"工具执行遇到问题，请稍后重试");
+							"Tool execution encountered a problem, please try again later");
 			}
 		}
 

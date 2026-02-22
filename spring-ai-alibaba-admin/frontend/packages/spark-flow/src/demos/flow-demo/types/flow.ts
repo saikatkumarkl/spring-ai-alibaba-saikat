@@ -3,7 +3,7 @@ import type {
   INodeDataInputParamItem,
   INodeDataOutputParamItem,
   IValueType,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 
 /* End node parameter */
 export interface IEndNodeParam {

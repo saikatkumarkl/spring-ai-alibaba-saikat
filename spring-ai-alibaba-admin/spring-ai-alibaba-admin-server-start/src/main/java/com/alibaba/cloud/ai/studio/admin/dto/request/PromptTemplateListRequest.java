@@ -11,7 +11,7 @@ public class PromptTemplateListRequest {
     /**
      * Query mode: accurate, blur
      */
-    @Pattern(regexp = "^(accurate|blur)$", message = "搜索模式必须是accurate或blur")
+    @Pattern(regexp = "^(accurate|blur)$", message = "Search mode must be accurate or blur")
     private String search = "blur";
 
     /**
@@ -27,13 +27,13 @@ public class PromptTemplateListRequest {
     /**
      * page number
      */
-    @Min(value = 1, message = "页码必须大于0")
+    @Min(value = 1, message = "Page number must be greater than 0")
     private Integer pageNo = 1;
 
     /**
      * Quantity per page
      */
-    @Min(value = 1, message = "每页大小必须大于0")
-    @Max(value = 100, message = "每页大小不能超过100")
+    @Min(value = 1, message = "Each page size must be greater than 0")
+    @Max(value = 100, message = "Each page size cannot exceed 100")
     private Integer pageSize = 10;
 }

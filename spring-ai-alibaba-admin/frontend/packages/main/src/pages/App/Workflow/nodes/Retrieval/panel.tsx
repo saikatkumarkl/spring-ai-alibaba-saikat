@@ -13,7 +13,7 @@ import {
   useNodesReadOnly,
   useReactFlowStore,
   VariableSelector,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { useSetState } from 'ahooks';
 import { Flex, Spin, Typography } from 'antd';
 import classNames from 'classnames';

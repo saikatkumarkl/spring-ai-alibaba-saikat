@@ -37,14 +37,14 @@ public class EvaluatorServiceImpl implements EvaluatorService {
     private final ModelConfigParser modelConfigParser;
 
     private final String SYSTEM_PROMPT = """
-            按照Json格式返回评估结果。例如
-            {"score":"0.85","reason":"回答基本正确，准确回答了用户关于人工智能的问题。"}
-            只返回Json字符串，不要有其他任何内容。
+            Return the evaluation result in JSON format. For example:
+            {"score":"0.85","reason":"The answer is basically correct and accurately answers the user's questions about artificial intelligence."}
+            Only return the JSON string, no other content.
             """;
 
     @Override
     public Evaluator create(EvaluatorCreateRequest request) {
-        log.info("创建评估器: {}", request);
+        log.info("Create evaluator: {}", request);
 
         //Build DO object
         EvaluatorDO evaluatorDO = EvaluatorDO.builder()
@@ -57,16 +57,16 @@ public class EvaluatorServiceImpl implements EvaluatorService {
         //Insert into database
         int result = evaluatorMapper.insert(evaluatorDO);
         if (result > 0) {
-            log.info("评估器创建成功: {}", evaluatorDO.getId());
+            log.info("Evaluator created successfully: {}", evaluatorDO.getId());
             return Evaluator.fromDO(evaluatorDO);
         } else {
-            throw new RuntimeException("创建评估器失败");
+            throw new RuntimeException("Failed to create evaluator");
         }
     }
 
     @Override
     public PageResult<Evaluator> list(EvaluatorListRequest request) {
-        log.info("查询评估器列表: {}", request);
+        log.info("Query evaluator list: {}", request);
 
         int pageNumber = request.getPageNumber() != null ? request.getPageNumber() : 1;
         int pageSize = request.getPageSize() != null ? request.getPageSize() : 10;
@@ -98,7 +98,7 @@ public class EvaluatorServiceImpl implements EvaluatorService {
 
     @Override
     public Evaluator getById(Long id) {
-        log.info("查询评估器详情: {}", id);
+        log.info("Query evaluator details: {}", id);
 
         EvaluatorDO evaluatorDO = evaluatorMapper.selectById(id);
         if (evaluatorDO == null) {
@@ -119,7 +119,7 @@ public class EvaluatorServiceImpl implements EvaluatorService {
 
     @Override
     public Evaluator update(EvaluatorUpdateRequest request) {
-        log.info("更新评估器: {}", request);
+        log.info("Update evaluator: {}", request);
 
         //Build DO object
         EvaluatorDO evaluatorDO = EvaluatorDO.builder()
@@ -131,29 +131,29 @@ public class EvaluatorServiceImpl implements EvaluatorService {
         //Update database
         int result = evaluatorMapper.update(evaluatorDO);
         if (result > 0) {
-            log.info("评估器更新成功: {}", request.getId());
+            log.info("Evaluator updated successfully: {}", request.getId());
             //Query again to get the latest data
             return Evaluator.fromDO(evaluatorMapper.selectById(request.getId()));
         } else {
-            throw new RuntimeException("更新评估器失败");
+            throw new RuntimeException("Update evaluator failed");
         }
     }
 
     @Override
     public void deleteById(Long id) {
-        log.info("删除评估器: {}", id);
+        log.info("Remove evaluator: {}", id);
 
         int result = evaluatorMapper.deleteById(id);
         if (result > 0) {
-            log.info("评估器删除成功: {}", id);
+            log.info("Evaluator deleted successfully: {}", id);
         } else {
-            throw new RuntimeException("删除评估器失败");
+            throw new RuntimeException("Removing evaluator failed");
         }
     }
 
     @Override
     public EvaluatorDebugResult debug(EvaluatorTestRequest request) {
-        log.info("调试评估器: {}", request);
+        log.info("Debug evaluator: {}", request);
 
         EvaluatorDebugResult result = evaluatorTest(request);
 
@@ -178,16 +178,16 @@ public class EvaluatorServiceImpl implements EvaluatorService {
 
         String response = Objects.requireNonNull(client.prompt(prompt).call().content()).trim();
 
-        log.info("模型返回值:{}", response);
+        log.info("Model return value:{}", response);
 
         String formatedResponse = extractRawText(response);
-        log.info("模型返回值:{},格式化后模型返回值:{}.", response, formatedResponse);
+        log.info("Model return value: {}, model return value after formatting: {}.", response, formatedResponse);
 
         try {
             return JSONObject.parseObject(formatedResponse, EvaluatorDebugResult.class);
         } catch (Exception e) {
-            log.info("解析失败: {}", formatedResponse, e);
-            throw new RuntimeException("解析模型调用结果出错，请重试");
+            log.info("Parsing failed: {}", formatedResponse, e);
+            throw new RuntimeException("There was an error parsing the model call result, please try again.");
         }
 
     }

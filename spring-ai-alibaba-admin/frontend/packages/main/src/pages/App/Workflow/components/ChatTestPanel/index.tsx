@@ -19,7 +19,7 @@ import {
   useFlowDebugInteraction,
   useFlowInteraction,
   useStore,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { useMount, useUnmount } from 'ahooks';
 import { Flex, message, Tooltip } from 'antd';
 import classNames from 'classnames';

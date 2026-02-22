@@ -91,11 +91,11 @@ class LlmRoutingAgentTest {
 			GraphRepresentation representation = blogAgent.getGraph().getGraph(GraphRepresentation.Type.PLANTUML);
 			System.out.println(representation.content());
 
-			Optional<OverAllState> result = blogAgent.invoke("帮我写一个100字左右的现代诗");
-			blogAgent.invoke("帮我写一个100字左右的现代诗");
-			Optional<OverAllState> result3 = blogAgent.invoke("帮我写一个100字左右的现代诗");
+			Optional<OverAllState> result = blogAgent.invoke("Help me write a modern poem of about 100 words");
+			blogAgent.invoke("Help me write a modern poem of about 100 words");
+			Optional<OverAllState> result3 = blogAgent.invoke("Help me write a modern poem of about 100 words");
 
-			// 验证结果不为空
+			//Verify that the result is not empty
 			assertTrue(result.isPresent(), "Result should be present");
 			assertTrue(result3.isPresent(), "Third result should be present");
 
@@ -103,7 +103,7 @@ class LlmRoutingAgentTest {
 			OverAllState state3 = result3.get();
 
 			assertTrue(state.value("input").isPresent(), "Input should be present in state");
-			assertEquals("帮我写一个100字左右的现代诗", state.value("input").get(), "Input should match the request");
+			assertEquals("Help me write a modern poem of about 100 words", state.value("input").get(), "Input should match the request");
 
 			assertTrue(state.value("poem_article").isPresent(), "Poem article should be present");
 			AssistantMessage poemContent = (AssistantMessage) state.value("poem_article").get();

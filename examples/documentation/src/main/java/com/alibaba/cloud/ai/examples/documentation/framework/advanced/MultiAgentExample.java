@@ -45,16 +45,16 @@ import java.util.concurrent.atomic.AtomicReference;
 import reactor.core.publisher.Flux;
 
 /**
- * 多智能体（Multi-agent）示例
+ * Multi-agent example
  *
- * 演示不同的 Multi-agent 协作模式，包括：
- * 1. 顺序执行（Sequential Agent）
- * 2. 并行执行（Parallel Agent）
- * 3. LLM路由（LlmRoutingAgent）
- * 4. 自定义合并策略
- * 5. 监督者模式（SupervisorAgent）
+ * Demonstrates different multi-agent collaboration modes, including:
+ * 1. Sequential execution (Sequential Agent)
+ * 2. Parallel execution (Parallel Agent)
+ * 3. LLM routing (LlmRoutingAgent)
+ * 4. Customize merge strategy
+ * 5. Supervisor mode (SupervisorAgent)
  *
- * 参考文档: advanced_doc/multi-agent.md
+ * Reference documentation: advanced_doc/multi-agent.md
  */
 public class MultiAgentExample {
 
@@ -65,139 +65,139 @@ public class MultiAgentExample {
 	}
 
 	/**
-	 * Main方法：运行所有示例
+	 * Main method: run all examples
 	 *
-	 * 注意：需要配置ChatModel实例才能运行
+	 * Note: A ChatModel instance needs to be configured to run
 	 */
 	public static void main(String[] args) {
-		// 创建 DashScope API 实例
+		//Create a DashScope API instance
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
 				.apiKey(System.getenv("AI_DASHSCOPE_API_KEY"))
 				.build();
 
-		// 创建 ChatModel
+		//Create ChatModel
 		ChatModel chatModel = DashScopeChatModel.builder()
 				.dashScopeApi(dashScopeApi)
 				.build();
 
 		if (chatModel == null) {
-			System.err.println("错误：请先配置ChatModel实例");
-			System.err.println("请设置 AI_DASHSCOPE_API_KEY 环境变量");
+			System.err.println("Error: Please configure ChatModel instance first");
+			System.err.println("Please set the AI_DASHSCOPE_API_KEY environment variable");
 			return;
 		}
 
-		// 创建示例实例
+		//Create a sample instance
 		MultiAgentExample example = new MultiAgentExample(chatModel);
 
-		// 运行所有示例
+		//Run all examples
 		example.runAllExamples();
 	}
 
 	/**
-	 * 示例1：顺序执行（Sequential Agent）
+	 * Example 1: Sequential execution (Sequential Agent)
 	 *
-	 * 多个Agent按预定义的顺序依次执行，每个Agent的输出成为下一个Agent的输入
+	 * Multiple agents are executed sequentially in a predefined order, and the output of each agent becomes the input of the next agent.
 	 */
 	public void example1_sequentialAgent() throws Exception {
-		// 创建专业化的子Agent
+		//Create specialized sub-Agents
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_agent")
 				.model(chatModel)
-				.description("专业写作Agent")
-				.instruction("你是一个知名的作家，擅长写作和创作。请根据用户的提问进行回答：{input}。")
+				.description("Professional Writing Agent")
+				.instruction("You are a well-known writer who is good at writing and creating.Please answer based on the user's question: {input}.")
 				.outputKey("article")
 				.build();
 
 		ReactAgent reviewerAgent = ReactAgent.builder()
 				.name("reviewer_agent")
 				.model(chatModel)
-				.description("专业评审Agent")
-				.instruction("你是一个知名的评论家，擅长对文章进行评论和修改。" +
-						"对于散文类文章，请确保文章中必须包含对于西湖风景的描述。待评论文章：\n\n {article}" +
-						"最终只返回修改后的文章，不要包含任何评论信息。")
+				.description("Professional Review Agent")
+				.instruction("You are a well-known critic who is good at commenting and revising articles." +
+						"For prose articles, please ensure that the article must include a description of the scenery of West Lake.Articles awaiting comment:\n\n {article}" +
+						"Finally, only the revised article will be returned without any comment information.")
 				.outputKey("reviewed_article")
 				.build();
 
-		// 创建顺序Agent
+		//Create a sequence agent
 		SequentialAgent blogAgent = SequentialAgent.builder()
 				.name("blog_agent")
-				.description("根据用户给定的主题写一篇文章，然后将文章交给评论员进行评论")
+				.description("Write an article based on the topic given by the user, and then submit the article to reviewers for comments")
 				.subAgents(List.of(writerAgent, reviewerAgent))
 				.build();
 
-		// 使用
-		Optional<OverAllState> result = blogAgent.invoke("帮我写一个100字左右的散文");
+		//use
+		Optional<OverAllState> result = blogAgent.invoke("Help me write a prose of about 100 words");
 
 		if (result.isPresent()) {
 			OverAllState state = result.get();
 
-			// 访问第一个Agent的输出
+			//Access the output of the first Agent
 			state.value("article").ifPresent(article -> {
 				if (article instanceof AssistantMessage) {
-					System.out.println("原始文章: " + ((AssistantMessage) article).getText());
+					System.out.println("Original article:" + ((AssistantMessage) article).getText());
 				}
 			});
 
-			// 访问第二个Agent的输出
+			//Access the output of the second agent
 			state.value("reviewed_article").ifPresent(reviewedArticle -> {
 				if (reviewedArticle instanceof AssistantMessage) {
-					System.out.println("评审后文章: " + ((AssistantMessage) reviewedArticle).getText());
+					System.out.println("Articles after review:" + ((AssistantMessage) reviewedArticle).getText());
 				}
 			});
 		}
 	}
 
 	/**
-	 * 示例2：控制推理内容
+	 * Example 2: Controlling reasoning content
 	 *
-	 * 使用 returnReasoningContents 控制是否在消息历史中包含中间推理
+	 * Use returnReasoningContents to control whether intermediate reasoning is included in the message history
 	 */
 	public void example2_controlReasoningContents() throws Exception {
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_agent")
 				.model(chatModel)
-				.returnReasoningContents(true)  // 返回推理过程
+				.returnReasoningContents(true)  //Return to reasoning process
 				.outputKey("article")
 				.build();
 
 		ReactAgent reviewerAgent = ReactAgent.builder()
 				.name("reviewer_agent")
 				.model(chatModel)
-				.instruction("请对文章进行评审修正：\n{article}，最终返回评审修正后的文章内容")
-				.includeContents(true) // 包含上一个Agent的推理内容
-				.returnReasoningContents(true)  // 返回推理过程
+				.instruction("Please review and correct the article: \n{article}, and finally return the article content after review and correction.")
+				.includeContents(true) //Contains the reasoning content of the previous Agent
+				.returnReasoningContents(true)  //Return to reasoning process
 				.outputKey("reviewed_article")
 				.build();
 
 
-		// 每个子agent的推理内容，下一个执行的子agent会看到上一个子agent的推理内容
+		//The reasoning content of each sub-agent. The next executing sub-agent will see the reasoning content of the previous sub-agent.
 		SequentialAgent blogAgent = SequentialAgent.builder()
 				.name("blog_agent")
 				.subAgents(List.of(writerAgent, reviewerAgent))
 				.build();
 
-		Optional<OverAllState> result = blogAgent.invoke("帮我写一个100字左右的散文");
+		Optional<OverAllState> result = blogAgent.invoke("Help me write a prose of about 100 words");
 
 		if (result.isPresent()) {
-			// 消息历史将包含所有工具调用和推理过程
+			//Message history will contain all tool calls and inference processes
 			List<Message> messages = (List<Message>) result.get().value("messages").orElse(List.of());
-			System.out.println("消息数量: " + messages.size()); // 包含所有中间步骤
+			System.out.println("Number of messages:" + messages.size()); //Includes all intermediate steps
 		}
 	}
 
 	/**
-	 * 示例3：并行执行（Parallel Agent）
+	 * Example 3: Parallel execution (Parallel Agent)
 	 *
-	 * 多个Agent同时处理相同的输入，它们的结果被收集并合并
+	 * Multiple agents process the same input simultaneously, and their results are collected and combined
 	 */
 	public void example3_parallelAgent() throws Exception {
-		// 创建多个专业化Agent
+		//Create multiple specialized agents
 		ReactAgent proseWriterAgent = ReactAgent.builder()
 				.name("prose_writer_agent")
 				.model(chatModel)
-				.description("专门写散文的AI助手")
-				.instruction("你是一个知名的散文作家，擅长写优美的散文。" +
-						"用户会给你一个主题：{input}，你只需要创作一篇100字左右的散文。")
+				.description("AI assistant specializing in prose writing")
+				.instruction("You are a well-known prose writer, good at writing beautiful prose." +
+						"The user will give you a topic: {input}, and you only need to create a prose of about 100 words.")
 				.outputKey("prose_result")
 				.enableLogging(true)
 				.build();
@@ -205,9 +205,9 @@ public class MultiAgentExample {
 		ReactAgent poemWriterAgent = ReactAgent.builder()
 				.name("poem_writer_agent")
 				.model(chatModel)
-				.description("专门写现代诗的AI助手")
-				.instruction("你是一个知名的现代诗人，擅长写现代诗。" +
-						"用户会给你的主题是：{input}，你只需要创作一首现代诗。")
+				.description("AI assistant specializing in writing modern poetry")
+				.instruction("You are a well-known modern poet who is good at writing modern poetry." +
+						"The topic that the user will give you is: {input}, and you only need to create a modern poem.")
 				.outputKey("poem_result")
 				.enableLogging(true)
 				.build();
@@ -215,70 +215,70 @@ public class MultiAgentExample {
 		ReactAgent summaryAgent = ReactAgent.builder()
 				.name("summary_agent")
 				.model(chatModel)
-				.description("专门做内容总结的AI助手")
-				.instruction("你是一个专业的内容分析师，擅长对主题进行总结和提炼。" +
-						"用户会给你一个主题：{input}，你只需要对这个主题进行简要总结。")
+				.description("AI assistant specializing in content summarization")
+				.instruction("You are a professional content analyst who is good at summarizing and refining topics." +
+						"The user will give you a topic: {input}, and you only need to briefly summarize the topic.")
 				.outputKey("summary_result")
 				.enableLogging(true)
 				.build();
 
-		// 创建并行Agent
+		//Create parallel agent
 		ParallelAgent parallelAgent = ParallelAgent.builder()
 				.name("parallel_creative_agent")
-				.description("并行执行多个创作任务，包括写散文、写诗和做总结")
+				.description("Perform multiple creative tasks in parallel, including writing prose, poetry, and summarizing")
 				.mergeOutputKey("merged_results")
 				.subAgents(List.of(proseWriterAgent, poemWriterAgent, summaryAgent))
 				.mergeStrategy(new ParallelAgent.DefaultMergeStrategy())
 				.build();
 
 		ExecutorService executorService = Executors.newFixedThreadPool(3);
-		// 使用
-		Flux<NodeOutput> flux = parallelAgent.stream("以'西湖'为主题", RunnableConfig.builder().addParallelNodeExecutor("parallel_creative_agent", executorService).build());
+		//use
+		Flux<NodeOutput> flux = parallelAgent.stream("With the theme of 'West Lake'", RunnableConfig.builder().addParallelNodeExecutor("parallel_creative_agent", executorService).build());
 
 		AtomicReference<NodeOutput> lastOutput = new AtomicReference<>();
 		flux.doOnNext(nodeOutput -> {
-			System.out.println("节点输出: " + nodeOutput);
+			System.out.println("Node output:" + nodeOutput);
 			lastOutput.set(nodeOutput);
 		}).doOnError(error -> {
-			System.err.println("执行出错: " + error.getMessage());
+			System.err.println("Execution error:" + error.getMessage());
 		}).doOnComplete(() -> {
-			System.out.println("并行Agent流式执行完成\n\n");
+			System.out.println("Parallel Agent streaming execution completed\n\n");
 
 			NodeOutput output = lastOutput.get();
 			if (output == null) {
-				System.out.println("未收到任何输出，无法展示结果。");
+				System.out.println("No output was received and results cannot be displayed.");
 				return;
 			}
 
 			OverAllState state = output.state();
-			// 访问各个Agent的输出
+			//Access the output of each Agent
 			state.value("prose_result").ifPresent(r ->
-					System.out.println("散文: " + r));
+					System.out.println("prose:" + r));
 			state.value("poem_result").ifPresent(r ->
-					System.out.println("诗歌: " + r));
+					System.out.println("Poetry:" + r));
 			state.value("summary_result").ifPresent(r ->
-					System.out.println("总结: " + r));
+					System.out.println("Summarize:" + r));
 
-			// 访问合并后的结果
+			//Access merged results
 			state.value("merged_results").ifPresent(r ->
-					System.out.println("合并结果: " + r));
+					System.out.println("Combined results:" + r));
 		}).blockLast();
 
 	}
 
 	/**
-	 * 示例4：自定义合并策略
+	 * Example 4: Custom merge strategy
 	 *
-	 * 实现自定义的合并策略来控制如何组合多个Agent的输出
+	 * Implement custom merging strategies to control how the output of multiple agents is combined
 	 */
 	public void example4_customMergeStrategy() throws Exception {
-		// 自定义合并策略
+		//Custom merge strategy
 		class CustomMergeStrategy implements ParallelAgent.MergeStrategy {
 			@Override
 			public Map<String, Object> merge(Map<String, Object> mergedState, OverAllState state) {
-				// 从每个Agent的状态中提取输出
+				//Extract output from each agent's state
 				state.data().forEach((key, value) -> {
-					// 检查key不为null且以"_result"结尾
+					//Check that the key is not null and ends with "_result"
 					if (key != null && key.endsWith("_result")) {
 						String resultText = "";
 						if (value instanceof GraphResponse graphResponse) {
@@ -301,7 +301,7 @@ public class MultiAgentExample {
 			}
 		}
 
-		// 创建Agent
+		//CreateAgent
 		ReactAgent agent1 = ReactAgent.builder()
 				.name("agent1")
 				.model(chatModel)
@@ -320,7 +320,7 @@ public class MultiAgentExample {
 				.outputKey("agent3_result")
 				.build();
 
-		// 使用自定义合并策略
+		//Use a custom merge strategy
 		ParallelAgent parallelAgent = ParallelAgent.builder()
 				.name("parallel_agent")
 				.subAgents(List.of(agent1, agent2, agent3))
@@ -328,98 +328,98 @@ public class MultiAgentExample {
 				.mergeOutputKey("all_results")
 				.build();
 
-		Optional<OverAllState> result = parallelAgent.invoke("分析这个主题");
+		Optional<OverAllState> result = parallelAgent.invoke("Analyze this topic");
 
 		if (result.isPresent()) {
 			OverAllState state = result.get();
 			state.value("all_results").ifPresent(mergeResult -> {
-				System.out.println("合并结果: " + mergeResult);
+				System.out.println("Combined results:" + mergeResult);
 			});
-			System.out.println("自定义合并策略示例执行成功");
+			System.out.println("Custom merge strategy example executed successfully");
 		}
 	}
 
 	/**
-	 * 示例5：LLM路由（LlmRoutingAgent）
+	 * Example 5: LLM routing (LlmRoutingAgent)
 	 *
-	 * 使用大语言模型动态决定将请求路由到哪个子Agent
+	 * Use a large language model to dynamically decide which sub-agent to route a request to
 	 */
 	public void example5_llmRoutingAgent() throws Exception {
-		// 创建专业化的子Agent
+		//Create specialized sub-Agents
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_agent")
 				.model(chatModel)
-				.description("擅长创作各类文章，包括散文、诗歌等文学作品")
-				.instruction("你是一个知名的作家，擅长写作和创作。请根据用户的提问进行回答。")
+				.description("Good at writing all kinds of articles, including prose, poetry and other literary works")
+				.instruction("You are a well-known writer who is good at writing and creating.Please answer based on the user's questions.")
 				.outputKey("writer_output")
 				.build();
 
 		ReactAgent reviewerAgent = ReactAgent.builder()
 				.name("reviewer_agent")
 				.model(chatModel)
-				.description("擅长对文章进行评论、修改和润色")
-				.instruction("你是一个知名的评论家，擅长对文章进行评论和修改。" +
-						"对于散文类文章，请确保文章中必须包含对于西湖风景的描述。")
+				.description("Good at commenting, revising and polishing articles")
+				.instruction("You are a well-known critic who is good at commenting and revising articles." +
+						"For prose articles, please ensure that the article must include a description of the scenery of West Lake.")
 				.outputKey("reviewer_output")
 				.build();
 
 		ReactAgent translatorAgent = ReactAgent.builder()
 				.name("translator_agent")
 				.model(chatModel)
-				.description("擅长将文章翻译成各种语言")
-				.instruction("你是一个专业的翻译家，能够准确地将文章翻译成目标语言。")
+				.description("Good at translating articles into various languages")
+				.instruction("You are a professional translator who can accurately translate articles into the target language.")
 				.outputKey("translator_output")
 				.build();
 
-		// 创建路由Agent
+		//Create routing agent
 		LlmRoutingAgent routingAgent = LlmRoutingAgent.builder()
 				.name("content_routing_agent")
-				.description("根据用户需求智能路由到合适的专家Agent")
+				.description("Intelligent routing to the appropriate expert agent based on user needs")
 				.model(chatModel)
 				.subAgents(List.of(writerAgent, reviewerAgent, translatorAgent))
 				.build();
 
-		// 使用 - LLM会自动选择最合适的Agent
-		System.out.println("路由测试1: 写作请求");
-		Optional<OverAllState> result1 = routingAgent.invoke("帮我写一篇关于春天的散文");
-		// LLM会路由到 writerAgent
+		//Use - LLM will automatically select the most appropriate Agent
+		System.out.println("Route Test 1: Writing Request");
+		Optional<OverAllState> result1 = routingAgent.invoke("Help me write an essay about spring");
+		//LLM will route to writerAgent
 
-		System.out.println("路由测试2: 修改请求");
-		Optional<OverAllState> result2 = routingAgent.invoke("请帮我修改这篇文章：春天来了，花开了。");
-		// LLM会路由到 reviewerAgent
+		System.out.println("Routing test 2: Modify request");
+		Optional<OverAllState> result2 = routingAgent.invoke("Please help me revise this article: Spring is here and the flowers are blooming.");
+		//LLM will route to reviewerAgent
 
-		System.out.println("路由测试3: 翻译请求");
-		Optional<OverAllState> result3 = routingAgent.invoke("请将以下内容翻译成英文：春暖花开");
-		// LLM会路由到 translatorAgent
+		System.out.println("Route Test 3: Translation Request");
+		Optional<OverAllState> result3 = routingAgent.invoke("Please translate the following content into English: Spring is warm and flowers are blooming");
+		//LLM will route to translatorAgent
 
-		System.out.println("LLM路由示例执行完成");
+		System.out.println("LLM routing example execution completed");
 	}
 
 	/**
-	 * 示例5.5：使用自定义 TemplateRenderer 与多智能体协作
+	 * Example 5.5: Using a custom TemplateRenderer to work with multiple agents
 	 *
-	 * 展示如何在多智能体场景中使用 StringTemplateRenderer.builder() 来定制占位符分隔符。
-	 * 使用 [[variable]] 替代默认的 {variable} 作为占位符格式。
+	 * Shows how to use StringTemplateRenderer.builder() to customize placeholder delimiters in a multi-agent scenario.
+	 * Use [[variable]] instead of the default {variable} as placeholder format.
 	 */
 	public void example5_5_customTemplateRenderer() throws Exception {
-		// 使用 StringTemplateRenderer.builder() 创建自定义分隔符的 TemplateRenderer
-		// 使用 [[ 和 ]] 作为占位符分隔符
+		//Use StringTemplateRenderer.builder() to create a TemplateRenderer with custom delimiters
+		//Use [[ and ]] as placeholder separators
 		TemplateRenderer customRenderer = SaaStTemplateRenderer.builder()
 				.startDelimiter("[[")
 				.endDelimiter("]]")
 				.build();
 
-		// 创建专业化的子Agent - 注意 instruction 中使用 [[variable]] 格式
+		//Create specialized sub-Agents - note the use of [[variable]] format in instructions
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_agent")
 				.model(chatModel)
-				.description("擅长创作各类文章，包括散文、诗歌等文学作品")
+				.description("Good at writing all kinds of articles, including prose, poetry and other literary works")
 				.instruction("""
-						你是一个知名的作家，擅长写作和创作。
-						当前主题：[[topic]]
-						文体要求：[[style]]
-						字数要求：[[word_count]]
-						请根据用户的提问进行回答。
+						You are a well-known writer who is good at writing and creating.
+						Current topic: [[topic]]
+						Style requirement: [[style]]
+						Word count requirement: [[word_count]]
+						Please answer based on the user's question.
 						""")
 				.templateRenderer(customRenderer)
 				.outputKey("writer_output")
@@ -428,12 +428,12 @@ public class MultiAgentExample {
 		ReactAgent reviewerAgent = ReactAgent.builder()
 				.name("reviewer_agent")
 				.model(chatModel)
-				.description("擅长对文章进行评论、修改和润色")
+				.description("Good at commenting, revising and polishing articles")
 				.instruction("""
-						你是一个知名的评论家，擅长对文章进行评论和修改。
-						评审标准：[[review_criteria]]
-						关注要点：[[focus_points]]
-						对于散文类文章，请确保文章中必须包含对于风景的描述。
+						You are a well-known critic who is good at commenting and revising articles.
+						Review criteria: [[review_criteria]]
+						Focus points: [[focus_points]]
+						For prose articles, please ensure that the article must include a description of the scenery.
 						""")
 				.templateRenderer(customRenderer)
 				.outputKey("reviewer_output")
@@ -442,160 +442,160 @@ public class MultiAgentExample {
 		ReactAgent translatorAgent = ReactAgent.builder()
 				.name("translator_agent")
 				.model(chatModel)
-				.description("擅长将文章翻译成各种语言")
+				.description("Good at translating articles into various languages")
 				.instruction("""
-						你是一个专业的翻译家，能够准确地将文章翻译成目标语言。
-						目标语言：[[target_language]]
-						翻译风格：[[translation_style]]
+						You are a professional translator who can accurately translate articles into the target language.
+						Target language: [[target_language]]
+						Translation style: [[translation_style]]
 						""")
 				.templateRenderer(customRenderer)
 				.outputKey("translator_output")
 				.build();
 
-		// 创建路由Agent
+		//Create routing agent
 		LlmRoutingAgent routingAgent = LlmRoutingAgent.builder()
 				.name("content_routing_agent")
-				.description("根据用户需求智能路由到合适的专家Agent")
+				.description("Intelligent routing to the appropriate expert agent based on user needs")
 				.model(chatModel)
 				.subAgents(List.of(writerAgent, reviewerAgent, translatorAgent))
 				.build();
 
-		// 使用 - 传入带有自定义占位符变量的输入
-		System.out.println("自定义模板路由测试1: 写作请求");
+		//Use - Pass in input with custom placeholder variables
+		System.out.println("Custom Template Routing Test 1: Writing Request");
 		Map<String, Object> writerInput = Map.of(
-				"input", "帮我写一篇关于春天的散文",
-				"topic", "春天",
-				"style", "散文",
-				"word_count", "200字左右"
+				"input", "Help me write an essay about spring",
+				"topic", "spring",
+				"style", "prose",
+				"word_count", "About 200 words"
 		);
 		Optional<OverAllState> result1 = routingAgent.invoke(writerInput);
 		if (result1.isPresent()) {
 			result1.get().value("writer_output").ifPresent(output ->
-					System.out.println("写作输出: " + output));
+					System.out.println("Writing output:" + output));
 		}
 
-		System.out.println("\n自定义模板路由测试2: 评审请求");
+		System.out.println("\nCustom Template Routing Test 2: Review Request");
 		Map<String, Object> reviewerInput = Map.of(
-				"input", "请帮我修改这篇文章：春天来了，花开了。",
-				"review_criteria", "语言流畅、描述生动",
-				"focus_points", "修辞手法、意境营造"
+				"input", "Please help me revise this article: Spring is here and the flowers are blooming.",
+				"review_criteria", "Fluent language and vivid descriptions",
+				"focus_points", "Rhetorical techniques and artistic conception creation"
 		);
 		Optional<OverAllState> result2 = routingAgent.invoke(reviewerInput);
 		if (result2.isPresent()) {
 			result2.get().value("reviewer_output").ifPresent(output ->
-					System.out.println("评审输出: " + output));
+					System.out.println("Review output:" + output));
 		}
 
-		System.out.println("\n自定义模板路由测试3: 翻译请求");
+		System.out.println("\nCustom template routing test 3: Translation request");
 		Map<String, Object> translatorInput = Map.of(
-				"input", "请将以下内容翻译成英文：春暖花开",
-				"target_language", "英文",
-				"translation_style", "文学性翻译"
+				"input", "Please translate the following content into English: Spring is warm and flowers are blooming",
+				"target_language", "English",
+				"translation_style", "literary translation"
 		);
 		Optional<OverAllState> result3 = routingAgent.invoke(translatorInput);
 		if (result3.isPresent()) {
 			result3.get().value("translator_output").ifPresent(output ->
-					System.out.println("翻译输出: " + output));
+					System.out.println("Translation output:" + output));
 		}
 
-		System.out.println("\n自定义TemplateRenderer多智能体示例执行完成");
+		System.out.println("\nCustomized TemplateRenderer multi-agent example execution completed");
 	}
 
 	/**
-	 * 示例6：优化路由准确性
+	 * Example 6: Optimizing routing accuracy
 	 *
-	 * 通过提供清晰明确的Agent描述来提高路由的准确性
+	 * Improve routing accuracy by providing clear and unambiguous agent descriptions
 	 */
 	public void example6_optimizedRouting() throws Exception {
-		// 1. 提供清晰明确的Agent描述
+		//1. Provide a clear and unambiguous Agent description
 		ReactAgent codeAgent = ReactAgent.builder()
 				.name("code_agent")
 				.model(chatModel)
-				.description("专门处理编程相关问题，包括代码编写、调试、重构和优化。" +
-						"擅长Java、Python、JavaScript等主流编程语言。")
-				.instruction("你是一个资深的软件工程师...")
+				.description("Specializes in programming-related issues, including code writing, debugging, refactoring, and optimization." +
+						"Good at mainstream programming languages ​​such as Java, Python, and JavaScript.")
+				.instruction("You are a senior software engineer...")
 				.build();
 
-		// 2. 明确Agent的职责边界
+		//2. Clarify the boundaries of the Agent’s responsibilities
 		ReactAgent businessAgent = ReactAgent.builder()
 				.name("business_agent")
 				.model(chatModel)
-				.description("专门处理商业分析、市场研究和战略规划问题。" +
-						"不处理技术实现细节。")
-				.instruction("你是一个资深的商业分析师...")
+				.description("Specializes in business analysis, market research and strategic planning issues." +
+						"Does not deal with technical implementation details.")
+				.instruction("You are a senior business analyst...")
 				.build();
 
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_agent")
 				.model(chatModel)
-				.description("专门处理内容创作，包括文章、报告、文案等写作任务。")
-				.instruction("你是一个专业作家...")
+				.description("Specializes in content creation, including writing tasks such as articles, reports, copywriting, etc.")
+				.instruction("You are a professional writer...")
 				.build();
 
-		// 3. 使用不同领域的Agent避免重叠
+		//3. Use Agents from different fields to avoid overlap
 		LlmRoutingAgent routingAgent = LlmRoutingAgent.builder()
 				.name("multi_domain_router")
 				.model(chatModel)
 				.subAgents(List.of(codeAgent, businessAgent, writerAgent))
 				.build();
 
-		// 测试路由
-		routingAgent.invoke("如何用Java实现单例模式？");
-		routingAgent.invoke("分析一下这个市场的竞争态势");
-		routingAgent.invoke("写一篇产品介绍文案");
+		//test route
+		routingAgent.invoke("How to implement singleton pattern in Java?");
+		routingAgent.invoke("Analyze the competitive situation of this market");
+		routingAgent.invoke("Write a product introduction copy");
 
-		System.out.println("优化路由示例执行完成");
+		System.out.println("Optimized routing example execution completed");
 	}
 
 	/**
-	 * 示例7：混合模式 - 结合顺序、并行和路由
+	 * Example 7: Mixed mode - combining sequential, parallel and routing
 	 *
-	 * 组合不同的模式创建复杂的工作流
+	 * Combine different patterns to create complex workflows
 	 */
 	public void example7_hybridPattern() throws Exception {
-		// 创建研究Agent（并行执行）
+		//Create research agent (parallel execution)
 		ReactAgent webResearchAgent = ReactAgent.builder()
 				.name("web_research")
 				.model(chatModel)
-				.description("从互联网搜索信息")
-				.instruction("请搜索并收集关于以下主题的信息：{input}")
+				.description("Search information from the Internet")
+				.instruction("Please search and collect information on the following topics: {input}")
 				.outputKey("web_data")
 				.build();
 
 		ReactAgent dbResearchAgent = ReactAgent.builder()
 				.name("db_research")
 				.model(chatModel)
-				.description("从数据库查询信息")
-				.instruction("请从数据库中查询并收集关于以下主题的信息：{input}")
+				.description("Query information from database")
+				.instruction("Please query and collect information from the database on the following topics: {input}")
 				.outputKey("db_data")
 				.build();
 
 		ParallelAgent researchAgent = ParallelAgent.builder()
 				.name("parallel_research")
-				.description("并行收集多个数据源的信息")
+				.description("Collect information from multiple data sources in parallel")
 				.subAgents(List.of(webResearchAgent, dbResearchAgent))
 				.mergeOutputKey("research_data")
 				.build();
 
-		// 创建分析Agent
+		//Create analysis agent
 		ReactAgent analysisAgent = ReactAgent.builder()
 				.name("analysis_agent")
 				.model(chatModel)
-				.description("分析研究数据")
-				.instruction("请分析以下收集到的数据并提供见解：{research_data}")
+				.description("Analyze research data")
+				.instruction("Please analyze and provide insights from the data collected below: {research_data}")
 				.outputKey("analysis_result")
 				.build();
 
-		// 创建报告Agent（路由选择格式）
+		//Create reporting agent (routing format)
 		ReactAgent pdfReportAgent = ReactAgent.builder()
 				.name("pdf_report")
 				.model(chatModel)
-				.description("生成PDF格式报告")
+				.description("Generate reports in PDF format")
 				.instruction("""
-						请根据研究结果和分析结果生成一份PDF格式的报告。
+						Please generate a PDF format report based on the research results and analysis results.
 						
-						研究结果：{research_data}
-						分析结果：{analysis_result}
+						Research results: {research_data}
+						Analysis results: {analysis_result}
 						""")
 				.outputKey("pdf_report")
 				.build();
@@ -603,348 +603,348 @@ public class MultiAgentExample {
 		ReactAgent htmlReportAgent = ReactAgent.builder()
 				.name("html_report")
 				.model(chatModel)
-				.description("生成HTML格式报告")
+				.description("Generate reports in HTML format")
 				.instruction("""
-						请根据研究结果和分析结果生成一份HTML格式的报告。
+						Please generate an HTML format report based on the research results and analysis results.
 						
-						研究结果：{research_data}
-						分析结果：{analysis_result}
+						Research results: {research_data}
+						Analysis results: {analysis_result}
 						""")
 				.outputKey("html_report")
 				.build();
 
 		LlmRoutingAgent reportAgent = LlmRoutingAgent.builder()
 				.name("report_router")
-				.description("根据需求选择报告格式")
+				.description("Choose the report format based on your needs")
 				.model(chatModel)
 				.subAgents(List.of(pdfReportAgent, htmlReportAgent))
 				.build();
 
-		// 组合成顺序工作流
+		//Combined into sequential workflows
 		SequentialAgent hybridWorkflow = SequentialAgent.builder()
 				.name("research_workflow")
-				.description("完整的研究工作流：并行收集 -> 分析 -> 路由生成报告")
+				.description("Complete research workflow: Parallel collection -> Analysis -> Route generation report")
 				.subAgents(List.of(researchAgent, analysisAgent, reportAgent))
 				.build();
 
 
-		// 打印工作流图表
-		System.out.println("\n=== 混合模式工作流图表 ===");
+		//Print workflow diagram
+		System.out.println("\n=== Mixed Mode Workflow Diagram ===");
 		printGraphRepresentation(hybridWorkflow);
 		System.out.println("=========================\n");
 
-		Optional<OverAllState> result = hybridWorkflow.invoke("研究AI技术趋势并生成HTML报告");
+		Optional<OverAllState> result = hybridWorkflow.invoke("Research AI technology trends and generate HTML reports");
 
 		if (result.isPresent()) {
-			System.out.println("混合模式示例执行成功");
+			System.out.println("Mixed mode example executed successfully");
 		}
 	}
 
 	/**
-	 * 示例8：监督者模式（SupervisorAgent）
+	 * Example 8: Supervisor mode (SupervisorAgent)
 	 *
-	 * SupervisorAgent 与 LlmRoutingAgent 类似，但有以下关键区别：
-	 * 1. 子Agent处理完成后会返回到Supervisor，而不是直接结束
-	 * 2. Supervisor可以决定继续路由到其他子Agent，或者标记任务完成（FINISH）
-	 * 3. 支持嵌套Agent（如SequentialAgent、ParallelAgent）作为子Agent
+	 * SupervisorAgent is similar to LlmRoutingAgent, with the following key differences:
+	 * 1. After the sub-Agent processing is completed, it will return to the Supervisor instead of ending directly.
+	 * 2. Supervisor can decide to continue routing to other sub-agents, or mark the task as completed (FINISH)
+	 * 3. Support nested Agents (such as SequentialAgent, ParallelAgent) as sub-Agents
 	 *
-	 * 这个示例展示了如何使用SupervisorAgent管理包含普通ReactAgent和嵌套SequentialAgent的复杂工作流
+	 * This example shows how to use SupervisorAgent to manage a complex workflow containing a plain ReactAgent and nested SequentialAgent
 	 */
 	public void example8_supervisorAgent() throws Exception {
-		// 定义专业的监督者指令（如果不定义，则使用系统默认的提示词）
+		//Define professional supervisor instructions (if not defined, the system default prompt word will be used)
 		final String SUPERVISOR_INSTRUCTION = """
-				你是一个智能的内容管理监督者，负责协调和管理多个专业Agent来完成用户的内容处理需求。
+				You are an intelligent content management supervisor, responsible for coordinating and managing multiple specialized Agents to fulfill user content processing needs.
 
-				## 你的职责
-				1. 分析用户需求，将其分解为合适的子任务
-				2. 根据任务特性，选择合适的Agent进行处理
-				3. 监控任务执行状态，决定是否需要继续处理或完成任务
-				4. 当所有任务完成时，返回FINISH结束流程
+				## Your Responsibilities
+				1. Analyze user requirements and decompose them into appropriate subtasks
+				2. Select the appropriate Agent based on task characteristics
+				3. Monitor task execution status, decide whether to continue processing or complete the task
+				4. When all tasks are completed, return FINISH to end the process
 
-				## 可用的子Agent及其职责
+				## Available Sub-Agents and Their Responsibilities
 
 				### writer_agent
-				- **功能**: 擅长创作各类文章，包括散文、诗歌等文学作品
-				- **适用场景**: 
-				  * 用户需要创作新文章、散文、诗歌等原创内容
-				  * 简单的写作任务，不需要后续评审或修改
-				- **输出**: writer_output
+				- **Capabilities**: Excels at writing various articles, including prose, poetry, and other literary works
+				- **Use Cases**:
+				  * User needs to create new articles, prose, poetry, or other original content
+				  * Simple writing tasks that don't require subsequent review or revision
+				- **Output**: writer_output
 
 				### translator_agent
-				- **功能**: 擅长将文章翻译成各种语言
-				- **适用场景**:
-				  * 用户需要将内容翻译成其他语言
-				  * 翻译任务通常是单一操作，不需要多步骤处理
-				- **输出**: translator_output
+				- **Capabilities**: Excels at translating articles into various languages
+				- **Use Cases**:
+				  * User needs to translate content into other languages
+				  * Translation tasks are typically single operations that don't require multi-step processing
+				- **Output**: translator_output
 
 				### writing_workflow_agent
-				- **功能**: 完整的写作工作流，包含两个步骤：先写文章，然后进行评审和修改
-				- **适用场景**:
-				  * 用户需要高质量的文章，要求经过评审和修改
-				  * 任务明确要求"确保质量"、"需要评审"、"需要修改"等
-				  * 需要多步骤处理的复杂写作任务
-				- **工作流程**: 
-				  1. article_writer: 根据用户需求创作文章
-				  2. reviewer: 对文章进行评审和修改，确保质量
-				- **输出**: reviewed_article
+				- **Capabilities**: Complete writing workflow with two steps: first write the article, then review and revise
+				- **Use Cases**:
+				  * User needs high-quality articles that require review and revision
+				  * Task explicitly requires "ensure quality", "Need review", "Need to modify", etc.
+				  * Complex writing tasks requiring multi-step processing
+				- **Workflow**:
+				  1. article_writer: Creates articles based on user requirements
+				  2. reviewer: Reviews and revises articles to ensure quality
+				- **Output**: reviewed_article
 
-				## 决策规则
+				## Decision Rules
 
-				1. **单一任务判断**:
-				   - 如果用户只需要翻译，选择 translator_agent
-				   - 如果用户只需要简单写作，选择 writer_agent
-				   - 如果用户需要高质量文章或明确要求评审，选择 writing_workflow_agent
+				1. **Single Task Judgment**:
+				   - If the user only needs translation, choose translator_agent
+				   - If the user only needs simple writing, choose writer_agent
+				   - If the user needs high-quality articles or explicitly requires review, choose writing_workflow_agent
 
-				2. **多步骤任务处理**:
-				   - 如果用户需求包含多个步骤（如"先写文章，然后翻译"），需要分步处理
-				   - 先路由到第一个合适的Agent，等待其完成
-				   - 完成后，根据剩余需求继续路由到下一个Agent
-				   - 直到所有步骤完成，返回FINISH
+				2. **Multi-Step Task Processing**:
+				   - If user requirements contain multiple steps (e.g., "Write the article first, then translate it"), process step by step
+				   - First route to the appropriate Agent, wait for completion
+				   - After completion, continue routing to the next Agent based on remaining requirements
+				   - Until all steps are completed, return FINISH
 
-				3. **任务完成判断**:
-				   - 当用户的所有需求都已满足时，返回FINISH
-				   - 如果还有未完成的任务，继续路由到相应的Agent
+				3. **Task Completion Judgment**:
+				   - When all user requirements have been fulfilled, return FINISH
+				   - If there are unfinished tasks, continue routing to the appropriate Agent
 
-				## 响应格式
-				只返回Agent名称（writer_agent、translator_agent、writing_workflow_agent）或FINISH，不要包含其他解释。
+				## Response Format
+				Only return the Agent name (writer_agent, translator_agent, writing_workflow_agent) or FINISH, do not include other explanations.
 				""";
-		// 1. 创建普通的ReactAgent子Agent
+		//1. Create a common ReactAgent sub-Agent
 		ReactAgent writerAgent = ReactAgent.builder()
 				.name("writer_agent")
 				.model(chatModel)
-				.description("擅长创作各类文章，包括散文、诗歌等文学作品")
-				.instruction("你是一个知名的作家，擅长写作和创作。请根据用户的提问进行回答：\n\n {input}。")
+				.description("Good at writing all kinds of articles, including prose, poetry and other literary works")
+				.instruction("You are a well-known writer who is good at writing and creating.Please answer based on the user's question: \n\n {input}.")
 				.outputKey("writer_output")
 				.build();
 
 		ReactAgent translatorAgent = ReactAgent.builder()
 				.name("translator_agent")
 				.model(chatModel)
-				.description("擅长将文章翻译成各种语言")
-				.instruction("你是一个专业的翻译家，能够准确地将文章翻译成目标语言。" +
-						"如果待翻译的内容已存在于状态中，请使用：\n\n {writer_output}。")
+				.description("Good at translating articles into various languages")
+				.instruction("You are a professional translator who can accurately translate articles into the target language." +
+						"If the content to be translated already exists in the state, use: \n\n {writer_output}.")
 				.outputKey("translator_output")
 				.build();
 
-		// 2. 创建嵌套的SequentialAgent作为子Agent
-		// 这个SequentialAgent包含多个步骤：先写文章，再评审
+		//2. Create a nested SequentialAgent as a sub-Agent
+		//This SequentialAgent contains multiple steps: first write the article, and then review it
 		ReactAgent articleWriterAgent = ReactAgent.builder()
 				.name("article_writer")
 				.model(chatModel)
-				.description("专业写作Agent")
-				.instruction("你是一个知名的作家，擅长写作和创作。请根据用户的提问进行回答：{input}。")
+				.description("Professional Writing Agent")
+				.instruction("You are a well-known writer who is good at writing and creating.Please answer based on the user's question: {input}.")
 				.outputKey("article")
 				.build();
 
 		ReactAgent reviewerAgent = ReactAgent.builder()
 				.name("reviewer")
 				.model(chatModel)
-				.description("专业评审Agent")
-				.instruction("你是一个知名的评论家，擅长对文章进行评论和修改。" +
-						"对于散文类文章，请确保文章中必须包含对于西湖风景的描述。待评论文章：\n\n {article}" +
-						"最终只返回修改后的文章，不要包含任何评论信息。")
+				.description("Professional Review Agent")
+				.instruction("You are a well-known critic who is good at commenting and revising articles." +
+						"For prose articles, please ensure that the article must include a description of the scenery of West Lake.Articles awaiting comment:\n\n {article}" +
+						"Finally, only the revised article will be returned without any comment information.")
 				.outputKey("reviewed_article")
 				.build();
 
-		// 创建嵌套的SequentialAgent
+		//Create nested SequentialAgent
 		SequentialAgent writingWorkflowAgent = SequentialAgent.builder()
 				.name("writing_workflow_agent")
-				.description("完整的写作工作流：先写文章，然后进行评审和修改")
+				.description("Complete writing workflow: write the article first, then review and revise it")
 				.subAgents(List.of(articleWriterAgent, reviewerAgent))
 				.build();
 
-		// 3. 创建SupervisorAgent，包含普通Agent和嵌套Agent
+		//3. Create SupervisorAgent, including ordinary Agent and nested Agent
 		SupervisorAgent supervisorAgent = SupervisorAgent.builder()
 				.name("content_supervisor")
-				.description("内容管理监督者，负责协调写作、翻译和完整写作工作流等任务")
+				.description("Content management supervisor, responsible for coordinating tasks such as writing, translation and complete writing workflow")
 				.model(chatModel)
 				.systemPrompt(SUPERVISOR_INSTRUCTION)
 				.subAgents(List.of(writerAgent, translatorAgent, writingWorkflowAgent))
 				.build();
 
-		// 使用示例
-		System.out.println("监督者测试1: 简单写作任务");
-		Optional<OverAllState> result1 = supervisorAgent.invoke("帮我写一篇关于春天的短文");
-		// Supervisor会路由到writer_agent，处理完成后返回Supervisor，Supervisor判断完成返回FINISH
+		//Usage example
+		System.out.println("Supervisor Test 1: Simple Writing Task");
+		Optional<OverAllState> result1 = supervisorAgent.invoke("Help me write a short essay about spring");
+		//Supervisor will route to writer_agent and return to Supervisor after processing is completed. Supervisor will return FINISH after judging that it is completed.
 		if (result1.isPresent()) {
 			result1.get().value("writer_output").ifPresent(output ->
-					System.out.println("写作结果: " + output));
+					System.out.println("Writing result:" + output));
 		}
 
-		System.out.println("\n监督者测试2: 需要完整工作流的任务");
-		Optional<OverAllState> result2 = supervisorAgent.invoke("帮我写一篇关于西湖的散文，并确保质量");
-		// Supervisor会路由到writing_workflow_agent（嵌套SequentialAgent），
-		// 该Agent会先写文章，然后评审，完成后返回Supervisor，Supervisor判断完成返回FINISH
+		System.out.println("\nSupervisor Test 2: Tasks requiring complete workflow");
+		Optional<OverAllState> result2 = supervisorAgent.invoke("Help me write an essay about West Lake and ensure the quality");
+		// Supervisor will be routed to writing_workflow_agent (nested SequentialAgent),
+		//The Agent will first write the article, then review it, and return to the Supervisor after completion. The Supervisor will return FINISH after judging the completion.
 		if (result2.isPresent()) {
 			result2.get().value("reviewed_article").ifPresent(output ->
-					System.out.println("评审后文章: " + output));
+					System.out.println("Articles after review:" + output));
 		}
 
-		System.out.println("\n监督者测试3: 翻译任务");
-		Optional<OverAllState> result3 = supervisorAgent.invoke("请将以下内容翻译成英文：春暖花开");
-		// Supervisor会路由到translator_agent，处理完成后返回Supervisor，Supervisor判断完成返回FINISH
+		System.out.println("\nSupervisor Test 3: Translation Task");
+		Optional<OverAllState> result3 = supervisorAgent.invoke("Please translate the following content into English: Spring is warm and flowers are blooming");
+		//Supervisor will route to translator_agent and return to Supervisor after processing is completed. Supervisor will return FINISH after judging that it is completed.
 		if (result3.isPresent()) {
 			result3.get().value("translator_output").ifPresent(output ->
-					System.out.println("翻译结果: " + output));
+					System.out.println("Translation results:" + output));
 		}
 
-		System.out.println("\n监督者测试4: 多步骤任务（可能需要多次路由）");
-		Optional<OverAllState> result4 = supervisorAgent.invoke("先帮我写一篇关于春天的文章，然后翻译成英文");
-		// Supervisor可能会：
-		// 1. 先路由到writer_agent写文章，完成后返回Supervisor
-		// 2. Supervisor判断还需要翻译，路由到translator_agent
-		// 3. 翻译完成后返回Supervisor，Supervisor判断所有任务完成，返回FINISH
+		System.out.println("\nSupervisor Test 4: Multi-step task (may require multiple routes)");
+		Optional<OverAllState> result4 = supervisorAgent.invoke("First help me write an article about spring and then translate it into English");
+		//Supervisor may:
+		//1. First route to writer_agent to write the article, and then return to Supervisor after completion
+		//2. Supervisor determines that translation is still needed and routes to translator_agent.
+		//3. After the translation is completed, return to Supervisor. Supervisor determines that all tasks are completed and returns FINISH
 		if (result4.isPresent()) {
 			result4.get().value("writer_output").ifPresent(output ->
-					System.out.println("写作结果: " + output));
+					System.out.println("Writing result:" + output));
 			result4.get().value("translator_output").ifPresent(output ->
-					System.out.println("翻译结果: " + output));
+					System.out.println("Translation results:" + output));
 		}
 
-		// 打印工作流图表
-		System.out.println("\n=== SupervisorAgent 工作流图表 ===");
+		//Print workflow diagram
+		System.out.println("\n=== SupervisorAgent Workflow Diagram ===");
 		printGraphRepresentation(supervisorAgent);
 		System.out.println("==================================\n");
 
-		// 示例5：SupervisorAgent作为SequentialAgent的子Agent，使用占位符
-		System.out.println("\n监督者测试5: SupervisorAgent作为SequentialAgent的子Agent（使用占位符）");
+		//Example 5: SupervisorAgent as a sub-Agent of SequentialAgent, using placeholders
+		System.out.println("\nSupervisor Test 5: SupervisorAgent as a sub-Agent of SequentialAgent (use placeholder)");
 		example8_supervisorAgentAsSequentialSubAgent();
 		System.out.println();
 
-		System.out.println("SupervisorAgent示例执行完成");
+		System.out.println("SupervisorAgent example execution completed");
 	}
 
 	/**
-	 * 示例8.1：SupervisorAgent作为SequentialAgent的子Agent，使用占位符
+	 * Example 8.1: SupervisorAgent as a sub-Agent of SequentialAgent, using placeholders
 	 *
-	 * 这个示例展示了：
-	 * 1. SupervisorAgent可以作为SequentialAgent的子Agent
-	 * 2. SupervisorAgent的instruction可以使用占位符引用前序Agent的输出
-	 * 3. SupervisorAgent的子Agent的instruction也可以使用占位符引用前序Agent的输出
+	 * This example shows:
+	 * 1. SupervisorAgentcan be used asSequentialAgentsonAgent
+	 * 2. SupervisorAgent instructions can use placeholders to reference the output of the pre-order Agent.
+	 * 3. SupervisorAgent’s sub-Agent instructions can also use placeholders to reference the output of the pre-order Agent.
 	 */
 	private void example8_supervisorAgentAsSequentialSubAgent() throws Exception {
-		// 1. 创建第一个Agent，用于生成文章内容
+		//1. Create the first Agent to generate article content
 		ReactAgent articleWriterAgent = ReactAgent.builder()
 				.name("article_writer")
 				.model(chatModel)
-				.description("专业写作Agent，负责创作文章")
-				.instruction("你是一个知名的作家，擅长写作和创作。请根据用户的提问进行回答：{input}。")
+				.description("Professional writing agent, responsible for creating articles")
+				.instruction("You are a well-known writer who is good at writing and creating.Please answer based on the user's question: {input}.")
 				.outputKey("article_content")
 				.build();
 
-		// 2. 创建SupervisorAgent的子Agent
+		// 2. createSupervisorAgentsonAgent
 		ReactAgent translatorAgent = ReactAgent.builder()
 				.name("translator_agent")
 				.model(chatModel)
-				.description("擅长将文章翻译成各种语言")
-				.instruction("你是一个专业的翻译家，能够准确地将文章翻译成目标语言。待翻译文章：\n\n {article_content}。")
+				.description("Good at translating articles into various languages")
+				.instruction("You are a professional translator who can accurately translate articles into the target language.Article to be translated:\n\n {article_content}.")
 				.outputKey("translator_output")
 				.build();
 
 		ReactAgent reviewerAgent = ReactAgent.builder()
 				.name("reviewer_agent")
 				.model(chatModel)
-				.description("擅长对文章进行评审和修改")
-				.instruction("你是一个知名的评论家，擅长对文章进行评论和修改。待评审文章：\n\n {article_content}。"
-						+ "请对文章进行评审，指出优点和需要改进的地方，并返回评审后的改进版本。")
+				.description("Good at reviewing and revising articles")
+				.instruction("You are a well-known critic who is good at commenting and revising articles.Articles to be reviewed:\n\n {article_content}."
+						+ "Please review the article, point out the strengths and areas for improvement, and return an improved version after review.")
 				.outputKey("reviewer_output")
 				.build();
 
-		// 3. 定义SupervisorAgent的instruction，使用占位符引用前序Agent的输出
-		// 这个instruction包含 {article_content} 占位符，会被替换为第一个Agent的输出
+		//3. Define the instruction of SupervisorAgent and use placeholders to reference the output of the pre-order Agent.
+		//This instruction contains the {article_content} placeholder, which will be replaced with the output of the first Agent
 		final String SUPERVISOR_INSTRUCTION = """
-				你是一个智能的内容处理监督者，你可以看到前序Agent的聊天历史与任务处理记录。当前，你收到了以下文章内容：
+				You are an intelligent content processing supervisor. You can see the chat history and task processing records of the preceding Agent. Currently, you received the following article content:
 
 				{article_content}
 
-				请根据文章内容的特点和用户需求，决定是进行翻译还是评审：
-				- 如果用户要求翻译或文章需要翻译成其他语言，选择 translator_agent
-				- 如果用户要求评审、改进或优化文章，选择 reviewer_agent
-				- 如果任务完成，返回 FINISH
+				Please decide whether to translate or review based on the characteristics of the article content and user needs:
+				- If the user requests translation or the article needs to be translated into another language, select translator_agent
+				- If the user requests review, improvement, or optimization of the article, select reviewer_agent
+				- If the task is completed, return FINISH
 				""";
 
 		final String SUPERVISOR_SYSTEM_PROMPT = """
-				你是一个智能的内容处理监督者，负责协调翻译和评审任务。
+				You are an intelligent content processing supervisor, responsible for coordinating translation and review tasks.
 
-				## 可用的子Agent及其职责
+				## Available Sub-Agents and Their Responsibilities
 
 				### translator_agent
-				- **功能**: 擅长将文章翻译成各种语言
-				- **适用场景**: 当文章需要翻译成其他语言时
-				- **输出**: translator_output
+				- **Function**: Good at translating articles into various languages
+				- **Applicable Scenarios**: When the article needs to be translated into other languages
+				- **Output**: translator_output
 
 				### reviewer_agent
-				- **功能**: 擅长对文章进行评审和修改
-				- **适用场景**: 当文章需要评审、改进或优化时
-				- **输出**: reviewer_output
+				- **Function**: Good at reviewing and revising articles
+				- **Applicable Scenarios**: When the article needs review, improvement, or optimization
+				- **Output**: reviewer_output
 
-				## 决策规则
+				## Decision Rules
 
-				1. **根据文章内容和用户需求判断**:
-				   - 如果用户要求翻译或文章需要翻译成其他语言，选择 translator_agent
-				   - 如果用户要求评审、改进或优化文章，选择 reviewer_agent
+				1. **Based on article content and user needs**:
+				   - If the user requests translation or the article needs to be translated into another language, select translator_agent
+				   - If the user requests review, improvement, or optimization of the article, select reviewer_agent
 
-				2. **任务完成判断**:
-				   - 当所有任务完成时，返回 FINISH
+				2. **Task Completion Judgment**:
+				   - Return FINISH when all tasks are completed
 
-				## 响应格式
-				只返回Agent名称（translator_agent、reviewer_agent）或FINISH，不要包含其他解释。
+				## Response Format
+				Only return Agent name (translator_agent, reviewer_agent) or FINISH, do not include other explanations.
 				""";
 
-		// 4. 创建SupervisorAgent，其instruction使用占位符
+		//4. Create SupervisorAgent and use placeholders for its instructions.
 		SupervisorAgent supervisorAgent = SupervisorAgent.builder()
 				.name("content_supervisor")
-				.description("内容处理监督者，根据前序Agent的输出决定翻译或评审")
+				.description("The content processing supervisor determines translation or review based on the output of the pre-order Agent.")
 				.model(chatModel)
 				.systemPrompt(SUPERVISOR_SYSTEM_PROMPT)
-				.instruction(SUPERVISOR_INSTRUCTION) // 这个instruction包含 {article_content} 占位符
+				.instruction(SUPERVISOR_INSTRUCTION) //This instruction contains {article_content} placeholder
 				.subAgents(List.of(translatorAgent, reviewerAgent))
 				.build();
 
-		// 5. 创建SequentialAgent，先执行articleWriterAgent，然后执行supervisorAgent
+		// 5. createSequentialAgent, execute firstarticleWriterAgent, and then executesupervisorAgent
 		SequentialAgent sequentialAgent = SequentialAgent.builder()
 				.name("content_processing_workflow")
-				.description("内容处理工作流：先写文章，然后根据文章内容决定翻译或评审")
+				.description("Content processing workflow: write the article first, then decide on translation or review based on the content of the article")
 				.subAgents(List.of(articleWriterAgent, supervisorAgent))
 				.build();
 
-		// 测试场景1：写文章后翻译
-		System.out.println("场景1: 写文章后翻译");
-		Optional<OverAllState> result1 = sequentialAgent.invoke("帮我写一篇关于春天的短文，然后翻译成英文");
+		//Test scenario 1: Write an article and then translate it
+		System.out.println("Scenario 1: Write the article and then translate it");
+		Optional<OverAllState> result1 = sequentialAgent.invoke("Help me write a short article about spring and translate it into English");
 		if (result1.isPresent()) {
 			OverAllState state = result1.get();
 			state.value("article_content").ifPresent(output -> {
 				if (output instanceof AssistantMessage) {
-					System.out.println("文章内容: " + ((AssistantMessage) output).getText());
+					System.out.println("Article content:" + ((AssistantMessage) output).getText());
 				}
 			});
 			state.value("translator_output").ifPresent(output -> {
 				if (output instanceof AssistantMessage) {
-					System.out.println("翻译结果: " + ((AssistantMessage) output).getText());
+					System.out.println("Translation results:" + ((AssistantMessage) output).getText());
 				}
 			});
 		}
 
-		// 测试场景2：写文章后评审
-		System.out.println("\n场景2: 写文章后评审");
-		Optional<OverAllState> result2 = sequentialAgent.invoke("帮我写一篇关于春天的短文，然后进行评审和改进");
+		//Test scenario 2: Review after writing the article
+		System.out.println("\nScenario 2: Review after writing the article");
+		Optional<OverAllState> result2 = sequentialAgent.invoke("Help me write a short article about spring, and then review and improve it");
 		if (result2.isPresent()) {
 			OverAllState state = result2.get();
 			state.value("article_content").ifPresent(output -> {
 				if (output instanceof AssistantMessage) {
-					System.out.println("文章内容: " + ((AssistantMessage) output).getText());
+					System.out.println("Article content:" + ((AssistantMessage) output).getText());
 				}
 			});
 			state.value("reviewer_output").ifPresent(output -> {
 				if (output instanceof AssistantMessage) {
-					System.out.println("评审结果: " + ((AssistantMessage) output).getText());
+					System.out.println("Review results:" + ((AssistantMessage) output).getText());
 				}
 			});
 		}
 	}
 
 	/**
-	 * 打印工作流图表（支持SupervisorAgent）
+	 * Print workflow diagram (supports SupervisorAgent)
 	 */
 	private void printGraphRepresentation(SupervisorAgent agent) {
 		GraphRepresentation representation = agent.getAndCompileGraph().getGraph(GraphRepresentation.Type.PLANTUML);
@@ -954,39 +954,39 @@ public class MultiAgentExample {
 	private void testRoutingSequentialEmbedding() throws GraphRunnerException {
 		ReactAgent reactAgent = ReactAgent.builder()
 				.name("weather_agent")
-				.description("根据用户的问题和提炼的位置信息查询天气。\n\n 用户问题：{input} \n\n 位置信息：{location}")
+				.description("Query weather based on user questions and refined location information.\n\n User question: {input} \n\n Location information: {location}")
 				.model(chatModel)
 				.outputKey("weather")
-				.systemPrompt("你是一个天气查询专家").build();
+				.systemPrompt("You are a weather query expert").build();
 
 		ReactAgent locationAgent = ReactAgent.builder()
 				.name("location_agent")
-				.description("根据用户的问题，进行位置查询。\n 用户问题：{input}")
+				.description("Based on the user's question, perform location query.\n User question: {input}")
 				.model(chatModel)
 				.outputKey("location")
-				.systemPrompt("你是一个位置查询专家").build();
+				.systemPrompt("You are a location lookup expert").build();
 
 		SequentialAgent sequentialAgent = SequentialAgent.builder()
-				.name("天气小助手")
-				.description("天气小助手")
+				.name("Weather assistant")
+				.description("Weather assistant")
 				.subAgents(List.of(locationAgent, reactAgent))
 				.build();
 
 		LlmRoutingAgent routingAgent = LlmRoutingAgent.builder()
-				.name("用户小助手")
-				.description("帮助用户完成各种需求")
-//				.routingInstruction(""); // 可以提供详尽的说明，告知routing路由职责，如何选择子Agent等，用于替代系统默认的prompt。
+				.name("User assistant")
+				.description("Help users complete various needs")
+//.routingInstruction(""); // Can provide detailed instructions to inform routing responsibilities, how to select sub-Agents, etc., used to replace the system's default prompt.
 				.model(chatModel)
 				.subAgents(List.of(sequentialAgent)).build();
 
-		Optional<OverAllState> invoke = routingAgent.invoke("天气怎么样");
+		Optional<OverAllState> invoke = routingAgent.invoke("how is the weather");
 		System.out.println(invoke);
 	}
 
 	/**
-	 * 打印工作流图表
+	 * Print workflow diagram
 	 *
-	 * 使用PlantUML格式展示Agent工作流的结构
+	 * Use PlantUML format to display the structure of Agent workflow
 	 */
 	private void printGraphRepresentation(SequentialAgent agent) {
 		GraphRepresentation representation = agent.getAndCompileGraph().getGraph(GraphRepresentation.Type.PLANTUML);
@@ -994,41 +994,41 @@ public class MultiAgentExample {
 	}
 
 	/**
-	 * 运行所有示例
+	 * Run all examples
 	 */
 	public void runAllExamples() {
-		System.out.println("=== 多智能体（Multi-agent）示例 ===\n");
+		System.out.println("===Multi-agent example ===\n");
 
 		try {
-			System.out.println("示例1: 顺序执行（Sequential Agent）");
+			System.out.println("Example 1: Sequential execution (Sequential Agent)");
 			example1_sequentialAgent();
 			System.out.println();
 
-			System.out.println("示例2: 控制推理内容");
+			System.out.println("Example 2: Controlling reasoning content");
 			example2_controlReasoningContents();
 			System.out.println();
 
-			System.out.println("示例3: 并行执行（Parallel Agent）");
+			System.out.println("Example 3: Parallel execution (Parallel Agent)");
 			example3_parallelAgent();
 			System.out.println();
 
-			System.out.println("示例4: 自定义合并策略");
+			System.out.println("Example 4: Custom merge strategy");
 			example4_customMergeStrategy();
 			System.out.println();
 //
-			System.out.println("示例5: LLM路由（LlmRoutingAgent）");
+			System.out.println("Example 5: LLM routing (LlmRoutingAgent)");
 			example5_llmRoutingAgent();
 			System.out.println();
 
-			System.out.println("示例6: 优化路由准确性");
+			System.out.println("Example 6: Optimizing routing accuracy");
 			example6_optimizedRouting();
 			System.out.println();
 
-			System.out.println("示例7: 混合模式");
+			System.out.println("Example 7: Mixed modes");
 			example7_hybridPattern();
 			System.out.println();
 
-			System.out.println("示例8: 监督者模式（SupervisorAgent）");
+			System.out.println("Example 8: Supervisor mode (SupervisorAgent)");
 			example8_supervisorAgent();
 			System.out.println();
 
@@ -1036,7 +1036,7 @@ public class MultiAgentExample {
 
 		}
 		catch (Exception e) {
-			System.err.println("执行示例时出错: " + e.getMessage());
+			System.err.println("An error occurred while executing the example:" + e.getMessage());
 			e.printStackTrace();
 		}
 	}

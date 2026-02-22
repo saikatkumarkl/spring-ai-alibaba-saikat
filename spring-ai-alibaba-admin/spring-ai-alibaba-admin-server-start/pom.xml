@@ -56,7 +56,7 @@
 
 
     <artifactId>spring-ai-alibaba-admin-server-start</artifactId>
-    <name>Spring AI Alibaba Admin Server Start</name>
+    <name>CordonData Admin Server Start</name>
     <description>Backend implementation of the visualized studio for building applications.</description>
 
     <dependencies>
@@ -232,6 +232,13 @@
             <artifactId>spring-security-crypto</artifactId>
         </dependency>
 
+        <!-- Nimbus JOSE+JWT for Keycloak JWT (JWKS) validation -->
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+            <version>9.40</version>
+        </dependency>
+
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -366,7 +373,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>com.alibaba.cloud.ai.studio.admin.SaaStudioAdmin</mainClass>
+                    <mainClass>com.alibaba.cloud.ai.studio.admin.CordonDataAdmin</mainClass>
                 </configuration>
             </plugin>
             <plugin>
@@ -381,7 +388,7 @@
                         <phase>package</phase>
                         <configuration>
                             <tasks>
-                                <unzip dest="${project.build.directory}/agentscope"
+                                <unzip dest="${project.build.directory}/cordondata"
                                        src="${project.build.directory}/${project.artifactId}.${project.packaging}"></unzip>
                             </tasks>
                         </configuration>

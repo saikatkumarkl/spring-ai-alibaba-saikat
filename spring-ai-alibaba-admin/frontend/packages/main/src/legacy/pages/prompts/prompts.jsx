@@ -276,7 +276,7 @@ const PromptsPage = () => {
                 navigate(buildLegacyPath("/tracing"), {
                   state: {
                     adv: {
-                      "spring.ai.alibaba.prompt.key":record.promptKey
+                      "cordondata.prompt.key":record.promptKey
                     }
                   }
                 });

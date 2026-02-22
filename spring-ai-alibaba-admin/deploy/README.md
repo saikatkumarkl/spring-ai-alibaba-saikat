@@ -1,6 +1,6 @@
 # Kubernetes Deployment Guide
 
-本目录包含 Spring AI Alibaba Admin 项目的 Kubernetes 部署资源文件。
+本目录包含 CordonData Admin 项目的 Kubernetes 部署资源文件。
 
 ## 目录结构
 
@@ -70,7 +70,7 @@ kubectl apply -f deploy/namespace.yaml
 # 从项目根目录执行
 kubectl create configmap mysql-init-scripts \
   --from-file=admin-schema.sql=docker/middleware/init/mysql/admin-schema.sql \
-  --from-file=agentscope-schema.sql=docker/middleware/init/mysql/agentscope-schema.sql \
+  --from-file=cordondata-schema.sql=docker/middleware/init/mysql/cordondata-schema.sql \
   -n spring-ai-admin \
   --dry-run=client -o yaml | kubectl apply -f -
 ```
@@ -123,7 +123,7 @@ MySQL deployment 会将 `mysql-init-scripts` ConfigMap 挂载到 `/docker-entryp
 # 从项目根目录执行（重要：必须在部署 MySQL 之前执行）
 kubectl create configmap mysql-init-scripts \
   --from-file=admin-schema.sql=docker/middleware/init/mysql/admin-schema.sql \
-  --from-file=agentscope-schema.sql=docker/middleware/init/mysql/agentscope-schema.sql \
+  --from-file=cordondata-schema.sql=docker/middleware/init/mysql/cordondata-schema.sql \
   -n spring-ai-admin \
   --dry-run=client -o yaml | kubectl apply -f -
 ```

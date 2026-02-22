@@ -42,16 +42,16 @@ public class DatasetServiceImpl implements DatasetService {
     @Override
     @Transactional
     public Dataset create(DatasetCreateRequest request) {
-        log.info("创建评测集: {}", request);
+        log.info("Create a review set: {}", request);
 
         if (!StringUtils.hasText(request.getName())) {
-            throw new IllegalArgumentException("评测集名称不能为空");
+            throw new IllegalArgumentException("Evaluation set name cannot be empty");
         }
 
 
         if (request == null || request.getColumnsConfig() == null ||
                 !hasRequiredColumns(request.getColumnsConfig())) {
-            throw new IllegalArgumentException("评测集列配置错误，必须包含input和reference_output两列");
+            throw new IllegalArgumentException("The evaluation set column configuration is incorrect and must contain two columns: input and reference_output.");
         }
 
         DatasetDO datasetDO = DatasetDO.builder()
@@ -61,13 +61,13 @@ public class DatasetServiceImpl implements DatasetService {
                 .build();
 
         datasetMapper.insert(datasetDO);
-        log.info("评测集创建成功: {}", datasetDO);
+        log.info("Evaluation set created successfully: {}", datasetDO);
         return Dataset.fromDO(datasetDO);
     }
 
     @Override
     public PageResult<Dataset> list(DatasetListRequest request) {
-        log.info("查询评测集列表: {}", request);
+        log.info("Query the evaluation set list: {}", request);
 
         //Calculate paging parameters
         int pageNumber = request.getPageNumber() != null ? request.getPageNumber() : 1;
@@ -105,11 +105,11 @@ public class DatasetServiceImpl implements DatasetService {
 
     @Override
     public Dataset getById(Long id) {
-        log.info("查询评测集详情: {}", id);
+        log.info("Query evaluation set details: {}", id);
         DatasetDO datasetDO = datasetMapper.selectById(id);
             
         if (datasetDO == null) {
-            log.warn("未找到ID为{}的评测集", id);
+            log.warn("Review set with ID {} ​​not found", id);
             return null;
         }
         Dataset dataset = Dataset.fromDO(datasetDO);
@@ -127,11 +127,11 @@ public class DatasetServiceImpl implements DatasetService {
 
     @Override
     public Dataset update(DatasetUpdateRequest request) {
-        log.info("更新评测集: {}", request);
+        log.info("Update review set: {}", request);
 
          DatasetDO existingDataset = datasetMapper.selectById(request.getDatasetId());
          if (existingDataset == null) {
-             throw new IllegalArgumentException("评测集不存在: " + request.getDatasetId());
+             throw new IllegalArgumentException("The evaluation set does not exist:" + request.getDatasetId());
          }
 
 
@@ -145,9 +145,9 @@ public class DatasetServiceImpl implements DatasetService {
     @Override
     @Transactional
     public void deleteById(Long id) {
-        log.info("删除评测集: {}", id);
+        log.info("Delete review set: {}", id);
         datasetMapper.deleteById(id);
-        log.info("评测集删除成功: {}", id);
+        log.info("Evaluation set deleted successfully: {}", id);
     }
 
 

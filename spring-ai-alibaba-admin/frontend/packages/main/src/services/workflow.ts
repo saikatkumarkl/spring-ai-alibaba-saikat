@@ -1,7 +1,7 @@
 import { IWorkflowDebugInputParamItem } from '@/pages/App/Workflow/context';
 import { request } from '@/request';
 import { IBizEdge, IBizNode } from '@/types/workflow';
-import { IWorkFlowTaskProcess } from '@spark-ai/flow';
+import { IWorkFlowTaskProcess } from '@cordondata/flow';
 
 /**
  * Parameters for creating workflow task

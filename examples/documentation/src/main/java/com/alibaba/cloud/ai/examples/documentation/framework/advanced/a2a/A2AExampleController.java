@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 提供 HTTP 接口来调用 A2A 示例
+ * Provides HTTP endpoints for the A2A example
  */
 @RestController
 @RequestMapping("/api/a2a")
@@ -39,9 +39,9 @@ public class A2AExampleController {
 	}
 
 	/**
-	 * 运行统一的 A2A 演示
+	 * Run the unified A2A demo
 	 *
-	 * @return 执行结果
+	 * @return execution result
 	 */
 	@GetMapping("/demo")
 	public Map<String, Object> runDemo() {
@@ -49,11 +49,11 @@ public class A2AExampleController {
 		try {
 			a2aExample.runDemo();
 			response.put("status", "success");
-			response.put("message", "A2A 一体化演示执行完成");
+			response.put("message", "A2A integrated demo execution completed");
 		}
 		catch (Exception e) {
 			response.put("status", "error");
-			response.put("message", "执行演示时出错: " + e.getMessage());
+			response.put("message", "Error running demo: " + e.getMessage());
 			response.put("error", e.getClass().getSimpleName());
 		}
 		return response;

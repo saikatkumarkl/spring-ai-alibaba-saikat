@@ -41,7 +41,7 @@ public class PromptController {
      */
     @PostMapping("/prompt")
     public Result<Prompt> createPrompt(@Validated @RequestBody PromptCreateRequest request) throws StudioException {
-        log.info("创建Prompt请求: {}", request);
+        log.info("Create Prompt request: {}", request);
         Prompt prompt = promptService.create(request);
         return Result.success(prompt);
     }
@@ -51,7 +51,7 @@ public class PromptController {
      */
     @GetMapping("/prompt")
     public Result<Prompt> getPrompt(@RequestParam @NotBlank String promptKey) throws StudioException {
-        log.info("查询Prompt详情请求: {}", promptKey);
+        log.info("Query Prompt details request: {}", promptKey);
         Prompt prompt = promptService.getByPromptKey(promptKey);
         return Result.success(prompt);
     }
@@ -61,7 +61,7 @@ public class PromptController {
      */
     @GetMapping("/prompts")
     public Result<PageResult<Prompt>> listPrompts(@Validated @ModelAttribute PromptListRequest request) throws StudioException {
-        log.info("查询Prompt列表请求: {}", request);
+        log.info("Query Prompt list request: {}", request);
         PageResult<Prompt> result = promptService.list(request);
         return Result.success(result);
     }
@@ -71,7 +71,7 @@ public class PromptController {
      */
     @PutMapping("/prompt")
     public Result<Prompt> updatePrompt(@Validated @RequestBody PromptUpdateRequest request) throws StudioException {
-        log.info("更新Prompt请求: {}", request);
+        log.info("Update Prompt request: {}", request);
         Prompt prompt = promptService.update(request);
         return Result.success(prompt);
     }
@@ -82,7 +82,7 @@ public class PromptController {
     @DeleteMapping("/prompt")
 
     public Result<Boolean> deletePrompt(@RequestParam @NotBlank String promptKey) throws StudioException {
-        log.info("删除Prompt请求: {}", promptKey);
+        log.info("Delete Prompt request: {}", promptKey);
         promptService.deleteByPromptKey(promptKey);
         return Result.success(true);
     }
@@ -95,7 +95,7 @@ public class PromptController {
     @PostMapping("/prompt/version")
     public Result<PromptVersion> createPromptVersion(@Validated @RequestBody PromptVersionCreateRequest request)
             throws StudioException {
-        log.info("创建Prompt版本请求: {}", request);
+        log.info("Create Prompt version request: {}", request);
         PromptVersion promptVersion = promptVersionService.create(request);
         return Result.success(promptVersion);
     }
@@ -106,7 +106,7 @@ public class PromptController {
     @GetMapping("/prompt/version")
     public Result<PromptVersionDetail> getPromptVersion(@RequestParam @NotBlank String promptKey,
                                                         @RequestParam @NotBlank String version) throws StudioException {
-        log.info("查询Prompt版本详情请求: promptKey={}, version={}", promptKey, version);
+        log.info("Query Prompt version details request: promptKey={}, version={}", promptKey, version);
         PromptVersionDetail promptVersionDetail = promptVersionService.getByPromptKeyAndVersion(promptKey, version);
         return Result.success(promptVersionDetail);
     }
@@ -116,7 +116,7 @@ public class PromptController {
      */
     @GetMapping("/prompt/versions")
     public Result<PageResult<PromptVersion>> listPromptVersions(@Validated @ModelAttribute PromptVersionListRequest request) {
-        log.info("查询Prompt版本列表请求: {}", request);
+        log.info("Query Prompt version list request: {}", request);
         PageResult<PromptVersion> result = promptVersionService.list(request);
         return Result.success(result);
     }
@@ -129,7 +129,7 @@ public class PromptController {
     @GetMapping("/prompt/template")
     public Result<PromptTemplateDetail> getPromptTemplate(@RequestParam @NotBlank String promptTemplateKey)
             throws StudioException {
-        log.info("查询Prompt模板详情请求: {}", promptTemplateKey);
+        log.info("Query Prompt template details request: {}", promptTemplateKey);
         PromptTemplateDetail promptTemplateDetail = promptTemplateService.getByPromptTemplateKey(promptTemplateKey);
         return Result.success(promptTemplateDetail);
     }
@@ -140,7 +140,7 @@ public class PromptController {
     @GetMapping("/prompt/templates")
     public Result<PageResult<PromptTemplate>> listPromptTemplates(@Validated PromptTemplateListRequest request)
             throws StudioException {
-        log.info("查询Prompt模板列表请求: {}", request);
+        log.info("Query Prompt template list request: {}", request);
         PageResult<PromptTemplate> result = promptTemplateService.list(request);
         return Result.success(result);
     }
@@ -152,11 +152,11 @@ public class PromptController {
      */
     @PostMapping(value = "/prompt/run", produces = MediaType.APPLICATION_NDJSON_VALUE)
     public Flux<PromptRunResponse> runPrompt(@Validated @RequestBody PromptRunRequest request) {
-        log.info("运行Prompt调试请求: {}", request);
+        log.info("Run Prompt debugging request: {}", request);
         try {
             return promptRunService.run(request);
         } catch (Exception e) {
-            log.error("运行Prompt调试失败", e);
+            log.error("Failed to run Prompt debugging", e);
             return Flux.just(PromptRunResponse.createErrorResponse(null, e.getMessage()));
         }
     }
@@ -166,10 +166,10 @@ public class PromptController {
      */
     @GetMapping("/prompt/session")
     public Result<ChatSession> getSession(@RequestParam @NotBlank String sessionId) {
-        log.info("获取会话信息: {}", sessionId);
+        log.info("Get session information: {}", sessionId);
         ChatSession session = promptRunService.getSession(sessionId);
         if (session == null) {
-            return Result.error("会话不存在或已过期");
+            return Result.error("The session does not exist or has expired");
         }
         return Result.success(session);
     }
@@ -179,7 +179,7 @@ public class PromptController {
      */
     @DeleteMapping("/prompt/session")
     public Result<Void> deleteSession(@RequestParam @NotBlank String sessionId) {
-        log.info("删除会话: {}", sessionId);
+        log.info("Delete session: {}", sessionId);
         promptRunService.deleteSession(sessionId);
         return Result.success(null);
     }

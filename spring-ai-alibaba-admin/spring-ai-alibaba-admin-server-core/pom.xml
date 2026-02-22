@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>spring-ai-alibaba-admin-server-core</artifactId>
-    <name>Spring AI Alibaba Admin Server Core</name>
+    <name>CordonData Admin Server Core</name>
     <description>Shared core components of admin server</description>
     <url>https://github.com/alibaba/spring-ai-alibaba</url>
     <scm>

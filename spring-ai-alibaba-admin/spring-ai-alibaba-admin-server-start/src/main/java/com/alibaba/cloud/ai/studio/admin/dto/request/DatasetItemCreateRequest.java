@@ -12,7 +12,7 @@ public class DatasetItemCreateRequest {
     /**
      * Evaluation set ID
      */
-    @NotNull(message = "测评集ID不能为空")
+    @NotNull(message = "Evaluation set ID cannot be empty")
     private Long datasetId;
 
     private List<String> dataContent;

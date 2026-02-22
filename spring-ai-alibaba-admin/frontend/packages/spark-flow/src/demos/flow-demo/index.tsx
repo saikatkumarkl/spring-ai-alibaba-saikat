@@ -9,7 +9,7 @@ import {
   ReactFlowProvider,
   TaskStatus,
   WorkflowContextProvider,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { useMount } from 'ahooks';
 import { Modal } from 'antd';
 import enUS from 'antd/locale/en_US';

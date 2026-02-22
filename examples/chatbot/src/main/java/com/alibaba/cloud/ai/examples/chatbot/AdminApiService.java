@@ -64,11 +64,36 @@ public class AdminApiService {
 				if (code != null && code == 200 && response.get("data") != null) {
 					return (Map<String, Object>) response.get("data");
 				}
-				String message = (String) response.get("message");
-				throw new RuntimeException("Login failed: " + (message != null ? message : "Unknown error"));
+				String message1 = (String) response.get("message");
+				throw new RuntimeException("Login failed: " + (message1 != null ? message1 : "Unknown error"));
 			})
 			.doOnSuccess(data -> log.info("Login successful for: {}", email))
 			.doOnError(error -> log.error("Login failed for: {}", email, error));
+	}
+
+	/**
+	 * Token-based login using a Keycloak access token.
+	 * Calls admin backend's /console/v1/chatbot/token-login which validates the token,
+	 * auto-provisions the user, and returns the user's accessible apps (authorization).
+	 */
+	@SuppressWarnings("unchecked")
+	public Mono<Map<String, Object>> tokenLogin(String accessToken) {
+		log.info("Attempting Keycloak token login");
+		return webClient.post()
+			.uri("/console/v1/chatbot/token-login")
+			.bodyValue(Map.of("access_token", accessToken))
+			.retrieve()
+			.bodyToMono(Map.class)
+			.map(response -> {
+				Integer code = (Integer) response.get("code");
+				if (code != null && code == 200 && response.get("data") != null) {
+					return (Map<String, Object>) response.get("data");
+				}
+				String message1 = (String) response.get("message");
+				throw new RuntimeException("Token login failed: " + (message1 != null ? message1 : "Unknown error"));
+			})
+			.doOnSuccess(data -> log.info("Token login successful for: {}", data.get("email")))
+			.doOnError(error -> log.error("Token login failed", error));
 	}
 
 	/**

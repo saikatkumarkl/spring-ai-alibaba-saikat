@@ -15,7 +15,7 @@ export default function AppActions(props: {
   updateAppDetailWithInfos: (data: any) => void;
 }) {
   const { activeKey } = props;
-  const { appState, setAppState, appCode, refreshAppDetail, handleExportSAA } =
+  const { appState, setAppState, appCode, refreshAppDetail, handleExportProject } =
     useContext(AssistantAppContext);
   const [state, setState] = useSetState({
     visible: false,
@@ -169,9 +169,9 @@ export default function AppActions(props: {
             <>
               <Button
                 disabled={appState.saveLoading}
-                onClick={handleExportSAA}
+                onClick={handleExportProject}
               >
-                Export SAA Project Code
+                Export CordonData Project Code
               </Button>
               <Popover
                 onOpenChange={(val) => {

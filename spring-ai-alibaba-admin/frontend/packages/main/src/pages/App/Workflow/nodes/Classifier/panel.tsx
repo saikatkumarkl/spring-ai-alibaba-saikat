@@ -1,6 +1,6 @@
 import $i18n from '@/i18n';
 import { Button, IconFont } from '@spark-ai/design';
-import type { IVarItem, IVarTreeItem } from '@spark-ai/flow';
+import type { IVarItem, IVarTreeItem } from '@cordondata/flow';
 import {
   InputTextArea,
   OutputParamsTree,
@@ -13,7 +13,7 @@ import {
   useNodesOutputParams,
   useNodesReadOnly,
   useReactFlowStore,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { Flex } from 'antd';
 import { memo, useCallback, useMemo } from 'react';
 import InfoIcon from '../../components/InfoIcon';

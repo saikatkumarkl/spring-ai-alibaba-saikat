@@ -11,7 +11,7 @@ import {
   useNodesOutputParams,
   useNodesReadOnly,
   useReactFlowStore,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { Flex, Select } from 'antd';
 import { memo, useCallback, useMemo } from 'react';
 import InfoIcon from '../../components/InfoIcon';

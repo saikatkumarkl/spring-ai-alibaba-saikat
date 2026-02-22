@@ -49,30 +49,30 @@ public class PromptServiceImpl implements PromptService {
     @Override
     @Transactional
     public Prompt create(PromptCreateRequest request) throws StudioException {
-        log.info("创建Prompt: {}", request);
+        log.info("Create Prompt: {}", request);
         
         //Check if Prompt Key already exists
         PromptDO existingPrompt = promptMapper.selectByPromptKey(request.getPromptKey());
         if (existingPrompt != null) {
-            throw new StudioException(StudioException.CONFLICT, "Prompt Key已存在: " + request.getPromptKey());
+            throw new StudioException(StudioException.CONFLICT, "Prompt Key already exists:" + request.getPromptKey());
         }
         
         PromptDO promptDO = PromptDO.builder().promptKey(request.getPromptKey())
                 .promptDesc(request.getPromptDescription()).tags(request.getTags()).build();
         
         promptMapper.insert(promptDO);
-        log.info("Prompt创建成功: {}", promptDO.getId());
+        log.info("Prompt created successfully: {}", promptDO.getId());
         
         return Prompt.fromDO(promptDO);
     }
     
     @Override
     public Prompt getByPromptKey(String promptKey) throws StudioException {
-        log.info("查询Prompt详情: {}", promptKey);
+        log.info("Query Prompt details: {}", promptKey);
         
         Map<String, Object> promptMap = promptMapper.selectByPromptKeyWithLatestVersionStatus(promptKey);
         if (promptMap == null) {
-            throw new StudioException(StudioException.NOT_FOUND, "Prompt不存在: " + promptKey);
+            throw new StudioException(StudioException.NOT_FOUND, "Prompt does not exist:" + promptKey);
         }
         
         return createPromptFromMap(promptMap);
@@ -80,12 +80,12 @@ public class PromptServiceImpl implements PromptService {
     
     @Override
     public PageResult<Prompt> list(PromptListRequest request) throws StudioException {
-        log.info("查询Prompt列表: {}", request);
+        log.info("Query Prompt list: {}", request);
         
         //Validate search pattern parameters
         if (request.getSearch() != null && !"accurate".equals(request.getSearch()) && !"blur".equals(
                 request.getSearch())) {
-            throw new StudioException(StudioException.INVALID_PARAM, "搜索模式必须是accurate或blur");
+            throw new StudioException(StudioException.INVALID_PARAM, "Search mode must be accurate or blur");
         }
         
         int offset = (request.getPageNo() - 1) * request.getPageSize();
@@ -104,19 +104,19 @@ public class PromptServiceImpl implements PromptService {
     @Override
     @Transactional
     public Prompt update(PromptUpdateRequest request) throws StudioException {
-        log.info("更新Prompt: {}", request);
+        log.info("UpdatePrompt: {}", request);
         
         //Check if Prompt exists
         PromptDO existingPrompt = promptMapper.selectByPromptKey(request.getPromptKey());
         if (existingPrompt == null) {
-            throw new StudioException(StudioException.NOT_FOUND, "Prompt不存在: " + request.getPromptKey());
+            throw new StudioException(StudioException.NOT_FOUND, "Prompt does not exist:" + request.getPromptKey());
         }
         
         PromptDO promptDO = PromptDO.builder().promptKey(request.getPromptKey())
                 .promptDesc(request.getPromptDescription()).tags(request.getTags()).build();
         
         promptMapper.update(promptDO);
-        log.info("Prompt更新成功: {}", request.getPromptKey());
+        log.info("Prompt updated successfully: {}", request.getPromptKey());
         
         return getByPromptKey(request.getPromptKey());
     }
@@ -124,30 +124,30 @@ public class PromptServiceImpl implements PromptService {
     @Override
     @Transactional
     public void deleteByPromptKey(String promptKey) throws StudioException {
-        log.info("删除Prompt及其所有版本: {}", promptKey);
+        log.info("Delete Prompt and all its versions: {}", promptKey);
         
         //Check if Prompt exists
         PromptDO existingPrompt = promptMapper.selectByPromptKey(promptKey);
         if (existingPrompt == null) {
-            log.info("Prompt不存在，无需删除: {}", promptKey);
+            log.info("Prompt does not exist, no need to delete: {}", promptKey);
             return;
         }
         
         //Delete all versions first
         int deletedVersionsCount = promptVersionMapper.deleteByPromptKey(promptKey);
-        log.info("Prompt {} 的所有版本删除完成，共删除 {} 个版本", promptKey, deletedVersionsCount);
+        log.info("All versions of Prompt {} have been deleted. {} versions have been deleted in total.", promptKey, deletedVersionsCount);
         
         //Then delete the prompt itself
         promptMapper.deleteByPromptKey(promptKey);
-        log.info("Prompt删除成功: {}", promptKey);
+        log.info("Prompt deleted successfully: {}", promptKey);
     }
     
     @Override
     @Transactional
     public void updateLatestVersion(String promptKey, String latestVersion) {
-        log.info("更新Prompt最新版本: promptKey={}, latestVersion={}", promptKey, latestVersion);
+        log.info("renewPromptlatest version: promptKey={}, latestVersion={}", promptKey, latestVersion);
         
         promptMapper.updateLatestVersion(promptKey, latestVersion);
-        log.info("Prompt最新版本更新成功");
+        log.info("Prompt latest version updated successfully");
     }
 }

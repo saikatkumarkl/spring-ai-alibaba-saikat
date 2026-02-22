@@ -1,5 +1,5 @@
 --
--- Comprehensive init script for Spring AI Alibaba Admin
+-- Comprehensive init script for CordonData Admin
 -- Uses CREATE TABLE IF NOT EXISTS so it is safe to run on an existing database.
 -- File is named 00-* so it runs first when mounted into /docker-entrypoint-initdb.d/
 --
@@ -623,11 +623,21 @@ CREATE INDEX IF NOT EXISTS idx_uploaded_files_conv ON uploaded_files(conversatio
 -- ========================================================
 
 INSERT INTO account (account_id, username, password, type, status, creator, modifier)
-VALUES ('10000', 'saa', '$2a$10$HUhIjh5/hNwuwJWRBDq2sOOlkVJPwSqIWD8Ij2.wPlBpF04Yv5b9i', 'admin', 1, '10000', '10000')
+VALUES ('10000', 'admin', '$argon2id$v=19$m=66536,t=2,p=1$3d3wB/SrjQDxFjmR4tBCWg$ztusHuM78/acX2xI74aajhum/loHDiiXioUTkDeSNss', 'admin', 1, '10000', '10000')
+ON CONFLICT (account_id) DO NOTHING;
+
+-- Built-in user account (password: user)
+INSERT INTO account (account_id, username, password, nickname, type, status, creator, modifier)
+VALUES ('10001', 'user', '$argon2id$v=19$m=66536,t=2,p=1$5XPpHaGYDwMWDdm434IwEw$W/L76DGEcf7r+MlEKKmJyC8tLCTzyBiGMVlaO3Jipdw', 'User', 'user', 1, '10000', '10000')
 ON CONFLICT (account_id) DO NOTHING;
 
 INSERT INTO workspace (workspace_id, account_id, name, creator, modifier)
 VALUES ('1', '10000', 'default', '10000', '10000')
+ON CONFLICT (workspace_id) DO NOTHING;
+
+-- Workspace for user account
+INSERT INTO workspace (workspace_id, account_id, name, creator, modifier)
+VALUES ('2', '10001', 'default', '10001', '10001')
 ON CONFLICT (workspace_id) DO NOTHING;
 
 -- Demo users for chatbot (password: 12345)

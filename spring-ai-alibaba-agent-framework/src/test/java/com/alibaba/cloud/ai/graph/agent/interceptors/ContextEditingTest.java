@@ -95,7 +95,7 @@ class ContextEditingTest {
 	 */
 	private List<Message> buildMessagesWithToolCallsAndResponses() {
 		List<Message> messages = new ArrayList<>();
-		messages.add(new UserMessage("请先调用 poem 写诗，再调用 reviewer 润色。"));
+		messages.add(new UserMessage("Please call poem to write the poem first, and then call reviewer to polish it."));
 
 		String longContent = "x".repeat(260);
 

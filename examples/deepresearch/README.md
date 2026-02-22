@@ -1,6 +1,6 @@
 # DeepResearch Agent
 
-A DeepResearch agent built with Spring AI Alibaba that conducts thorough research and writes polished reports. Using an LLM to call tools in a loop is the simplest form of an agent, but this can yield agents that are "shallow". DeepResearch implements **task planning**, **sub agents**, **file system access**, and a **detailed prompt** to solve complex, multi-step research tasks.
+A DeepResearch agent built with CordonData that conducts thorough research and writes polished reports. Using an LLM to call tools in a loop is the simplest form of an agent, but this can yield agents that are "shallow". DeepResearch implements **task planning**, **sub agents**, **file system access**, and a **detailed prompt** to solve complex, multi-step research tasks.
 
 ## Quick Start
 
@@ -36,7 +36,7 @@ After the agent starts, open in your browser: **http://localhost:8080/chatui/ind
 
 
 Now you can ask the agent complex research questions like:
-- "Research the core architecture design of Spring AI Alibaba"
+- "Research the core architecture design of CordonData"
 - "Compare the technical implementations of Claude Code and GitHub Copilot"
 
 ## Architecture
@@ -65,7 +65,7 @@ DeepResearch implements an agentic architecture that goes beyond simple tool-cal
 - Supports third-party services like Jina AI search
 - Extensible to any MCP-compatible tools
 
-### Features provided by Spring AI Alibaba
+### Features provided by CordonData
 
 **Agent Framework**
 - `ReactAgent`: ReAct pattern implementation with reasoning-action loops

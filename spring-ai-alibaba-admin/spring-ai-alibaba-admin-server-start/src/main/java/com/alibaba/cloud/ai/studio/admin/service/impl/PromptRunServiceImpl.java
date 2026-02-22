@@ -61,7 +61,7 @@ public class PromptRunServiceImpl implements PromptRunService {
     
     @Override
     public Flux<PromptRunResponse> run(PromptRunRequest request) {
-        log.info("运行带会话的Prompt调试: {}", request);
+        log.info("Run prompt debugging with session: {}", request);
         
         try {
             //1. Get or create a session
@@ -91,14 +91,14 @@ public class PromptRunServiceImpl implements PromptRunService {
                     
                     //Then return the real AI streaming response
                     generateRealAIResponse(session, request).onErrorResume(error -> {
-                        log.error("模型调用失败，返回错误响应", error);
+                        log.error("The model call failed and an error response was returned.", error);
                         return Flux.just(PromptRunResponse.createErrorResponse(session.getSessionId(),
-                                "模型调用失败: " + error.getMessage()));
+                                "Model call failed:" + error.getMessage()));
                     }));
             
         } catch (Exception e) {
-            log.error("处理会话请求失败", e);
-            return Flux.just(PromptRunResponse.createErrorResponse(null, "处理请求失败: " + e.getMessage()));
+            log.error("Failed to process session request", e);
+            return Flux.just(PromptRunResponse.createErrorResponse(null, "Failed to process request:" + e.getMessage()));
         }
     }
     
@@ -130,7 +130,7 @@ public class PromptRunServiceImpl implements PromptRunService {
         }
         
         //Session does not exist, create a new session
-        log.warn("会话 {} 不存在，创建新会话", request.getSessionId());
+        log.warn("Session {} does not exist, create a new session", request.getSessionId());
         return chatSessionService.createSessionWithMockTools(request.getPromptKey(), request.getVersion(),
                 request.getTemplate(), request.getVariables(), request.getModelConfig(), request.getMockTools());
     }
@@ -197,10 +197,10 @@ public class PromptRunServiceImpl implements PromptRunService {
                             assistantMessage.setMetrics(metrics.get());
                             session.addMessage(assistantMessage);
                             chatSessionService.updateSession(session);
-                            log.info("会话 {} 完成AI响应，响应长度: {}", session.getSessionId(), fullResponse.length());
+                            log.info("Session {} Complete AI response, response length: {}", session.getSessionId(), fullResponse.length());
                         }
                     } catch (Exception e) {
-                        log.error("更新会话历史失败: sessionId={}", session.getSessionId(), e);
+                        log.error("Failed to update session history: sessionId={}", session.getSessionId(), e);
                     }
                 });
     }
@@ -251,11 +251,11 @@ public class PromptRunServiceImpl implements PromptRunService {
                 return this.output;
                 
             } catch (JsonProcessingException e) {
-                log.error("JSON 处理失败: ", e);
-                throw new RuntimeException("JSON 处理失败: " + e.getMessage(), e);
+                log.error("JSON processing failed:", e);
+                throw new RuntimeException("JSON processing failed:" + e.getMessage(), e);
             } catch (Exception e) {
-                log.error("JSON 处理失败: ", e);
-                throw new RuntimeException("Schema 校验失败: " + e.getMessage(), e);
+                log.error("JSON processing failed:", e);
+                throw new RuntimeException("Schema verification failed:" + e.getMessage(), e);
             }
         }
         

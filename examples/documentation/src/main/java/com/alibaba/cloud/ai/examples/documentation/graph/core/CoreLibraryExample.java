@@ -32,13 +32,13 @@ import static com.alibaba.cloud.ai.graph.action.AsyncEdgeAction.edge_async;
 import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
 
 /**
- * 核心库概念指南示例
- * 演示 State、Nodes、Edges 的基本用法
+ * Core Library Concept Guide Example
+ * Demonstrates basic usage of State, Nodes, and Edges
  */
 public class CoreLibraryExample {
 
 	/**
-	 * 示例 A: 使用 AppendStrategy
+	 * Example A: Using AppendStrategy
 	 */
 	public static KeyStrategyFactory createKeyStrategyFactory() {
 		return () -> {
@@ -49,7 +49,7 @@ public class CoreLibraryExample {
 	}
 
 	/**
-	 * 示例 B: 自定义 KeyStrategyFactory
+	 * Example B: Custom KeyStrategyFactory
 	 */
 	public static KeyStrategyFactory createCustomKeyStrategyFactory() {
 		return () -> {
@@ -62,7 +62,7 @@ public class CoreLibraryExample {
 	}
 
 	/**
-	 * 基本节点示例
+	 * Basic Node Example
 	 */
 	public static void basicNodeExample() throws GraphStateException {
 		KeyStrategyFactory keyStrategyFactory = createKeyStrategyFactory();
@@ -87,7 +87,7 @@ public class CoreLibraryExample {
 	}
 
 	/**
-	 * 使用 RemoveByHash 删除消息示例
+	 * RemoveByHash Message Removal Example
 	 */
 	public static void removeMessagesExample() throws GraphStateException {
 		KeyStrategyFactory keyStrategyFactory = createKeyStrategyFactory();
@@ -109,7 +109,7 @@ public class CoreLibraryExample {
 	}
 
 	/**
-	 * 条件边示例
+	 * Conditional Edges Example
 	 */
 	public static void conditionalEdgesExample() throws GraphStateException {
 		KeyStrategyFactory keyStrategyFactory = createKeyStrategyFactory();
@@ -129,28 +129,28 @@ public class CoreLibraryExample {
 	}
 
 	public static void main(String[] args) {
-		System.out.println("=== 核心库概念示例 ===\n");
+		System.out.println("=== Core Library Concept Examples ===\n");
 
 		try {
-			// 示例 1: 基本节点示例
-			System.out.println("示例 1: 基本节点示例");
+			// Example 1: Basic Node Example
+			System.out.println("Example 1: Basic Node Example");
 			basicNodeExample();
 			System.out.println();
 
-			// 示例 2: 使用 RemoveByHash 删除消息示例
-			System.out.println("示例 2: 使用 RemoveByHash 删除消息示例");
+			// Example 2: RemoveByHash Message Removal Example
+			System.out.println("Example 2: RemoveByHash Message Removal Example");
 			removeMessagesExample();
 			System.out.println();
 
-			// 示例 3: 条件边示例
-			System.out.println("示例 3: 条件边示例");
+			// Example 3: Conditional Edges Example
+			System.out.println("Example 3: Conditional Edges Example");
 			conditionalEdgesExample();
 			System.out.println();
 
-			System.out.println("所有示例执行完成");
+			System.out.println("All examples executed successfully");
 		}
 		catch (Exception e) {
-			System.err.println("执行示例时出错: " + e.getMessage());
+			System.err.println("Error executing example: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}

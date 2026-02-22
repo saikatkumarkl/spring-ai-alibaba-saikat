@@ -212,7 +212,7 @@ class AgentSkillsTest {
 			.build();
 
 		// Trigger skill loading by invoking agent
-		Optional<OverAllState> result = agent.invoke("你好，请介绍一下你自己。");
+		Optional<OverAllState> result = agent.invoke("Hello, please introduce yourself.");
 
 		assertTrue(result.isPresent(), "Result should be present");
 		
@@ -240,7 +240,7 @@ class AgentSkillsTest {
 			.hooks(List.of(hook))
 			.build();
 
-		AssistantMessage response = agent.call("你好，请介绍一下你自己。");
+		AssistantMessage response = agent.call("Hello, please introduce yourself.");
 		
 		assertNotNull(response, "Response should not be null");
 		assertNotNull(response.getText(), "Response text should not be null");
@@ -361,7 +361,7 @@ class AgentSkillsTest {
 
 //		// Test that agent can be invoked with skills loaded
 //		Optional<OverAllState> result = agent.invoke(
-//			new UserMessage("请告诉我有哪些可用的技能？"));
+//new UserMessage("Please tell me what skills are available?"));
 //
 //		assertTrue(result.isPresent(), "Result should be present");
 //
@@ -370,7 +370,7 @@ class AgentSkillsTest {
 //
 		// Get the response
 		String path = getTestSkillsDirectory() + "/pdf-extractor/saa-roadmap.pdf";
-		AssistantMessage response = agent.call(String.format("请从 %s 文件中提取关键信息。", path));
+		AssistantMessage response = agent.call(String.format("Please extract key information from the %s file.", path));
 		assertNotNull(response, "Response should not be null");
 		assertNotNull(response.getText(), "Response text should not be null");
 	}
@@ -435,7 +435,7 @@ class AgentSkillsTest {
 
 //		// Test that agent can be invoked with skills loaded
 //		Optional<OverAllState> result = agent.invoke(
-//			new UserMessage("请告诉我有哪些可用的技能？"));
+//new UserMessage("Please tell me what skills are available?"));
 //
 //		assertTrue(result.isPresent(), "Result should be present");
 //
@@ -444,7 +444,7 @@ class AgentSkillsTest {
 
 		// Get the response
 		String path = getTestSkillsDirectory() + "/pdf-extractor/saa-roadmap.pdf";
-		AssistantMessage response = agent.call(String.format("请从 %s 文件中提取关键信息。", path));
+		AssistantMessage response = agent.call(String.format("Please extract key information from the %s file.", path));
 		assertNotNull(response, "Response should not be null");
 		assertNotNull(response.getText(), "Response text should not be null");
 		
@@ -499,7 +499,7 @@ class AgentSkillsTest {
 		// 5. Prompt: ask to read the skill then follow it to record a value
 		String valueToRecord = "hello-grouped-tools";
 		String prompt = String.format(
-				"请先用 read_skill 读取 grouped-tools-test 技能，然后按该技能要求用 record_result 工具记录：%s",
+				"Please use read_skill to read the grouped-tools-test skill first, and then use the record_result tool to record according to the skill requirements: %s",
 				valueToRecord);
 
 		AssistantMessage response = agent.call(prompt);

@@ -87,26 +87,26 @@ public class ReturnDirectMessagesModelHookTest {
 				.name("testFinishReasonAgent")
 				.model(chatModel)
 				.saver(saver)
-				.instruction("地点为: {target_topic}")
+				.instruction("The location is: {target_topic}")
 				.tools(ToolCallbacks.from(new TestDirectTools()))
 				.hooks(List.of(hook))
-				.systemPrompt("你是一个天气预报助手，帮我查看指定地点的天气预报")
+				.systemPrompt("You are a weather forecast assistant, help me check the weather forecast for the specified location")
 				.build();
 
-		System.out.println("\n=== 测试 ReturnDirectModelHook 与 returnDirect 工具 ===");
+		System.out.println("\n=== test ReturnDirectModelHook and returnDirect tool ===");
 
-		String output = react.call("上海,北京").getText();
+		String output = react.call("Shanghai,Beijing").getText();
 		System.out.println("ReactAgent Output: " + output);
 
 		assertNotNull(output, "Output should not be null");
 		assertFalse(output.isEmpty(), "Output should not be empty");
 
 		// Verify that output contains the direct tool response
-		assertTrue(output.contains("上海天气不错"), "Output should contain weather info for Shanghai");
-		assertTrue(output.contains("北京天气不错"), "Output should contain weather info for Beijing");
+		assertTrue(output.contains("The weather in Shanghai is good"), "Output should contain weather info for Shanghai");
+		assertTrue(output.contains("The weather is good in Beijing"), "Output should contain weather info for Beijing");
 
 		// Verify that the output only contains the tool response (no additional model processing)
-		String cleanedOutput = output.replace("上海天气不错", "").replace("北京天气不错", "");
+		String cleanedOutput = output.replace("The weather in Shanghai is good", "").replace("The weather is good in Beijing", "");
 		assertTrue(cleanedOutput.trim().isEmpty() || cleanedOutput.trim().length() < 10,
 				"Output should primarily contain tool response without additional model processing");
 
@@ -128,12 +128,12 @@ public class ReturnDirectMessagesModelHookTest {
 				.saver(saver)
 				.tools(ToolCallbacks.from(new TestMultipleDirectTools()))
 				.hooks(List.of(hook))
-				.systemPrompt("你是一个工具调用助手，可以同时调用多个工具")
+				.systemPrompt("You are a tool calling assistant and can call multiple tools at the same time")
 				.build();
 
-		System.out.println("\n=== 测试 ReturnDirectModelHook 与多个 returnDirect 工具 ===");
+		System.out.println("\n=== test ReturnDirectModelHook with multiple returnDirect tool ===");
 
-		String output = react.call("请调用getCity1和getCity2工具").getText();
+		String output = react.call("Please call getCity1 and getCity2 tools").getText();
 		System.out.println("ReactAgent Output: " + output);
 
 		assertNotNull(output, "Output should not be null");
@@ -200,12 +200,12 @@ public class ReturnDirectMessagesModelHookTest {
 				.saver(saver)
 				.tools(ToolCallbacks.from(new TestNormalTools()))
 				.hooks(List.of(hook))
-				.systemPrompt("你是一个助手，可以调用工具获取信息")
+				.systemPrompt("You are an assistant who calls tools to get information")
 				.build();
 
-		System.out.println("\n=== 测试 ReturnDirectModelHook 与普通工具（returnDirect=false）===");
+		System.out.println("\n=== test ReturnDirectModelHook Unlike normal tools (returnDirect=false）===");
 
-		String output = react.call("请调用getInfo工具获取信息").getText();
+		String output = react.call("Please call the getInfo tool to obtain information").getText();
 		System.out.println("ReactAgent Output: " + output);
 
 		assertNotNull(output, "Output should not be null");
@@ -216,15 +216,15 @@ public class ReturnDirectMessagesModelHookTest {
 		// 1. First call: to generate AssistantMessage with tool calls
 		// 2. Second call: to process the tool response and generate final answer
 		int actualModelCallCount = modelCallCount.get();
-		System.out.println("Model 调用次数: " + actualModelCallCount);
+		System.out.println("Model calls:" + actualModelCallCount);
 		assertTrue(actualModelCallCount >= 2,
 				"Model should be called at least twice: once to generate tool calls, " +
 				"and once to process tool response (returnDirect=false means model processes the result)");
 
 		// Verify that output is NOT exactly the raw tool result
-		// The raw tool result would be "Information: 请调用getInfo工具获取信息"
+		// The raw tool result would be "Information: please callgetInfoTools for getting information"
 		// Model should process this and generate a more natural response
-		String rawToolResult = "Information: 请调用getInfo工具获取信息";
+		String rawToolResult = "Information: Please call the getInfo tool to obtain information";
 		assertNotEquals(rawToolResult, output.trim(),
 				"Output should be processed by model, not be the raw tool result. " +
 				"Expected model-generated content, but got raw tool result: " + rawToolResult);
@@ -266,12 +266,12 @@ public class ReturnDirectMessagesModelHookTest {
 				.saver(saver)
 				.tools(ToolCallbacks.from(new TestDirectTools()))
 				.hooks(List.of(finishReasonHook, testHook))
-				.systemPrompt("你是一个天气预报助手")
+				.systemPrompt("You are a weather forecast assistant")
 				.build();
 
-		System.out.println("\n=== 测试 ReturnDirectModelHook 执行顺序 ===");
+		System.out.println("\n=== Test ReturnDirectModelHook execution sequence ===");
 
-		Optional<OverAllState> stateOpt = react.invoke("上海");
+		Optional<OverAllState> stateOpt = react.invoke("Shanghai");
 
 		List<Message> messages = stateOpt.orElseThrow(() -> new GraphRunnerException("No state returned")).value("messages", List.of());
 		if (messages.isEmpty()) {
@@ -283,21 +283,21 @@ public class ReturnDirectMessagesModelHookTest {
 
 		// Verify that ReturnDirectModelHook executed (hook should have processed the request)
 		assertNotNull(output, "Output should not be null");
-		assertTrue(output.contains("上海天气不错"), "Output should contain direct tool response");
+		assertTrue(output.contains("The weather in Shanghai is good"), "Output should contain direct tool response");
 
 		// Verify that when returnDirect is true and ReturnDirectModelHook jumps to END,
 		// the subsequent hook's beforeModel should NOT be called (or called only before the jump)
 		// Since ReturnDirectModelHook has order Integer.MIN_VALUE, it executes first
 		// and jumps to END, preventing testHook from being called in the beforeModel phase
 		int testHookBeforeModelCount = testHook.getBeforeModelCount();
-		System.out.println("TestHook beforeModel 调用次数: " + testHookBeforeModelCount);
+		System.out.println("Number of TestHook beforeModel calls:" + testHookBeforeModelCount);
 
 		// Verify model call count: model should be called exactly once
 		// - First call: to generate AssistantMessage with tool calls
 		// - When returnDirect=true, after tool execution, ReturnDirectModelHook
 		//   jumps to END, so model is NOT called again to process tool response
 		int actualModelCallCount = modelCallCount.get();
-		System.out.println("Model 调用次数: " + actualModelCallCount);
+		System.out.println("Model calls:" + actualModelCallCount);
 		assertEquals(1, actualModelCallCount,
 				"Model should be called exactly once: first call to generate tool calls, " +
 				"then ReturnDirectModelHook jumps to END without second model call");
@@ -316,10 +316,10 @@ public class ReturnDirectMessagesModelHookTest {
 	static class TestDirectTools {
 
 		@Tool(name = "getWeatherByCity", description = "Get weather information by city name", returnDirect = true)
-		public String getWeatherByCity(@ToolParam(description = "城市地址列表，用中文") List<String> cityNameList) {
+		public String getWeatherByCity(@ToolParam(description = "List of city addresses in Chinese") List<String> cityNameList) {
 			StringBuilder builder = new StringBuilder();
 			for (String cityName : cityNameList) {
-				builder.append(cityName).append("天气不错");
+				builder.append(cityName).append("nice weather");
 			}
 			return builder.toString();
 		}

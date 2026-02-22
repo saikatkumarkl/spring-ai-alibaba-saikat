@@ -20,25 +20,25 @@ public class TracingServiceImpl implements TracingService {
 
     @Override
     public PageResult<TraceSpanDTO> queryTraces(TracesQueryRequest request) {
-        log.info("查询Traces列表: {}", request);
+        log.info("Query Traces list: {}", request);
         return tracingRepository.queryTraces(request);
     }
 
     @Override
     public TraceDetailDTO getTraceDetail(String traceId) {
-        log.info("查询Trace详情: {}", traceId);
+        log.info("Query Trace details: {}", traceId);
         return tracingRepository.getTraceDetail(traceId);
     }
 
     @Override
     public ServicesResponseDTO getServices(ServicesQueryRequest request) {
-        log.info("查询服务列表: {}", request);
+        log.info("Query service list: {}", request);
         return tracingRepository.getServices(request);
     }
 
     @Override
     public OverviewStatsDTO getOverview(OverviewQueryRequest request) {
-        log.info("查询概览信息: {}", request);
+        log.info("Query overview information: {}", request);
         return tracingRepository.getOverview(request);
     }
 }

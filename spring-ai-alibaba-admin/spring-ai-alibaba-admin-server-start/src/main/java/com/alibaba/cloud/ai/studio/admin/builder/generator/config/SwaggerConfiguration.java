@@ -26,7 +26,7 @@ public class SwaggerConfiguration {
 	@Bean
 	public GroupedOpenApi adminApi() {
 		return GroupedOpenApi.builder()
-			.group("spring-ai-alibaba-graph-studio api docs")
+			.group("cordondata api docs")
 			.pathsToMatch("/graph-studio/**")
 			.build();
 	}

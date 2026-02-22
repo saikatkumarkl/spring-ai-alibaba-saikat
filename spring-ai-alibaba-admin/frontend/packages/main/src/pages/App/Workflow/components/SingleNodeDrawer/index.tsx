@@ -22,7 +22,7 @@ import {
   useNodesOutputParams,
   useReactFlowStore,
   useStore,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { useMount, useSetState, useUnmount } from 'ahooks';
 import { Flex, Typography } from 'antd';
 import classNames from 'classnames';

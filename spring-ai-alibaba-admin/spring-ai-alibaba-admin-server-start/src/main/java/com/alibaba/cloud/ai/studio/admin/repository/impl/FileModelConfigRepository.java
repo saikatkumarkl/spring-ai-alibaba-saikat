@@ -72,23 +72,23 @@ public class FileModelConfigRepository implements ModelConfigRepository, Initial
         } else {
             this.configPath = Paths.get("./" + DEFAULT_FILE).toAbsolutePath().normalize();
         }
-        log.info("模型配置文件路径: {}", this.configPath);
+        log.info("Model configuration file path: {}", this.configPath);
     }
     
     private void loadFileOrFail() {
         try {
             if (!Files.exists(this.configPath)) {
                 this.snapshot.set(Collections.unmodifiableMap(new HashMap<>()));
-                log.warn("未检测到模型配置文件: {}，以空配置启动（可稍后创建该文件触发热加载）", this.configPath);
+                log.warn("Model configuration file not detected: {}, started with empty configuration (the file can be created later to trigger hot reloading)", this.configPath);
                 return;
             }
             Map<Long, ModelConfigDO> data = loadFromFile(this.configPath);
             this.snapshot.set(Collections.unmodifiableMap(data));
-            log.info("模型配置加载成功，数量: {}", data.size());
+            log.info("Model configuration loaded successfully, quantity: {}", data.size());
         } catch (Exception e) {
             //Allow empty configuration to start: if parsing fails, it will still start with empty configuration
             this.snapshot.set(Collections.unmodifiableMap(new HashMap<>()));
-            log.error("启动时加载模型配置失败，将以空配置启动: {}", e.getMessage(), e);
+            log.error("Failed to load model configuration at startup and will start with empty configuration: {}", e.getMessage(), e);
         }
     }
     
@@ -113,26 +113,26 @@ public class FileModelConfigRepository implements ModelConfigRepository, Initial
     
     private void validateYamlModel(YamlModel m, Set<Long> ids, Set<String> names) {
         if (m.id == null) {
-            throw new IllegalArgumentException("模型缺少 id");
+            throw new IllegalArgumentException("Model is missing id");
         }
         if (m.name == null || m.name.isBlank()) {
-            throw new IllegalArgumentException("模型缺少 name");
+            throw new IllegalArgumentException("Model is missing name");
         }
         if (m.provider == null || m.provider.isBlank()) {
-            throw new IllegalArgumentException("模型缺少 provider");
+            throw new IllegalArgumentException("Model is missing provider");
         }
         if (m.modelName == null || m.modelName.isBlank()) {
-            throw new IllegalArgumentException("模型缺少 modelName");
+            throw new IllegalArgumentException("Model is missing modelName");
         }
         //if (m.baseUrl == null || m.baseUrl.isBlank()) throw new IllegalArgumentException("Model is missing baseUrl");
         if (m.apiKey == null || m.apiKey.isBlank()) {
-            throw new IllegalArgumentException("模型缺少 apiKey");
+            throw new IllegalArgumentException("Model is missing apiKey");
         }
         if (!ids.add(m.id)) {
-            throw new IllegalArgumentException("重复的模型 id: " + m.id);
+            throw new IllegalArgumentException("Duplicate model id:" + m.id);
         }
         if (!names.add(m.name)) {
-            throw new IllegalArgumentException("重复的模型 name: " + m.name);
+            throw new IllegalArgumentException("Duplicate model name:" + m.name);
         }
         if (m.status == null) {
             m.status = 1;
@@ -149,14 +149,14 @@ public class FileModelConfigRepository implements ModelConfigRepository, Initial
             try {
                 b.defaultParameters(new ObjectMapper().writeValueAsString(m.defaultParameters));
             } catch (Exception e) {
-                throw new IllegalArgumentException("序列化 defaultParameters 失败", e);
+                throw new IllegalArgumentException("Serialization of defaultParameters failed", e);
             }
         }
         if (m.supportedParameters != null) {
             try {
                 b.supportedParameters(new ObjectMapper().writeValueAsString(m.supportedParameters));
             } catch (Exception e) {
-                throw new IllegalArgumentException("序列化 supportedParameters 失败", e);
+                throw new IllegalArgumentException("Serialization of supportedParameters failed", e);
             }
         }
         return b.build();
@@ -172,7 +172,7 @@ public class FileModelConfigRepository implements ModelConfigRepository, Initial
             dir.register(ws, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_CREATE);
             ExecutorService executor = Executors.newSingleThreadExecutor(r -> new Thread(r, "model-config-watch"));
             executor.submit(() -> {
-                log.info("开始监听模型配置文件变更: {}", configPath);
+                log.info("Start listening for model configuration file changes: {}", configPath);
                 while (true) {
                     WatchKey key = ws.take();
                     try {
@@ -182,9 +182,9 @@ public class FileModelConfigRepository implements ModelConfigRepository, Initial
                                 try {
                                     Map<Long, ModelConfigDO> data = loadFromFile(configPath);
                                     snapshot.set(Collections.unmodifiableMap(data));
-                                    log.info("模型配置热更新成功，数量: {}", data.size());
+                                    log.info("Model configuration hot update successful, quantity: {}", data.size());
                                 } catch (Exception e) {
-                                    log.error("模型配置热更新失败，沿用旧配置: {}", e.getMessage(), e);
+                                    log.error("Model configuration hot update failed, the old configuration will be used: {}", e.getMessage(), e);
                                 }
                             }
                         }
@@ -194,7 +194,7 @@ public class FileModelConfigRepository implements ModelConfigRepository, Initial
                 }
             });
         } catch (Exception e) {
-            log.warn("启动 WatchService 失败，将不进行热更新: {}", e.getMessage());
+            log.warn("Failed to start WatchService, hot update will not be performed: {}", e.getMessage());
         }
     }
     

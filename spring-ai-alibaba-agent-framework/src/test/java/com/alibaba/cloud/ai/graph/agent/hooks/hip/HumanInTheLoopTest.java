@@ -69,7 +69,7 @@ public class HumanInTheLoopTest {
 		Assertions.assertTrue(runnableConfig.threadId().isPresent(), "Thread ID should be present");
 		Assertions.assertEquals(threadId, runnableConfig.threadId().get(), "Thread ID should match");
 
-		InterruptionMetadata interruptionMetadata = performFirstInvocation(agent, runnableConfig, "帮我写一篇100字左右现代诗");
+		InterruptionMetadata interruptionMetadata = performFirstInvocation(agent, runnableConfig, "Help me write a modern poem of about 100 words");
 
 		InterruptionMetadata feedbackMetadata = buildRejectionFeedback(interruptionMetadata);
 
@@ -91,7 +91,7 @@ public class HumanInTheLoopTest {
 		Assertions.assertTrue(runnableConfig.threadId().isPresent(), "Thread ID should be present");
 		Assertions.assertEquals(threadId, runnableConfig.threadId().get(), "Thread ID should match");
 
-		InterruptionMetadata interruptionMetadata = performFirstInvocation(agent, runnableConfig, "帮我写一篇100字左右现代诗");
+		InterruptionMetadata interruptionMetadata = performFirstInvocation(agent, runnableConfig, "Help me write a modern poem of about 100 words");
 
 		InterruptionMetadata feedbackMetadata = buildApprovalFeedback(interruptionMetadata);
 
@@ -113,7 +113,7 @@ public class HumanInTheLoopTest {
 		Assertions.assertTrue(runnableConfig.threadId().isPresent(), "Thread ID should be present");
 		Assertions.assertEquals(threadId, runnableConfig.threadId().get(), "Thread ID should match");
 
-		InterruptionMetadata interruptionMetadata = performFirstInvocation(agent, runnableConfig, "帮我写一篇100字左右现代诗");
+		InterruptionMetadata interruptionMetadata = performFirstInvocation(agent, runnableConfig, "Help me write a modern poem of about 100 words");
 
 		InterruptionMetadata feedbackMetadata = buildEditedFeedback(interruptionMetadata);
 
@@ -171,7 +171,7 @@ public class HumanInTheLoopTest {
 		Assertions.assertEquals(threadId, runnableConfig.threadId().get(), "Thread ID should match");
 
 		// First invocation - should interrupt for first tool (poem)
-		InterruptionMetadata interruptionMetadata = performFirstInvocation(agent, runnableConfig, "我正在做多次工具调用的测试，你需要分两次推理过程调用工具，不要一次返回两个工具调用。第一次先调用工具帮我写一篇100字左右现代诗，然后第二次再调用工具查询写作当天北京天气情况。");
+		InterruptionMetadata interruptionMetadata = performFirstInvocation(agent, runnableConfig, "I'm doing testing with multiple tool calls, and you need to call the tool in two inference procedures, don't return two tool calls at once.The first time I called the tool to help me write a modern poem of about 100 words, and then the second time I called the tool to check the weather conditions in Beijing on the day of writing.");
 
 		// Approve first tool
 		InterruptionMetadata feedbackMetadata = buildApprovalFeedback(interruptionMetadata);
@@ -188,7 +188,7 @@ public class HumanInTheLoopTest {
 
 	private ReactAgent createAgent() {
 		Map approvalOn = Map.of(
-				"poem", ToolConfig.builder().description("请确认诗歌工具执行").build()
+				"poem", ToolConfig.builder().description("Please confirm the poetry tool execution").build()
 		);
 
 		return ReactAgent.builder()
@@ -203,8 +203,8 @@ public class HumanInTheLoopTest {
 
 	private ReactAgent createAgentWithMultipleTools() {
 		Map approvalOn = Map.of(
-				"poem", ToolConfig.builder().description("请确认诗歌工具执行").build(),
-				"weather_tool", ToolConfig.builder().description("请确认天气工具执行").build()
+				"poem", ToolConfig.builder().description("Please confirm the poetry tool execution").build(),
+				"weather_tool", ToolConfig.builder().description("Please confirm weather tool execution").build()
 		);
 
 		return ReactAgent.builder()
@@ -225,7 +225,7 @@ public class HumanInTheLoopTest {
 	private InterruptionMetadata performFirstInvocationAndCheckMultipleToolsRequested(ReactAgent agent, RunnableConfig runnableConfig) throws Exception {
 		// First invocation - should trigger interruption for human approval
 		System.out.println("\n=== First Invocation: Expecting Interruption with Multiple Tools ===");
-		Optional<NodeOutput> result = agent.invokeAndGetOutput("帮我写一篇100字左右散文，同时在文章最后包含写作当天北京天气情况。", runnableConfig);
+		Optional<NodeOutput> result = agent.invokeAndGetOutput("Help me write an essay of about 100 words, and include the weather conditions in Beijing on the day of writing at the end of the article.", runnableConfig);
 
 		// Assert first invocation results in interruption
 		Assertions.assertTrue(result.isPresent(), "First invocation should return a result");
@@ -307,7 +307,7 @@ public class HumanInTheLoopTest {
 			InterruptionMetadata.ToolFeedback rejectedFeedback = InterruptionMetadata.ToolFeedback
 				.builder(toolFeedback)
 				.result(InterruptionMetadata.ToolFeedback.FeedbackResult.REJECTED)
-				.description("不用使用这个工具，你自己完成写作。")
+				.description("Instead of using this tool, you do the writing yourself.")
 				.build();
 			newBuilder.addToolFeedback(rejectedFeedback);
 		});
@@ -567,25 +567,25 @@ public class HumanInTheLoopTest {
 
 	private ReactAgent createAgentWithThreeTools() {
 		// Create three simple tools similar to example5_multipleTools
-		org.springframework.ai.tool.ToolCallback tool1 = org.springframework.ai.tool.function.FunctionToolCallback.builder("tool1", (args) -> "工具1结果")
-				.description("工具1")
+		org.springframework.ai.tool.ToolCallback tool1 = org.springframework.ai.tool.function.FunctionToolCallback.builder("tool1", (args) -> "Tool 1 results")
+				.description("Tool 1")
 				.inputType(String.class)
 				.build();
 
-		org.springframework.ai.tool.ToolCallback tool2 = org.springframework.ai.tool.function.FunctionToolCallback.builder("tool2", (args) -> "工具2结果")
-				.description("工具2")
+		org.springframework.ai.tool.ToolCallback tool2 = org.springframework.ai.tool.function.FunctionToolCallback.builder("tool2", (args) -> "Tool 2 results")
+				.description("Tool 2")
 				.inputType(String.class)
 				.build();
 
-		org.springframework.ai.tool.ToolCallback tool3 = org.springframework.ai.tool.function.FunctionToolCallback.builder("tool3", (args) -> "工具3结果")
-				.description("工具3")
+		org.springframework.ai.tool.ToolCallback tool3 = org.springframework.ai.tool.function.FunctionToolCallback.builder("tool3", (args) -> "Tool 3 results")
+				.description("Tool 3")
 				.inputType(String.class)
 				.build();
 
 		Map approvalOn = Map.of(
-				"tool1", ToolConfig.builder().description("工具1需要审批").build(),
-				"tool2", ToolConfig.builder().description("工具2需要审批").build(),
-				"tool3", ToolConfig.builder().description("工具3需要审批").build()
+				"tool1", ToolConfig.builder().description("Tool 1 requires approval").build(),
+				"tool2", ToolConfig.builder().description("Tool 2 requires approval").build(),
+				"tool3", ToolConfig.builder().description("Tool 3 requires approval").build()
 		);
 
 		return ReactAgent.builder()
@@ -600,7 +600,7 @@ public class HumanInTheLoopTest {
 	private InterruptionMetadata performFirstInvocationAndCheckThreeToolsRequested(ReactAgent agent, RunnableConfig runnableConfig) throws Exception {
 		// First invocation - should trigger interruption for human approval
 		System.out.println("\n=== First Invocation: Expecting Interruption with Three Tools ===");
-		Optional<NodeOutput> result = agent.invokeAndGetOutput("执行所有工具", runnableConfig);
+		Optional<NodeOutput> result = agent.invokeAndGetOutput("Execute all tools", runnableConfig);
 
 		// Assert first invocation results in interruption
 		Assertions.assertTrue(result.isPresent(), "First invocation should return a result");
@@ -664,7 +664,7 @@ public class HumanInTheLoopTest {
 				InterruptionMetadata.ToolFeedback rejectedFeedback = InterruptionMetadata.ToolFeedback
 						.builder(feedback)
 						.result(InterruptionMetadata.ToolFeedback.FeedbackResult.REJECTED)
-						.description("不允许此操作")
+						.description("This operation is not allowed")
 						.build();
 				newBuilder.addToolFeedback(rejectedFeedback);
 				System.out.println("Tool " + (i + 1) + " (" + feedback.getName() + "): REJECTED");

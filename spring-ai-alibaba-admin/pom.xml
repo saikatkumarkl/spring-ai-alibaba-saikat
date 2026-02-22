@@ -21,7 +21,7 @@
     <artifactId>spring-ai-alibaba-admin</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
-    <name>Spring AI Alibaba Admin</name>
+    <name>CordonData Admin</name>
     <description>Server implementation of admin</description>
     <url>https://github.com/alibaba/spring-ai-alibaba</url>
 

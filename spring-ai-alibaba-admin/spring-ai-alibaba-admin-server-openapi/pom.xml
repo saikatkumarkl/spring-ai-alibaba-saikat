@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>spring-ai-alibaba-admin-server-openapi</artifactId>
-    <name>Spring AI Alibaba Admin Server OpenAPI</name>
+    <name>CordonData Admin Server OpenAPI</name>
     <description>OpenAPI of admin server.</description>
     <url>https://github.com/alibaba/spring-ai-alibaba</url>
     <scm>

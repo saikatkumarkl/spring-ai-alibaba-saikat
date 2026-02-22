@@ -48,13 +48,13 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
             
             ModelEntity modelEntity = modelManager.findModelByIdOrName(id, workspaceId);
             if (modelEntity == null) {
-                log.debug("未找到模型配置，ID: {}", id);
+                log.debug("Model configuration not found, ID: {}", id);
                 return null;
             }
 
             return convertToModelConfigDO(modelEntity);
         } catch (Exception e) {
-            log.error("查找模型配置失败，ID: {}", id, e);
+            log.error("Failed to find model configuration, ID: {}", id, e);
             return null;
         }
     }
@@ -106,7 +106,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
             }
             return allConfigs.subList(start, end);
         } catch (Exception e) {
-            log.error("查询模型配置列表失败", e);
+            log.error("Failed to query model configuration list", e);
             return new ArrayList<>();
         }
     }
@@ -144,7 +144,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
                     })
                     .count();
         } catch (Exception e) {
-            log.error("统计模型配置数量失败", e);
+            log.error("Statistics model configuration quantity failed", e);
             return 0;
         }
     }
@@ -157,7 +157,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
                     .map(this::convertModelConfigInfoToModelConfigDO)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            log.error("查询启用的模型配置列表失败", e);
+            log.error("Querying the list of enabled model configurations failed", e);
             return new ArrayList<>();
         }
     }
@@ -190,14 +190,14 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
                         }
                     }
                     //If still not found, use ModelConfigInfo to build (but the id is missing)
-                    log.warn("找到ModelConfigInfo但未找到对应的ModelEntity，使用ModelConfigInfo构建: provider={}, modelId={}", 
+                    log.warn("ModelConfigInfo was found but the corresponding ModelEntity was not found. Use ModelConfigInfo to build: provider={}, modelId={}", 
                         provider, modelId);
                     return buildModelConfigDOFromModelConfigInfo(model, null);
                 }
             }
             return null;
         } catch (Exception e) {
-            log.error("根据provider和modelId查找模型配置失败: provider={}, modelId={}", provider, modelId, e);
+            log.error("Failed to find model configuration based on provider and modelId: provider={}, modelId={}", provider, modelId, e);
             return null;
         }
     }
@@ -214,13 +214,13 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
             //Get the Provider's credentials (including apiKey and endpoint)
             ProviderConfigInfo providerDetail = providerManager.getProviderDetail(modelEntity.getProvider(), false);
             if (providerDetail == null) {
-                log.warn("Provider不存在: {}", modelEntity.getProvider());
+                log.warn("Provider does not exist: {}", modelEntity.getProvider());
                 return null;
             }
 
             ModelCredential credential = providerDetail.getCredential();
             if (credential == null) {
-                log.warn("Provider的credential不存在: {}", modelEntity.getProvider());
+                log.warn("Provider's credential does not exist: {}", modelEntity.getProvider());
                 return null;
             }
 
@@ -230,7 +230,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
                 try {
                     apiKey = RSACryptUtils.decrypt(apiKey);
                 } catch (Exception e) {
-                    log.warn("解密apiKey失败，使用原始值: {}", e.getMessage());
+                    log.warn("Failed to decrypt apiKey, using original value: {}", e.getMessage());
                 }
             }
 
@@ -265,7 +265,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
                     .updateTime(updateTime)
                     .build();
         } catch (Exception e) {
-            log.error("转换ModelEntity到ModelConfigDO失败: modelId={}", modelEntity.getModelId(), e);
+            log.error("ConvertModelEntityarriveModelConfigDOfail: modelId={}", modelEntity.getModelId(), e);
             return null;
         }
     }
@@ -314,11 +314,11 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
             }
 
             //If ModelEntity is not found, build with ModelConfigInfo (but id is missing)
-            log.warn("找到ModelConfigInfo但未找到对应的ModelEntity: provider={}, modelId={}", 
+            log.warn("turn upModelConfigInfoBut no corresponding one was foundModelEntity: provider={}, modelId={}", 
                 provider, modelId);
             return buildModelConfigDOFromModelConfigInfo(modelConfigInfo, null);
         } catch (Exception e) {
-            log.error("转换ModelConfigInfo到ModelConfigDO失败: provider={}, modelId={}", 
+            log.error("ConvertModelConfigInfoarriveModelConfigDOfail: provider={}, modelId={}", 
                 modelConfigInfo.getProvider(), modelConfigInfo.getModelId(), e);
             return null;
         }
@@ -344,7 +344,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
                 try {
                     apiKey = RSACryptUtils.decrypt(apiKey);
                 } catch (Exception e) {
-                    log.warn("解密apiKey失败: {}", e.getMessage());
+                    log.warn("Failed to decrypt apiKey: {}", e.getMessage());
                 }
             }
 
@@ -371,7 +371,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
                     .updateTime(LocalDateTime.now())
                     .build();
         } catch (Exception e) {
-            log.error("从ModelConfigInfo构建ModelConfigDO失败", e);
+            log.error("Building ModelConfigDO from ModelConfigInfo failed", e);
             return null;
         }
     }
@@ -418,7 +418,7 @@ public class ModelConfigBridgeServiceImpl implements ModelConfigBridgeService {
                 return context.getWorkspaceId();
             }
         } catch (Exception e) {
-            log.debug("无法获取RequestContext的workspaceId: {}", e.getMessage());
+            log.debug("Unable to obtainRequestContextofworkspaceId: {}", e.getMessage());
         }
         return null;
     }

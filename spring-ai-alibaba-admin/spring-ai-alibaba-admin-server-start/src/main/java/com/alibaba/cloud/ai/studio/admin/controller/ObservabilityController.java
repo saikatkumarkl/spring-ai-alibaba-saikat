@@ -25,7 +25,7 @@ public class ObservabilityController {
      */
     @GetMapping("/traces")
     public Result<PageResult<TraceSpanDTO>> getTraces(@Valid TracesQueryRequest request) {
-        log.info("获取Trace列表请求: {}", request);
+        log.info("Get Trace list request: {}", request);
         PageResult<TraceSpanDTO> result = tracingService.queryTraces(request);
         return Result.success(result);
     }
@@ -35,7 +35,7 @@ public class ObservabilityController {
      */
     @GetMapping("/traces/{traceId}")
     public Result<TraceDetailDTO> getTraceDetail(@PathVariable String traceId) {
-        log.info("获取Trace详情请求: {}", traceId);
+        log.info("Get Trace details request: {}", traceId);
         TraceDetailDTO result = tracingService.getTraceDetail(traceId);
         return Result.success(result);
     }
@@ -45,7 +45,7 @@ public class ObservabilityController {
      */
     @GetMapping("/services")
     public Result<ServicesResponseDTO> getServices(@Valid ServicesQueryRequest request) {
-        log.info("获取服务列表请求: {}", request);
+        log.info("Get service list request: {}", request);
         ServicesResponseDTO result = tracingService.getServices(request);
         return Result.success(result);
     }
@@ -55,7 +55,7 @@ public class ObservabilityController {
      */
     @GetMapping("/overview")
     public Result<OverviewStatsDTO> getOverview(@Valid OverviewQueryRequest request) {
-        log.info("获取概览信息请求: {}", request);
+        log.info("Request for overview information: {}", request);
         OverviewStatsDTO result = tracingService.getOverview(request);
         return Result.success(result);
     }

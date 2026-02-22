@@ -1,4 +1,4 @@
-import { IWorkFlowNode, NodeProps } from '@spark-ai/flow';
+import { IWorkFlowNode, NodeProps } from '@cordondata/flow';
 import ApiNode from './APINode/node';
 import AppComponentNode from './AppComponent/node';
 import ClassifyNode from './Classifier/node';

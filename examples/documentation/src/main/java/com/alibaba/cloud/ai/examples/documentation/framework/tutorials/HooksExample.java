@@ -64,10 +64,10 @@ import java.util.concurrent.CompletableFuture;
  */
 public class HooksExample {
 
-	// ==================== 基础 Hook 和 Interceptor 配置 ====================
+	// ==================== Basic Hook and Interceptor Configuration ====================
 
 	/**
-	 * 示例1：添加 Hooks 和 Interceptors
+	 * Example 1: Adding Hooks and Interceptors
 	 */
 	public static void basicHooksAndInterceptors() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -78,10 +78,10 @@ public class HooksExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		// 创建工具（示例）
+		// Create tools (example)
 		ToolCallback[] tools = new ToolCallback[0];
 
-		// 创建 Hooks 和 Interceptors
+		// Create Hooks and Interceptors
 		ModelHook loggingHook = new LoggingModelHook();
 		MessagesModelHook messageTrimmingHook = new MessageTrimmingHook();
 		ModelInterceptor guardrailInterceptor = new GuardrailInterceptor();
@@ -97,10 +97,10 @@ public class HooksExample {
 				.build();
 	}
 
-	// ==================== 消息压缩（Summarization） ====================
+	// ==================== Message Compression (Summarization) ====================
 
 	/**
-	 * 示例2：消息压缩 Hook
+	 * Example 2: Message Compression Hook
 	 */
 	public static void messageSummarization() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -111,14 +111,14 @@ public class HooksExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		// 创建消息压缩 Hook
+		// Create message compression Hook
 		SummarizationHook summarizationHook = SummarizationHook.builder()
 				.model(chatModel)
 				.maxTokensBeforeSummary(4000)
 				.messagesToKeep(20)
 				.build();
 
-		// 使用
+		// Usage
 		ReactAgent agent = ReactAgent.builder()
 				.name("my_agent")
 				.model(chatModel)
@@ -130,7 +130,7 @@ public class HooksExample {
 	// ==================== Human-in-the-Loop ====================
 
 	/**
-	 * 示例3：Human-in-the-Loop Hook
+	 * Example 3: Human-in-the-Loop Hook
 	 */
 	public static void humanInTheLoop() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -141,11 +141,11 @@ public class HooksExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		// 创建工具（示例）
+		// Create tools (example)
 		ToolCallback sendEmailTool = createSendEmailTool();
 		ToolCallback deleteDataTool = createDeleteDataTool();
 
-		// 创建 Human-in-the-Loop Hook
+		// Create Human-in-the-Loop Hook
 		HumanInTheLoopHook humanReviewHook = HumanInTheLoopHook.builder()
 				.approvalOn("sendEmailTool", ToolConfig.builder()
 						.description("Please confirm sending the email.")
@@ -164,10 +164,10 @@ public class HooksExample {
 				.build();
 	}
 
-	// ==================== 模型调用限制 ====================
+	// ==================== Model Call Limit ====================
 
 	/**
-	 * 示例4：模型调用限制
+	 * Example 4: Model Call Limit
 	 */
 	public static void modelCallLimit() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -181,16 +181,16 @@ public class HooksExample {
 		ReactAgent agent = ReactAgent.builder()
 				.name("my_agent")
 				.model(chatModel)
-				.hooks(ModelCallLimitHook.builder().runLimit(5).build())  // 限制模型调用次数为5次
+				.hooks(ModelCallLimitHook.builder().runLimit(5).build())  // Limit model calls to 5
 				.saver(new MemorySaver())
 				.build();
 	}
 
 
-	// ==================== PII 检测 ====================
+	// ==================== PII Detection ====================
 
 	/**
-	 * 示例6：PII 检测
+	 * Example 6: PII Detection
 	 */
 	public static void piiDetection() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -207,7 +207,7 @@ public class HooksExample {
 				.applyToInput(true)
 				.build();
 
-		// 使用
+		// Usage
 		ReactAgent agent = ReactAgent.builder()
 				.name("secure_agent")
 				.model(chatModel)
@@ -215,10 +215,10 @@ public class HooksExample {
 				.build();
 	}
 
-	// ==================== 工具重试 ====================
+	// ==================== Tool Retry ====================
 
 	/**
-	 * 示例7：工具重试
+	 * Example 7: Tool Retry
 	 */
 	public static void toolRetry() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -229,11 +229,11 @@ public class HooksExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		// 创建工具（示例）
+		// Create tools (example)
 		ToolCallback searchTool = createSearchTool();
 		ToolCallback databaseTool = createDatabaseTool();
 
-		// 使用
+		// Usage
 		ReactAgent agent = ReactAgent.builder()
 				.name("resilient_agent")
 				.model(chatModel)
@@ -246,7 +246,7 @@ public class HooksExample {
 	// ==================== Planning ====================
 
 	/**
-	 * 示例8：Planning Hook
+	 * Example 8: Planning Hook
 	 */
 	public static void planning() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -259,7 +259,7 @@ public class HooksExample {
 
 		ToolCallback myTool = createSampleTool();
 
-		// 使用
+		// Usage
 		ReactAgent agent = ReactAgent.builder()
 				.name("planning_agent")
 				.model(chatModel)
@@ -271,7 +271,7 @@ public class HooksExample {
 	// ==================== LLM Tool Selector ====================
 
 	/**
-	 * 示例9：LLM 工具选择器
+	 * Example 9: LLM Tool Selector
 	 */
 	public static void llmToolSelector() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -282,12 +282,12 @@ public class HooksExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		ChatModel selectorModel = chatModel; // 用于选择的另一个ChatModel
+		ChatModel selectorModel = chatModel; // Another ChatModel for selection
 
 		ToolCallback tool1 = createSampleTool();
 		ToolCallback tool2 = createSampleTool();
 
-		// 使用
+		// Usage
 		ReactAgent agent = ReactAgent.builder()
 				.name("smart_selector_agent")
 				.model(chatModel)
@@ -301,7 +301,7 @@ public class HooksExample {
 	// ==================== LLM Tool Emulator ====================
 
 	/**
-	 * 示例10：LLM 工具模拟器
+	 * Example 10: LLM Tool Emulator
 	 */
 	public static void llmToolEmulator() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -314,7 +314,7 @@ public class HooksExample {
 
 		ToolCallback simulatedTool = createSampleTool();
 
-		// 使用
+		// Usage
 		ReactAgent agent = ReactAgent.builder()
 				.name("emulator_agent")
 				.model(chatModel)
@@ -326,7 +326,7 @@ public class HooksExample {
 	// ==================== Context Editing ====================
 
 	/**
-	 * 示例11：上下文编辑
+	 * Example 11: Context Editing
 	 */
 	public static void contextEditing() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -337,7 +337,7 @@ public class HooksExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		// 使用
+		// Usage
 		ReactAgent agent = ReactAgent.builder()
 				.name("context_aware_agent")
 				.model(chatModel)
@@ -345,9 +345,9 @@ public class HooksExample {
 				.build();
 	}
 
-	// ==================== 自定义 Hooks ====================
+	// ==================== Custom Hooks ====================
 
-	// 创建示例工具的辅助方法
+	// Helper methods for creating sample tools
 	private static ToolCallback createSendEmailTool() {
 		return FunctionToolCallback.builder("sendEmailTool", (String input) -> "Email sent")
 				.description("Send an email")
@@ -362,7 +362,7 @@ public class HooksExample {
 				.build();
 	}
 
-	// ==================== 自定义 Interceptors ====================
+	// ==================== Custom Interceptors ====================
 
 	private static ToolCallback createSearchTool() {
 		return FunctionToolCallback.builder("searchTool", (String input) -> "Search results")
@@ -378,7 +378,7 @@ public class HooksExample {
 				.build();
 	}
 
-	// ==================== 辅助类和方法 ====================
+	// ==================== Helper Classes and Methods ====================
 
 	private static ToolCallback createSampleTool() {
 		return FunctionToolCallback.builder("sampleTool", (String input) -> "Sample result")
@@ -389,49 +389,49 @@ public class HooksExample {
 
 	public static void main(String[] args) {
 		System.out.println("=== Hooks and Interceptors Tutorial Examples ===");
-		System.out.println("注意：需要设置 AI_DASHSCOPE_API_KEY 环境变量\n");
+		System.out.println("Note: AI_DASHSCOPE_API_KEY environment variable must be set\n");
 
 		try {
-			System.out.println("\n--- 示例1：基础 Hooks 和 Interceptors ---");
+			System.out.println("\n--- Example 1: Basic Hooks and Interceptors ---");
 			basicHooksAndInterceptors();
 
-			System.out.println("\n--- 示例2：消息压缩 Hook ---");
+			System.out.println("\n--- Example 2: Message Compression Hook ---");
 			messageSummarization();
 
-			System.out.println("\n--- 示例3：人工介入循环 ---");
+			System.out.println("\n--- Example 3: Human-in-the-Loop ---");
 			humanInTheLoop();
 
-			System.out.println("\n--- 示例4：模型调用限制 ---");
+			System.out.println("\n--- Example 4: Model Call Limit ---");
 			modelCallLimit();
 
-			System.out.println("\n--- 示例5：PII 检测 ---");
+			System.out.println("\n--- Example 5: PII Detection ---");
 			piiDetection();
 
-			System.out.println("\n--- 示例6：工具重试 ---");
+			System.out.println("\n--- Example 6: Tool Retry ---");
 			toolRetry();
 
-			System.out.println("\n--- 示例7：规划（Planning） ---");
+			System.out.println("\n--- Example 7: Planning ---");
 			planning();
 
-			System.out.println("\n--- 示例8：LLM 工具选择器 ---");
+			System.out.println("\n--- Example 8: LLM Tool Selector ---");
 			llmToolSelector();
 
-			System.out.println("\n--- 示例9：LLM 工具模拟器 ---");
+			System.out.println("\n--- Example 9: LLM Tool Emulator ---");
 			llmToolEmulator();
 
-			System.out.println("\n--- 示例10：上下文编辑 ---");
+			System.out.println("\n--- Example 10: Context Editing ---");
 			contextEditing();
 
-			System.out.println("\n=== 所有示例执行完成 ===");
+			System.out.println("\n=== All examples executed successfully ===");
 		}
 		catch (Exception e) {
-			System.err.println("执行示例时发生错误: " + e.getMessage());
+			System.err.println("Error executing example: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
 
 	/**
-	 * 示例12：自定义 ModelHook
+	 * Example 12: Custom ModelHook
 	 */
 	@HookPositions({HookPosition.BEFORE_MODEL, HookPosition.AFTER_MODEL})
 	public static class CustomModelHook extends ModelHook {
@@ -443,26 +443,26 @@ public class HooksExample {
 
 		@Override
 		public CompletableFuture<Map<String, Object>> beforeModel(OverAllState state, RunnableConfig config) {
-			// 在模型调用前执行
-			System.out.println("准备调用模型...");
+			// Execute before model call
+			System.out.println("Preparing to call model...");
 
-			// 可以修改状态
-			// 例如：添加额外的上下文
-			return CompletableFuture.completedFuture(Map.of("extra_context", "某些额外信息"));
+			// Can modify state
+			// e.g.: Add extra context
+			return CompletableFuture.completedFuture(Map.of("extra_context", "Some extra information"));
 		}
 
 		@Override
 		public CompletableFuture<Map<String, Object>> afterModel(OverAllState state, RunnableConfig config) {
-			// 在模型调用后执行
-			System.out.println("模型调用完成");
+			// Execute after model call
+			System.out.println("Model call completed");
 
-			// 可以记录响应信息
+			// Can log response information
 			return CompletableFuture.completedFuture(Map.of());
 		}
 	}
 
 	/**
-	 * 示例13：自定义 AgentHook
+	 * Example 13: Custom AgentHook
 	 */
 	@HookPositions({HookPosition.BEFORE_AGENT, HookPosition.AFTER_AGENT})
 	public static class CustomAgentHook extends AgentHook {
@@ -474,42 +474,42 @@ public class HooksExample {
 
 		@Override
 		public CompletableFuture<Map<String, Object>> beforeAgent(OverAllState state, RunnableConfig config) {
-			System.out.println("Agent 开始执行");
-			// 可以初始化资源、记录开始时间等
+			System.out.println("Agent started execution");
+			// Can initialize resources, record start time, etc.
 			return CompletableFuture.completedFuture(Map.of("start_time", System.currentTimeMillis()));
 		}
 
 		@Override
 		public CompletableFuture<Map<String, Object>> afterAgent(OverAllState state, RunnableConfig config) {
-			System.out.println("Agent 执行完成");
-			// 可以清理资源、计算执行时间等
+			System.out.println("Agent execution completed");
+			// Can clean up resources, calculate execution time, etc.
 			Optional<Object> startTime = state.value("start_time");
 			if (startTime.isPresent()) {
 				long duration = System.currentTimeMillis() - (Long) startTime.get();
-				System.out.println("执行耗时: " + duration + "ms");
+				System.out.println("Execution time: " + duration + "ms");
 			}
 			return CompletableFuture.completedFuture(Map.of());
 		}
 	}
 
 	/**
-	 * 示例14：自定义 ModelInterceptor
+	 * Example 14: Custom ModelInterceptor
 	 */
 	public static class LoggingInterceptor extends ModelInterceptor {
 
 		@Override
 		public ModelResponse interceptModel(ModelRequest request, ModelCallHandler handler) {
-			// 请求前记录
-			System.out.println("发送请求到模型: " + request.getMessages().size() + " 条消息");
+			// Log before request
+			System.out.println("Sending request to model: " + request.getMessages().size() + " messages");
 
 			long startTime = System.currentTimeMillis();
 
-			// 执行实际调用
+			// Execute actual call
 			ModelResponse response = handler.call(request);
 
-			// 响应后记录
+			// Log after response
 			long duration = System.currentTimeMillis() - startTime;
-			System.out.println("模型响应耗时: " + duration + "ms");
+			System.out.println("Model response time: " + duration + "ms");
 
 			return response;
 		}
@@ -521,7 +521,7 @@ public class HooksExample {
 	}
 
 	/**
-	 * 示例15：自定义 ToolInterceptor
+	 * Example 15: Custom ToolInterceptor
 	 */
 	public static class ToolMonitoringInterceptor extends ToolInterceptor {
 
@@ -530,24 +530,24 @@ public class HooksExample {
 			String toolName = request.getToolName();
 			long startTime = System.currentTimeMillis();
 
-			System.out.println("执行工具: " + toolName);
+			System.out.println("Executing tool: " + toolName);
 
 			try {
 				ToolCallResponse response = handler.call(request);
 
 				long duration = System.currentTimeMillis() - startTime;
-				System.out.println("工具 " + toolName + " 执行成功 (耗时: " + duration + "ms)");
+				System.out.println("Tool " + toolName + " executed successfully (time: " + duration + "ms)");
 
 				return response;
 			}
 			catch (Exception e) {
 				long duration = System.currentTimeMillis() - startTime;
-				System.err.println("工具 " + toolName + " 执行失败 (耗时: " + duration + "ms): " + e.getMessage());
+				System.err.println("Tool " + toolName + " execution failed (time: " + duration + "ms): " + e.getMessage());
 
 				return ToolCallResponse.of(
 						request.getToolCallId(),
 						request.getToolName(),
-						"工具执行失败: " + e.getMessage()
+						"Tool execution failed: " + e.getMessage()
 				);
 			}
 		}
@@ -559,7 +559,7 @@ public class HooksExample {
 	}
 
 	/**
-	 * 日志记录 ModelHook
+	 * Logging ModelHook
 	 */
 	@HookPositions({HookPosition.BEFORE_MODEL, HookPosition.AFTER_MODEL})
 	private static class LoggingModelHook extends ModelHook {
@@ -587,8 +587,8 @@ public class HooksExample {
 	}
 
 	/**
-	 * 消息修剪 Hook
-	 * 使用 MessagesModelHook 实现，在模型调用前修剪消息列表，只保留最后 10 条消息
+	 * Message Trimming Hook
+	 * Implemented using MessagesModelHook, trims the message list before model call, keeping only the last 10 messages
 	 */
 	@HookPositions({HookPosition.BEFORE_MODEL})
 	private static class MessageTrimmingHook extends MessagesModelHook {
@@ -601,27 +601,27 @@ public class HooksExample {
 
 		@Override
 		public AgentCommand beforeModel(List<Message> previousMessages, RunnableConfig config) {
-			// 如果消息数量超过限制，只保留最后 MAX_MESSAGES 条消息
+			// If message count exceeds limit, keep only the last MAX_MESSAGES messages
 			if (previousMessages.size() > MAX_MESSAGES) {
 				List<Message> trimmedMessages = previousMessages.subList(
 						previousMessages.size() - MAX_MESSAGES,
 						previousMessages.size()
 				);
-				// 使用 REPLACE 策略替换所有消息
+				// Use REPLACE strategy to replace all messages
 				return new AgentCommand(trimmedMessages, UpdatePolicy.REPLACE);
 			}
-			// 如果消息数量未超过限制，返回原始消息（不进行修改）
+			// If message count does not exceed limit, return original messages (no modification)
 			return new AgentCommand(previousMessages);
 		}
 	}
 
 	/**
-	 * 护栏拦截器
+	 * Guardrail Interceptor
 	 */
 	private static class GuardrailInterceptor extends ModelInterceptor {
 		@Override
 		public ModelResponse interceptModel(ModelRequest request, ModelCallHandler handler) {
-			// 简化的实现
+			// Simplified implementation
 			return handler.call(request);
 		}
 
@@ -631,15 +631,15 @@ public class HooksExample {
 		}
 	}
 
-	// ==================== Main 方法 ====================
+	// ==================== Main Method ====================
 
 	/**
-	 * 重试工具拦截器
+	 * Retry Tool Interceptor
 	 */
 	private static class RetryToolInterceptor extends ToolInterceptor {
 		@Override
 		public ToolCallResponse interceptToolCall(ToolCallRequest request, ToolCallHandler handler) {
-			// 简化的实现
+			// Simplified implementation
 			return handler.call(request);
 		}
 

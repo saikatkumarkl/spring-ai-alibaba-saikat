@@ -79,28 +79,28 @@ public class ChatClientFactoryDelegate {
         
         //If not found in the bridge service, try to find it from the ModelConfigRepository (to maintain backward compatibility)
         if (config == null) {
-            log.debug("桥接服务中未找到模型配置 id={}，尝试从 ModelConfigRepository 查找", modelConfigId);
+            log.debug("Model configuration id={} not found in bridge service, try to find from ModelConfigRepository", modelConfigId);
             config = modelConfigRepository.findById(modelConfigId);
         }
         
         if (config == null) {
-            throw new RuntimeException("模型配置不存在: " + modelConfigId);
+            throw new RuntimeException("Model configuration does not exist:" + modelConfigId);
         }
         
         if (config.getStatus() != 1) {
-            throw new RuntimeException("模型配置已禁用: " + modelConfigId);
+            throw new RuntimeException("Model configuration disabled:" + modelConfigId);
         }
 
         String provider = config.getProvider().toLowerCase();
-        log.info("创建模型客户端，提供商: {}, 模型: {}", provider, config.getModelName());
+        log.info("Create model client, provider: {}, model: {}", provider, config.getModelName());
         
         ChatClientFactory factory = chatClientFactories.get(provider);
         if (factory == null) {
             //If the corresponding provider factory cannot be found, OpenAI is used by default.
-            log.warn("未找到提供商 {} 对应的工厂，使用默认的 OpenAI 工厂", provider);
+            log.warn("The factory corresponding to provider {} was not found, using the default OpenAI factory", provider);
             factory = chatClientFactories.get(OpenAiChatClientFactory.OPEN_AI_PROVIDER);
             if (factory == null) {
-                throw new UnsupportedOperationException("不支持的模型提供商: " + config.getProvider() + "，且默认的 OpenAI 工厂也不可用");
+                throw new UnsupportedOperationException("Unsupported model providers:" + config.getProvider() + ", and the default OpenAI factory is also unavailable");
             }
         }
         
@@ -137,19 +137,19 @@ public class ChatClientFactoryDelegate {
                         Map.class
                 );
                 mergedParameters.putAll(defaultParams);
-                log.debug("加载默认参数: {}", defaultParams);
+                log.debug("Load default parameters: {}", defaultParams);
             } catch (Exception e) {
-                log.warn("解析默认参数失败: {}", config.getDefaultParameters(), e);
+                log.warn("Failed to parse default parameters: {}", config.getDefaultParameters(), e);
             }
         }
         
         //Then add user parameters (override default parameters)
         if (userParameters != null) {
             mergedParameters.putAll(userParameters);
-            log.debug("用户参数: {}", userParameters);
+            log.debug("User parameters: {}", userParameters);
         }
         
-        log.debug("合并后的参数: {}", mergedParameters);
+        log.debug("Merged parameters: {}", mergedParameters);
         return mergedParameters;
     }
 }

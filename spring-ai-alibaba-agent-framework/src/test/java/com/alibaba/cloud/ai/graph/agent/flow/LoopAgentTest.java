@@ -68,34 +68,34 @@ public class LoopAgentTest {
         ReactAgent writerAgent = ReactAgent.builder()
                 .name("writer_agent")
                 .model(chatModel)
-                .description("可以写文章。")
-                .instruction("你是一个知名的作家，擅长写作和创作。请根据用户的提问进行回答。")
+                .description("You can write articles.")
+                .instruction("You are a well-known writer who is good at writing and creating.Please answer based on the user's questions.")
                 .outputKey("article")
                 .build();
 
         ReactAgent reviewerAgent = ReactAgent.builder()
                 .name("reviewer_agent")
                 .model(chatModel)
-                .description("可以对文章进行评论和修改。")
-                .instruction("你是一个知名的评论家，擅长对文章进行评论和修改。对于散文类文章，请确保文章中必须包含对于西湖风景的描述。最终只返回修改后的文章，不要包含任何评论信息。")
+                .description("Articles can be commented and modified.")
+                .instruction("You are a well-known critic who is good at commenting and revising articles.For prose articles, please ensure that the article must include a description of the scenery of West Lake.Finally, only the revised article will be returned without any comment information.")
                 .outputKey("reviewed_article")
                 .build();
 
         this.blogAgent = SequentialAgent.builder()
                 .name("blog_agent")
-                .description("可以根据用户给定的主题写一篇文章，然后将文章交给评论员进行评论。")
+                .description("You can write an article based on a topic given by the user and then submit the article to reviewers for comment.")
                 .subAgents(List.of(writerAgent, reviewerAgent))
                 .build();
 
         ReactAgent sqlGenerateAgent = ReactAgent.builder()
                 .name("sqlGenerateAgent")
                 .model(chatModel)
-                .description("可以根据用户的自然语言生成MySQL的SQL代码。")
-                .instruction("你是一个熟悉MySQL数据库的小助手，请你根据用户的自然语言，输出对应的SQL。")
+                .description("MySQL SQL code can be generated based on the user's natural language.")
+                .instruction("You are a little assistant who is familiar with MySQL database. Please output the corresponding SQL according to the user's natural language.")
                 .outputSchema("""
                         {
-                           "query": 用户的请求,
-                           "output": 生成SQL结果
+                           "query": "user's request",
+                           "output": "generated SQL result"
                         }
                         """)
                 .outputKey("sql")
@@ -104,15 +104,15 @@ public class LoopAgentTest {
         ReactAgent sqlRatingAgent = ReactAgent.builder()
                 .name("sqlRatingAgent")
                 .model(chatModel)
-                .description("可以根据输入的自然语言和SQL语句的匹配度进行评分。")
-                .instruction("你是一个熟悉MySQL数据库的小助手，请你根据用户输入的自然语言和对应的SQL语句，输出一个评分。评分为一个浮点数，在0到1之间。越趋近于1说明SQL越匹配自然语言。")
-                .outputSchema("你的输出有且仅有一个浮点数，且在0到1之间，**不要输出任何额外的字符**")
+                .description("Scoring can be based on the matching degree of the input natural language and SQL statements.")
+                .instruction("You are a little assistant who is familiar with MySQL database. Please output a rating based on the natural language input by the user and the corresponding SQL statement.The rating is a floating point number between 0 and 1.The closer it is to 1, the better SQL matches natural language.")
+                .outputSchema("Your output has and only one floating point number between 0 and 1. **Do not output any extra characters**")
                 .outputKey("score")
                 .build();
 
         this.sqlAgent = SequentialAgent.builder()
                 .name("sql_agent")
-                .description("可以根据用户的输入，生成SQL语句，并对其评分。")
+                .description("SQL statements can be generated and scored based on user input.")
                 .subAgents(List.of(sqlGenerateAgent, sqlRatingAgent))
                 .build();
 	}
@@ -121,11 +121,11 @@ public class LoopAgentTest {
     void testCountMode() throws Exception {
         LoopAgent loopAgent = LoopAgent.builder()
                 .name("loop_agent")
-                .description("循环执行一个任务，直到满足条件。")
+                .description("Loop through a task until a condition is met.")
                 .subAgent(this.blogAgent)
                 .loopStrategy(LoopMode.count(2))
                 .build();
-        OverAllState state = loopAgent.invoke("帮我写一个Python Socket编程的demo，并优化代码").orElseThrow();
+        OverAllState state = loopAgent.invoke("Help me write a Python Socket programming demo and optimize the code").orElseThrow();
         logger.info("Result: {}", state.data());
         Optional<Object> optional = state.value("messages");
         assert optional.isPresent();
@@ -139,7 +139,7 @@ public class LoopAgentTest {
     void testConditionMode() throws Exception {
         LoopAgent loopAgent = LoopAgent.builder()
                 .name("loop_agent")
-                .description("循环执行一个任务，直到满足条件。")
+                .description("Loop through a task until a condition is met.")
                 .subAgent(this.sqlAgent)
                 .loopStrategy(LoopMode.condition(messages -> {
                     logger.info("Messages: {}", messages);
@@ -155,7 +155,7 @@ public class LoopAgentTest {
                     }
                 }))
                 .build();
-        OverAllState state = loopAgent.invoke("现在有一个用户表，名为user，有列（id, name, password），现在我想要找所有名字以s开头的用户，如何写对应SQL？").orElseThrow();
+        OverAllState state = loopAgent.invoke("Now there is a user table named user with columns (id, name, password). Now I want to find all users whose names start with s. How to write the corresponding SQL?").orElseThrow();
         logger.info("Result: {}", state.data());
         Optional<Object> optional = state.value("messages");
         assert optional.isPresent();
@@ -169,14 +169,14 @@ public class LoopAgentTest {
     void testArrayMode() throws Exception {
         LoopAgent loopAgent = LoopAgent.builder()
                 .name("loop_agent")
-                .description("循环执行任务。")
+                .description("Execute tasks in a loop.")
                 .subAgent(this.sqlAgent)
                 .loopStrategy(LoopMode.array())
                 .build();
         OverAllState state = loopAgent.invoke("""
-                ["现在有一个用户表，名为user，有列（id, name, password），现在我想要找所有名字以s开头的用户，如何写对应SQL？",
-                "现在有一个用户表，名为user，有列（id, name, password），现在我想要找所有名字以t开头的用户，如何写对应SQL？",
-                "现在有一个用户表，名为user，现在我想要找所有用户，如何写对应SQL？"]
+                ["Now there is a user table named user with columns (id, name, password). Now I want to find all users whose names start with s. How to write the corresponding SQL?",
+                "Now there is a user table named user with columns (id, name, password). Now I want to find all users whose names start with t. How to write the corresponding SQL?",
+                "Now there is a user table named user. Now I want to find all users. How to write the corresponding SQL?"]
                 """).orElseThrow();
         logger.info("Result: {}", state.data());
         Optional<Object> optional = state.value("messages");

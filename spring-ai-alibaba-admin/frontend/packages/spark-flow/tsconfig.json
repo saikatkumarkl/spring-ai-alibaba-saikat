@@ -11,8 +11,8 @@
     "paths": {
       "@@/*": [".dumi/tmp/*"],
       "@/*": ["src/*"],
-      "@spark-ai/flow": ["src"],
-      "@spark-ai/flow/*": ["src/*", "*"]
+      "@cordondata/flow": ["src"],
+      "@cordondata/flow/*": ["src/*", "*"]
     }
   },
   "module": "ESNext",

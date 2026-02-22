@@ -27,7 +27,7 @@ public enum DSLDialectType {
 
 	CUSTOM("custom", ".yml"),
 
-	SAA_AGENT("saa-agent", ".yaml");
+	CORDONDATA_AGENT("cordondata-agent", ".yaml");
 
 	private final String value;
 

@@ -39,7 +39,7 @@ import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
 
 /**
  * 子图示例
- * 演示如何在 Spring AI Alibaba Graph 中使用子图
+ * 演示如何在 CordonData Graph 中使用子图
  */
 public class SubgraphExample {
 

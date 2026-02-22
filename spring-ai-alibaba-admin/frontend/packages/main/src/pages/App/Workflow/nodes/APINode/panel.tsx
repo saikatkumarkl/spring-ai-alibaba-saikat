@@ -3,7 +3,7 @@ import { Button, IconFont, InputNumber, Radio, Select } from '@spark-ai/design';
 import type {
   INodeDataInputParamItem,
   INodeDataOutputParamItem,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import {
   CustomInputsControl,
   CustomOutputsFormWrap,
@@ -14,7 +14,7 @@ import {
   useNodesReadOnly,
   useReactFlowStore,
   VarInputTextArea,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { Flex } from 'antd';
 import { memo, useMemo, useState } from 'react';
 import AuthConfigFormModal from '../../components/AuthConfigFormModal';

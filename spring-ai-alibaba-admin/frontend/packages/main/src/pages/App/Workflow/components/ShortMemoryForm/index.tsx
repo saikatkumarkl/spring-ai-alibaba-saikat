@@ -1,6 +1,6 @@
 import $i18n from '@/i18n';
 import { SliderSelector } from '@spark-ai/design';
-import { IVarTreeItem, SelectWithDesc, VariableSelector } from '@spark-ai/flow';
+import { IVarTreeItem, SelectWithDesc, VariableSelector } from '@cordondata/flow';
 import { Flex, Switch } from 'antd';
 import classNames from 'classnames';
 import { memo } from 'react';

@@ -1,6 +1,6 @@
 # 配置说明
 
-本文档说明如何配置 Spring AI Alibaba Admin Server 以支持不同环境（本地开发、Docker、Kubernetes）。
+本文档说明如何配置 CordonData Admin Server 以支持不同环境（本地开发、Docker、Kubernetes）。
 
 ## 配置策略
 
@@ -47,8 +47,8 @@
 |---------|---------|--------|------|
 | `ROCKETMQ_ENDPOINTS` | `rocketmq.endpoints` | `localhost:18080` | RocketMQ Proxy 端点 |
 | `ROCKETMQ_NAME_SERVER` | - | - | RocketMQ NameServer 地址（如果代码中使用） |
-| `ROCKETMQ_DOCUMENT_INDEX_TOPIC` | `rocketmq.document-index-topic` | `topic_saa_studio_document_index` | 文档索引 Topic |
-| `ROCKETMQ_DOCUMENT_INDEX_GROUP` | `rocketmq.document_index_group` | `group_saa_studio_document_index` | 文档索引 Group |
+| `ROCKETMQ_DOCUMENT_INDEX_TOPIC` | `rocketmq.document-index-topic` | `topic_cordondata_document_index` | 文档索引 Topic |
+| `ROCKETMQ_DOCUMENT_INDEX_GROUP` | `rocketmq.document_index_group` | `group_cordondata_document_index` | 文档索引 Group |
 
 ### LoongCollector (OTLP)
 

@@ -27,13 +27,13 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 
 /**
- * Graph 执行取消示例
- * 演示如何取消图的执行
+ * Graph Execution Cancellation Example
+ * Demonstrates how to cancel graph execution
  */
 public class CancellationExample {
 
 	/**
-	 * 示例 1: 使用 forEachAsync 消费流时取消
+	 * Example 1: Cancel while consuming stream with forEachAsync
 	 */
 	public static void cancelWithForEachAsync(CompiledGraph compiledGraph, boolean mayInterruptIfRunning) {
 		// 创建运行配置
@@ -48,71 +48,71 @@ public class CancellationExample {
 		// 执行图并获取流
 		Flux<NodeOutput> stream = compiledGraph.stream(inputData, runnableConfig);
 
-		// 从新线程在 500 毫秒后请求取消
+		// Request cancellation from a new thread after 500 milliseconds
 		CompletableFuture.runAsync(() -> {
 			try {
 				Thread.sleep(500);
-				// Flux 使用 dispose() 来取消
-				System.out.println("请求取消执行");
+				// Flux uses dispose() to cancel
+				System.out.println("Requesting execution cancellation");
 			}
 			catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}
 		});
 
-		// 异步处理每个输出
+		// Asynchronously process each output
 		var disposable = stream.subscribe(
-				output -> System.out.println("当前迭代节点: " + output),
-				error -> System.out.println("流错误: " + error.getMessage()),
-				() -> System.out.println("流完成")
+				output -> System.out.println("Current iteration node: " + output),
+				error -> System.out.println("Stream error: " + error.getMessage()),
+				() -> System.out.println("Stream completed")
 		);
 
-		// 等待流完成或取消
+		// Wait for stream completion or cancellation
 		try {
 			stream.blockLast();
 		}
 		catch (Exception e) {
-			System.err.println("执行异常: " + e.getMessage());
+			System.err.println("Execution exception: " + e.getMessage());
 		}
 
-		// 验证是否已取消（Flux 使用 isDisposed 检查）
-		System.out.println("是否已取消: " + disposable.isDisposed());
+		// Check if cancelled (Flux uses isDisposed to check)
+		System.out.println("Is cancelled: " + disposable.isDisposed());
 	}
 
 	/**
-	 * 示例 2: 使用迭代器消费流时取消
+	 * Example 2: Cancel while consuming stream with iterator
 	 */
 	public static void cancelWithIterator(CompiledGraph compiledGraph, boolean mayInterruptIfRunning) {
-		// 创建运行配置
+		// Create run configuration
 		RunnableConfig runnableConfig = RunnableConfig.builder()
 				.threadId("test-thread")
 				.build();
 
-		// 准备输入数据
+		// Prepare input data
 		Map<String, Object> inputData = new HashMap<>();
-		// ... 添加输入数据
+		// ... Add input data
 
-		// 执行图并获取流
+		// Execute graph and get stream
 		Flux<NodeOutput> stream = compiledGraph.stream(inputData, runnableConfig);
 
-		// 从新线程在 500 毫秒后请求取消
+		// Request cancellation from a new thread after 500 milliseconds
 		var disposable = stream.subscribe(
 				output -> {
-					System.out.println("当前迭代节点: " + output);
+					System.out.println("Current iteration node: " + output);
 				},
 				error -> {
-					System.out.println("流错误: " + error.getMessage());
+					System.out.println("Stream error: " + error.getMessage());
 				},
 				() -> {
-					System.out.println("流完成");
+					System.out.println("Stream completed");
 				}
 		);
 
 		CompletableFuture.runAsync(() -> {
 			try {
 				Thread.sleep(500);
-				disposable.dispose(); // 取消流
-				System.out.println("已请求取消执行");
+				disposable.dispose(); // Cancel stream
+				System.out.println("Execution cancellation requested");
 			}
 			catch (InterruptedException e) {
 				throw new RuntimeException(e);
@@ -124,46 +124,46 @@ public class CancellationExample {
 			stream.blockLast();
 		}
 		catch (Exception e) {
-			System.out.println("流被中断: " + e.getMessage());
+			System.out.println("Stream interrupted: " + e.getMessage());
 		}
 
-		// 验证取消状态
-		System.out.println("是否已取消: " + disposable.isDisposed());
+		// Check cancellation status
+		System.out.println("Is cancelled: " + disposable.isDisposed());
 	}
 
 	/**
-	 * 检查取消状态
+	 * Check cancellation status
 	 */
 	public static void checkCancellationStatus(Disposable disposable) {
 		if (disposable.isDisposed()) {
-			System.out.println("流已被取消");
+			System.out.println("Stream has been cancelled");
 		}
 		else {
-			System.out.println("流仍在运行");
+			System.out.println("Stream is still running");
 		}
 	}
 
 	public static void main(String[] args) {
-		System.out.println("=== Graph 执行取消示例 ===\n");
+		System.out.println("=== Graph Execution Cancellation Example ===\n");
 
 		try {
-			// 示例 1: 使用 forEachAsync 消费流时取消（需要 CompiledGraph）
-			System.out.println("示例 1: 使用 forEachAsync 消费流时取消");
-			System.out.println("注意: 此示例需要 CompiledGraph，跳过执行");
+			// Example 1: Cancel while consuming stream with forEachAsync (requires CompiledGraph)
+			System.out.println("Example 1: Cancel while consuming stream with forEachAsync");
+			System.out.println("Note: This example requires CompiledGraph, skipping execution");
 			// cancelWithForEachAsync(compiledGraph, true);
 			System.out.println();
 
-			// 示例 2: 使用迭代器消费流时取消（需要 CompiledGraph）
-			System.out.println("示例 2: 使用迭代器消费流时取消");
-			System.out.println("注意: 此示例需要 CompiledGraph，跳过执行");
+			// Example 2: Cancel while consuming stream with iterator (requires CompiledGraph)
+			System.out.println("Example 2: Cancel while consuming stream with iterator");
+			System.out.println("Note: This example requires CompiledGraph, skipping execution");
 			// cancelWithIterator(compiledGraph, true);
 			System.out.println();
 
-			System.out.println("所有示例执行完成");
-			System.out.println("提示: 请配置 CompiledGraph 后运行完整示例");
+			System.out.println("All examples completed");
+			System.out.println("Tip: Configure CompiledGraph before running the full example");
 		}
 		catch (Exception e) {
-			System.err.println("执行示例时出错: " + e.getMessage());
+			System.err.println("Error executing example: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}

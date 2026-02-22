@@ -85,7 +85,7 @@ class TodolistTest {
 						.build();
 
 		try {
-			Optional<OverAllState> result = agent.invoke("帮我制定一个12月30日开始去北京的3天旅游计划，并完成车票和酒店预订。这个任务比较复杂，你先分解成几个小任务，然后逐个完成每个小任务，最后汇总输出整个旅游计划。调用 `write_todos` 记录并跟踪任务执行过程。");
+			Optional<OverAllState> result = agent.invoke("Help me make a 3-day travel plan to Beijing starting on December 30th, and complete the ticket and hotel reservations.This task is relatively complex. You first break it down into several small tasks, then complete each small task one by one, and finally summarize and output the entire travel plan.Call `write_todos` to record and track the task execution process.");
 
 			assertTrue(result.isPresent(), "Agent result should be present");
 			result.ifPresent(overAllState -> {

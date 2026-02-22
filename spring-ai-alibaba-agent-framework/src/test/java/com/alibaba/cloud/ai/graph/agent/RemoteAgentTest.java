@@ -36,10 +36,10 @@ class RemoteAgentTest {
 
 	@BeforeEach
 	void setUp() {
-		// 先创建 DashScopeApi 实例
+		//First create a DashScopeApi instance
 		DashScopeApi dashScopeApi = DashScopeApi.builder().apiKey(System.getenv("AI_DASHSCOPE_API_KEY")).build();
 
-		// 创建 DashScope ChatModel 实例
+		//Create DashScope ChatModel instance
 		this.chatModel = DashScopeChatModel.builder().dashScopeApi(dashScopeApi).build();
 	}
 
@@ -57,14 +57,14 @@ class RemoteAgentTest {
 		// A2aRemoteAgent currencyExchangeAgent = A2aRemoteAgent.builder()
 		// .name("writer_agent")
 		// .agentCard(RemoteAgentCard.builder().url("http://0.0.0.0:8080").build())
-		// .description("可以写文章。")
+		//.description("You can write articles.")
 		// .outputKey("output")
 		// .build();
 		//
 		// try {
 		// // Start streaming and consume chunks as they arrive
 		// AsyncGenerator<NodeOutput> generator =
-		// currencyExchangeAgent.stream(Map.of("input", "你好，给我写个100字的散文"));
+		//currencyExchangeAgent.stream(Map.of("input", "Hello, write me a 100-word essay"));
 		// int chunkCount = 0;
 		// while (true) {
 		// AsyncGenerator.Data<NodeOutput> data = generator.next();
@@ -88,7 +88,7 @@ class RemoteAgentTest {
 		//
 		// try {
 		// Optional<OverAllState> result = currencyExchangeAgent.invoke(Map.of("input",
-		// "你好，给我写一个100字的描写西湖的文章"));
+		//"Hello, write me a 100-word article describing West Lake"));
 		// System.out.println("Final Result: " + result.get());
 		// } catch (Exception e) {
 		// e.printStackTrace();

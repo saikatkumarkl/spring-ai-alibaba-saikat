@@ -26,7 +26,7 @@ management:
     resource-attributes:
       service:
         # shouldn't be changed
-        name: spring-ai-alibaba-studio
+        name: cordondata-studio
         version: 1.0
       deployment:
         environment: test
@@ -63,7 +63,7 @@ spring:
       max-request-size: 500MB
       enabled: true
   application:
-    name: saa-studio
+    name: cordondata-studio
   config:
     import:
       - classpath:initializr.yml
@@ -125,8 +125,8 @@ rocketmq:
   # Can be overridden via env vars; defaults are defined per profile.
   # ROCKETMQ_ENDPOINTS, ROCKETMQ_DOCUMENT_INDEX_TOPIC, ROCKETMQ_DOCUMENT_INDEX_GROUP
   endpoints: ${ROCKETMQ_ENDPOINTS}
-  document-index-topic: ${ROCKETMQ_DOCUMENT_INDEX_TOPIC:topic_saa_studio_document_index}
-  document_index_group: ${ROCKETMQ_DOCUMENT_INDEX_GROUP:group_saa_studio_document_index}
+  document-index-topic: ${ROCKETMQ_DOCUMENT_INDEX_TOPIC:topic_cordondata_document_index}
+  document_index_group: ${ROCKETMQ_DOCUMENT_INDEX_GROUP:group_cordondata_document_index}
 
 # RAG vector index configuration.
 # Controls how knn_vector embeddings are stored in OpenSearch.
@@ -164,3 +164,16 @@ logging:
   level:
     org.springframework.boot.autoconfigure: INFO
     org.springframework.boot.task: INFO
+
+# ── Keycloak SSO ────────────────────────────────────────────
+# Set keycloak.enabled=true to accept Keycloak OIDC JWTs
+# alongside the built-in custom token auth.
+keycloak:
+  enabled: ${KEYCLOAK_ENABLED:true}
+  auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL:http://localhost:8180}
+  public-url: ${KEYCLOAK_PUBLIC_URL:http://localhost:8180}
+  realm: ${KEYCLOAK_REALM:cordondata}
+  audience: ""
+  jwks-cache-ttl-seconds: 300
+  admin-username: ${KEYCLOAK_ADMIN_USERNAME:admin}
+  admin-password: ${KEYCLOAK_ADMIN_PASSWORD:admin}

@@ -7,7 +7,7 @@ import {
   operatorLabelRender,
   useReactFlowStore,
   useStore,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import { Flex } from 'antd';
 import classNames from 'classnames';
 import { memo, useMemo } from 'react';

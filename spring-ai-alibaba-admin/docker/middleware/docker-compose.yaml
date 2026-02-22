@@ -211,8 +211,8 @@ services:
           sleep 10
         done &&
         echo 'Creating topic...' &&
-        sh mqadmin updateTopic -n rmq_namesrv:9876 -t topic_saa_studio_document_index -c DefaultCluster -a +message.type=NORMAL &&
-        sh mqadmin updateSubGroup -n rmq_namesrv:9876 -g group_saa_studio_document_index -c DefaultCluster &&
+        sh mqadmin updateTopic -n rmq_namesrv:9876 -t topic_cordondata_document_index -c DefaultCluster -a +message.type=NORMAL &&
+        sh mqadmin updateSubGroup -n rmq_namesrv:9876 -g group_cordondata_document_index -c DefaultCluster &&
         echo 'Verifying topic creation...' &&
         sh mqadmin topicList -n rmq_namesrv:9876 &&
         echo 'Topic creation completed'"

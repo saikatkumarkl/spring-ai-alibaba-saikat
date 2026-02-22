@@ -2,7 +2,7 @@ import CustomIcon from '@/components/CustomIcon';
 import { useFlowDebugInteraction } from '@/hooks/useFlowDebugInteraction';
 import $i18n from '@/i18n';
 import { Button, IconButton } from '@spark-ai/design';
-import { CheckListBtn, useStore } from '@spark-ai/flow';
+import { CheckListBtn, useStore } from '@cordondata/flow';
 import { Segmented, Tooltip } from 'antd';
 import React, { memo } from 'react';
 import './index.less';

@@ -5,7 +5,7 @@ import {
   VariableTreeSelect,
   uniqueId,
   useNodeDataUpdate,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import React, { memo, useCallback } from 'react';
 import {
   IVariableAssignNodeData,

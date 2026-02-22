@@ -99,7 +99,7 @@ public class KnowledgeRetrievalNodeSection implements NodeSection<KnowledgeRetri
 
 								//Security check: Make sure the resolved path is still within the allowed directory range
 								if (!resolvedPath.startsWith(p.normalize())) {
-									throw new SecurityException("非法路径访问尝试: " + document.getPath());
+									throw new SecurityException("Illegal path access attempt:" + document.getPath());
 								}
 
 								yield resolvedPath.toAbsolutePath().toString();
@@ -109,7 +109,7 @@ public class KnowledgeRetrievalNodeSection implements NodeSection<KnowledgeRetri
 							//Perform basic validation of URL paths
 							String urlPath = document.getPath();
 							if (urlPath == null || urlPath.trim().isEmpty()) {
-								throw new IllegalArgumentException("URL路径不能为空");
+								throw new IllegalArgumentException("URL path cannot be empty");
 							}
 							yield urlPath;
 						}

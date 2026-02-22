@@ -1,5 +1,5 @@
 import $i18n from '@/i18n';
-import { INodeSchema } from '@spark-ai/flow';
+import { INodeSchema } from '@cordondata/flow';
 import { END_NODE_OUTPUT_PARAMS_DEFAULT } from '../../constant';
 import { IEndNodeData, IEndNodeParam } from '../../types';
 import { checkInputParams } from '../../utils';

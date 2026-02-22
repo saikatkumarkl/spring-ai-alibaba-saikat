@@ -1,6 +1,6 @@
 import $i18n from '@/i18n';
 import { Button, IconFont, Radio, Select } from '@spark-ai/design';
-import type { INodeDataInputParamItem } from '@spark-ai/flow';
+import type { INodeDataInputParamItem } from '@cordondata/flow';
 import {
   CustomInputsControl,
   CustomOutputsFormWrap,
@@ -8,7 +8,7 @@ import {
   SelectWithDesc,
   useNodeDataUpdate,
   VarInputTextArea,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import React, { memo, useCallback } from 'react';
 import ErrorCatchForm from '../../components/ErrorCatchForm';
 import RetryForm from '../../components/RetryForm';

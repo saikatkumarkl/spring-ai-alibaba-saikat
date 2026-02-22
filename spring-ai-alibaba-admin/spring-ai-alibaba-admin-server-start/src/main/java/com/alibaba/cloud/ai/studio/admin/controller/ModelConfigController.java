@@ -26,28 +26,28 @@ public class ModelConfigController {
     
     @GetMapping("/model/supported")
     public Result<List<String>> getSupportedProviders() {
-        log.info("获取支持的模型提供商请求");
+        log.info("Get supported model provider requests");
         List<String> providers = modelConfigService.getSupportedProviders();
         return Result.success(providers);
     }
     
     @GetMapping("/models")
     public Result<PageResult<ModelConfigResponse>> list(@Valid ModelConfigQueryRequest request) {
-        log.info("查询模型配置列表请求: {}", request);
+        log.info("Query model configuration list request: {}", request);
         PageResult<ModelConfigResponse> result = modelConfigService.list(request);
         return Result.success(result);
     }
     
     @GetMapping("/model")
     public Result<ModelConfigResponse> getById(@RequestParam Long id) throws StudioException {
-        log.info("获取模型配置详情请求，ID: {}", id);
+        log.info("Request to get model configuration details, ID: {}", id);
         ModelConfigResponse response = modelConfigService.getById(id);
         return Result.success(response);
     }
     
     @GetMapping("/models/enabled")
     public Result<List<ModelConfigResponse>> getEnabledConfigs() {
-        log.info("获取启用的模型配置列表请求");
+        log.info("Get enabled model configuration list request");
         List<ModelConfigResponse> configs = modelConfigService.getEnabledConfigs();
         return Result.success(configs);
     }

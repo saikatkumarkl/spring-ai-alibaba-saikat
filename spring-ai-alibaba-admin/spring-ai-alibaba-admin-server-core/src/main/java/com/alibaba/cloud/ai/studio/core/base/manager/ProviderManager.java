@@ -113,7 +113,7 @@ public class ProviderManager extends ServiceImpl<ProviderMapper, ProviderEntity>
 			throw e;
 		}
 		catch (Exception e) {
-			log.error("新增提供商失败: " + e.getMessage(), e);
+			log.error("Failed to add provider:" + e.getMessage(), e);
 			return false;
 		}
 	}

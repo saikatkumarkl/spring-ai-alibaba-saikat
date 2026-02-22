@@ -5,12 +5,12 @@ public enum versionStatus {
     /**
      * draft
      */
-    DRAFT("DRAFT", "草稿"),
+    DRAFT("DRAFT", "draft"),
 
     /**
      * Published
      */
-    PUBLISHED("PUBLISHED", "已发布");
+    PUBLISHED("PUBLISHED", "Published");
 
 
 

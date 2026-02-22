@@ -1,4 +1,4 @@
-import type { IValueType } from '@spark-ai/flow';
+import type { IValueType } from '@cordondata/flow';
 
 /**
  * Model provider interface

@@ -1,6 +1,6 @@
 import $i18n from '@/i18n';
-import type { INodeSchema } from '@spark-ai/flow';
-import { uniqueId } from '@spark-ai/flow';
+import type { INodeSchema } from '@cordondata/flow';
+import { uniqueId } from '@cordondata/flow';
 import { IVariableHandleNodeParam } from '../../types/flow';
 
 export const VariableHandleSchema: INodeSchema = {

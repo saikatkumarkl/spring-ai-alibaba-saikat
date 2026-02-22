@@ -1,6 +1,6 @@
 import $i18n from '@/i18n';
 import { Dropdown, IconButton, IconFont } from '@spark-ai/design';
-import { setWorkFlowLanguage } from '@spark-ai/flow';
+import { setWorkFlowLanguage } from '@cordondata/flow';
 import { useMount } from 'ahooks';
 import { MenuProps } from 'antd';
 

@@ -455,7 +455,7 @@ export default function AssistantAppEdit() {
     return agentDSL;
   };
 
-  const handleExportSAA = async () => {
+  const handleExportProject = async () => {
     if (!cacheAppDetailWithInfo.current) return;
 
     setState({ saveLoading: true });
@@ -466,9 +466,9 @@ export default function AssistantAppEdit() {
 
       // Prepare request parameters
       const params: any = {
-        dependencies: 'spring-ai-alibaba-graph,web,spring-ai-starter-model-ollama,spring-ai-starter-mcp-client',
+        dependencies: 'cordondata-graph,web,spring-ai-starter-model-ollama,spring-ai-starter-mcp-client',
         appMode: 'agent',
-        dslDialectType: 'saa-agent',
+        dslDialectType: 'cordondata-agent',
         type: 'maven-project',
         language: 'java',
         bootVersion: '3.5.0',
@@ -491,7 +491,7 @@ export default function AssistantAppEdit() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'spring-ai-alibaba-demo.zip';
+      link.download = 'cordondata-demo.zip';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -560,7 +560,7 @@ export default function AssistantAppEdit() {
         getSaveData,
         refreshAppDetail,
         sparkChatComponentRef,
-        handleExportSAA,
+        handleExportProject,
       }}
     >
       <div className={styles.page}>

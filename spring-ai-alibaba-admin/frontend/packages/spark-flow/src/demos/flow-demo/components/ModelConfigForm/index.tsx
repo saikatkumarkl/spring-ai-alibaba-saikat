@@ -1,6 +1,6 @@
 import $i18n from '@/i18n';
 import { Button, IconFont, Slider } from '@spark-ai/design';
-import { useStore, VariableTreeSelect } from '@spark-ai/flow';
+import { useStore, VariableTreeSelect } from '@cordondata/flow';
 import { useMount, useSetState } from 'ahooks';
 import {
   Checkbox,

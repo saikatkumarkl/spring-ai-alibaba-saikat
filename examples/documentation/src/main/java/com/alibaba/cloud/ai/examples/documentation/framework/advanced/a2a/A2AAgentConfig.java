@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
- * 定义并暴露本地 ReactAgent
+ * Defines and exposes local ReactAgent beans
  */
 @Configuration
 public class A2AAgentConfig {
@@ -40,9 +40,9 @@ public class A2AAgentConfig {
 		return ReactAgent.builder()
 				.name("data_analysis_agent")
 				.model(chatModel)
-				.description("专门用于数据分析和统计计算的本地智能体")
-				.instruction("你是一个专业的数据分析专家，擅长处理各类数据统计和分析任务。" +
-						"你能够理解用户的数据分析需求，提供准确的统计计算结果和专业的分析建议。")
+				.description("A local agent specialized in data analysis and statistical computation")
+				.instruction("You are a professional data analysis expert, skilled at handling various data statistics and analysis tasks. " +
+						"You can understand the user's data analysis needs, provide accurate statistical results and professional analysis advice.")
 				.outputKey("messages")
 				.build();
 	}

@@ -4,14 +4,14 @@ import { Button, IconFont, Input } from '@spark-ai/design';
 import type {
   INodeDataInputParamItem,
   INodeDataOutputParamItem,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import {
   OutputParamsTree,
   SelectWithDesc,
   generateUniqueName,
   uniqueId,
   useNodeDataUpdate,
-} from '@spark-ai/flow';
+} from '@cordondata/flow';
 import React, { memo, useCallback } from 'react';
 import GroupVariableForm from '../../components/GroupVariableForm';
 import {

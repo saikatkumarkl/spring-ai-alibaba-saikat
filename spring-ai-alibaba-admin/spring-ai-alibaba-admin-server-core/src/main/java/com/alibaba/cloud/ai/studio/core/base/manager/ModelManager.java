@@ -62,7 +62,7 @@ public class ModelManager {
 		//Check if the provider exists
 		ProviderConfigInfo providerDetail = providerManager.getProviderDetail(modelConfigInfo.getProvider(), false);
 		if (providerDetail == null) {
-			log.error("提供商[{}]不存在", modelConfigInfo.getProvider());
+			log.error("Provider[{}] does not exist", modelConfigInfo.getProvider());
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("input_params", "provider is invalid"));
 		}
 
@@ -74,7 +74,7 @@ public class ModelManager {
 		
 		if (existModelEntity != null) {
 			// Model exists - update it instead of throwing error
-			log.info("模型[{}]已存在，更新模型信息 - 当前type={}, 新type={}", 
+			log.info("Model [{}] already exists, update model information - current type={}, new type={}", 
 				modelConfigInfo.getModelId(), existModelEntity.getType(), modelConfigInfo.getType());
 			existModelEntity.setGmtModified(new Date());
 			existModelEntity.setName(modelConfigInfo.getName());
@@ -92,7 +92,7 @@ public class ModelManager {
 		}
 
 		// Model doesn't exist - create new
-		log.info("创建新模型: {}", modelConfigInfo.getModelId());
+		log.info("Create new model: {}", modelConfigInfo.getModelId());
 		ModelEntity modelEntity = new ModelEntity();
 		modelEntity.setWorkspaceId(context.getWorkspaceId());
 		modelEntity.setGmtCreate(new Date());
@@ -126,7 +126,7 @@ public class ModelManager {
 		//Check if the provider exists
 		ProviderConfigInfo providerDetail = providerManager.getProviderDetail(modelConfigInfo.getProvider(), false);
 		if (providerDetail == null) {
-			log.error("提供商[{}]不存在", modelConfigInfo.getProvider());
+			log.error("Provider[{}] does not exist", modelConfigInfo.getProvider());
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("input_params", "provider is invalid"));
 		}
 
@@ -139,7 +139,7 @@ public class ModelManager {
 		}
 		ModelEntity existingModel = modelMapper.selectOne(queryWrapper);
 		if (existingModel == null) {
-			log.error("模型[{}]不存在", modelConfigInfo.getModelId());
+			log.error("Model[{}] does not exist", modelConfigInfo.getModelId());
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("input_params", "model not found"));
 		}
 
@@ -189,7 +189,7 @@ public class ModelManager {
 		}
 		ModelEntity existingModel = modelMapper.selectOne(queryWrapper);
 		if (existingModel == null) {
-			log.error("模型[{}]不存在", modelId);
+			log.error("Model[{}] does not exist", modelId);
 			throw new BizException(ErrorCode.INVALID_PARAMS.toError("input_params", "model not found"));
 		}
 
@@ -290,7 +290,7 @@ public class ModelManager {
 
 			ModelEntity modelEntity = modelMapper.selectOne(queryWrapper);
 			if (modelEntity == null) {
-				log.error("模型[{}]不存在", modelId);
+				log.error("Model[{}] does not exist", modelId);
 				throw new BizException(ErrorCode.INVALID_PARAMS.toError("input_params", "model not found"));
 			}
 
@@ -300,7 +300,7 @@ public class ModelManager {
 			throw e;
 		}
 		catch (Exception e) {
-			log.error("获取模型详情失败: " + e.getMessage(), e);
+			log.error("Failed to get model details:" + e.getMessage(), e);
 			return null;
 		}
 	}

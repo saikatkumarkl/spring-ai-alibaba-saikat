@@ -42,41 +42,41 @@ import java.util.Map;
 import reactor.core.publisher.Flux;
 
 /**
- * Messages Tutorial - 完整代码示例
- * 展示Messages作为模型交互的基本单元的使用方法
+ * Messages Tutorial - Complete Code Examples
+ * Demonstrates how to use Messages as the basic unit of model interaction
  *
- * 来源：messages.md
+ * Source: messages.md
  */
 public class MessagesExample {
 
-	// ==================== 基础使用 ====================
+	// ==================== Basic Usage ====================
 
 	/**
-	 * 示例1：基础消息使用
+	 * Example 1: Basic Message Usage
 	 */
 	public static void basicMessageUsage() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
 				.apiKey(System.getenv("AI_DASHSCOPE_API_KEY"))
 				.build();
 
-		// 使用 DashScope ChatModel
+		// Use DashScope ChatModel
 		ChatModel chatModel = DashScopeChatModel.builder()
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		SystemMessage systemMsg = new SystemMessage("你是一个有帮助的助手。");
-		UserMessage userMsg = new UserMessage("你好，你好吗？");
+		SystemMessage systemMsg = new SystemMessage("You are a helpful assistant.");
+		UserMessage userMsg = new UserMessage("Hello, how are you?");
 
-		// 与聊天模型一起使用
+		// Use with chat model
 		List<Message> messages = List.of(systemMsg, userMsg);
 		Prompt prompt = new Prompt(messages);
-		ChatResponse response = chatModel.call(prompt);  // 返回 ChatResponse，包含 AssistantMessage
+		ChatResponse response = chatModel.call(prompt);  // Returns ChatResponse containing AssistantMessage
 	}
 
-	// ==================== 文本提示 vs 消息提示 ====================
+	// ==================== Text Prompt vs Message Prompt ====================
 
 	/**
-	 * 示例2：文本提示
+	 * Example 2: Text Prompt
 	 */
 	public static void textPromptUsage() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -87,12 +87,12 @@ public class MessagesExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		// 使用字符串直接调用
-		String response = chatModel.call("写一首关于春天的俳句");
+		// Call directly with string
+		String response = chatModel.call("Write a haiku about spring");
 	}
 
 	/**
-	 * 示例3：消息提示
+	 * Example 3: Message Prompt
 	 */
 	public static void messagePromptUsage() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -104,9 +104,9 @@ public class MessagesExample {
 				.build();
 
 		List<Message> messages = List.of(
-				new SystemMessage("你是一个诗歌专家"),
-				new UserMessage("写一首关于春天的俳句"),
-				new AssistantMessage("樱花盛开时...")
+				new SystemMessage("You are a poetry expert"),
+				new UserMessage("Write a haiku about spring"),
+				new AssistantMessage("When cherry blossoms bloom...")
 		);
 		Prompt prompt = new Prompt(messages);
 		ChatResponse response = chatModel.call(prompt);
@@ -115,7 +115,7 @@ public class MessagesExample {
 	// ==================== System Message ====================
 
 	/**
-	 * 示例4：基础指令
+	 * Example 4: Basic Instruction
 	 */
 	public static void basicSystemMessage() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -126,18 +126,18 @@ public class MessagesExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		// 基础指令
-		SystemMessage systemMsg = new SystemMessage("你是一个有帮助的编程助手。");
+		// Basic instruction
+		SystemMessage systemMsg = new SystemMessage("You are a helpful programming assistant.");
 
 		List<Message> messages = List.of(
 				systemMsg,
-				new UserMessage("如何创建 REST API？")
+				new UserMessage("How to create a REST API?")
 		);
 		ChatResponse response = chatModel.call(new Prompt(messages));
 	}
 
 	/**
-	 * 示例5：详细的角色设定
+	 * Example 5: Detailed Role Setting
 	 */
 	public static void detailedSystemMessage() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -148,16 +148,16 @@ public class MessagesExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		// 详细的角色设定
+		// Detailed role setting
 		SystemMessage systemMsg = new SystemMessage("""
-				你是一位资深的 Java 开发者，擅长 Web 框架。
-				始终提供代码示例并解释你的推理。
-				在解释中要简洁但透彻。
+				You are a senior Java developer skilled in web frameworks.
+				Always provide code examples and explain your reasoning.
+				Be concise but thorough in explanations.
 				""");
 
 		List<Message> messages = List.of(
 				systemMsg,
-				new UserMessage("如何创建 REST API？")
+				new UserMessage("How to create a REST API?")
 		);
 		ChatResponse response = chatModel.call(new Prompt(messages));
 	}
@@ -165,7 +165,7 @@ public class MessagesExample {
 	// ==================== User Message ====================
 
 	/**
-	 * 示例6：文本内容
+	 * Example 6: Text Content
 	 */
 	public static void textUserMessage() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -176,36 +176,36 @@ public class MessagesExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		// 使用消息对象
+		// Use message objects
 		ChatResponse response = chatModel.call(
-				new Prompt(List.of(new UserMessage("什么是机器学习？")))
+				new Prompt(List.of(new UserMessage("What is machine learning?")))
 		);
 
-		// 使用字符串快捷方式
-		// 使用字符串是单个 UserMessage 的快捷方式
-		String response2 = chatModel.call("什么是机器学习？");
+		// Use string shortcut
+		// Using a string is a shortcut for a single UserMessage
+		String response2 = chatModel.call("What is machine learning?");
 	}
 
 	/**
-	 * 示例7：消息元数据
+	 * Example 7: Message Metadata
 	 */
 	public static void userMessageMetadata() {
 		UserMessage userMsg = UserMessage.builder()
-				.text("你好！")
+				.text("Hello!")
 				.metadata(Map.of(
-						"user_id", "alice",  // 可选：识别不同用户
-						"session_id", "sess_123"  // 可选：会话标识符
+						"user_id", "alice",  // Optional: identify different users
+						"session_id", "sess_123"  // Optional: session identifier
 				))
 				.build();
 	}
 
 	/**
-	 * 示例8：多模态内容 - 图像
+	 * Example 8: Multimodal Content - Image
 	 */
 	public static void multimodalImageMessage() throws Exception {
-		// 从 URL 创建图像
+		// Create image from URL
 		UserMessage userMsg = UserMessage.builder()
-				.text("描述这张图片的内容。")
+				.text("Describe the content of this image.")
 				.media(Media.builder().mimeType(MimeTypeUtils.IMAGE_JPEG).data(new URL("https://example.com/image.jpg"))
 						.build()).build();
 	}
@@ -213,7 +213,7 @@ public class MessagesExample {
 	// ==================== Assistant Message ====================
 
 	/**
-	 * 示例9：Assistant Message 基础使用
+	 * Example 9: Basic Assistant Message Usage
 	 */
 	public static void basicAssistantMessage() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -224,13 +224,13 @@ public class MessagesExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		ChatResponse response = chatModel.call(new Prompt("解释 AI"));
+		ChatResponse response = chatModel.call(new Prompt("Explain AI"));
 		AssistantMessage aiMessage = response.getResult().getOutput();
 		System.out.println(aiMessage.getText());
 	}
 
 	/**
-	 * 示例10：手动创建 AI 消息
+	 * Example 10: Manually Creating AI Messages
 	 */
 	public static void manualAssistantMessage() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -241,22 +241,22 @@ public class MessagesExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		// 手动创建 AI 消息（例如，用于对话历史）
-		AssistantMessage aiMsg = new AssistantMessage("我很乐意帮助你回答这个问题！");
+		// Manually create AI message (e.g., for conversation history)
+		AssistantMessage aiMsg = new AssistantMessage("I'd be happy to help you with that question!");
 
-		// 添加到对话历史
+		// Add to conversation history
 		List<Message> messages = List.of(
-				new SystemMessage("你是一个有帮助的助手"),
-				new UserMessage("你能帮我吗？"),
-				aiMsg,  // 插入，就像它来自模型一样
-				new UserMessage("太好了！2+2 等于多少？")
+				new SystemMessage("You are a helpful assistant"),
+				new UserMessage("Can you help me?"),
+				aiMsg,  // Insert as if it came from the model
+				new UserMessage("Great! What is 2+2?")
 		);
 
 		ChatResponse response = chatModel.call(new Prompt(messages));
 	}
 
 	/**
-	 * 示例11：工具调用
+	 * Example 11: Tool Calls
 	 */
 	public static void toolCallsInAssistantMessage() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -267,7 +267,7 @@ public class MessagesExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		Prompt prompt = new Prompt("北京的天气怎么样？");
+		Prompt prompt = new Prompt("What's the weather in Beijing?");
 		ChatResponse response = chatModel.call(prompt);
 		AssistantMessage aiMessage = response.getResult().getOutput();
 
@@ -281,7 +281,7 @@ public class MessagesExample {
 	}
 
 	/**
-	 * 示例12：Token 使用
+	 * Example 12: Token Usage
 	 */
 	public static void tokenUsage() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -292,10 +292,10 @@ public class MessagesExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		ChatResponse response = chatModel.call(new Prompt("你好！"));
+		ChatResponse response = chatModel.call(new Prompt("Hello!"));
 		ChatResponseMetadata metadata = response.getMetadata();
 
-		// 访问使用信息
+		// Access usage information
 		if (metadata != null && metadata.getUsage() != null) {
 			System.out.println("Input tokens: " + metadata.getUsage().getPromptTokens());
 			System.out.println("Output tokens: " + metadata.getUsage().getCompletionTokens());
@@ -304,7 +304,7 @@ public class MessagesExample {
 	}
 
 	/**
-	 * 示例13：流式和块
+	 * Example 13: Streaming and Chunks
 	 */
 	public static void streamingMessages() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -315,7 +315,7 @@ public class MessagesExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		Flux<ChatResponse> responseStream = chatModel.stream(new Prompt("你好"));
+		Flux<ChatResponse> responseStream = chatModel.stream(new Prompt("Hello"));
 
 		StringBuilder fullResponse = new StringBuilder();
 		responseStream.subscribe(
@@ -330,7 +330,7 @@ public class MessagesExample {
 	// ==================== Tool Response Message ====================
 
 	/**
-	 * 示例14：Tool Response Message
+	 * Example 14: Tool Response Message
 	 */
 	public static void toolResponseMessage() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -341,7 +341,7 @@ public class MessagesExample {
 				.dashScopeApi(dashScopeApi)
 				.build();
 
-		// 在模型进行工具调用后
+		// After model makes tool call
 		AssistantMessage aiMessage = AssistantMessage.builder()
 				.content("")
 				.toolCalls(List.of(
@@ -354,44 +354,44 @@ public class MessagesExample {
 				))
 				.build();
 
-		// 执行工具并创建结果消息
-		String weatherResult = "晴朗，22°C";
+		// Execute tool and create result message
+		String weatherResult = "Sunny, 22C";
 		ToolResponseMessage toolMessage = ToolResponseMessage.builder()
 				.responses(List.of(
 						new ToolResponseMessage.ToolResponse("call_123", "get_weather", weatherResult)
 				))
 				.build();
 
-		// 继续对话
+		// Continue conversation
 		List<Message> messages = List.of(
-				new UserMessage("旧金山的天气怎么样？"),
-				aiMessage,      // 模型的工具调用
-				toolMessage     // 工具执行结果
+				new UserMessage("What's the weather in San Francisco?"),
+				aiMessage,      // Model's tool call
+				toolMessage     // Tool execution result
 		);
 		ChatResponse response = chatModel.call(new Prompt(messages));
 	}
 
-	// ==================== 多模态内容 ====================
+	// ==================== Multimodal Content ====================
 
 	/**
-	 * 示例15：图像输入 - 从 URL
+	 * Example 15: Image Input - From URL
 	 */
 	public static void imageInputFromURL() throws Exception {
-		// 从 URL
+		// From URL
 		UserMessage message = UserMessage.builder()
-				.text("描述这张图片的内容。")
+				.text("Describe the content of this image.")
 				.media(Media.builder().mimeType(MimeTypeUtils.IMAGE_JPEG).data(new URL("https://example.com/image.jpg"))
 						.build())
 				.build();
 	}
 
 	/**
-	 * 示例16：图像输入 - 从本地文件
+	 * Example 16: Image Input - From Local File
 	 */
 	public static void imageInputFromFile() {
-		// 从本地文件
+		// From local file
 		UserMessage message = UserMessage.builder()
-				.text("描述这张图片的内容。")
+				.text("Describe the content of this image.")
 				.media(new Media(
 						MimeTypeUtils.IMAGE_JPEG,
 						new ClassPathResource("images/photo.jpg")
@@ -400,11 +400,11 @@ public class MessagesExample {
 	}
 
 	/**
-	 * 示例17：音频输入
+	 * Example 17: Audio Input
 	 */
 	public static void audioInput() {
 		UserMessage message = UserMessage.builder()
-				.text("描述这段音频的内容。")
+				.text("Describe the content of this audio.")
 				.media(new Media(
 						MimeTypeUtils.parseMimeType("audio/wav"),
 						new ClassPathResource("audio/recording.wav")
@@ -413,21 +413,21 @@ public class MessagesExample {
 	}
 
 	/**
-	 * 示例18：视频输入
+	 * Example 18: Video Input
 	 */
 	public static void videoInput() throws Exception {
 		UserMessage message = UserMessage.builder()
-				.text("描述这段视频的内容。")
+				.text("Describe the content of this video.")
 				.media(Media.builder().mimeType(MimeTypeUtils.parseMimeType("video/mp4"))
 						.data(new URL("\"https://example.com/path/to/video.mp4"))
 						.build())
 				.build();
 	}
 
-	// ==================== 与 Chat Models 一起使用 ====================
+	// ==================== Using with Chat Models ====================
 
 	/**
-	 * 示例19：基础对话示例
+	 * Example 19: Basic Conversation Example
 	 */
 	public static void basicConversationExample() {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -440,62 +440,62 @@ public class MessagesExample {
 
 		List<Message> conversationHistory = new ArrayList<>();
 
-		// 第一轮对话
-		conversationHistory.add(new UserMessage("你好！"));
+		// First round of conversation
+		conversationHistory.add(new UserMessage("Hello!"));
 		ChatResponse response1 = chatModel.call(new Prompt(conversationHistory));
 		conversationHistory.add(response1.getResult().getOutput());
 
-		// 第二轮对话
-		conversationHistory.add(new UserMessage("你能帮我学习 Java 吗？"));
+		// Second round of conversation
+		conversationHistory.add(new UserMessage("Can you help me learn Java?"));
 		ChatResponse response2 = chatModel.call(new Prompt(conversationHistory));
 		conversationHistory.add(response2.getResult().getOutput());
 
-		// 第三轮对话
-		conversationHistory.add(new UserMessage("从哪里开始？"));
+		// Third round of conversation
+		conversationHistory.add(new UserMessage("Where should I start?"));
 		ChatResponse response3 = chatModel.call(new Prompt(conversationHistory));
 	}
 
 	/**
-	 * 示例20：使用 Builder 模式
+	 * Example 20: Using Builder Pattern
 	 */
 	public static void builderPattern() {
 		// UserMessage with builder
 		UserMessage userMsg = UserMessage.builder()
-				.text("你好，我想学习 Spring AI Alibaba")
+				.text("Hello, I'd like to learn about CordonData")
 				.metadata(Map.of("user_id", "user_123"))
 				.build();
 
 		// SystemMessage with builder
 		SystemMessage systemMsg = SystemMessage.builder()
-				.text("你是一个 Spring 框架专家")
+				.text("You are a Spring framework expert")
 				.metadata(Map.of("version", "1.0"))
 				.build();
 
 		// AssistantMessage with builder
 		AssistantMessage assistantMsg = AssistantMessage.builder()
-				.content("我很乐意帮助你学习 Spring AI Alibaba！")
+				.content("I'd be happy to help you learn CordonData!")
 				.build();
 	}
 
 	/**
-	 * 示例21：消息复制和修改
+	 * Example 21: Message Copy and Modify
 	 */
 	public static void messageCopyAndModify() {
-		// 复制消息
-		UserMessage original = new UserMessage("原始消息");
+		// Copy message
+		UserMessage original = new UserMessage("Original message");
 		UserMessage copy = original.copy();
 
-		// 使用 mutate 创建修改的副本
+		// Use mutate to create a modified copy
 		UserMessage modified = original.mutate()
-				.text("修改后的消息")
+				.text("Modified message")
 				.metadata(Map.of("modified", true))
 				.build();
 	}
 
-	// ==================== 在 ReactAgent 中使用 ====================
+	// ==================== Using in ReactAgent ====================
 
 	/**
-	 * 示例22：在 ReactAgent 中使用消息
+	 * Example 22: Using Messages in ReactAgent
 	 */
 	public static void messagesInReactAgent() throws GraphRunnerException {
 		DashScopeApi dashScopeApi = DashScopeApi.builder()
@@ -509,95 +509,95 @@ public class MessagesExample {
 		ReactAgent agent = ReactAgent.builder()
 				.name("my_agent")
 				.model(chatModel)
-				.systemPrompt("你是一个有帮助的助手")
+				.systemPrompt("You are a helpful assistant")
 				.build();
 
-		// 使用字符串
-		AssistantMessage response1 = agent.call("你好");
+		// Use string
+		AssistantMessage response1 = agent.call("Hello");
 
-		// 使用 UserMessage
-		UserMessage userMsg = new UserMessage("帮我写一首诗");
+		// Usage UserMessage
+		UserMessage userMsg = new UserMessage("Help me write a poem");
 		AssistantMessage response2 = agent.call(userMsg);
 
-		// 使用消息列表
+		// Use message list
 		List<Message> messages = List.of(
-				new UserMessage("我喜欢春天"),
-				new UserMessage("写一首关于春天的诗")
+				new UserMessage("I like spring"),
+				new UserMessage("Write a poem about spring")
 		);
 		AssistantMessage response3 = agent.call(messages);
 	}
 
-	// ==================== Main 方法 ====================
+	// ==================== Main Method ====================
 
 	public static void main(String[] args) {
 		System.out.println("=== Messages Tutorial Examples ===");
-		System.out.println("注意：需要设置 AI_DASHSCOPE_API_KEY 环境变量\n");
+		System.out.println("Note: AI_DASHSCOPE_API_KEY environment variable must be set\n");
 
 		try {
-			System.out.println("\n--- 示例1：基础消息使用 ---");
+			System.out.println("\n--- Example 1: Basic Message Usage ---");
 			basicMessageUsage();
 
-			System.out.println("\n--- 示例2：文本提示使用 ---");
+			System.out.println("\n--- Example 2: Text Prompt Usage ---");
 			textPromptUsage();
 
-			System.out.println("\n--- 示例3：消息提示使用 ---");
+			System.out.println("\n--- Example 3: Message Prompt Usage ---");
 			messagePromptUsage();
 
-			System.out.println("\n--- 示例4：基础系统消息 ---");
+			System.out.println("\n--- Example 4: Basic System Message ---");
 			basicSystemMessage();
 
-			System.out.println("\n--- 示例5：详细系统消息 ---");
+			System.out.println("\n--- Example 5: Detailed System Message ---");
 			detailedSystemMessage();
 
-			System.out.println("\n--- 示例6：文本用户消息 ---");
+			System.out.println("\n--- Example 6: Text User Message ---");
 			textUserMessage();
 
-			System.out.println("\n--- 示例7：用户消息元数据 ---");
+			System.out.println("\n--- Example 7: User Message Metadata ---");
 			userMessageMetadata();
 
-			System.out.println("\n--- 示例8：多模态图像消息 ---");
+			System.out.println("\n--- Example 8: Multimodal Image Message ---");
 			multimodalImageMessage();
 
-			System.out.println("\n--- 示例9：基础助手消息 ---");
+			System.out.println("\n--- Example 9: Basic Assistant Message ---");
 			basicAssistantMessage();
 
-			System.out.println("\n--- 示例10：手动助手消息 ---");
+			System.out.println("\n--- Example 10: Manual Assistant Message ---");
 			manualAssistantMessage();
 
-			System.out.println("\n--- 示例11：工具调用在助手消息中 ---");
+			System.out.println("\n--- Example 11: Tool Calls in Assistant Message ---");
 			toolCallsInAssistantMessage();
 
-			System.out.println("\n--- 示例12：Token 使用 ---");
+			System.out.println("\n--- Example 12: Token Usage ---");
 			tokenUsage();
 
-			System.out.println("\n--- 示例13：流式消息 ---");
+			System.out.println("\n--- Example 13: Streaming Messages ---");
 			streamingMessages();
 
-			System.out.println("\n--- 示例14：工具响应消息 ---");
+			System.out.println("\n--- Example 14: Tool Response Message ---");
 			toolResponseMessage();
 
-			System.out.println("\n--- 示例15：从 URL 输入图像 ---");
+			System.out.println("\n--- Example 15: Image Input from URL ---");
 			imageInputFromURL();
 
-			System.out.println("\n--- 示例16：从文件输入图像 ---");
+			System.out.println("\n--- Example 16: Image Input from File ---");
 			imageInputFromFile();
 
-			System.out.println("\n--- 示例17：音频输入 ---");
+			System.out.println("\n--- Example 17: Audio Input ---");
 			audioInput();
 
-			System.out.println("\n--- 示例18：视频输入 ---");
+			System.out.println("\n--- Example 18: Video Input ---");
 			videoInput();
 
-			System.out.println("\n--- 示例19：基础对话示例 ---");
+			System.out.println("\n--- Example 19: Basic Conversation Example ---");
 			basicConversationExample();
 
-			System.out.println("\n--- 示例20：构建器模式 ---");
+			System.out.println("\n--- Example 20: Builder Pattern ---");
 			builderPattern();
 
-			System.out.println("\n=== 所有示例执行完成 ===");
+			System.out.println("\n=== All examples executed successfully ===");
 		}
 		catch (Exception e) {
-			System.err.println("执行示例时发生错误: " + e.getMessage());
+			System.err.println("Error executing example: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}

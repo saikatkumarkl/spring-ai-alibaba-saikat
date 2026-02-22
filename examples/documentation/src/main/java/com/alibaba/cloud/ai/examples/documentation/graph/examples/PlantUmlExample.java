@@ -32,7 +32,7 @@ import static com.alibaba.cloud.ai.graph.action.AsyncNodeAction.node_async;
 
 /**
  * PlantUML 图表可视化示例
- * 演示如何使用 PlantUML 可视化 Spring AI Alibaba Graph 工作流结构
+ * 演示如何使用 PlantUML 可视化 CordonData Graph 工作流结构
  */
 public class PlantUmlExample {
 
@@ -75,7 +75,7 @@ public class PlantUmlExample {
 	public static void simplePlantUmlExample() {
 		String code = """
 				@startuml
-				title Spring AI Alibaba Graph
+				title CordonData Graph
 				START --> NodeA
 				NodeA --> NodeB
 				NodeB --> END

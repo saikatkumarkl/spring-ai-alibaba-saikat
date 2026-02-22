@@ -84,7 +84,7 @@ class RedisSaverTest {
 		return "true".equalsIgnoreCase(System.getProperty("CI", System.getenv("CI")));
 	}
 
-	// 使用较为稳定的版本
+	//Use a more stable version
 
 	@Container
 	private static final GenericContainer<?> redisContainer = new GenericContainer<>(
@@ -97,7 +97,7 @@ class RedisSaverTest {
 	@BeforeAll
 	static void setup() {
 		redisContainer.start();
-		// 本地单机 Redis，测试环境需保证 6379 端口可用
+		//Local stand-alone Redis, the test environment needs to ensure that port 6379 is available
 		Config config = new Config();
 		config.useSingleServer()
 				.setAddress("redis://" + redisContainer.getHost() + ":" + redisContainer.getMappedPort(6379));
@@ -120,7 +120,7 @@ class RedisSaverTest {
 		String threadId = "test-thread-" + UUID.randomUUID();
 		RunnableConfig config = RunnableConfig.builder().threadId(threadId).build();
 
-		// 构造 checkpoint
+		//Construct checkpoint
 		Checkpoint cp1 = Checkpoint.builder()
 				.id("cp1")
 				.state(java.util.Map.of("data", "data1"))
@@ -134,17 +134,17 @@ class RedisSaverTest {
 				.nextNodeId("node2")
 				.build();
 
-		// put 第一个
+		//put first
 		redisSaver.put(config, cp1);
-		// put 第二个
+		//put the second one
 		redisSaver.put(config, cp2);
 
-		// list 检查
+		//list check
 		List<Checkpoint> list = (List<Checkpoint>) redisSaver.list(config);
 		assertEquals(2, list.size());
-		assertEquals("cp2", list.get(0).getId()); // push 到头部
+		assertEquals("cp2", list.get(0).getId()); //push to head
 
-		// get 最新
+		//get latest
 		Optional<Checkpoint> latest = redisSaver.get(config);
 		assertTrue(latest.isPresent());
 		assertEquals("cp2", latest.get().getId());
@@ -169,7 +169,7 @@ class RedisSaverTest {
 				.build();
 		redisSaver.put(config, cp1);
 
-		// 替换 cp1
+		//replace cp1
 		Checkpoint cp1New = Checkpoint.builder()
 				.id("cp1")
 				.state(java.util.Map.of("data", "data1-new"))

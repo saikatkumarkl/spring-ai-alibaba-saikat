@@ -28,7 +28,7 @@
 	<artifactId>chatbot</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Examples::ChatBot</name>
-	<description>ChatBot example using Spring AI Alibaba</description>
+	<description>ChatBot example using CordonData</description>
 
 	<properties>
 		<java.version>17</java.version>
@@ -125,6 +125,13 @@
 			<artifactId>jjwt-jackson</artifactId>
 			<version>${jjwt.version}</version>
 			<scope>runtime</scope>
+		</dependency>
+
+		<!-- Nimbus JOSE+JWT for Keycloak JWKS-based JWT validation -->
+		<dependency>
+			<groupId>com.nimbusds</groupId>
+			<artifactId>nimbus-jose-jwt</artifactId>
+			<version>9.40</version>
 		</dependency>
 	</dependencies>
 

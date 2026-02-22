@@ -39,7 +39,7 @@ public class TongyiProvider extends OpenAIProvider {
 	 */
 	@Override
 	public String getName() {
-		return "通义";
+		return "General meaning";
 	}
 
 	/**
@@ -47,7 +47,7 @@ public class TongyiProvider extends OpenAIProvider {
 	 */
 	@Override
 	public String getDescription() {
-		return "通义模型服务";
+		return "General model service";
 	}
 
 	/**
@@ -58,9 +58,9 @@ public class TongyiProvider extends OpenAIProvider {
 	public List<CredentialSpec> getCredentialSpecs() {
 		CredentialSpec credentialSpec = new CredentialSpec();
 		credentialSpec.setCode("api_key");
-		credentialSpec.setDisplayName("验证凭证");
-		credentialSpec.setDescription("需要填写apiKey验证凭证才能调用远程模型服务");
-		credentialSpec.setPlaceHolder("请填写apiKey");
+		credentialSpec.setDisplayName("Verify credentials");
+		credentialSpec.setDescription("You need to fill in the apiKey verification credentials to call the remote model service");
+		credentialSpec.setPlaceHolder("Please fill in apiKey");
 		credentialSpec.setSensitive(true);
 		return List.of(credentialSpec);
 	}
